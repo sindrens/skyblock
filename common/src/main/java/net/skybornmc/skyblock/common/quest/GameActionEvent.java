@@ -27,16 +27,35 @@ public final class GameActionEvent extends PlayerEvent {
      * never coop players or visitors, never bone-mealed or placed blocks.
      */
     public static final String HARVEST_CROP = "harvest_crop";
+    /**
+     * A block the player broke by hand or with a tool (milestones, Complete Developer Spec §7.3): never placed blocks,
+     * never machines; the target is the block's material key ({@code COAL_ORE}).
+     */
+    public static final String BREAK_BLOCK = "break_block";
+    /** A mob the player killed (the player dealt the last damage); the target is the entity type key ({@code ZOMBIE}). */
+    public static final String KILL_MOB = "kill_mob";
 
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final String action;
     private final long amount;
+    private final String target;
 
     public GameActionEvent(@NotNull Player player, @NotNull String action, long amount) {
+        this(player, action, amount, null);
+    }
+
+    /** @param target what the action was done to (upper-case material or entity key, e.g. {@code WHEAT}); null = unknown */
+    public GameActionEvent(@NotNull Player player, @NotNull String action, long amount, String target) {
         super(player);
         this.action = action;
         this.amount = Math.max(0, amount);
+        this.target = target;
+    }
+
+    /** What the action was done to ({@code WHEAT}, {@code ZOMBIE}), or null when the firing module did not say. */
+    public String target() {
+        return target;
     }
 
     /** One of the constants above. */

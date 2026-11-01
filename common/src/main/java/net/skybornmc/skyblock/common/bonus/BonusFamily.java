@@ -48,7 +48,17 @@ public enum BonusFamily {
      * {@code conquest_xp}, {@code death_loss}); the cap applies per stat. The warzone death-loss reduction is limited to
      * 50% by the code that applies it.
      */
-    CONQUEST(60);
+    CONQUEST(60),
+    /**
+     * Extra output of machines (generators, spawners, collectors) from milestone perks (Complete Developer Spec F9, §9.5).
+     * The context's target names the machine kind ({@code generator}, {@code spawner}, {@code collector}).
+     */
+    PRODUCTION(100),
+    /**
+     * Milestone progress boosters (spec §9.3): extra progress for other chains of the same category; counts toward tier
+     * targets only, never toward metrics, economy numbers, points or boards. Cap +25%.
+     */
+    MILESTONE_PROGRESS(25);
 
     private final double defaultCap;
 
