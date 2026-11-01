@@ -40,7 +40,7 @@ public final class PackConfig extends ModuleConfig {
     public int hostCheckFailures = 2;
 
     @Setting(desc = "Prompt shown on the client's resource pack screen (MiniMessage).")
-    public String prompt = "<gradient:#ff9a3c:#ff3d2e><bold>Phoenix Skyblock icons</bold></gradient> <gray>A tiny pack (about 100 KB): menus get their own icons.";
+    public String prompt = "<gradient:#ff9a3c:#ff3d2e><bold>Phoenix Skyblock</bold></gradient> <gray>A small pack (about 150 KB): menu icons and a new menu look.";
 
     @Setting(path = "timeout-seconds", desc = "Seconds to wait for the client's final answer before counting the pack as failed.", min = 5, max = 600)
     public int timeoutSeconds = 60;

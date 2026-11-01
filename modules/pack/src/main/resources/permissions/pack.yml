@@ -10,3 +10,6 @@ skyblock.pack.reload:
 skyblock.pack.alerts:
   description: Get the chat alert when the icon pack host goes down or comes back
   default: op
+skyblock.pack.glyphtest:
+  description: Open the menu frame test (/pack glyphtest; Java with the icon pack only)
+  default: op

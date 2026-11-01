@@ -53,6 +53,7 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
     static final String ID = "pack";
     static final String PERM_STATUS = "skyblock.pack.status";
     static final String PERM_RELOAD = "skyblock.pack.reload";
+    static final String PERM_GLYPHTEST = "skyblock.pack.glyphtest";
     static final String PERM_ALERTS = "skyblock.pack.alerts";
     /** The bundled zip (built by the packZip Gradle task from resourcepack/pack). */
     static final String RESOURCE = "pack/phoenix-icons.zip";
@@ -472,6 +473,8 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
 
     private void registerCommands() {
         Arg<Player> target = Args.onlinePlayer("player");
+        Arg<String> glyphType = Args.oneOf("type", () -> GlyphTestMenu.TYPES);
+        Arg<String> glyphFill = Args.oneOf("fill", () -> GlyphTestMenu.FILLS);
         core.commands().register(CommandSpec.command("pack")
                 .description("The icon pack: status and reload (staff)")
                 .category("Staff")
@@ -496,7 +499,30 @@ public final class PackModule implements SkyblockModule, Listener, PackService {
                         .executes(ctx -> {
                             reload();
                             msg.send(ctx.sender(), "command.reloaded", Msg.p("count", lastResent));
-                        })));
+                        }))
+                .sub(CommandSpec.sub("glyphtest")
+                        .description("Staff test of the menu frame (panel, tiles, plaque) for Java with the pack")
+                        .permission(PERM_GLYPHTEST)
+                        .playerOnly()
+                        .optional(glyphType)
+                        .optional(glyphFill)
+                        .example("pack glyphtest")
+                        .example("pack glyphtest p4 sparse")
+                        .executes(ctx -> glyphTest(ctx.player(), ctx.has(glyphType) ? ctx.get(glyphType) : "p6",
+                                ctx.has(glyphFill) ? ctx.get(glyphFill) : "full"))));
+    }
+
+    /**
+     * {@code /pack glyphtest}: opens the frame test menu for a Java player whose pack is LOADED (the {@code gui.font.*}
+     * switches are ignored, the Java and pack gates are not).
+     */
+    private void glyphTest(Player player, String type, String fill) {
+        if (core.menus().glyphs().forViewerIgnoringSwitches(player).isEmpty()) {
+            msg.send(player, "glyphtest.need-java", Msg.p("status", status(player.getUniqueId()).name().toLowerCase(Locale.ROOT)));
+            core.sounds().play(player, "error");
+            return;
+        }
+        core.menus().open(player, new GlyphTestMenu(type.toLowerCase(Locale.ROOT), fill.toLowerCase(Locale.ROOT)));
     }
 
     /** {@code /pack reload}: every online Java player is offered the pack again (never enforced). */

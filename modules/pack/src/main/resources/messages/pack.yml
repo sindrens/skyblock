@@ -27,3 +27,22 @@ status:
 health:
   up: "up"
   down: "down"
+glyphtest:
+  # /pack glyphtest (GUI-FONT spike, staff): the framed test menu.
+  title: "Glyph test"
+  need-java: "<prefix><c:error><sym:cross></c:error> <c:text>This test needs Java with the icon pack loaded. <c:muted>(Your status: <status>)"
+  type:
+    name: "<c:value><bold>Panel <type>"
+    lore: ["<c:text>Click for the next one.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
+  fill:
+    name: "<c:value><bold>Fill: <fill>"
+    lore: ["<c:text>Click for the next one.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
+  plaque:
+    name: "<c:value><bold>Plaque: <size>"
+    lore: ["<c:text>Click for the next one.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch"]
+  slot: "<c:value>Slot <slot>"
+  # Plaque samples: small, medium, large (cartoon letters; A-Z 0-9 & ' - ! ? ( ) / . , : only).
+  sample:
+    s: "SHOP"
+    m: "UPGRADES"
+    l: "STONE & EARTH"

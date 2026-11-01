@@ -8,3 +8,5 @@ lp group admin permission set skyblock.pack.reload true
 # Mods and admins hear when the pack host goes down or comes back.
 lp group mod permission set skyblock.pack.alerts true
 lp group admin permission set skyblock.pack.alerts true
+# Admins run the menu frame test (/pack glyphtest, GUI-FONT spike).
+lp group admin permission set skyblock.pack.glyphtest true
