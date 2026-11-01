@@ -45,6 +45,8 @@ final class Progress {
     final Map<String, OptionalRules.Entry> optional = new HashMap<>();
     /** When the last first-visit tip was shown (this session, TQ26). */
     long lastTip;
+    /** TUT-FIX2: the step whose start title waits for the camera that plays first (shown when it ends). Session only. */
+    String pendingTitle;
 
     Progress(UUID player, State state) {
         this.player = player;

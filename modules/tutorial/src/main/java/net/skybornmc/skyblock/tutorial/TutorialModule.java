@@ -66,6 +66,9 @@ public final class TutorialModule implements SkyblockModule {
     @Override
     public void enable() throws Exception {
         core.configs().load(config);
+        // TUT-FIX2: unedited old titles, hints and Pip lines are upgraded to the new ones before the texts load.
+        core.messages().retire(ID, RetiredTexts.all());
+        core.messages().load(ID);
         msg = core.messages(ID);
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         targets = new Targets(this);

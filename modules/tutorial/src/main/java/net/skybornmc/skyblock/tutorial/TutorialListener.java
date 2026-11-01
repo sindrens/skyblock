@@ -193,12 +193,9 @@ final class TutorialListener implements Listener {
         }
         if (p.state.complete()) {
             // TQ31: a new island on a 2nd or 3rd profile gets the island camera, but no tutorial.
-            if (event.firstTime() && module.config().cameraWelcomeNewProfile) {
-                core.scheduler().later("tutorial-welcome-camera", 40, () -> {
-                    if (player.isOnline() && module.targets().onOwnIsland(player, false)) {
-                        module.cameras().play(player, Cameras.ISLAND, null);
-                    }
-                });
+            // TUT-FIX2: in the tick of the arrival (no pop-in before the camera).
+            if (event.firstTime() && module.config().cameraWelcomeNewProfile && module.targets().onOwnIsland(player, false)) {
+                module.cameras().play(player, Cameras.ISLAND, null);
             }
             return;
         }
@@ -253,7 +250,13 @@ final class TutorialListener implements Listener {
             checkChest(player, left);
             Progress now = running(player);
             if (now != null && !now.isDone(Steps.CHEST) && Steps.CHEST.equals(now.step) && player.isOnline()) {
-                module.msg().actionBar(player, "steps.chest.take-tool");
+                if (container && left && player.getInventory().firstEmpty() < 0) {
+                    // TUT-FIX2: a full inventory can't take the tool; say why and how (the tool stays safe in the chest).
+                    module.msg().send(player, "steps.chest.full");
+                    core.sounds().play(player, "error");
+                } else {
+                    module.msg().actionBar(player, "steps.chest.take-tool");
+                }
             }
         });
     }
@@ -409,6 +412,10 @@ final class TutorialListener implements Listener {
         if (module.config().forgeMenuIds.stream().anyMatch(m -> m.strip().equalsIgnoreCase(id))) {
             engine().signal(player, Steps.FORGE);
         }
+        // TUT-FIX2: /help counts for the help step too (the real help, never the Forge).
+        if (module.config().helpMenuIds.stream().anyMatch(m -> m.strip().equalsIgnoreCase(id))) {
+            engine().signal(player, Steps.HELP);
+        }
     }
 
     // ------------------------------------------------------------------ 6 depths (checked by the guide tick)
@@ -503,8 +510,10 @@ final class TutorialListener implements Listener {
         if (module.config().npcLines && step != null && event.role() != null && module.msg().has(line)) {
             module.msg().send(player, "npc-lines.format", net.skybornmc.skyblock.common.text.Msg.c("line", module.msg().component(player, line)));
         }
+        // TUT-FIX2 (A3 Review v2): only the help NPCs (steps.help.npc-roles: Depths Guide, spawn Guide, Info) count; the
+        // Forge NPC click of step 9 used to finish the help step early, so it taught nothing.
         var roles = module.config().helpRoles;
-        if (roles.isEmpty() || roles.stream().anyMatch(r -> r.strip().equalsIgnoreCase(event.role()))) {
+        if (roles.isEmpty() || (event.role() != null && roles.stream().anyMatch(r -> r.strip().equalsIgnoreCase(event.role())))) {
             engine().signal(player, Steps.HELP);
         }
     }

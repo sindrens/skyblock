@@ -1,5 +1,8 @@
 # Join tutorial (docs/plans/TUTORIAL.md). MiniMessage + style tags (style.yml). Bedrock-safe symbols only.
 # Titles max ~20 characters, subtitles max ~36 (Bedrock). Reload: /skyblock reload tutorial
+# TUT-FIX2 one place per message: the boss bar always shows the instruction; chat gets one line when a step is done
+# (or one hint after a wait); a title only when a step starts (a short verb phrase in bold flame yellow + one hint);
+# a hologram only at the target.
 
 # U2 one welcome: for a new player this title and this chat block are the whole welcome (the join flow adds nothing).
 # <player> = the player's name. One next step only.
@@ -14,14 +17,14 @@ start:
     - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
     - "  <c:text>Your island in the sky is waiting."
     - ""
-    - "  <c:ember><sym:arrow></c:ember> <c:text>Next: follow the flames to the <c:value>Island portal</c:value><c:text>."
+    - "  <c:ember><sym:arrow></c:ember> <c:text>Next: follow <c:value>Pip</c:value><c:text> to the <c:value>Island portal</c:value><c:text>."
     - "  <c:muted>Stuck? /tutorial</c:muted>"
     - ""
   staff-offer: "<prefix><c:text>Staff have no tutorial locks. Test the tutorial any time: <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
 
 resume:
   title:
-    title: "<c:brand>Welcome back"
+    title: "<c:flame><bold>Welcome back</bold>"
     subtitle: "<c:text>Taking you to your step"
     stay: 40
   sneak-hint: "<c:text>Sneak to stay at spawn"
@@ -36,54 +39,66 @@ locked:
 
 step-done:
   chat: "<prefix><c:success><sym:check></c:success> <c:text><step> done. <c:muted>(<number>/<total>)"
-  early: "<c:success><sym:check></c:success> <c:text><step> done early"
+  # A step that opens features: the same one line, with what just unlocked (steps.<id>.unlocked).
+  chat-unlock: "<prefix><c:success><sym:check></c:success> <c:text><step> done. <c:muted>(<number>/<total>)</c:muted> <c:text>Unlocked: <unlocked>"
+  early: "<prefix><c:success><sym:check></c:success> <c:text><step> done early. <c:muted>It is skipped later."
+
+# One chat line when a player did nothing on a step for tutorial.yml guide.hint-after-seconds.
+hint:
+  chat: "<prefix><c:ember>Tip</c:ember> <c:muted><sym:dot></c:muted> <hint>"
 
 # One section per step. name: short name (menus, locks). objective: the scoreboard Next line and the boss bar.
-# target: name on the compass. hint: action bar. title: shown when the step starts. done: action bar when done.
-# lore: description in the steps menu.
+# target: name on the compass. hint: the wait hint (one chat line). title: shown when the step starts (<needed> =
+# the step's count). unlocked: added to the "done" chat line. lore: description in the steps menu.
 steps:
   portal:
     name: "Island portal"
     objective: "Walk into the Island portal"
     target: "Your Island"
-    hint: "<c:text>Follow the flames to the <c:value>Island portal"
+    hint: "<c:text>Follow <c:value>Pip</c:value><c:text> and the glowing trail to the <c:value>Island portal"
     title:
-      title: "<c:brand>Find your island"
-      subtitle: "<c:text>Walk into the Island portal"
+      title: "<c:flame><bold>Find your island</bold>"
+      subtitle: "<c:text>Follow Pip to the Island portal"
     lore: ["<c:text>Walk north through the Gatehouse", "<c:text>into the <c:value>Your Island</c:value> portal."]
   arrive:
     name: "Arrival"
     objective: "Look around your island"
     hint: "<c:text>This island is yours"
     title:
-      title: "<c:brand>Welcome home"
-      subtitle: "<c:text>This island is yours"
+      title: "<c:flame><bold>Welcome home</bold>"
+      subtitle: "<c:text>This island is all yours"
       stay: 80
     lore: ["<c:text>Your own island in the sky."]
   chest:
     name: "Starter chest"
     objective: "Open your starter chest"
     target: "Starter Chest"
-    hint: "<c:text>Open your starter chest"
+    hint: "<c:text>Open the <c:value>starter chest</c:value><c:text> where Pip sits and take the tools"
+    title:
+      title: "<c:flame><bold>Open the chest</bold>"
+      subtitle: "<c:text>Take the tools and the guide book"
     opened: "<c:text>Take everything. The book explains it all."
     take-tool: "<c:text>Take the <c:value>pickaxe</c:value> from the chest"
-    done: "<c:success><sym:check></c:success> <c:text>Starter items taken"
+    full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Free a slot, then take the <c:value>pickaxe</c:value><c:text>. It stays safe in the chest."
     lore: ["<c:text>Tools, seeds, food and the", "<c:text>Phoenix Field Guide."]
   crop:
     name: "First crop"
     objective: "Plant 3 wheat seeds"
     target: "Farm spot"
-    hint: "<c:text>Plant wheat: <c:value><count></c:value><c:muted> / <needed>"
-    done: "<c:success><sym:check></c:success> <c:text>Team features unlocked: <c:value>/is invite</c:value>, <c:value>/is visit"
+    hint: "<c:text>Till dirt with your hoe, then plant the seeds: <c:value><count></c:value><c:muted> / <needed>"
+    title:
+      title: "<c:flame><bold>Plant some wheat</bold>"
+      subtitle: "<c:text>Till dirt with the hoe, then plant"
+    unlocked: "<c:value>/is invite</c:value><c:text>, <c:value>/is visit"
     lore: ["<c:text>Till dirt with your hoe, then", "<c:text>plant the seeds on your island."]
   menu:
     name: "The menu"
     objective: "Open the menu"
-    hint: "<c:text>Click the <c:value>Nether Star</c:value> in your hotbar"
+    hint: "<c:text>Click the <c:value>Nether Star</c:value><c:text> in your hotbar (or type <c:value>/menu</c:value><c:text>)"
     title:
-      title: "<c:brand>The menu"
-      subtitle: "<c:text>Click the Nether Star"
-    done: "<c:success><sym:check></c:success> <c:text>The Depths unlocked. Open <c:value>/menu</c:value> <sym:arrow> The Depths"
+      title: "<c:flame><bold>Open the menu</bold>"
+      subtitle: "<c:text>Click the Nether Star in your hotbar"
+    unlocked: "<c:value>The Depths</c:value> <c:muted>(/menu <sym:arrow> The Depths)"
     lore: ["<c:text>Everything is in <c:value>/menu</c:value>.", "<c:text>Open it: The Depths is next."]
   depths:
     name: "To the Depths"
@@ -91,43 +106,52 @@ steps:
     target: "Mine Tier 1"
     hint: "<c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:text>The Depths <c:ember><sym:arrow></c:ember> <c:text>Mine Tier 1"
     title:
-      title: "<c:brand>The Depths"
-      subtitle: "<c:text>Mine, sell, forge, repeat"
+      title: "<c:flame><bold>Go to the Depths</bold>"
+      subtitle: "<c:text>/menu » The Depths » Mine Tier 1"
     lore: ["<c:text>Open <c:value>/menu</c:value> <sym:arrow> The Depths and", "<c:text>teleport to <c:value>Mine Tier 1</c:value>."]
   mine:
     name: "Mine"
     objective: "Mine blocks"
-    hint: "<c:text>Drops go to your satchel <c:muted>(<count>/<needed>)"
+    hint: "<c:text>Break the coal where Pip sits. Drops go to your satchel <c:muted>(<count>/<needed>)"
+    title:
+      title: "<c:flame><bold>Mine some coal</bold>"
+      subtitle: "<c:text>Break <needed> blocks. They grow back"
     lore: ["<c:text>Break blocks in Mine Tier 1.", "<c:text>They grow back for you only."]
   sell:
     name: "Sell"
     objective: "Sell your loot"
-    hint: "<c:text>Press <c:value>Sell all</c:value> in your satchel"
+    hint: "<c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:text>The Depths <c:ember><sym:arrow></c:ember> <c:text>Satchel <c:ember><sym:arrow></c:ember> <c:value>Sell all"
     title:
-      title: "<c:brand>Sell your loot"
-      subtitle: "<c:text>/menu » The Depths » Satchel"
-    done: "<c:success><sym:check></c:success> <c:text>Auction house unlocked: <c:value>/ah"
+      title: "<c:flame><bold>Sell your loot</bold>"
+      subtitle: "<c:text>Open the satchel, press Sell all"
+    unlocked: "<c:value>/ah</c:value> <c:muted>(auction house)"
     lore: ["<c:text>Open the satchel and press", "<c:value>Sell all</c:value><c:text>."]
   forge:
     name: "Forge"
     objective: "Visit the Forge"
     target: "Forge"
-    hint: "<c:text>Better tools = more money"
+    hint: "<c:text>Follow Pip to the <c:value>Forge</c:value><c:text> and click the smith. Better tools = more money"
+    title:
+      title: "<c:flame><bold>Visit the Forge</bold>"
+      subtitle: "<c:text>Follow Pip to the smith"
     lore: ["<c:text>Walk to the Forge NPC and open", "<c:text>the Forge. Tier 2 is your first goal."]
   help:
     name: "Help"
-    objective: "Talk to the Guide"
+    objective: "Talk to the Depths Guide"
     target: "Depths Guide"
-    hint: "<c:text>Click the Depths Guide once"
-    lore: ["<c:text>Click the Depths Guide once.", "<c:text>Every NPC explains itself."]
+    hint: "<c:text>Click the <c:value>Depths Guide</c:value><c:text> once, or open <c:value>/help"
+    title:
+      title: "<c:flame><bold>Ask for help</bold>"
+      subtitle: "<c:text>Click the Depths Guide or use /help"
+    lore: ["<c:text>Click the Depths Guide once,", "<c:text>or open /help."]
   bank:
     name: "Bank"
     objective: "Deposit money in /bank"
     hint: "<c:text>The bank pays interest every 8 hours"
     title:
-      title: "<c:brand>Keep it safe"
-      subtitle: "<c:text>Open /bank, deposit some money"
-    done: "<c:success><sym:check></c:success> <c:value>/pay</c:value> <c:text>and <c:value>/withdraw</c:value> <c:text>unlocked"
+      title: "<c:flame><bold>Keep it safe</bold>"
+      subtitle: "<c:text>Open /bank and deposit some money"
+    unlocked: "<c:value>/pay</c:value><c:text>, <c:value>/withdraw"
     lore: ["<c:text>Open <c:value>/bank</c:value> and put in", "<c:text>any amount."]
 
 # Boss bar compass. <target> name, <distance> metres, <objective>, <number>/<total>. Bedrock-safe arrows only.
@@ -148,6 +172,8 @@ bar:
   away-depths: "<head> <c:value>Go back <c:muted><sym:dot></c:muted> <c:value>/menu</c:value> <c:ember><sym:arrow></c:ember> <c:value>The Depths"
 
 # Holograms over targets (only you see them): bold flame title, one short muted action line (A5-R1-01).
+# TUT-FIX2: shown only for the steps in tutorial.yml guide.hologram-steps (default: chest). NPCs and portals already
+# have their own label, so a second one over them was a duplicate.
 hologram:
   portal: "<c:flame><bold>Your Island</bold></c:flame><newline><c:muted>Walk in"
   chest: "<c:flame><bold>Starter Chest</bold></c:flame><newline><c:muted>Open me"
@@ -156,9 +182,10 @@ hologram:
 
 idle:
   title:
-    title: "<c:brand>Still there?"
+    title: "<c:flame><bold>Still there?</bold>"
     subtitle: "<c:text>Next: <step>"
     stay: 60
+  chat: "<prefix><c:text>Still there? Your next step: <c:value><step></c:value><c:text>. Pip is waiting. <c:muted>(/tutorial)"
 
 # The finish title (tutorial.yml reward.title), added to cosmetics when missing.
 reward:
@@ -178,7 +205,7 @@ finish:
 
 stuck:
   title:
-    title: "<c:brand>Next step"
+    title: "<c:flame><bold>Next step</bold>"
     subtitle: "<step>"
   shown: "<prefix><c:text>Your step: <c:value><step></c:value>. <hint> <c:muted>(Take me there is in /tutorial)"
   can-skip: "<prefix><c:text>Still stuck? You can skip this step in <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click><c:text>."
@@ -375,78 +402,115 @@ cameras:
   spawn:
     one:
       title: "<grad:phoenix><bold>PHOENIX</bold></grad>"
-      subtitle: "<c:text>Welcome to the spawn"
+      subtitle: "<c:text>Welcome to Phoenix Skyblock"
       fade-in: 10
       stay: 30
     two:
-      title: "<c:brand>The Gatehouse"
-      subtitle: "<c:text>Every portal starts here"
+      title: "<c:flame><bold>The Gatehouse</bold>"
+      subtitle: "<c:text>Every portal starts in here"
       fade-in: 5
       stay: 30
     three:
-      title: "<c:brand>Your Island"
+      title: "<c:flame><bold>Your Island</bold>"
       subtitle: "<c:text>Walk into this portal"
       fade-in: 5
-      stay: 30
+      stay: 40
   island:
     one:
-      title: "<c:brand>Welcome home"
-      subtitle: "<c:text>This island is yours"
+      title: "<c:flame><bold>Welcome home</bold>"
+      subtitle: "<c:text>This island is all yours"
       fade-in: 10
       stay: 40
     two:
-      title: "<c:brand>Grow it"
+      title: "<c:flame><bold>Grow it</bold>"
       subtitle: "<c:text>Crops, trees and a generator"
       fade-in: 5
       stay: 30
   depths:
     one:
-      title: "<c:brand>The Depths"
+      title: "<c:flame><bold>The Depths</bold>"
       subtitle: "<c:text>Mine, sell, forge, repeat"
       fade-in: 10
       stay: 40
     two:
-      title: "<c:brand>Mine Tier 1"
+      title: "<c:flame><bold>Mine Tier 1</bold>"
       subtitle: "<c:text>Blocks grow back for you"
+      fade-in: 5
+      stay: 30
+  forge:
+    one:
+      title: "<c:flame><bold>The Forge</bold>"
+      subtitle: "<c:text>Better tools = more money"
+      fade-in: 5
+      stay: 30
+    two:
+      title: "<c:flame><bold>Meet the smith</bold>"
+      subtitle: "<c:text>Click him to open the Forge"
       fade-in: 5
       stay: 30
   market:
     one:
-      title: "<c:brand>Market Square"
+      title: "<c:flame><bold>Market Square</bold>"
       subtitle: "<c:text>Shop, sell, bank, auction"
       fade-in: 10
       stay: 40
     two:
-      title: "<c:brand>Sell and trade"
+      title: "<c:flame><bold>Sell and trade</bold>"
       subtitle: "<c:text>Talk to every NPC here"
       fade-in: 5
       stay: 30
 
 # ---------------------------------------------------------------- TU5 Pip, the companion only you see
+# TUT-FIX2: Pip's name is 2 lines (Java: a text display riding him; Bedrock: a 2-line name tag, tutorial.yml
+# pip.name-display). Line 1 = name-line1. Line 2 = his step line for pip.line-seconds when a step starts, then the
+# short callout: perch.<step> when he sits on the target, wait while he waits for you, callouts.<step> while he leads,
+# else name-line2. Keep line 2 at most ~24 characters. name and tag are the old one-line name (unused).
 pip:
   name: "<c:flame>Pip"
   tag: "<c:flame>Pip</c:flame> <c:muted><sym:dot></c:muted> <c:text><line>"
+  name-line1: "<c:ember><sym:sparkle></c:ember> <grad:flame><bold>[ Pip ]</bold></grad> <c:ember><sym:sparkle>"
+  name-line2: "<c:text>Follow me!"
+  wait: "<c:flame>This way!"
   chat: "<c:flame><bold>Pip</bold></c:flame> <c:muted>»</c:muted> <c:text><line>"
+  callouts:
+    portal: "<c:text>Follow me!"
+    arrive: "<c:text>Look around!"
+    chest: "<c:text>This way!"
+    crop: "<c:text>Plant here!"
+    menu: "<c:text>Click the star!"
+    depths: "<c:text>Open the menu!"
+    mine: "<c:text>Mine this!"
+    sell: "<c:text>Sell it all!"
+    forge: "<c:text>Follow me!"
+    help: "<c:text>Follow me!"
+    bank: "<c:text>Try /bank!"
+  perch:
+    portal: "<c:flame>Jump in!"
+    chest: "<c:flame>Open me!"
+    crop: "<c:flame>Plant here!"
+    mine: "<c:flame>Mine this!"
+    forge: "<c:flame>Click him!"
+    help: "<c:flame>Click him!"
   lines:
-    portal: "Your island is past the gate. Follow me!"
-    arrive: "Look! This island is all yours."
-    chest: "Everything you need to start is in here."
-    crop: "Use your hoe on dirt, then plant."
-    menu: "The star in your hotbar opens everything."
-    depths: "Open the menu, then The Depths."
-    mine: "Break the ore. It grows back for you only."
-    sell: "Open your satchel and press Sell all."
-    forge: "The Forge turns loot into better tools."
-    help: "Click the Guide. Every NPC helps."
-    bank: "Keep your money safe in the bank."
-    finish: "You did it! Fly high, friend."
-    idle: "Still there? Your next step is waiting."
+    portal: "<c:text>Your island is past the gate!"
+    arrive: "<c:text>Look! It is all yours."
+    chest: "<c:text>Your tools are in here!"
+    crop: "<c:text>Hoe the dirt, then plant!"
+    menu: "<c:text>The star opens everything!"
+    depths: "<c:text>Menu, then The Depths!"
+    mine: "<c:text>It grows back for you!"
+    sell: "<c:text>Satchel, then Sell all!"
+    forge: "<c:text>Loot makes better tools!"
+    help: "<c:text>He knows everything!"
+    bank: "<c:text>Keep your money safe!"
+    finish: "<c:flame>You did it! Fly high!"
+    idle: "<c:text>Still there? Come on!"
 
 # NPCs say a short line for your tutorial step when you click them: npc-lines.<step>.<npc role>.
 npc-lines:
   format: "<c:ember><sym:bullet></c:ember> <c:text><line>"
   portal:
-    guide: "Your island portal is north, through the Gatehouse."
+    guide: "Your island portal is north, through the Gatehouse. Follow Pip!"
   forge:
     forge: "Tier 2 is your first goal. Bring loot and money."
   help:
