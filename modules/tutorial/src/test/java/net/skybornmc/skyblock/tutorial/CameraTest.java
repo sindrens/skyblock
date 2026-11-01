@@ -20,19 +20,20 @@ class CameraTest {
     void defaultCamerasParseAndStayShort() {
         TutorialConfig c = new TutorialConfig();
         int max = c.cameraMaxSeconds * 20;
-        for (List<String> lines : List.of(c.cameraSpawn, c.cameraIsland, c.cameraDepths, c.cameraMarket)) {
+        for (List<String> lines : List.of(c.cameraSpawn, c.cameraIsland, c.cameraDepths, c.cameraMarket, c.cameraForge)) {
             CameraShot.Parsed p = CameraShot.parse("test", lines, max);
             assertEquals(List.of(), p.problems());
             assertEquals(lines.size(), p.shots().size());
             assertTrue(p.totalTicks() <= max, "max 8 s per camera");
         }
-        // TUTORIAL §9.4: never more than 20 s of camera in the whole core (spawn + island + depths).
+        // TUTORIAL §9.4: never more than 20 s of camera in the whole core (spawn + island + depths + forge, TUT-FIX2).
         int core = CameraShot.parse("s", c.cameraSpawn, max).totalTicks() + CameraShot.parse("i", c.cameraIsland, max).totalTicks()
-                + CameraShot.parse("d", c.cameraDepths, max).totalTicks();
+                + CameraShot.parse("d", c.cameraDepths, max).totalTicks() + CameraShot.parse("f", c.cameraForge, max).totalTicks();
         assertTrue(core <= 20 * 20, "core cameras " + core + " ticks");
         assertEquals(List.of("@home"), CameraShot.parse("i", c.cameraIsland, max).anchors());
         assertEquals(List.of("@zone"), CameraShot.parse("d", c.cameraDepths, max).anchors());
         assertEquals(List.of("spawn"), CameraShot.parse("s", c.cameraSpawn, max).anchors());
+        assertEquals(List.of("@forge"), CameraShot.parse("f", c.cameraForge, max).anchors());
     }
 
     @Test

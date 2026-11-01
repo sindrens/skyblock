@@ -30,7 +30,9 @@ import java.util.logging.Level;
 
 /**
  * The tutorial cameras (TUTORIAL.md §9.4, TU3, TQ10/TQ11): {@code spawn} (first join), {@code island} (arrival step),
- * {@code depths} (Mine Tier 1) and {@code market} (optional spawn tour). Three ways to play one:
+ * {@code depths} (Mine Tier 1), {@code forge} (start of the Forge step, in the Depths) and {@code market} (optional spawn
+ * tour). TUT-FIX2: a blocked shot is moved before it is cut ({@link CameraRules#resolve}), and a short blindness fade
+ * hides the jump into and out of the camera. Three ways to play one:
  * <ul>
  *   <li><b>Java (smooth):</b> spectator mode following an invisible item display that glides along the shots.</li>
  *   <li><b>Cut-and-fade</b> (Java with {@code cameras.java-smooth: false}, Bedrock with {@code cameras.bedrock-cuts}):
@@ -52,7 +54,9 @@ final class Cameras {
     static final String ISLAND = "island";
     static final String DEPTHS = "depths";
     static final String MARKET = "market";
-    static final List<String> ALL = List.of(SPAWN, ISLAND, DEPTHS, MARKET);
+    /** TUT-FIX2: the Depths gate court from the Mine gate to the Forge (start of the Forge step). */
+    static final String FORGE = "forge";
+    static final List<String> ALL = List.of(SPAWN, ISLAND, DEPTHS, MARKET, FORGE);
 
     /** Standing eye height: a cut puts the player's eyes (not feet) on the shot point. */
     private static final double EYE = 1.62;
@@ -121,6 +125,7 @@ final class Cameras {
         out.put(ISLAND, CameraShot.parse(ISLAND, c.cameraIsland, max));
         out.put(DEPTHS, CameraShot.parse(DEPTHS, c.cameraDepths, max));
         out.put(MARKET, CameraShot.parse(MARKET, c.cameraMarket, max));
+        out.put(FORGE, CameraShot.parse(FORGE, c.cameraForge, max));
         out.values().forEach(p -> p.problems().forEach(problem -> core.plugin().getLogger().warning("tutorial.yml → " + problem)));
         cameras = Map.copyOf(out);
         loggedFixes.clear();
@@ -190,18 +195,15 @@ final class Cameras {
             if (mode == Mode.TITLES) {
                 continue;
             }
-            CameraRules.Fix fix = CameraRules.check(from, to, look, blocks);
-            logFix(camera, number, fix);
-            switch (fix) {
-                case DROP -> {
-                    continue;
-                }
-                case STILL_FROM -> to = from;
-                case STILL_TO -> from = to;
-                default -> {
-                    // plays as written
-                }
+            // TUT-FIX2: never through blocks; a blocked shot is moved (shortened, raised, closer, back) before it
+            // becomes a still shot, and only dropped when no clear place exists.
+            CameraRules.Resolved fixed = CameraRules.resolve(from, to, look, blocks, c.cameraClearance, c.cameraMaxRaise);
+            logFix(camera, number, fixed);
+            if (fixed.fix() == CameraRules.Fix.DROP) {
+                continue;
             }
+            from = fixed.from();
+            to = fixed.to();
             if (shot.text() != null) {
                 s.texts.put(s.path.size(), shot.text());
             }
@@ -247,11 +249,16 @@ final class Cameras {
         return sum;
     }
 
-    private void logFix(String camera, int shot, CameraRules.Fix fix) {
+    private void logFix(String camera, int shot, CameraRules.Resolved fixed) {
+        CameraRules.Fix fix = fixed.fix();
         if (fix == CameraRules.Fix.OK || !loggedFixes.add(camera + "#" + shot + ":" + fix)) {
             return;
         }
         String what = switch (fix) {
+            case RAISED -> "it was raised " + (int) fixed.amount() + " block(s) and plays moving";
+            case SHORTENED -> "its move was shortened to " + Math.round(fixed.amount() * 100) + "% and plays moving";
+            case CLOSER -> "it was moved closer to what it looks at and plays moving";
+            case BACK -> "it was moved back from what it looks at and plays moving";
             case STILL_FROM -> "its path is blocked; it plays as a still shot at its start";
             case STILL_TO -> "its path and start are blocked; it plays as a still shot at its end";
             default -> "it has no clear place (or its chunks are not loaded); it is skipped";
@@ -279,6 +286,9 @@ final class Cameras {
             case "@self" -> Optional.of(player.getLocation());
             case "@home" -> module.targets().home(player);
             case "@zone" -> module.targets().depthsSpawn();
+            // TUT-FIX2: the Forge and help NPCs (from the build points), so their cameras follow the builds.
+            case "@forge" -> module.targets().resolve(module.config().forgeTarget, module.config().forgeRole);
+            case "@help" -> module.targets().resolve(module.config().helpTarget, module.config().helpRole);
             default -> {
                 if (anchor.startsWith("@")) {
                     yield Optional.empty();
@@ -370,6 +380,7 @@ final class Cameras {
 
     private void startSmooth(Player player, Session s) {
         prepare(player, s);
+        fadeIn(player, s);
         player.setGameMode(GameMode.SPECTATOR);
         teleportSelf(player, at(s.world, s.path.getFirst()));
         player.showEntity(core.plugin(), s.display);
@@ -431,10 +442,23 @@ final class Cameras {
         }
     }
 
+    /**
+     * TUT-FIX2: a short vanilla blindness when the camera takes the player, so the jump to the first shot (and an
+     * arrival right before it) is never seen as a pop-in. No custom font, works on Java and Bedrock.
+     */
+    private void fadeIn(Player player, Session s) {
+        int fade = module.config().cameraStartFadeTicks;
+        if (fade > 0) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, fade, 0, false, false, false));
+            s.blinded = true;
+        }
+    }
+
     // ------------------------------------------------------------------ cut and fade, titles only
 
     private void startCuts(Player player, Session s) {
         prepare(player, s);
+        fadeIn(player, s);
         player.setAllowFlight(true);
         player.setFlying(true);
         s.index = -1;
@@ -624,6 +648,11 @@ final class Cameras {
             }
             if (s.saved) {
                 restore(player, s.redirect);
+                // TUT-FIX2: the same short fade when the player is given back (no hard cut into their own body).
+                int fade = module.config().cameraEndFadeTicks;
+                if (fade > 0 && player.isOnline() && !player.isDead()) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, fade, 0, false, false, false));
+                }
             }
         } finally {
             if (s.display != null && s.display.isValid()) {

@@ -74,16 +74,25 @@ class CameraSafetyTest {
         assertTrue(CameraRules.clearLine(new double[]{0.5, 101.5, 0.5}, new double[]{6.5, 101.5, 6.5}, thin), "one block higher");
     }
 
-    /** The default spawn camera against the spawn builds' bounding boxes (server/builds/spawn_*.yml). */
+    /**
+     * The default spawn camera against the spawn builds (server/builds/spawn_*.yml): bounding boxes of the statue, keep,
+     * info office and market; TUT-FIX2: the Gatehouse is entered (interior portal shot), so it is its walls, the gate
+     * arch over the passage (x -3..3, open up to y 106) and the hall roof (y 107+), never the whole box.
+     */
     @Test
     void defaultSpawnCameraStaysOutOfTheSpawnBuilds() {
         CameraRules.Blocks spawn = boxes(
                 new int[]{-18, 99, -30, 18, 135, -16},   // statue
                 new int[]{-30, 97, -68, 30, 172, -33},   // keep
-                new int[]{-36, 100, -102, 36, 140, -74}, // gatehouse
+                new int[]{-36, 100, -84, -4, 140, -74},  // gatehouse front, west of the gate passage
+                new int[]{4, 100, -84, 36, 140, -74},    // gatehouse front, east of the gate passage
+                new int[]{-3, 107, -84, 3, 140, -74},    // the arch over the gate passage
+                new int[]{-36, 107, -102, 36, 140, -84}, // portal hall roof and chandeliers
+                new int[]{-36, 100, -102, 36, 140, -98}, // the north wall behind the portals
                 new int[]{-30, 98, 16, -6, 114, 26},     // info office
                 new int[]{-38, 97, 33, 38, 125, 92},     // market square
-                new int[]{-111, 42, -111, 112, 101, 110}); // the ground of the base
+                new int[]{-111, 42, -111, 112, 101, 110}, // the ground of the base
+                new int[]{-36, 100, -102, 36, 101, -74}); // the raised gatehouse floor (walk y 102)
         TutorialConfig c = new TutorialConfig();
         CameraShot.Parsed parsed = CameraShot.parse("spawn", c.cameraSpawn, c.cameraMaxSeconds * 20);
         assertTrue(parsed.shots().size() <= 3, "less is more: a short intro");
@@ -92,11 +101,17 @@ class CameraSafetyTest {
         }
     }
 
-    /** The default island camera path stays above / outside the starter island (islands_starter_meadow_v1 bounds). */
+    /**
+     * The default island camera path never flies through the starter island (islands_starter_meadow_v1): its ground
+     * (top y 100), the shed with its roof and the oak tree west of the home (TUT-FIX2: the old shot 2 looked through it).
+     */
     @Test
     void defaultIslandCameraNeverFliesThroughTheIsland() {
         double[] home = {0.5, 101, 0.5};
-        CameraRules.Blocks island = boxes(new int[]{-10, 65, -9, 10, 109, 9});
+        CameraRules.Blocks island = boxes(
+                new int[]{-10, 65, -9, 10, 100, 9},  // ground
+                new int[]{-3, 101, -8, 3, 109, -2},  // shed and roof
+                new int[]{-9, 101, -2, -5, 109, 3}); // oak tree
         TutorialConfig c = new TutorialConfig();
         for (CameraShot shot : CameraShot.parse("island", c.cameraIsland, c.cameraMaxSeconds * 20).shots()) {
             assertTrue(CameraRules.clearLine(rel(shot.from(), home), rel(shot.to(), home), island), shot.toString());
@@ -111,7 +126,10 @@ class CameraSafetyTest {
         assertFalse(v3.get("cameras.spawn").matches(List.of("spawn:0,120,0 look=spawn:0,100,-20 ticks=40")), "owner lines stay");
         assertEquals(c.cameraSpawn, v3.get("cameras.spawn").to());
         assertTrue(v3.get("cameras.island").matches(TutorialConfig.OLD_ISLAND));
-        assertEquals(4, c.version());
+        assertEquals(5, c.version());
+        Map<String, net.skybornmc.skyblock.common.config.ModuleConfig.ValueChange> v5 = c.valueChanges().get(5);
+        assertTrue(v5.get("cameras.spawn").matches(new ArrayList<>(TutorialConfig.V3_SPAWN)), "the roof shot is replaced");
+        assertTrue(v5.get("cameras.depths").matches(new ArrayList<>(TutorialConfig.V1_DEPTHS)));
     }
 
     private static double[] abs(CameraShot.CamPoint p) {

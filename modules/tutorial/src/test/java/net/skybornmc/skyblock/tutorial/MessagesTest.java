@@ -94,7 +94,7 @@ class MessagesTest {
         }
         int max = c.cameraMaxSeconds * 20;
         java.util.Map<String, java.util.List<String>> cams = java.util.Map.of(Cameras.SPAWN, c.cameraSpawn, Cameras.ISLAND, c.cameraIsland,
-                Cameras.DEPTHS, c.cameraDepths, Cameras.MARKET, c.cameraMarket);
+                Cameras.DEPTHS, c.cameraDepths, Cameras.MARKET, c.cameraMarket, Cameras.FORGE, c.cameraForge);
         for (var cam : cams.entrySet()) {
             for (CameraShot shot : CameraShot.parse(cam.getKey(), cam.getValue(), max).shots()) {
                 if (shot.text() != null) {

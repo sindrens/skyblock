@@ -4,8 +4,9 @@ package net.skybornmc.skyblock.tutorial;
  * The safety rules of the tutorial cameras (TUT-FIX, owner report 31 Oct). Pure, unit-tested:
  * <ul>
  *   <li><b>Line of sight:</b> a shot may never fly through, start in or look straight into solid blocks. Each shot is
- *   checked against the world when it is about to play; a bad moving shot becomes a still shot at a clear end, a bad
- *   still shot is dropped ({@link #check}).</li>
+ *   checked against the world when it is about to play, with room around the camera; a blocked shot is first moved
+ *   (shortened, raised, closer, back), then played still at a clear end, and dropped only when nothing is clear
+ *   ({@link #resolve}; {@link #check} is the old plain rule).</li>
  *   <li><b>Input:</b> any move key, jump or sneak during a camera skips it ({@link #skipOnInput}), so a camera can
  *   never leave a player stuck.</li>
  *   <li><b>Watchdog:</b> a camera still running a few seconds after its own length is ended ({@link #overdue}).</li>
@@ -27,6 +28,14 @@ final class CameraRules {
     enum Fix {
         /** Plays as written. */
         OK,
+        /** TUT-FIX2: the whole shot was raised a few blocks (it plays as a moving shot). */
+        RAISED,
+        /** TUT-FIX2: the move stops early, where the path is still clear. */
+        SHORTENED,
+        /** TUT-FIX2: the shot moved closer to the thing it looks at (interiors, a wall behind the camera). */
+        CLOSER,
+        /** TUT-FIX2: the shot moved back, away from the thing it looks at (something right in front of it). */
+        BACK,
         /** Its path is blocked: plays as a still shot at its start. */
         STILL_FROM,
         /** Its path and start are blocked: plays as a still shot at its end. */
@@ -34,6 +43,18 @@ final class CameraRules {
         /** No clear place: not played. */
         DROP
     }
+
+    /** A shot after {@link #resolve}: where it really starts and ends, and what was changed. */
+    record Resolved(double[] from, double[] to, Fix fix, double amount) {
+    }
+
+    /** Fractions of the move kept when a shot is shortened (longest first). */
+    private static final double[] SHORTEN = {0.85, 0.7, 0.55, 0.4};
+    /** Distance factors toward the look-at point (closer) and away from it (back). */
+    private static final double[] CLOSER = {0.8, 0.65, 0.5};
+    private static final double[] BACK = {1.25, 1.5};
+    /** Never closer to the look-at point than this (blocks): the camera would sit on the thing it shows. */
+    private static final double MIN_LOOK_DISTANCE = 2.5;
 
     /** Something that happens to a player during a camera. */
     enum Interruption { MOVE_KEY, JUMP, SNEAK, COMMAND, LEFT_CAMERA, TELEPORT, DEATH, WATCHDOG, QUIT, STAFF_CHANGE, MODULE_STOP, CHAT, DAMAGE }
@@ -83,6 +104,120 @@ final class CameraRules {
             return Fix.STILL_FROM;
         }
         return toOk ? Fix.STILL_TO : Fix.DROP;
+    }
+
+    /**
+     * TUT-FIX2 (owner, 31 Oct: "cameras must NEVER pass through blocks"): the shot as written when it is clear with
+     * {@code clearance} blocks of room around the camera; otherwise the first clear one of: the move shortened, the whole
+     * shot raised 1 to {@code maxRaise} blocks, moved closer to the look-at point, moved back from it; then a still shot
+     * at a clear end (also raised); else {@link Fix#DROP}. Unknown blocks (unloaded chunks) count as blocked. Pure; at
+     * most a few thousand block reads, once per camera start.
+     */
+    static Resolved resolve(double[] from, double[] to, double[] look, Blocks world, double clearance, int maxRaise) {
+        double r = Math.max(0, clearance);
+        if (shotClear(from, to, look, world, r)) {
+            return new Resolved(from, to, Fix.OK, 0);
+        }
+        boolean moves = distance(from, to) > 0.01;
+        boolean fromOk = spotClear(from, look, world, r);
+        if (moves && fromOk) {
+            for (double keep : SHORTEN) {
+                double[] end = lerp(from, to, keep);
+                if (shotClear(from, end, look, world, r)) {
+                    return new Resolved(from, end, Fix.SHORTENED, keep);
+                }
+            }
+        }
+        for (int dy = 1; dy <= maxRaise; dy++) {
+            double[] f = {from[0], from[1] + dy, from[2]};
+            double[] t = {to[0], to[1] + dy, to[2]};
+            if (shotClear(f, t, look, world, r)) {
+                return new Resolved(f, t, Fix.RAISED, dy);
+            }
+        }
+        for (double k : CLOSER) {
+            double[] f = lerp(look, from, k);
+            double[] t = lerp(look, to, k);
+            if (distance(f, look) >= MIN_LOOK_DISTANCE && distance(t, look) >= MIN_LOOK_DISTANCE && shotClear(f, t, look, world, r)) {
+                return new Resolved(f, t, Fix.CLOSER, k);
+            }
+        }
+        for (double k : BACK) {
+            double[] f = lerp(look, from, k);
+            double[] t = lerp(look, to, k);
+            if (shotClear(f, t, look, world, r)) {
+                return new Resolved(f, t, Fix.BACK, k);
+            }
+        }
+        if (fromOk) {
+            return new Resolved(from, from, Fix.STILL_FROM, 0);
+        }
+        if (moves && spotClear(to, look, world, r)) {
+            return new Resolved(to, to, Fix.STILL_TO, 0);
+        }
+        for (int dy = 1; dy <= maxRaise; dy++) {
+            double[] f = {from[0], from[1] + dy, from[2]};
+            if (spotClear(f, look, world, r)) {
+                return new Resolved(f, f, Fix.STILL_FROM, dy);
+            }
+        }
+        return new Resolved(from, to, Fix.DROP, 0);
+    }
+
+    /** The whole shot is clear: both ends (with room around them), their views, the path and the view halfway. */
+    static boolean shotClear(double[] from, double[] to, double[] look, Blocks world, double clearance) {
+        if (!spotClear(from, look, world, clearance)) {
+            return false;
+        }
+        if (distance(from, to) <= 0.01) {
+            return true;
+        }
+        return spotClear(to, look, world, clearance) && clearSwept(from, to, world, clearance)
+                && clearView(lerp(from, to, 0.5), look, world);
+    }
+
+    /** One camera position is clear: the room around it and the first blocks of its view. */
+    static boolean spotClear(double[] pos, double[] look, Blocks world, double clearance) {
+        return clearSwept(pos, pos, world, clearance) && clearView(pos, look, world);
+    }
+
+    /**
+     * True when a box of {@code ±clearance} around the camera stays in open blocks all the way from a to b (the camera's
+     * near plane never touches a block face). {@code clearance} 0 = the line itself ({@link #clearLine}).
+     */
+    static boolean clearSwept(double[] a, double[] b, Blocks world, double clearance) {
+        if (clearance <= 0) {
+            return clearLine(a, b, world);
+        }
+        double length = distance(a, b);
+        int steps = Math.max(1, (int) Math.ceil(length / SAMPLE));
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            double x = a[0] + (b[0] - a[0]) * t;
+            double y = a[1] + (b[1] - a[1]) * t;
+            double z = a[2] + (b[2] - a[2]) * t;
+            int x0 = floor(x - clearance);
+            int x1 = floor(x + clearance);
+            int y0 = floor(y - clearance);
+            int y1 = floor(y + clearance);
+            int z0 = floor(z - clearance);
+            int z1 = floor(z + clearance);
+            for (int bx = x0; bx <= x1; bx++) {
+                for (int by = y0; by <= y1; by++) {
+                    for (int bz = z0; bz <= z1; bz++) {
+                        Boolean solid = world.solid(bx, by, bz);
+                        if (solid == null || solid) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static double[] lerp(double[] a, double[] b, double t) {
+        return new double[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t};
     }
 
     /** True when every block on the straight line a→b (both ends included) is open. */

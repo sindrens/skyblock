@@ -64,8 +64,12 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "steps.forge.menu-ids", desc = "Menus whose opening completes the Forge step.")
     public List<String> forgeMenuIds = List.of("forge");
 
-    @Setting(path = "steps.help.npc-roles", desc = "NPC roles whose click completes the help step; empty = any NPC.")
-    public List<String> helpRoles = List.of();
+    @Setting(path = "steps.help.npc-roles", desc = "NPC roles whose click completes the help step (TUT-FIX2: the help NPCs only, "
+            + "so the Forge click no longer counts); empty = any NPC.")
+    public List<String> helpRoles = List.of("dungeon", "info");
+
+    @Setting(path = "steps.help.menu-ids", desc = "Menus whose opening also completes the help step (help = /help).")
+    public List<String> helpMenuIds = List.of("help");
 
     @Setting(path = "steps.bank.count-island-bank", desc = "Also count a deposit into the island bank (off = only the personal bank).")
     public boolean bankCountsIsland = false;
@@ -93,7 +97,7 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "targets.help-role", desc = "Fallback NPC role for the help step.")
     public String helpRole = "dungeon";
 
-    @Setting(path = "trail.nodes", desc = "Path of the flame trail for the portal step, as 'world:x,y,z' points (spawn dais to the Island portal, TQ12).")
+    @Setting(path = "trail.nodes", desc = "Fallback route of the portal step when no walkable path is found, as 'world:x,y,z' points (spawn dais to the Island portal, TQ12).")
     public List<String> trailNodes = List.of("spawn:0.5,100,0.5", "spawn:0,100,-13", "spawn:0,100,-50", "spawn:0,102,-74", "spawn:0,103,-95");
 
     // ------------------------------------------------------------------ guides
@@ -135,7 +139,16 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.compass.behind-degrees", desc = "From this angle the target counts as behind you.", min = 90, max = 180)
     public int behindDegrees = 135;
 
-    @Setting(path = "guide.particles", desc = "Show the per-player flame trail, flame column and dust markers.")
+    @Setting(path = "guide.action-bar-hint", desc = "TUT-FIX2 one place per message: also show the step hint on the action bar every 2 s (off = the boss bar carries the instruction).")
+    public boolean actionBarHint = false;
+
+    @Setting(path = "guide.hint-after-seconds", desc = "After this long on a step with nothing done, the step hint is sent once as one chat line. 0 = never.", min = 0, max = 600)
+    public int hintAfterSeconds = 45;
+
+    @Setting(path = "guide.scoreboard-objective", desc = "Publish the current step for the scoreboard Next row (placeholders objective, tutorial_next).")
+    public boolean scoreboardObjective = true;
+
+    @Setting(path = "guide.particles", desc = "Show the per-player guide trail, the target marker and the dust on farm spots and ore.")
     public boolean particles = true;
 
     @Setting(path = "guide.particle-ticks", desc = "How often particles are drawn (ticks).", min = 2, max = 40)
@@ -144,14 +157,57 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.spawn-retry-millis", desc = "When Pip or a guide hologram could not be spawned (refused here), wait this long before trying again (ms).", min = 100, max = 60000)
     public int spawnRetryMillis = 1000;
 
-    @Setting(path = "guide.trail.spacing", desc = "Blocks between two trail flames.", min = 1, max = 8)
-    public double trailSpacing = 2.0;
+    @Setting(path = "guide.trail.spacing", desc = "Blocks between two dots of the guide trail.", min = 1, max = 8)
+    public double trailSpacing = 1.5;
 
-    @Setting(path = "guide.trail.ahead", desc = "How far ahead of the player the trail is drawn (blocks).", min = 4, max = 64)
+    @Setting(path = "guide.trail.ahead", desc = "How far ahead of the player the trail is drawn (blocks); dots fade out toward the end.", min = 4, max = 64)
     public double trailAhead = 20.0;
 
-    @Setting(path = "guide.column.height", desc = "Height of the flame column over the target (blocks).", min = 1, max = 20)
-    public int columnHeight = 6;
+    @Setting(path = "guide.trail.steps", desc = "Steps that draw the walkable guide trail from the player to the target (TUT-FIX2).")
+    public List<String> trailSteps = List.of("portal", "chest", "crop", "depths", "forge", "help");
+
+    @Setting(path = "guide.trail.max-particles", desc = "Most trail dots drawn per update for one player.", min = 2, max = 64)
+    public int trailMaxParticles = 14;
+
+    @Setting(path = "guide.trail.dot-size", desc = "Size of the nearest trail dot (vanilla dust 0.5-2); farther dots are smaller.", min = 0.5, max = 2)
+    public double trailDotSize = 1.1;
+
+    @Setting(path = "guide.trail.color", desc = "Trail colour ('#RRGGBB') of steps not listed in guide.trail.colors.")
+    public String trailColor = "#FFD21A";
+
+    @Setting(path = "guide.trail.colors", desc = "Trail colour per step as 'step: #RRGGBB' (travel yellow, island green, NPC visits sky blue).")
+    public List<String> trailColors = List.of("portal: #FFD21A", "depths: #FFD21A", "chest: #4DFF88", "crop: #4DFF88",
+            "forge: #5AB4E5", "help: #5AB4E5");
+
+    @Setting(path = "guide.trail.animate", desc = "The dots move slowly toward the target.")
+    public boolean trailAnimate = true;
+
+    @Setting(path = "guide.trail.min-distance", desc = "No trail when the player is this close to the target (blocks).", min = 1, max = 32)
+    public double trailMinDistance = 5;
+
+    @Setting(path = "guide.trail.max-distance", desc = "No path search beyond this distance to the target (blocks); the compass and Pip lead.", min = 16, max = 256)
+    public int trailMaxDistance = 128;
+
+    @Setting(path = "guide.trail.max-nodes", desc = "Most blocks one path search may look at (main thread budget).", min = 200, max = 20000)
+    public int trailMaxNodes = 4000;
+
+    @Setting(path = "guide.trail.paths-per-run", desc = "Most path searches per guide update for all players together.", min = 1, max = 10)
+    public int trailPathsPerRun = 1;
+
+    @Setting(path = "guide.trail.repath-distance", desc = "A player this far off the trail gets a new one (blocks).", min = 2, max = 16)
+    public double trailRepathDistance = 4;
+
+    @Setting(path = "guide.trail.repath-seconds", desc = "At least this long between two path searches for one player.", min = 1, max = 30)
+    public int trailRepathSeconds = 3;
+
+    @Setting(path = "guide.trail.cache-seconds", desc = "A found path is shared with players starting from the same spot for this long (launch bursts).", min = 0, max = 600)
+    public int trailCacheSeconds = 60;
+
+    @Setting(path = "guide.column.enabled", desc = "A small dust column in the trail colour over the target.")
+    public boolean column = true;
+
+    @Setting(path = "guide.column.height", desc = "Height of the dust column over the target (blocks).", min = 1, max = 20)
+    public int columnHeight = 3;
 
     @Setting(path = "guide.markers.crop-radius", desc = "Radius around your island home searched for farm spots to mark (blocks).", min = 2, max = 16)
     public int cropRadius = 6;
@@ -165,14 +221,17 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.markers.mine-blocks", desc = "Block ids marked in the mine step ('*_ore' = every ore).")
     public List<String> mineBlocks = List.of("*_ore", "stone", "cobblestone", "deepslate");
 
-    @Setting(path = "guide.holograms", desc = "Show per-player holograms over targets (starter chest, NPCs).")
+    @Setting(path = "guide.holograms", desc = "Show per-player holograms over targets.")
     public boolean holograms = true;
+
+    @Setting(path = "guide.hologram-steps", desc = "Steps that show a target hologram (TUT-FIX2: not over NPCs or portals, they have their own label).")
+    public List<String> hologramSteps = List.of("chest");
 
     @Setting(path = "guide.holograms-bedrock", desc = "Hologram for Bedrock viewers: text-display or armor-stand (a name tag, TQ32).")
     public String hologramsBedrock = "armor-stand";
 
     @Setting(path = "guide.hologram-height", desc = "Height of a hologram over its target (blocks).", min = 0.5, max = 5)
-    public double hologramHeight = 1.6;
+    public double hologramHeight = 2.4;
 
     @Setting(path = "guide.hologram-range", desc = "Holograms show only within this distance (blocks).", min = 4, max = 128)
     public int hologramRange = 48;
@@ -185,7 +244,7 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "rejoin.delay-ticks", desc = "Wait before the rejoin teleport (ticks).", min = 0, max = 400)
     public int rejoinDelayTicks = 40;
 
-    @Setting(path = "idle.reminder-minutes", desc = "One reminder (title + sound) after this many idle minutes on a step. 0 = off.", min = 0, max = 120)
+    @Setting(path = "idle.reminder-minutes", desc = "One reminder (one chat line + sound) after this many idle minutes on a step. 0 = off.", min = 0, max = 120)
     public int idleReminderMinutes = 5;
 
     // ------------------------------------------------------------------ reward
@@ -258,6 +317,21 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "cameras.move-skip-blocks", desc = "Cut-and-fade: moving this far from where the camera holds you skips it (blocks).", min = 0.3, max = 5)
     public double cameraMoveSkipBlocks = 1.0;
 
+    @Setting(path = "cameras.clearance", desc = "Room the camera keeps from every block (blocks); a shot that would come closer is moved or cut.", min = 0, max = 1)
+    public double cameraClearance = 0.3;
+
+    @Setting(path = "cameras.max-raise", desc = "A blocked shot may be raised up to this many blocks before it is moved closer, back or played still.", min = 0, max = 20)
+    public int cameraMaxRaise = 6;
+
+    @Setting(path = "cameras.start-fade-ticks", desc = "Short blindness when a camera takes the player (hides the jump and any arrival pop-in). 0 = off.", min = 0, max = 40)
+    public int cameraStartFadeTicks = 12;
+
+    @Setting(path = "cameras.end-fade-ticks", desc = "Short blindness when the camera gives the player back. 0 = off.", min = 0, max = 40)
+    public int cameraEndFadeTicks = 8;
+
+    @Setting(path = "cameras.menu-wait-seconds", desc = "The Depths and Forge cameras wait this long for an open menu to close; then they are left out.", min = 0, max = 60)
+    public int cameraMenuWaitSeconds = 10;
+
     @Setting(path = "cameras.watchdog-seconds", desc = "A camera still running this long after its own length is ended and the player is given back (seconds).", min = 2, max = 60)
     public int cameraWatchdogSeconds = 5;
 
@@ -267,22 +341,35 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "cameras.welcome-new-profile", desc = "A new island on a 2nd or 3rd profile gets the island camera too (no tutorial, TQ31).")
     public boolean cameraWelcomeNewProfile = true;
 
-    @Setting(path = "cameras.spawn", desc = "Spawn flyover before step 1 (first join). Lines: '<from> [to] look=<point> ticks=<n> [text=<key>]'; points 'world:x,y,z', '@home:dx,dy,dz', '@zone:dx,dy,dz', '@self:dx,dy,dz'. Texts: messages cameras.spawn.<key>.")
+    @Setting(path = "cameras.spawn", desc = "Spawn flyover before step 1 (first join). Lines: '<from> [to] look=<point> ticks=<n> [text=<key>]'; points 'world:x,y,z', '@home:dx,dy,dz', '@zone:dx,dy,dz', '@forge:dx,dy,dz', '@help:dx,dy,dz', '@self:dx,dy,dz'. Texts: messages cameras.spawn.<key>.")
     public List<String> cameraSpawn = List.of(
-            // TUT-FIX: two short shots over the roofs (the old line flew through the statue and the keep); every shot is
-            // also checked against the world before it plays.
+            // TUT-FIX2 (owner: "the camera zooms into the roof"): the courtyard from above (open sky), then through the
+            // Gatehouse gate (passage x -3..3, y 102-106) into the portal hall at eye height and a slow push to the
+            // Island portal (frame z -96, trigger z -97); never above the hall roof (y 107+). Checked against the
+            // spawn_gatehouse_v1 / keep / statue builds; spawn coordinates = build coordinates (origin 0,100,0).
             "spawn:0.5,121,12 spawn:0.5,124,4 look=spawn:0.5,115,-23 ticks=50 text=one",
-            "spawn:0.5,178,-70 spawn:0.5,150,-80 look=spawn:0.5,104,-96 ticks=50 text=three");
+            "spawn:0.5,105.5,-70 spawn:0.5,104.8,-80 look=spawn:0.5,104.5,-97 ticks=45 text=two",
+            "spawn:0.5,104.8,-80 spawn:0.5,104.2,-89.5 look=spawn:0.5,104.2,-97 ticks=55 text=three");
 
-    @Setting(path = "cameras.island", desc = "Island camera at the arrival step (orbit around your island home, same line format).")
+    @Setting(path = "cameras.island", desc = "Island camera at the arrival step (starts the moment you arrive; around your island home, same line format).")
     public List<String> cameraIsland = List.of(
-            "@home:16,10,0 @home:0,10,16 look=@home:0,1,0 ticks=50 text=one",
-            "@home:0,10,16 @home:-12,10,8 look=@home:0,1,0 ticks=50 text=two");
+            // TUT-FIX2: the old 2nd shot looked through the tree (log: shot 2 blocked); now a high orbit from the
+            // south-east to the south, then a glide down behind the player's own view of the shed.
+            "@home:12,12,12 @home:-4,10,14 look=@home:0,1,-2 ticks=60 text=one",
+            "@home:-4,10,14 @home:0,3.5,6 look=@home:0,1.5,-2 ticks=40 text=two");
 
     @Setting(path = "cameras.depths", desc = "Depths camera when you reach Mine Tier 1 (around the zone spawn of steps.depths.zone, same line format).")
     public List<String> cameraDepths = List.of(
-            "@zone:0,14,-14 @zone:10,10,4 look=@zone:0,0,0 ticks=50 text=one",
-            "@zone:10,10,4 @zone:2,4,2 look=@zone:0,0,0 ticks=50 text=two");
+            // TUT-FIX2: the old shots went through the hoist tower (log: shots 1 and 2 blocked); now over the quarry from
+            // the south, then down to the arrival pad looking west over the ore field (depths_mine_t01_coal_v1).
+            "@zone:-6,13,16 @zone:-6,11,-6 look=@zone:-28,-2,0 ticks=45 text=one",
+            "@zone:-6,11,-6 @zone:2,4,0 look=@zone:-20,0,4 ticks=35 text=two");
+
+    @Setting(path = "cameras.forge", desc = "Forge camera at the start of the Forge step when you are in the Depths (around the Forge NPC targets.forge, same line format). Empty = none.")
+    public List<String> cameraForge = List.of(
+            // TUT-FIX2: from the gate court to the open front of the Forge hall (depths_gate_v1, NPC depths_forge).
+            "@forge:16,6,10 @forge:9,4,6 look=@forge:0,1.6,0 ticks=30 text=one",
+            "@forge:9,4,6 @forge:5,2.6,3 look=@forge:0,1.6,0 ticks=30 text=two");
 
     @Setting(path = "cameras.market", desc = "Market Square camera for the optional spawn tour (Show me, same line format).")
     public List<String> cameraMarket = List.of(
@@ -291,14 +378,56 @@ public final class TutorialConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ Pip the companion (TU5, TQ9)
 
-    @Setting(path = "pip.enabled", desc = "Pip, the small red parrot only you can see, flies with you during the tutorial and says one short line per step.")
+    @Setting(path = "pip.enabled", desc = "Pip, the small red parrot only you can see, leads you during the tutorial and says one short line per step.")
     public boolean pipEnabled = true;
 
-    @Setting(path = "pip.chat", desc = "Pip's lines also go to chat (the name tag always shows them).")
-    public boolean pipChat = true;
+    @Setting(path = "pip.chat", desc = "Pip's lines also go to chat (off: only his name display shows them, TUT-FIX2 one place per message).")
+    public boolean pipChat = false;
 
-    @Setting(path = "pip.line-seconds", desc = "How long Pip's name tag shows a line (seconds), then just 'Pip'.", min = 1, max = 20)
+    @Setting(path = "pip.line-seconds", desc = "How long Pip's name display shows a step line (seconds), then his short callout.", min = 1, max = 20)
     public int pipLineSeconds = 4;
+
+    @Setting(path = "pip.name-display", desc = "Pip's 2-line name: auto (text display on Java, name tag on Bedrock), text-display or name-tag. Texts: messages pip.name-line1, pip.callouts.")
+    public String pipNameDisplay = "auto";
+
+    @Setting(path = "pip.update-ticks", desc = "How often Pip moves (ticks; smaller = smoother flight).", min = 1, max = 10)
+    public int pipUpdateTicks = 2;
+
+    @Setting(path = "pip.lead-distance", desc = "How far ahead of you Pip flies along the trail (blocks).", min = 1, max = 12)
+    public double pipLeadDistance = 4;
+
+    @Setting(path = "pip.wait-distance", desc = "When you are this far behind, Pip stops and waits for you (blocks).", min = 3, max = 20)
+    public double pipWaitDistance = 7;
+
+    @Setting(path = "pip.return-distance", desc = "When you are this far behind, Pip flies back to you (blocks).", min = 5, max = 40)
+    public double pipReturnDistance = 14;
+
+    @Setting(path = "pip.bob-height", desc = "How much Pip bobs up and down while flying (blocks).", min = 0, max = 0.5)
+    public double pipBobHeight = 0.12;
+
+    @Setting(path = "pip.hop-seconds", desc = "Pip does a little hop this often while perched or idle (seconds). 0 = never.", min = 0, max = 30)
+    public int pipHopSeconds = 3;
+
+    @Setting(path = "pip.particles", desc = "Little hearts and notes around Pip (only you see them).")
+    public boolean pipParticles = true;
+
+    @Setting(path = "pip.heart-seconds", desc = "While perched on the target, one heart this often (seconds).", min = 1, max = 30)
+    public int pipHeartSeconds = 3;
+
+    @Setting(path = "pip.sounds", desc = "Pip's chirps (vanilla sounds, only you hear them).")
+    public boolean pipSounds = true;
+
+    @Setting(path = "pip.sound-say", desc = "Sound when Pip says a line or calls you (vanilla sound id).")
+    public String pipSoundSay = "entity.parrot.ambient";
+
+    @Setting(path = "pip.sound-happy", desc = "Sound when Pip lands on the target or you finish a step (vanilla sound id).")
+    public String pipSoundHappy = "entity.allay.item_given";
+
+    @Setting(path = "pip.sound-volume", desc = "Volume of Pip's sounds.", min = 0, max = 2)
+    public double pipSoundVolume = 0.6;
+
+    @Setting(path = "pip.perch-offsets", desc = "Where Pip lands per step, relative to the target, as 'step: dx,dy,dz' (above an NPC's name, in front of the portal). Other steps: on the target.")
+    public List<String> pipPerchOffsets = List.of("portal: 0,1.2,2.5", "forge: 0,3.0,0", "help: 0,3.0,0");
 
     @Setting(path = "pip.variant", desc = "Parrot color: red, blue, green, cyan, gray.")
     public String pipVariant = "red";
@@ -312,8 +441,8 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "pip.perch-range", desc = "Within this distance of the step's target Pip lands on it (blocks).", min = 1, max = 16)
     public double pipPerchRange = 6;
 
-    @Setting(path = "pip.step", desc = "How far Pip flies per guide update (blocks); farther than pip.snap it jumps.", min = 0.2, max = 5)
-    public double pipStep = 1.2;
+    @Setting(path = "pip.step", desc = "How far Pip flies per 5 ticks (blocks; split over pip.update-ticks); farther than pip.snap he jumps.", min = 0.2, max = 5)
+    public double pipStep = 1.8;
 
     @Setting(path = "pip.snap", desc = "Pip jumps straight to you from this distance (blocks).", min = 4, max = 64)
     public double pipSnap = 16;
@@ -383,7 +512,7 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     /** Old camera lines (v1/v2) that v3 replaces while the owner has not edited them. */
@@ -397,10 +526,23 @@ public final class TutorialConfig extends ModuleConfig {
             "@home:-12,7,0 @home:0,7,-12 look=@home:0,1,0 ticks=30 text=two",
             "@home:0,7,-12 @home:6,4,-4 look=@home:0,1,0 ticks=30");
 
+    /** The v3/v4 camera lines that v5 replaces while the owner has not edited them. */
+    static final List<String> V3_SPAWN = List.of(
+            "spawn:0.5,121,12 spawn:0.5,124,4 look=spawn:0.5,115,-23 ticks=50 text=one",
+            "spawn:0.5,178,-70 spawn:0.5,150,-80 look=spawn:0.5,104,-96 ticks=50 text=three");
+    static final List<String> V3_ISLAND = List.of(
+            "@home:16,10,0 @home:0,10,16 look=@home:0,1,0 ticks=50 text=one",
+            "@home:0,10,16 @home:-12,10,8 look=@home:0,1,0 ticks=50 text=two");
+    static final List<String> V1_DEPTHS = List.of(
+            "@zone:0,14,-14 @zone:10,10,4 look=@zone:0,0,0 ticks=50 text=one",
+            "@zone:10,10,4 @zone:2,4,2 look=@zone:0,0,0 ticks=50 text=two");
+
     /**
      * v2 (GUI-BUGS): the menu step completes when /menu opens (it used to need the island menu). v3 (TUT-FIX): shorter
      * camera lines that stay out of the spawn builds and the island, a longer camera start delay. v4 (A3-R1-02): the
-     * boss bar moves from red to yellow. Owner-edited values are kept.
+     * boss bar moves from red to yellow. v5 (TUT-FIX2, owner 31 Oct "tutorial has not been fixed"): interior portal
+     * shot, island and Depths cameras that clear the builds, help step only for help NPCs, Pip off chat and faster,
+     * a quieter trail and target marker. Owner-edited values are kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -411,7 +553,17 @@ public final class TutorialConfig extends ModuleConfig {
                         "cameras.spawn", ValueChange.of(OLD_SPAWN, d.cameraSpawn),
                         "cameras.island", ValueChange.of(OLD_ISLAND, d.cameraIsland),
                         "cameras.start-delay-ticks", ValueChange.of(3, d.cameraStartDelayTicks)),
-                4, java.util.Map.of("guide.bossbar-color", ValueChange.of("red", "yellow")));
+                4, java.util.Map.of("guide.bossbar-color", ValueChange.of("red", "yellow")),
+                5, java.util.Map.of(
+                        "cameras.spawn", ValueChange.of(V3_SPAWN, d.cameraSpawn),
+                        "cameras.island", ValueChange.of(V3_ISLAND, d.cameraIsland),
+                        "cameras.depths", ValueChange.of(V1_DEPTHS, d.cameraDepths),
+                        "steps.help.npc-roles", ValueChange.of(List.of(), d.helpRoles),
+                        "pip.chat", ValueChange.of(true, false),
+                        "pip.step", ValueChange.of(1.2, d.pipStep),
+                        "guide.trail.spacing", ValueChange.of(2.0, d.trailSpacing),
+                        "guide.column.height", ValueChange.of(6, d.columnHeight),
+                        "guide.hologram-height", ValueChange.of(1.6, d.hologramHeight)));
     }
 
     @Override

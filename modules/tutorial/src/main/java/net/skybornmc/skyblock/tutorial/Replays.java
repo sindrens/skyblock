@@ -93,6 +93,7 @@ final class Replays {
             case Steps.PORTAL -> Cameras.SPAWN;
             case Steps.ARRIVE -> Cameras.ISLAND;
             case Steps.DEPTHS -> Cameras.DEPTHS;
+            case Steps.FORGE -> Cameras.FORGE;
             default -> null;
         };
     }
