@@ -22,10 +22,22 @@ class WatchCreditThresholdTest {
     @Test
     void onlyTheUntouchedOldDefaultMigrates() {
         WatchConfig config = new WatchConfig();
-        assertEquals(5, config.version());
+        assertEquals(6, config.version());
         var change = config.valueChanges().get(5).get("rules.big-transfer.min.credits");
         assertTrue(change.matches(10_000), "YAML reads ints");
         assertEquals(1_000L, change.to());
         assertFalse(change.matches(25_000), "owner-edited values are kept");
+    }
+
+    @Test
+    void storeGrantsAreNeverEarnings() {
+        WatchConfig config = new WatchConfig();
+        assertTrue(config.ignoreReasons.contains("store_grant"));
+        assertTrue(config.ignoreReasons.contains("store_chargeback"));
+        var change = config.valueChanges().get(6).get("earnings.ignore-reasons");
+        assertEquals(WatchConfig.IGNORE_REASONS_V5, change.from());
+        assertEquals(config.ignoreReasons, change.to());
+        assertEquals(WatchConfig.IGNORE_REASONS_V5, config.valueChanges().get(2).get("earnings.ignore-reasons").to(),
+                "the version 2 step still lands on the old list; step 6 adds the store reasons");
     }
 }

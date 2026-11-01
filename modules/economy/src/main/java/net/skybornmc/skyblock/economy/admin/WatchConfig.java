@@ -65,9 +65,16 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "earnings.ignore-reasons", desc = "Reasons that are not earnings or spending of a profile (moving "
             + "money to the own bank, staff changes, the start balance). Used for top earners and the earn-rate alert.",
             level = Setting.Level.OWNER)
-    public List<String> ignoreReasons = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
+    public List<String> ignoreReasons = IGNORE_REASONS_V6;
+
+    /** {@code earnings.ignore-reasons} default up to version 5. */
+    static final List<String> IGNORE_REASONS_V5 = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
             "admin_give", "admin_take", "admin_set", "admin_reset", "sanction_remove", "sanction_restore", "profile_delete",
             "island_kick_restore", "island_profile_reset", "island_bank_restore");
+
+    /** CREDIT-SHOP 5.1: a Tebex purchase or chargeback never counts as earning (no earn-rate or big-transfer alert). */
+    static final List<String> IGNORE_REASONS_V6 = java.util.stream.Stream.concat(IGNORE_REASONS_V5.stream(),
+            java.util.stream.Stream.of("store_grant", "store_chargeback")).toList();
 
     @Setting(path = "baseline-days", desc = "Days the baselines look back (BAL2: the dashboard uses the 14-day average).",
             min = 1, max = 60, level = Setting.Level.OWNER)
@@ -292,7 +299,7 @@ public final class WatchConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -308,13 +315,14 @@ public final class WatchConfig extends ModuleConfig {
         return java.util.Map.of(2, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(
                 List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance", "admin_give", "admin_take", "admin_set",
                         "admin_reset", "sanction_remove", "sanction_restore", "profile_delete", "island_kick_restore"),
-                ignoreReasons)),
+                IGNORE_REASONS_V5)),
                 3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)),
                 // Card C1: bought credits can be traded now, so the profile alerts watch them too (untouched lists only).
                 4, java.util.Map.of("alerts.currencies", ValueChange.of(List.of("money", "crystals", "shards"),
                         List.of("money", "crystals", "credits", "shards"))),
                 // Card C1-R1-10: alert on one credit transfer from 1,000 (owner-edited values stay).
-                5, java.util.Map.of("rules.big-transfer.min.credits", ValueChange.of(10_000L, 1_000L)));
+                5, java.util.Map.of("rules.big-transfer.min.credits", ValueChange.of(10_000L, 1_000L)),
+                6, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(IGNORE_REASONS_V5, IGNORE_REASONS_V6)));
     }
 
     @Override

@@ -39,8 +39,10 @@ public final class TxReason {
      * {@code skyblock.economy.credits.grant}, C1-R1-18 / C1-R2-02).
      */
     public static final String ADMIN_BUY = "admin_buy";
-    /** Bought credits from a store purchase (console-only store grant, C1-R1-17; not built yet). */
+    /** Bought credits from a Tebex store purchase (console-only {@code /credit grant}, C1-R1-17, CREDIT-SHOP 5.2). */
     public static final String STORE_GRANT = "store_grant";
+    /** Bought credits taken back after a Tebex chargeback or refund ({@code /credit chargeback}, CREDIT-SHOP 5.3). */
+    public static final String STORE_CHARGEBACK = "store_chargeback";
     public static final String ADMIN_TAKE = "admin_take";
     public static final String ADMIN_SET = "admin_set";
     public static final String ADMIN_RESET = "admin_reset";

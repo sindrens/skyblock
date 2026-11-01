@@ -107,6 +107,21 @@ public final class EconomyConfig extends ModuleConfig {
             + "accept it.", level = Setting.Level.OWNER)
     public String legacyGemsAliasUntil = "2027-01-29";
 
+    // ------------------------------------------------------------------ Tebex credit store (CREDIT-SHOP 5.1)
+
+    @Setting(path = "credit-store.packages", desc = "Credit packages sold on Tebex, one per line: '<id>=<credits>|<usd>' "
+            + "(C1-R2-28). The Tebex command 'credit grant {id} <id> {transaction}' names the id; the amount always comes from "
+            + "here. Ids a-z, 0-9, _ (max 32). A bad line is skipped with a console warning.", level = Setting.Level.OWNER)
+    public List<String> creditStorePackages = List.of("c500=500|5", "c1000=1000|10", "c2700=2700|25", "c14000=14000|130");
+
+    @Setting(path = "credit-store.max-grant", desc = "A package above this many credits is refused (typo guard).",
+            min = 1, max = 10_000_000, level = Setting.Level.OWNER)
+    public long creditStoreMaxGrant = 20_000;
+
+    @Setting(path = "credit-store.alert-failures", desc = "A failed store grant (unknown package, database error) alerts "
+            + "online staff (skyblock.staff.economy.anomalies), the console and the Discord 'alerts' channel. A success is silent.")
+    public boolean creditStoreAlertFailures = true;
+
     // ------------------------------------------------------------------ database retries (C1-R3-03)
 
     @Setting(path = "database.retry.attempts", desc = "Tries of one balance change when the database reports a deadlock or "

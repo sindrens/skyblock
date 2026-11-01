@@ -16,6 +16,11 @@ lp group owner permission set skyblock.owner.economy true
 # needed: an inherited exact false would beat the owner's '*' wildcard in LuckPerms.
 lp group admin permission set skyblock.economy.credits.grant false
 lp group owner permission set skyblock.economy.credits.grant true
+# CREDIT-SHOP 5.2: /credit grant (Tebex) is console only; nobody gets the node (an exact false beats the owner's '*'; the
+# owner inherits admin, so the owner needs its own line). 5.3: admins may run /credit chargeback.
+lp group admin permission set skyblock.credit.grant false
+lp group owner permission set skyblock.credit.grant false
+lp group admin permission set skyblock.credit.chargeback true
 # Owner 31 Oct 2026: admins and the owner may use /eco (give|take|set|reset|note) on their OWN account. Helpers and
 # mods never get it. The owner inherits admin; the owner's own true keeps it if inheritance is ever removed. Switch off for
 # everyone with the config eco.allow-self.

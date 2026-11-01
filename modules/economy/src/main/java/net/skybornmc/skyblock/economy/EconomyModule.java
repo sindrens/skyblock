@@ -81,6 +81,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
      * owner only (C1-R1-18; explicit false for admins in server/permissions/economy.txt).
      */
     static final String PERM_CREDITS_GRANT = "skyblock.economy.credits.grant";
+    /** CREDIT-SHOP 5.2: declared default false and never granted; /credit grant runs from the console only. */
+    static final String PERM_CREDIT_GRANT = "skyblock.credit.grant";
+    /** CREDIT-SHOP 5.3: staff (admin) and the console may run /credit chargeback. */
+    static final String PERM_CREDIT_CHARGEBACK = "skyblock.credit.chargeback";
     /**
      * Owner 31 Oct 2026: use {@code /eco give|take|set|reset|note} on your <b>own</b> account (admin and owner; lifts only
      * the R3-39 self refusal, switch: {@code eco.allow-self}).
@@ -90,6 +94,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     final Core core;
     final ModuleMessages msg;
     final EconomyConfig config = new EconomyConfig();
+    private net.skybornmc.skyblock.economy.store.StoreGrants storeGrants;
     private EconomyServiceImpl service;
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
@@ -148,6 +153,13 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // M3.8 economy watch: summary tables, anomaly alerts, /eco admin.
         watch = new net.skybornmc.skyblock.economy.admin.EconomyWatch(this, core, msg);
         watch.enable();
+        storeGrants = new net.skybornmc.skyblock.economy.store.StoreGrants(service, core.database(), System::currentTimeMillis);
+        creditPackages(true);
+        storeGrants.loadRecent().whenCompleteAsync((ids, error) -> {
+            if (error == null) {
+                storeGrants.remember(ids);
+            }
+        }, main);
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -703,7 +715,197 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .permission(PERM_CREDIT_BAL)
                         .optional(target)
                         .example("credit bal Steve")
-                        .executes(ctx -> creditBalance(ctx.sender(), ctx.getOr(target, null)))));
+                        .executes(ctx -> creditBalance(ctx.sender(), ctx.getOr(target, null))))
+                .sub(storeGrantSpec(CommandSpec.sub("grant")))
+                .sub(chargebackSpec()));
+        // Hidden alias of the old C1 name (/storegrant), same handler and arguments (CREDIT-SHOP 5.2).
+        core.commands().register(storeGrantSpec(CommandSpec.command("storegrant")).hidden());
+    }
+
+    // ================================================================== Tebex store (CREDIT-SHOP 5.2, 5.3)
+
+    /** The configured packages; {@code warn} logs every bad line (enable). Parsed per use so a reload applies at once. */
+    private net.skybornmc.skyblock.economy.store.CreditPackages creditPackages(boolean warn) {
+        return net.skybornmc.skyblock.economy.store.CreditPackages.parse(config.creditStorePackages,
+                warn ? problem -> core.plugin().getLogger().warning(problem) : problem -> { });
+    }
+
+    /** Player argument of the store commands: a UUID, an XUID or a known name (Tebex sends {id}). */
+    private Arg<String> storePlayerArg() {
+        return Args.word("player", Suggest.bySender(sender -> {
+            List<String> names = new ArrayList<>(net.skybornmc.skyblock.common.command.OfflineNames.names());
+            names.add("<uuid>");
+            return names;
+        }));
+    }
+
+    private CommandSpec storeGrantSpec(CommandSpec spec) {
+        Arg<String> player = storePlayerArg();
+        Arg<String> pack = Args.word("package", Suggest.of(() -> creditPackages(false).ids()));
+        Arg<String> tx = Args.word("transaction", Suggest.hint("transaction"));
+        return spec.description("Console only (Tebex): give a bought credit package once per transaction")
+                .category("Economy")
+                .permission(PERM_CREDIT_GRANT)
+                .arg(player).arg(pack).arg(tx)
+                .example("credit grant 069a79f4-44e9-4726-a5be-fca90e38aaf5 c2700 tbx-1234")
+                .executes(ctx -> storeGrant(ctx.sender(), ctx.get(player), ctx.get(pack), ctx.get(tx)));
+    }
+
+    private CommandSpec chargebackSpec() {
+        Arg<String> player = storePlayerArg();
+        Arg<String> tx = Args.word("transaction", Suggest.of(() -> storeGrants == null ? List.of() : storeGrants.recent()));
+        return CommandSpec.sub("chargeback")
+                .description("Tebex chargeback or refund: take back the bought credits of a transaction")
+                .permission(PERM_CREDIT_CHARGEBACK)
+                .arg(player).arg(tx)
+                .example("credit chargeback Steve tbx-1234")
+                .executes(ctx -> storeChargeback(ctx.sender(), ctx.get(player), ctx.get(tx)));
+    }
+
+    /** UUID / XUID / known name → the player's UUID, or empty. */
+    private CompletableFuture<Optional<Found>> storeTarget(String raw) {
+        Optional<UUID> id = net.skybornmc.skyblock.economy.store.StoreGrants.parseId(raw);
+        if (id.isPresent()) {
+            Player online = Bukkit.getPlayer(id.get());
+            return CompletableFuture.completedFuture(Optional.of(new Found(id.get(), online != null ? online.getName() : raw)));
+        }
+        return resolve(raw);
+    }
+
+    private void storeGrant(CommandSender sender, String rawPlayer, String packageId, String tx) {
+        if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
+            Map<String, Object> details = new java.util.LinkedHashMap<>();
+            details.put("package", packageId);
+            details.put("tx", tx);
+            core.audit().log(AuditCategory.ECONOMY, "store_grant_refused", Actor.of(sender), rawPlayer, null, null,
+                    sender instanceof Player p ? p.getLocation() : null, details);
+            msg.send(sender, "credit.grant.console-only");
+            sound(sender, "error");
+            return;
+        }
+        var packs = creditPackages(false);
+        var pack = packs.get(packageId);
+        if (pack.isEmpty()) {
+            msg.send(sender, "credit.grant.unknown-package", Msg.p("package", packageId), Msg.p("list", String.join(", ", packs.ids())));
+            storeAlert(rawPlayer, packageId, tx, "unknown package");
+            return;
+        }
+        if (!net.skybornmc.skyblock.economy.store.StoreGrants.validTx(tx)) {
+            msg.send(sender, "credit.grant.bad-tx", Msg.p("tx", tx));
+            storeAlert(rawPlayer, packageId, tx, "bad transaction id");
+            return;
+        }
+        if (pack.get().credits() > config.creditStoreMaxGrant) {
+            msg.send(sender, "credit.grant.too-big", Msg.p("package", packageId), Msg.number("credits", pack.get().credits()),
+                    Msg.number("max", config.creditStoreMaxGrant));
+            storeAlert(rawPlayer, packageId, tx, "above max-grant");
+            return;
+        }
+        then(sender, storeTarget(rawPlayer), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "credit.grant.unknown-player", Msg.p("player", rawPlayer));
+                storeAlert(rawPlayer, packageId, tx, "unknown player");
+                return;
+            }
+            UUID uuid = found.get().uuid();
+            String name = found.get().name();
+            then(sender, storeGrants.grant(uuid, pack.get(), tx), grant -> {
+                switch (grant.outcome()) {
+                    case GRANTED -> {
+                        storeGrants.remember(tx);
+                        msg.send(sender, "credit.grant.ok", Msg.p("player", name), Msg.number("credits", pack.get().credits()),
+                                Msg.p("package", pack.get().id()), Msg.p("tx", tx));
+                        Map<String, Object> details = new java.util.LinkedHashMap<>();
+                        details.put("tx", tx);
+                        details.put("package", pack.get().id());
+                        details.put("usd_cents", pack.get().usdCents());
+                        details.put("balance_after", grant.balanceAfter());
+                        core.audit().log(AuditCategory.ECONOMY, "store_grant", Actor.system("tebex"), uuid.toString(), name,
+                                pack.get().credits(), null, details);
+                        Player online = Bukkit.getPlayer(uuid);
+                        if (online != null) {
+                            refreshCredits(uuid);
+                            msg.send(online, "credit.grant.thanks", Msg.number("credits", pack.get().credits()));
+                            core.sounds().play(online, "success");
+                        }
+                    }
+                    case DUPLICATE -> msg.send(sender, "credit.grant.duplicate", Msg.p("tx", tx), Msg.p("package", pack.get().id()));
+                    default -> {
+                        msg.send(sender, "credit.grant.failed", Msg.p("player", name), Msg.p("package", pack.get().id()), Msg.p("tx", tx));
+                        storeAlert(name, pack.get().id(), tx, "database error");
+                    }
+                }
+            });
+        });
+    }
+
+    /** Updates the cached credits of an online player after a store change (display only). */
+    private void refreshCredits(UUID uuid) {
+        service.credits(uuid).thenAcceptAsync(view -> service.refreshCached(uuid,
+                Map.of(Currency.CREDITS, view.bought(), Currency.CREDITS_EARNED, view.earned())), main);
+    }
+
+    /** CREDIT-SHOP 5.2: a failed grant tells online staff, the console (already told) and Discord 'alerts'. */
+    private void storeAlert(String player, String packageId, String tx, String reason) {
+        if (!config.creditStoreAlertFailures) {
+            return;
+        }
+        TagResolver[] tags = {Msg.p("player", player), Msg.p("package", packageId), Msg.p("tx", tx), Msg.p("reason", reason)};
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (staff.hasPermission(net.skybornmc.skyblock.economy.admin.EconomyWatch.PERM_ANOMALIES)) {
+                msg.send(staff, "credit.alert.failed-grant", tags);
+                core.sounds().play(staff, "notify");
+            }
+        }
+        core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class)
+                .filter(sink -> sink.enabled("alerts"))
+                .ifPresent(sink -> sink.post("alerts", new net.skybornmc.skyblock.common.discord.DiscordSink.Embed(
+                        "Store grant failed", 0xFF5C5C, List.of(
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Player", player, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Package", packageId, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Transaction", tx, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Reason", reason, false)),
+                        "Phoenix Skyblock", System.currentTimeMillis())));
+    }
+
+    private void storeChargeback(CommandSender sender, String rawPlayer, String tx) {
+        then(sender, storeTarget(rawPlayer), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "credit.grant.unknown-player", Msg.p("player", rawPlayer));
+                sound(sender, "error");
+                return;
+            }
+            UUID uuid = found.get().uuid();
+            String name = found.get().name();
+            then(sender, storeGrants.chargeback(uuid, tx), result -> {
+                if (result.failed()) {
+                    msg.send(sender, "credit.chargeback.failed", Msg.p("player", name), Msg.p("tx", tx));
+                    sound(sender, "error");
+                    return;
+                }
+                if (result.rows() == 0) {
+                    msg.send(sender, "credit.chargeback.none", Msg.p("player", name), Msg.p("tx", tx));
+                    return;
+                }
+                msg.send(sender, "credit.chargeback.done", Msg.p("player", name), Msg.p("tx", tx),
+                        Msg.number("taken", result.taken()), Msg.number("owed", result.owed()));
+                Map<String, Object> details = new java.util.LinkedHashMap<>();
+                details.put("tx", tx);
+                details.put("taken", result.taken());
+                details.put("owed", result.owed());
+                core.audit().log(AuditCategory.ECONOMY, "chargeback", Actor.of(sender), uuid.toString(), name, result.taken(), null, details);
+                if (Bukkit.getPlayer(uuid) != null) {
+                    refreshCredits(uuid);
+                }
+                if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
+                    msg.send(Bukkit.getConsoleSender(), "credit.chargeback.done", Msg.p("player", name), Msg.p("tx", tx),
+                            Msg.number("taken", result.taken()), Msg.number("owed", result.owed()));
+                }
+                storeAlert(name, "-", tx, "chargeback: took " + result.taken() + ", owed " + result.owed());
+                Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.economy.StoreChargebackEvent(
+                        uuid, tx, result.taken(), result.owed()));
+            });
+        });
     }
 
     /**
