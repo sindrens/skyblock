@@ -28,6 +28,27 @@ claim-all:
   votes: "<c:success><sym:check></c:success> <c:text>Votes paid: <c:value><votes>"
   # Battle pass tiers claimed by the Rewards button (the pass writes its own reward lines). <count> = how many.
   pass: "<c:success><sym:check></c:success> <c:text>Pass rewards: <c:value><count>"
+  # Weekly / Monthly Reward claimed by Claim all. <rewards> = what it paid.
+  weekly: "<c:success><sym:check></c:success> <c:text>Weekly Reward: <rewards>"
+  monthly: "<c:success><sym:check></c:success> <c:text>Monthly Reward: <rewards>"
+  # The /rewards Claim all button. <rewards> = the summary line(s).
+  done: "<prefix><c:success><sym:check></c:success> <rewards>"
+
+# ------------------------------------------------------------------ Reward Core: /rewards, Weekly, Monthly (spec 4-6)
+rewards:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The rewards menu is not open yet. Use <c:action>/daily</c:action><c:text>."
+  join: "<prefix><c:flame><sym:star></c:flame> <c:text>You have <c:value><count></c:value> <c:text>rewards waiting. <c:action>/rewards"
+  join-votes: "<prefix><c:flame><sym:star></c:flame> <c:text>You have <c:value><count></c:value> <c:text>votes waiting. <c:action>/vote"
+  just-reset: "<prefix><c:muted><sym:time></c:muted> <c:text>This reward just reset or was claimed already."
+weekly:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The Weekly Reward is turned off right now."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>Weekly Reward claimed:"
+  already: "<prefix><c:muted><sym:time></c:muted> <c:text>You already claimed this week's reward. Next one in <c:value><time></c:value><c:text>."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Locked: <c:value><played></c:value> <c:text>/ <c:value><needed></c:value> <c:text>played on this profile this week."
+monthly:
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The Monthly Reward is turned off right now."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>Monthly Reward claimed:"
+  already: "<prefix><c:muted><sym:time></c:muted> <c:text>You already claimed this month's reward. Next one in <c:value><time></c:value><c:text>."
 
 # ------------------------------------------------------------------ voting (M10.5)
 # <site> = the vote site's name, <rewards> = full component (the rewards joined), <time> like 5h 12m.
@@ -69,6 +90,7 @@ reward:
   money: "<cur:money><amount>"
   crystals: "<cur:crystals><amount>"
   credits: "<cur:credits><amount>"
+  shards: "<cur:shards><amount>"
   key: "<c:value><amount>x <crate> Key"
   fuel: "<c:value>Island Fuel <time>"
   booster: "<c:value><type> Booster +<percent>%</c:value> <c:muted>(<time>)"
@@ -83,6 +105,7 @@ reward-names:
   money: "<cur:money>Money"
   crystals: "<cur:crystals>Crystals"
   credits: "<cur:credits>Credits"
+  shards: "<cur:shards>Shards"
 
 rarities:
   common: "Common"
@@ -123,6 +146,34 @@ settings:
       - "<c:text>daily reward is not claimed yet."
 
 menu:
+  # /rewards (spec 5.2). State words with icon and word (golden rule 8).
+  rewards:
+    title: "Rewards"
+    info: ["<c:text>Every reward you can claim,", "<c:text>in one place. Unclaimed daily,", "<c:text>weekly and monthly rewards", "<c:text>are lost when they reset."]
+    summary:
+      name: "<c:value><bold>Your rewards"
+      ready: ["<c:success><sym:check> <count> ready to claim"]
+      none: ["<c:muted>Nothing to claim right now."]
+    claim-all:
+      name: "<c:success><bold>Claim all"
+      lore: ["<c:text>Claims all <c:value><count></c:value> <c:text>ready rewards.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+    daily:
+      name: "<c:value><bold>Daily Reward"
+      ready: ["<c:text>Day <c:value><day></c:value> <c:text>of your calendar.", "", "<c:success><sym:check> Ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      claimed: ["<c:text>Claim once a day on this profile.", "", "<c:muted>Claimed. Resets in <c:value><time>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the calendar"]
+    weekly:
+      name: "<c:value><bold>Weekly Reward"
+      ready: ["<c:text>Claim once a week on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:success><sym:check> Ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      claimed: ["<c:text>Claim once a week on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:muted>Claimed. Resets in <c:value><time>"]
+      locked: ["<c:text>Claim once a week on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:locked><sym:cross> Locked: <played> / <needed> played", "<c:locked>on this profile this week."]
+    monthly:
+      name: "<c:value><bold>Monthly Reward"
+      ready: ["<c:text>Claim once a month on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:success><sym:check> Ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      claimed: ["<c:text>Claim once a month on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:muted>Claimed. Resets in <c:value><time>"]
+    pass:
+      name: "<c:value><bold>Battle pass"
+      ready: ["<c:success><sym:check> <count> tiers ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      none: ["<c:muted>No tiers to claim right now.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the pass"]
   loading:
     name: "<c:muted>Loading..."
     lore: []

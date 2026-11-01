@@ -97,6 +97,42 @@ public final class RewardsSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ playtime
 
+    // ------------------------------------------------------------------ Reward Core: /rewards, Weekly, Monthly (spec 4-6)
+
+    @Setting(path = "menu.enabled", desc = "The /rewards menu (Daily, Weekly, Monthly, Battle pass on one screen, Claim all) and "
+            + "/weekly, /monthly. While on, the /menu Rewards count leaves out waiting votes and a second join line points to "
+            + "/vote (spec G1). Off by default until the release (golden rule 10).", level = Setting.Level.OWNER)
+    public boolean menuEnabled = false;
+
+    @Setting(path = "join-notice.votes", desc = "With the /rewards menu on: a second join line when votes are waiting "
+            + "(\"You have N votes waiting. /vote\").")
+    public boolean joinNoticeVotes = true;
+
+    @Setting(path = "weekly.enabled", desc = "Weekly Reward: once a week (Monday 00:00) per profile, after weekly.required-minutes "
+            + "of active play on that profile that week (owner W1b). Unclaimed = lost. Off by default until the release.",
+            level = Setting.Level.OWNER)
+    public boolean weeklyEnabled = false;
+
+    @Setting(path = "weekly.required-minutes", desc = "Active minutes on the profile this week before the Weekly Reward opens "
+            + "(owner W1b: 3 h). Per profile, never summed over profiles.", min = 0, max = 10_080, level = Setting.Level.OWNER)
+    public int weeklyRequiredMinutes = 180;
+
+    @Setting(path = "weekly.rewards", desc = "Weekly Reward contents, one reward per line (same words as calendar.days, plus "
+            + "'shards <n>' and 'pass-xp <n>'). Keys are bound (owner F5a: one Blaze key). Placeholders for the balance run.",
+            level = Setting.Level.OWNER)
+    public List<String> weeklyRewards = List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25", "booster tool_xp 25 30 fallback 25",
+            "crystals 60", "key blaze fallback 60", "shards 25");
+
+    @Setting(path = "monthly.enabled", desc = "Monthly Reward (/monthly): once a month (the 1st 00:00) per profile, no requirement "
+            + "(owner F5c). Unclaimed = lost. Off by default until the release.", level = Setting.Level.OWNER)
+    public boolean monthlyEnabled = false;
+
+    @Setting(path = "monthly.rewards", desc = "Monthly Reward contents, one reward per line (owner F5b: bigger, two bound keys). "
+            + "Placeholders for the balance run.", level = Setting.Level.OWNER)
+    public List<String> monthlyRewards = List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+            "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150", "key blaze 2 fallback 120",
+            "shards 100");
+
     @Setting(path = "playtime.enabled", desc = "Playtime rewards on (R6): active play only, per profile.")
     public boolean playtimeEnabled = true;
 

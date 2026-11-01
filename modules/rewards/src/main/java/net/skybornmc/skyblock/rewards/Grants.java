@@ -201,10 +201,13 @@ final class Grants {
         return d;
     }
 
-    /** The key/pass XP reason: the grant source for playtime and votes (crates binds vote, vote_streak, vote_party keys). */
+    /**
+     * The key/pass XP reason: the grant source for playtime, votes and the Weekly / Monthly Reward (crates binds every
+     * source that is not listed as tradeable, so weekly and monthly keys are bound).
+     */
     static String reason(RewardStore.GrantRow row) {
         return switch (row.source()) {
-            case "playtime", "vote", "vote_streak", "vote_party" -> row.source();
+            case "playtime", "vote", "vote_streak", "vote_party", "weekly", "monthly" -> row.source();
             default -> "daily";
         };
     }

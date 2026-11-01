@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Rewards: Reward Core, /rewards, Weekly and Monthly Reward (Complete Developer Spec §4-6; all behind flags, off by default)
+- **`/rewards`** (`daily.yml menu.enabled`): Daily, Weekly, Monthly and Battle pass cards with icon + word states, click to claim, Claim all (each source on its own, one failure never stops the others); `/weekly` and `/monthly` open it; join line "You have N rewards waiting" and a second line for waiting votes (`join-notice.votes`); the `/menu` Rewards count leaves out votes while the menu is on (spec G1).
+- **Weekly Reward** (`weekly.enabled`): per profile, Monday 00:00 Oslo, after `weekly.required-minutes` (180) of active play on that profile that week (new table `profile_active_week`, written with the playtime save). **Monthly Reward** (`monthly.enabled`): per profile, the 1st 00:00 Oslo, no requirement. Claims follow the Reward Core algorithm: period key fixed at the click, one transaction with a unique `reward_claims` row (rewards V003), ledger payout and pending grants; keys are bound (`weekly`/`monthly` key reasons). Unclaimed = lost.
+- Reward lines accept `shards <n>` and `pass-xp <n>` (also in the daily calendar).
 ### Fixed
 - **Tutorial experience (TUT-FIX2, owner feedback 31 Oct "tutorial has not been fixed"; rewards, step count and steps unchanged):**
   - **Guide trail:** the flame trail is replaced by a soft dotted line of coloured dust on the ground that starts where the player stands and follows the walkable route to the target (bounded A* path search, never through walls or into unloaded chunks, searched once per step change or when the player leaves it, shared for launch bursts), fades with distance and creeps toward the target; one colour per kind of step; the flame column is a small dust column. New `tutorial.yml guide.trail.*` keys (`steps`, `max-particles`, `dot-size`, `color`, `colors`, `animate`, `min-distance`, `max-distance`, `max-nodes`, `paths-per-run`, `repath-distance`, `repath-seconds`, `cache-seconds`), `guide.column.enabled`.
