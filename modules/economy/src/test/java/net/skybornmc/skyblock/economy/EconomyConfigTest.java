@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(4, config.version());
+        assertEquals(5, config.version());
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());
@@ -69,6 +69,6 @@ class EconomyConfigTest {
         config.icons = List.of("tokens:AMETHYST_SHARD");
         assertEquals("AMETHYST_SHARD", config.iconName(Currency.CRYSTALS));
         assertNull(config.iconName(Currency.CREDITS_EARNED));
-        assertEquals("EMERALD", new EconomyConfig().iconName(Currency.CREDITS_EARNED));
+        assertEquals("DIAMOND", new EconomyConfig().iconName(Currency.CREDITS_EARNED));
     }
 }

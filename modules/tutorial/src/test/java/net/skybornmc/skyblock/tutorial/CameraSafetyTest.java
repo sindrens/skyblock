@@ -111,7 +111,7 @@ class CameraSafetyTest {
         assertFalse(v3.get("cameras.spawn").matches(List.of("spawn:0,120,0 look=spawn:0,100,-20 ticks=40")), "owner lines stay");
         assertEquals(c.cameraSpawn, v3.get("cameras.spawn").to());
         assertTrue(v3.get("cameras.island").matches(TutorialConfig.OLD_ISLAND));
-        assertEquals(3, c.version());
+        assertEquals(4, c.version());
     }
 
     private static double[] abs(CameraShot.CamPoint p) {

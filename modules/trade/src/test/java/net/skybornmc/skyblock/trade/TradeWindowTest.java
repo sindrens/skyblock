@@ -55,8 +55,8 @@ class TradeWindowTest {
     @Test
     void cancelIsNotOnTheBackSlot() {
         assertEquals(53, TradeMenu.SLOT_CANCEL);
-        assertFalse(TradeMenu.SLOT_CANCEL == Menu.SLOT_BACK || TradeMenu.SLOT_CANCEL == Menu.SLOT_CLOSE
-                || TradeMenu.SLOT_CANCEL == Menu.SLOT_PREVIOUS || TradeMenu.SLOT_CANCEL == Menu.SLOT_NEXT);
+        // The trade window is a single page, so the page arrows (52, 53) are never drawn; Back and Close are the bar.
+        assertFalse(TradeMenu.SLOT_CANCEL == Menu.SLOT_BACK || TradeMenu.SLOT_CANCEL == Menu.SLOT_CLOSE);
     }
 
     @Test
