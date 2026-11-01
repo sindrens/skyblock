@@ -77,6 +77,15 @@ public final class TxReason {
     /** A Black Market price given back because the bought item could not be handed out (PHASE-10 M10.11). */
     public static final String BLACK_MARKET_REFUND = "black_market_refund";
 
+    /**
+     * ECON-SHARDS: a shard paid for breaking a shard block. The ONLY shard income in the game (owner 1 Nov 2026:
+     * "shards only from blocks, no other rewards"); every other shard deposit is staff ({@code admin_*}) or a refund.
+     */
+    public static final String SHARD_BLOCK = "shard_block";
+
+    /** ECON-SHARDS: crystals or shards paid for a shard block upgrade (a sink). */
+    public static final String SHARD_BLOCK_UPGRADE = "shardblk_upgrade";
+
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {

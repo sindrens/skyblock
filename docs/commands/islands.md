@@ -365,3 +365,5 @@ daily limit per role in `bank.yml`) and **Bank history** (`bank-history`: Admin,
 never coop players or visitors; everyone can look at `/is upgrade` and hand in task items. The island menu's **Bank** button opens `/bank`
 (economy module, `docs/commands/economy.md`). When an island is disbanded, what is left in its bank is deleted (owner
 answer 263: the money belongs to the island); a staff delete or reset keeps it in the closed bank.
+
+**Shard blocks** (`shard-blocks`, ECON-SHARDS H5): place, break, upgrade and pick up shard blocks (see `docs/commands/shardblock.md`). Own defaults, management right: Admin, Mod, Member (`permissions.role-defaults.shard-blocks`); never coop players or visitors. Picking up a block someone else placed also needs **Island settings**.

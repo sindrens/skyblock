@@ -164,6 +164,10 @@ public final class IslandsConfig extends ModuleConfig {
             + "(/is sethome [name], /is delhome; PHASE-5 M5.5 Homestead, P5-21; roles: admin, mod, member). The leader always can; every member can use them.")
     public List<String> homesRoles = List.of("admin", "mod");
 
+    @Setting(path = "permissions.role-defaults.shard-blocks", desc = "Roles that may place, break, upgrade and pick up shard blocks "
+            + "by default (ECON-SHARDS; roles: admin, mod, member). The leader always can; coop players and visitors never.")
+    public List<String> shardBlocksRoles = List.of("admin", "mod", "member");
+
     // GUI-4 (owner U8): permission presets. Strict = defaults minus these keys, Open = defaults plus these keys, Normal = defaults.
     @Setting(path = "permissions.presets.strict.admin", desc = "Strict preset: permissions taken away from island admins (keys as in "
             + "permissions.defaults; empty = same as the default).")
@@ -631,6 +635,7 @@ public final class IslandsConfig extends ModuleConfig {
         perPermission.put(IslandPerm.BANK_HISTORY, bankHistoryRoles);
         perPermission.put(IslandPerm.UPGRADES, upgradesRoles);
         perPermission.put(IslandPerm.HOMES, homesRoles);
+        perPermission.put(IslandPerm.SHARD_BLOCKS, shardBlocksRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 

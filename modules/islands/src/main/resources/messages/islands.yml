@@ -112,6 +112,7 @@ protection:
     bank-history: "see the island bank history"
     upgrades: "buy island upgrades with the island bank"
     homes: "set and delete the island homes"
+    shard-blocks: "use shard blocks"
 
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
@@ -854,6 +855,7 @@ perms:
     bank-history: "Bank history"
     upgrades: "Upgrades"
     homes: "Homes"
+    shard-blocks: "Shard blocks"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 # Owner answer 591: told to every member whose profile was reset by a disband or an island reset.

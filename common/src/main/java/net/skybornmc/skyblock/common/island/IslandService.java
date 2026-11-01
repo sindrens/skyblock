@@ -205,6 +205,12 @@ public interface IslandService {
     /** Island permission key (owner 170): buy island upgrades with the island bank. Leader always; default Admin. */
     String PERM_UPGRADES = "upgrades";
 
+    /** Island permission key (ECON-SHARDS H5): place, break, upgrade and pick up shard blocks. Stored members only. */
+    String PERM_SHARD_BLOCKS = "shard-blocks";
+
+    /** Island permission key: change the island settings (also lets a member pick up shard blocks others placed). */
+    String PERM_SETTINGS = "settings";
+
     /** Warp slots of the island (start value until the Warp Slots upgrade). 0 for an unknown island. Main thread. */
     default int warpSlots(UUID islandId) {
         return 0;

@@ -56,7 +56,12 @@ public enum IslandPerm {
     /** PHASE-5 M5.4 (owner 170): buy island upgrades with the island bank. Stored members only, default Admin (P5-10). */
     UPGRADES("upgrades", true, true),
     /** PHASE-5 M5.5 (P5-21): set the island home and set/delete the shared named homes (Homestead). Default Admin + Mod. */
-    HOMES("homes", true, true);
+    HOMES("homes", true, true),
+    /**
+     * ECON-SHARDS H5: place, break, upgrade and pick up shard blocks. Stored members only (coop and visitors never),
+     * default Admin, Mod, Member; picking up also needs to be the placer or have {@link #SETTINGS}.
+     */
+    SHARD_BLOCKS("shard-blocks", true, true);
 
     private static final IslandPerm[] VALUES = values();
 

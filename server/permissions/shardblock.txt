@@ -1,0 +1,10 @@
+# LuckPerms grants for the shardblock module (ECON-SHARDS). Applied by scripts/apply-permissions.sh after base.txt.
+# Node definitions: modules/shardblock/src/main/resources/permissions/shardblock.yml. One console command per line; # = comment.
+# skyblock.shardblock.use (place, break, upgrade, pick up) defaults to true; island roles decide (key shard-blocks).
+
+# --- Staff ---
+# /shardblock info | stats: mods and up (admin inherits mod).
+lp group mod permission set skyblock.staff.shardblock.view true
+# /shardblock give | remove: admin only, audited. The owner group inherits admin.
+lp group admin permission set skyblock.staff.shardblock.give true
+lp group admin permission set skyblock.staff.shardblock.remove true
