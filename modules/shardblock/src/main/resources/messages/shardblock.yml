@@ -27,7 +27,7 @@ break:
   cap: "<c:error><sym:cross></c:error> <c:text>Daily shard limit reached (<c:value><cap></c:value><c:text>). New day at 00:00 Oslo."
   slow: "<c:muted>Slow down."
   no-perm: "<c:error><sym:cross></c:error> <c:text>Your role can't use shard blocks here."
-  off: "<c:error><sym:cross></c:error> <c:text>Shards can't be paid right now. Try again soon."
+  "off": "<c:error><sym:cross></c:error> <c:text>Shards can't be paid right now. Try again soon."
   failed: "<c:error><sym:cross></c:error> <c:text>That didn't work, nothing changed. Try again."
 
 # The menu (right-click). Lines are at most 36 characters.

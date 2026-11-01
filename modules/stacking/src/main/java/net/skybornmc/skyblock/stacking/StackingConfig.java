@@ -86,12 +86,6 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.stack-max", desc = "Spawners one block can ever hold, with the Spawner Stack Limit upgrade (ECON-SPAWNERS S4: 32; was 512). Blocks above it keep their spawners but can't grow.", min = 1, max = 100_000, level = Setting.Level.OWNER)
     public int spawnerStackMax = 32;
 
-    @Setting(path = "spawners.min-interval-seconds", desc = "Kept for reference: since ECON-SPAWNERS every spawner spawns on the speed step of its island (spawners.speed-steps-seconds, 10 s at level 0).", min = 1, max = 3600, level = Setting.Level.OWNER)
-    public int spawnerMinIntervalSeconds = 10;
-
-    @Setting(path = "spawners.max-interval-seconds", desc = "Kept for reference (ECON-SPAWNERS: 10; was 40). The spawn time comes from spawners.speed-steps-seconds.", min = 1, max = 3600, level = Setting.Level.OWNER)
-    public int spawnerMaxIntervalSeconds = 10;
-
     @Setting(path = "spawners.interval-jitter-percent", desc = "Random spread of each spawn interval in percent (0 = exact; a little desyncs many spawners).", min = 0, max = 50)
     public int spawnerIntervalJitterPercent = 0;
 
@@ -262,10 +256,17 @@ public final class StackingConfig extends ModuleConfig {
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
+    /** ECON-SPAWNERS: the spawn time comes from spawners.speed-steps-seconds; the old interval keys are deleted on load. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of(
+                "spawners.min-interval-seconds", "ECON-SPAWNERS: every spawner spawns on its island's speed step (spawners.speed-steps-seconds)",
+                "spawners.max-interval-seconds", "ECON-SPAWNERS: every spawner spawns on its island's speed step (spawners.speed-steps-seconds)");
+    }
+
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of(
-                "spawners.max-interval-seconds", ValueChange.of(40, 10),
                 "spawners.stack-max", ValueChange.of(512, 32),
                 "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "squid"),
                         List.of("zombie", "skeleton", "spider", "cave_spider", "slime")),
