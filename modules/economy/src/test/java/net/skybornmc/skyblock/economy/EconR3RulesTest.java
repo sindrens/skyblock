@@ -85,6 +85,13 @@ class EconR3RulesTest {
         assertEquals(Optional.empty(), EcoApprovals.canDecide(p, owner, true));
         assertEquals(Optional.empty(), EcoApprovals.canDecide(p, null, false), "the console may decide");
         assertEquals(Optional.of(EcoApprovals.Problem.UNKNOWN), EcoApprovals.canDecide(null, owner, true));
+        EcoApprovals.Pending own = approvals.add(owner, "Owner", EcoAction.GIVE, owner, "Owner", owner, Currency.MONEY,
+                2_000_000_000_000L, 2_000_000_000_000L, "Testing", 0, 600_000);
+        assertEquals(Optional.of(EcoApprovals.Problem.OWN_ACCOUNT), EcoApprovals.canDecide(own, owner, true, true),
+                "nobody allows a change to their own account, not even with approve-own");
+        assertEquals(Optional.empty(), EcoApprovals.canDecide(own, admin, true), "another admin may");
+        assertEquals(Optional.empty(), EcoApprovals.canDecide(own, null, false), "the console may");
+        approvals.take(own.id(), 1);
         assertEquals(java.util.List.of(String.valueOf(p.id())), approvals.ids(1));
         assertTrue(approvals.take(p.id(), 1).isPresent(), "first click wins");
         assertTrue(approvals.take(p.id(), 2).isEmpty(), "a second click finds nothing");
@@ -106,8 +113,15 @@ class EconR3RulesTest {
     // ------------------------------------------------------------------ R3-39
 
     @Test
-    void ecoNeverTouchesYourOwnOrASameAddressAccount() {
+    void ecoNeverTouchesASameAddressAccountAndYourOwnOnlyWithTheSelfNode() {
         assertEquals(EcoTargets.Problem.SELF, EcoTargets.quick(admin, admin, "1.2.3.4", "1.2.3.4"));
+        assertNull(EcoTargets.quick(admin, admin, "1.2.3.4", "1.2.3.4", true), "owner 31 Oct: admin/owner may change their own");
+        assertEquals(EcoTargets.Problem.SAME_IP, EcoTargets.quick(admin, player, "1.2.3.4", "1.2.3.4", true),
+                "the self node never opens other accounts on your address");
+        assertTrue(EcoTargets.selfAllowed(true, true));
+        assertFalse(EcoTargets.selfAllowed(false, true), "eco.allow-self off");
+        assertFalse(EcoTargets.selfAllowed(true, false), "no node");
+        assertTrue(new EconomyConfig().ecoAllowSelf);
         assertEquals(EcoTargets.Problem.SAME_IP, EcoTargets.quick(admin, player, "1.2.3.4", "1.2.3.4"));
         assertNull(EcoTargets.quick(admin, player, "1.2.3.4", "5.6.7.8"));
         assertNull(EcoTargets.quick(admin, player, "1.2.3.4", null), "offline: the IP history decides");

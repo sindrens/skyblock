@@ -70,12 +70,18 @@ eco:
   alert-take: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>took <amount> <c:text>from <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> now <balance>"
   alert-set: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>set <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
   alert-reset: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>reset <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  # Owner 31 Oct 2026: an admin or the owner changed their OWN account (skyblock.economy.eco.self). Same placeholders.
+  alert-self-give: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>gave themselves <amount> <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-self-take: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>took <amount> <c:text>from themselves <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-self-set: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>set their <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  alert-self-reset: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>reset their <currency> <c:text>to <balance> <c:muted>(<reason>)"
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>only has <balance><c:text>. Use <c:value>/eco set</c:value> for an exact balance."
   overflow: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't hold that much. Nothing changed."
   notify: "<prefix><c:text>Staff changed your <currency><c:text>. <c:muted>Now </c:muted><balance> <c:muted>(see /transactions)"
-  # Owner R3-39: staff play on a separate account, so /eco never touches your own or a same-address account.
+  # Owner R3-39: /eco never touches another account on your address. Your own only with skyblock.economy.eco.self
+  # (admin and owner, owner 31 Oct 2026) while eco.allow-self is on.
   target:
-    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change your own balance. Ask another admin."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change your own balance. Ask an admin or the owner."
     same-ip: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>shares an address with you, so you can't change their balance. Ask another admin."
     alert-self: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change their own balance <c:muted>(refused)"
     alert-same-ip: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change <c:value><player></c:value><c:text>, who shares their address <c:muted>(refused)"
@@ -93,6 +99,10 @@ eco:
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No waiting change <c:value>#<id></c:value><c:text>. It was decided already or ran out."
     no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only an owner or admin can decide this."
     own-request: "<prefix><c:error><sym:cross></c:error> <c:text>You asked for this one, so another owner or admin must allow it."
+    # Owner 31 Oct 2026: nobody decides a change to their own account, not even the owner.
+    own-account: "<prefix><c:error><sym:cross></c:error> <c:text>This change is for your own account, so another owner or admin must decide it."
+    # Sent right after alert / alert-info when the requester wants to change their OWN account. Same placeholders.
+    alert-self: "<c:muted>[Economy]</c:muted> <c:warning>#<id> is for <c:value><staff></c:value><c:warning>'s OWN balance.</c:warning>"
     denied: "<prefix><c:success><sym:check></c:success> <c:text>Denied <c:value>#<id></c:value><c:text>: nothing changed for <c:value><player></c:value><c:text>."
     denied-you: "<prefix><c:error><sym:cross></c:error> <c:value><by></c:value> <c:text>denied your change <c:value>#<id></c:value><c:text>. Nothing changed."
     allowed-you: "<prefix><c:success><sym:check></c:success> <c:value><by></c:value> <c:text>allowed your change <c:value>#<id></c:value><c:text>. It is done."
@@ -188,6 +198,8 @@ note:
   admin-done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:text>a note of <amount><c:text>. <c:muted>(#<id>, <reason>)"
   admin-received: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave you a note of <amount><c:text>. Use it to cash it."
   admin-alert: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>gave <c:value><player></c:value> <c:text>a note of <amount> <c:muted>(<reason>) <sym:dot> #<id>"
+  # Owner 31 Oct 2026: an admin or the owner made a note for their OWN account. Same placeholders.
+  admin-alert-self: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>made a note for their OWN account:</c:warning> <c:text><amount> <c:muted>(<reason>) <sym:dot> #<id>"
   admin-inventory-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s inventory is full. Ask them to free a slot. Nothing was made."
   admin-target-left: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>left before the note was ready. Nothing was given."
 

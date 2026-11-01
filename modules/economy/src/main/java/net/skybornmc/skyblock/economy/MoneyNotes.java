@@ -381,8 +381,9 @@ final class MoneyNotes implements Listener {
         if (target.getInventory().firstEmpty() < 0) {
             throw fail("admin-inventory-full", Msg.p("player", target.getName()));
         }
-        // R3-39: never a note for your own account or one that shares an address with yours.
-        module.then(sender, module.targetProblem(sender, target.getUniqueId()), problem -> {
+        // R3-39: never a note for another account that shares an address with yours; your own only with
+        // skyblock.economy.eco.self and eco.allow-self (owner 31 Oct 2026, same rule as /eco give).
+        module.then(sender, module.targetProblem(sender, target.getUniqueId(), module.mayEcoSelf(sender)), problem -> {
             if (problem != null) {
                 module.msg.send(sender, "eco.target." + problem.key, Msg.p("player", target.getName()));
                 if (sender instanceof Player p) {
@@ -415,8 +416,17 @@ final class MoneyNotes implements Listener {
             details.put("note_id", id.toString());
             details.put("currency", Currency.MONEY.key());
             details.put("reason", reason);
+            boolean self = EconomyModule.isSelf(sender, targetId);
+            if (self) {
+                details.put("self", true);
+            }
             module.core.audit().logPlayer(AuditCategory.ECONOMY, TxReason.ADMIN_NOTE, staff, targetId, targetName, amount,
                     online.getLocation(), details);
+            if (self) {
+                module.core.audit().logPlayer(AuditCategory.ECONOMY, "eco_self", staff, targetId, targetName, amount,
+                        online.getLocation(), details);
+            }
+            String alertKey = P + (self ? "admin-alert-self" : "admin-alert");
             TagResolver[] p = {Msg.p("player", targetName), Msg.p("staff", sender.getName()), Msg.p("reason", reason),
                     Msg.p("id", MoneyNote.shortId(id)), module.exactAmountTag("amount", sender, Currency.MONEY, amount)};
             module.msg.send(sender, P + "admin-done", p);
@@ -429,11 +439,11 @@ final class MoneyNotes implements Listener {
             }
             for (Player staffMember : Bukkit.getOnlinePlayers()) {
                 if (!staffMember.equals(sender) && staffMember.hasPermission(EconomyModule.PERM_ALERTS)) {
-                    module.msg.send(staffMember, P + "admin-alert", p);
+                    module.msg.send(staffMember, alertKey, p);
                 }
             }
             if (!(sender instanceof ConsoleCommandSender)) {
-                module.msg.send(Bukkit.getConsoleSender(), P + "admin-alert", p);
+                module.msg.send(Bukkit.getConsoleSender(), alertKey, p);
             }
         });
     }

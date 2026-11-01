@@ -81,6 +81,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
      * owner only (C1-R1-18; explicit false for admins in server/permissions/economy.txt).
      */
     static final String PERM_CREDITS_GRANT = "skyblock.economy.credits.grant";
+    /**
+     * Owner 31 Oct 2026: use {@code /eco give|take|set|reset|note} on your <b>own</b> account (admin and owner; lifts only
+     * the R3-39 self refusal, switch: {@code eco.allow-self}).
+     */
+    static final String PERM_ECO_SELF = "skyblock.economy.eco.self";
 
     final Core core;
     final ModuleMessages msg;
@@ -911,7 +916,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     // ================================================================== /eco
 
     /**
-     * {@code /eco give|take|set|reset}. R3-39: never your own account or one that shares an address with yours. R3-6:
+     * {@code /eco give|take|set|reset}. R3-39: never another account that shares an address with yours, and your own only
+     * with {@link #PERM_ECO_SELF} and {@code eco.allow-self} (owner 31 Oct 2026). R3-6:
      * a change up to {@code eco.approve-above} applies at once (flagged: staff alert, audit, Discord when set up); a bigger
      * one waits for an owner/admin's Allow. The console is trusted and never waits.
      */
@@ -928,7 +934,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             Found target = found.get();
-            then(sender, targetProblem(sender, target.uuid()), problem -> {
+            then(sender, targetProblem(sender, target.uuid(), mayEcoSelf(sender)), problem -> {
                 if (problem != null) {
                     refuseTarget(sender, target, problem, action, currencies, amount, note);
                     return;
@@ -942,17 +948,32 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
-    /** R3-39: why {@code sender} may not change {@code target} (null = fine; the console is never refused). */
-    CompletableFuture<EcoTargets.Problem> targetProblem(CommandSender sender, UUID target) {
+    /** True if {@code sender} may use /eco on their own account (owner 31 Oct 2026: the node and {@code eco.allow-self}). */
+    boolean mayEcoSelf(CommandSender sender) {
+        return EcoTargets.selfAllowed(config.ecoAllowSelf, sender.hasPermission(PERM_ECO_SELF));
+    }
+
+    /** True if a player {@code sender} targets their own account. */
+    static boolean isSelf(CommandSender sender, UUID target) {
+        return sender instanceof Player p && p.getUniqueId().equals(target);
+    }
+
+    /**
+     * R3-39: why {@code sender} may not change {@code target} (null = fine; the console is never refused). {@code selfAllowed}:
+     * the sender's own account is fine (see {@link #mayEcoSelf}); other accounts on the same address are still refused.
+     */
+    CompletableFuture<EcoTargets.Problem> targetProblem(CommandSender sender, UUID target, boolean selfAllowed) {
         if (!(sender instanceof Player staff)) {
             return CompletableFuture.completedFuture(null);
         }
         Player online = Bukkit.getPlayer(target);
-        EcoTargets.Problem quick = EcoTargets.quick(staff.getUniqueId(), target, ip(staff), online == null ? null : ip(online));
+        boolean self = staff.getUniqueId().equals(target);
+        EcoTargets.Problem quick = EcoTargets.quick(staff.getUniqueId(), target, ip(staff), online == null ? null : ip(online),
+                selfAllowed);
         if (quick == EcoTargets.Problem.SELF || (quick != null && config.ecoBlockSameIp)) {
             return CompletableFuture.completedFuture(quick);
         }
-        if (!config.ecoBlockSameIp) {
+        if (self || !config.ecoBlockSameIp) {
             return CompletableFuture.completedFuture(null);
         }
         return ecoTargets.sharedAddress(staff.getUniqueId(), target).thenApply(shared -> shared ? EcoTargets.Problem.SAME_IP : null);
@@ -1005,6 +1026,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
             Map<String, Object> details = pendingDetails(p);
             core.audit().log(AuditCategory.ECONOMY, "eco_pending", Actor.player(staff), target.uuid().toString(), target.name(),
                     change, staff.getLocation(), details);
+            if (p.self()) {
+                core.audit().log(AuditCategory.ECONOMY, "eco_self", Actor.player(staff), target.uuid().toString(), target.name(),
+                        change, staff.getLocation(), details);
+            }
             msg.send(sender, "eco.approve.waiting", pendingTags(sender, p));
             sound(sender, "notify");
             int told = 0;
@@ -1026,17 +1051,27 @@ public final class EconomyModule implements SkyblockModule, Listener {
                             .button(net.skybornmc.skyblock.common.menu.Offer.Button.deny("eco deny " + id))
                             .chat(viewer -> msg.send(viewer, "eco.approve.alert", tags))
                             .build());
+                    if (p.self()) {
+                        msg.send(other, "eco.approve.alert-self", tags);
+                    }
                     core.sounds().play(other, "notify");
                     told++;
                 } else if (other.hasPermission(PERM_ALERTS)) {
                     msg.send(other, "eco.approve.alert-info", pendingTags(other, p));
+                    if (p.self()) {
+                        msg.send(other, "eco.approve.alert-self", pendingTags(other, p));
+                    }
                 }
             }
             msg.send(Bukkit.getConsoleSender(), "eco.approve.alert-info", pendingTags(Bukkit.getConsoleSender(), p));
+            if (p.self()) {
+                msg.send(Bukkit.getConsoleSender(), "eco.approve.alert-self", pendingTags(Bukkit.getConsoleSender(), p));
+            }
             if (told == 0) {
                 msg.send(sender, "eco.approve.nobody-online", pendingTags(sender, p));
             }
-            discord("eco_pending", p.staffName(), p.targetName(), p.currency(), p.change(), p.note(), null);
+            discord(p.self() ? "eco_pending (own account)" : "eco_pending", p.staffName(), p.targetName(), p.currency(), p.change(),
+                    p.note(), null);
         });
     }
 
@@ -1050,6 +1085,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         details.put("note", p.note());
         details.put("profile", p.profileKey().toString());
         details.put("requested_by", p.staffName());
+        if (p.self()) {
+            details.put("self", true);
+        }
         return details;
     }
 
@@ -1099,7 +1137,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
             sound(sender, "success");
             return;
         }
-        then(sender, targetProblem(sender, p.target()), targetProblem -> {
+        // An approver never allows a change to their own account (EcoApprovals.OWN_ACCOUNT), so no self exception here.
+        then(sender, targetProblem(sender, p.target(), false), targetProblem -> {
             if (targetProblem != null) {
                 msg.send(sender, "eco.target." + targetProblem.key, Msg.p("player", p.targetName()));
                 sound(sender, "error");
@@ -1181,9 +1220,14 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         Currency currency, long amount, String note, String approvedBy) {
         AccountRef account = AccountRef.player(profileKey);
         String reference = note.length() > 64 ? note.substring(0, 64) : note;
+        // Owner 31 Oct 2026: a change to the requester's own account is marked (ledger and audit "self", eco_self row, alert).
+        boolean self = actor.uuid() != null && actor.uuid().equals(target.uuid());
         Map<String, Object> details = new java.util.LinkedHashMap<>();
         details.put("note", note);
         details.put("target_name", target.name());
+        if (self) {
+            details.put("self", true);
+        }
         if (approvedBy != null) {
             details.put("approved_by", approvedBy);
         }
@@ -1228,7 +1272,12 @@ public final class EconomyModule implements SkyblockModule, Listener {
             flag.put("ledger_id", result.ledgerId());
             flag.put("requested_by", staffName);
             core.audit().log(AuditCategory.ECONOMY, "eco_flagged", actor, target.uuid().toString(), target.name(), amount, null, flag);
-            discord("eco_" + key, staffName, target.name(), currency, amount, note, approvedBy);
+            if (self) {
+                core.audit().log(AuditCategory.ECONOMY, "eco_self", actor, target.uuid().toString(), target.name(), amount, null, flag);
+            }
+            discord(self ? "eco_" + key + " (own account)" : "eco_" + key, staffName, target.name(), currency, amount, note,
+                    approvedBy);
+            String alertKey = self ? "eco.alert-self-" + key : "eco.alert-" + key;
             TagResolver[] p = {Msg.p("player", target.name()), Msg.p("staff", staffName), Msg.p("action", key),
                     amountTag("amount", sender, currency, amount), amountTag("balance", sender, currency, now),
                     Msg.c("currency", currencyName(sender, currency)), Msg.p("reason", note)};
@@ -1236,7 +1285,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
             sound(sender, "success");
             for (Player staff : Bukkit.getOnlinePlayers()) {
                 if (!staff.equals(sender) && staff.hasPermission(PERM_ALERTS)) {
-                    msg.send(staff, "eco.alert-" + key, Msg.p("player", target.name()), Msg.p("staff", staffName),
+                    msg.send(staff, alertKey, Msg.p("player", target.name()), Msg.p("staff", staffName),
                             amountTag("amount", staff, currency, amount), amountTag("balance", staff, currency, now),
                             Msg.c("currency", currencyName(staff, currency)), Msg.p("reason", note));
                     if (approvedBy != null) {
@@ -1245,7 +1294,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 }
             }
             if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
-                msg.send(Bukkit.getConsoleSender(), "eco.alert-" + key, p);
+                msg.send(Bukkit.getConsoleSender(), alertKey, p);
             }
             Player online = Bukkit.getPlayer(target.uuid());
             if (online != null && !online.equals(sender) && result.ledgerId() > 0) {
