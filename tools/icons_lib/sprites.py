@@ -328,30 +328,6 @@ def currency_credits():
     return s
 
 
-# -------------------------------------------------------------------------------------------------- the hotbar star
-def menu_ember():
-    """Vanilla-style pale four-point star (own pixels, no outline like the real one) with a golden heart and a tiny
-    ember halo. Only drawn when the owner picks the "ember" style for the hotbar item."""
-    widths = {2: (8, 8), 3: (7, 9), 4: (7, 9), 5: (6, 10), 6: (5, 11), 7: (3, 13), 8: (2, 14), 9: (3, 13), 10: (5, 11),
-              11: (6, 10), 12: (7, 9), 13: (7, 9), 14: (8, 8)}
-    s = Spr()
-    s.outline = False
-    s.extra = {'T': '#D3DEDE', 't': '#F4FAFA', 'u': '#7E9C9C', 'U': '#5E8080'}
-    for y, (a, b) in widths.items():
-        s.rect(a, y, b, y, 'T')
-    mask = {(x, y) for y in range(SIZE) for x in range(SIZE) if s.g[y][x] == 'T'}
-    for (x, y) in mask:
-        outside = [(x + dx, y + dy) not in mask for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))]
-        if any(outside):
-            s.g[y][x] = 'U' if (not (x + 1, y) in mask or not (x, y + 1) in mask) else 'u'
-        elif (x - 1, y) not in mask or (x, y - 1) not in mask or (x - 1, y - 1) not in mask:
-            s.g[y][x] = 't'
-    for x, y in ((8, 7), (7, 8), (9, 8), (8, 9)):
-        s.set(x, y, 'O')
-    s.set(8, 8, 'Y')
-    return s
-
-
 # -------------------------------------------------------------------------------------------------- navigation
 # Style A: chunky arrows / triangles. B: door and pointing gloves. C: chevrons in rounded square buttons.
 
@@ -934,6 +910,41 @@ def sell_all_c():
     return s
 
 
+def feature_depths_lit():
+    """The Depths pickaxe, lit up for the tutorial: an iron pickaxe (own pixels, vanilla silhouette so it still reads
+    as "the Depths") inside a 2 px steel-sky glow ring with three white sparkles. Static, square, opaque pixels only
+    (the ring is solid steel sky instead of 60 % alpha: the generator writes alpha 0 or 255)."""
+    s = Spr()
+    s.extra = {'A': '#5AB4E5', 'a': '#A8DCF5', 'I': '#D8DCE4', 'i': '#FFFFFF', 'j': '#8C93A3'}
+    for y in range(SIZE):                      # the glow ring
+        for x in range(SIZE):
+            d = math.hypot(x + .5 - 8, y + .5 - 8)
+            if 5.3 <= d <= 7.2:
+                s.g[y][x] = 'a' if (x + y) < 13 else 'A'
+    pick = set()
+    for y in range(SIZE):                      # head: a thick arc bulging to the top right
+        for x in range(SIZE):
+            d = math.hypot(x + .5 - 3.0, y + .5 - 13.0)
+            if 8.6 <= d <= 10.6 and x >= 2 and y <= 13:
+                pick.add((x, y))
+    for t in range(0, 8):                      # handle: 2 px diagonal from the bottom left to the head
+        x, y = 3 + t, 12 - t
+        pick.update({(x, y), (x + 1, y), (x, y + 1)})
+    for (x, y) in pick:
+        if 0 <= x < SIZE and 0 <= y < SIZE:
+            on_handle = (x + y) in (14, 15, 16) and x <= 9
+            s.g[y][x] = 'N' if on_handle else 'I'
+    s.shade('I', 'i', 'j')
+    s.shade('N', 'n', 'm')
+    for y in range(SIZE):                      # dark edge where the pickaxe sits on the ring
+        for x in range(SIZE):
+            if s.g[y][x] in 'Aa' and any((x + dx, y + dy) in pick for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                s.g[y][x] = 'k'
+    for x, y in ((14, 1), (5, 6), (10, 11)):   # sparkles
+        s.set(x, y, 'w')
+    return s
+
+
 # -------------------------------------------------------------------------------------------------- tables
 # key -> sprite function for the single (non-varying) icons. The default variant of a varying icon is the style in
 # DEFAULT_STYLE; the others live in resourcepack/variants/.
@@ -955,10 +966,10 @@ SINGLE = {
     'feature/bank': feature_bank,
     'feature/top': feature_top,
     'feature/auction': feature_auction,
+    'feature/depths_lit': feature_depths_lit,
 }
 
 VARIANTS = {
-    'menu': {'ember': menu_ember},
     'nav/back': {'A': back_a, 'B': back_b, 'C': back_c},
     'nav/prev': {'A': prev_a, 'B': prev_b, 'C': prev_c},
     'nav/next': {'A': next_a, 'B': next_b, 'C': next_c},

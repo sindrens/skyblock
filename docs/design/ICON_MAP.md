@@ -12,10 +12,9 @@ Preview of every custom icon and variant: `feature-overview/inspiration/icons-v2
 - Adding a custom icon later: add a row to `icons` (and a sprite or a hand-drawn PNG), remove the key from `vanilla`, run `art`, `pack`, `check`.
 - Two buttons on one screen never share a base item (I9 section 7). Repeats below are on different screens.
 
-## Custom icons (27 keys, 26 live)
+## Custom icons (27 custom keys, all live)
 | Key | Base item (Bedrock / no pack sees this) | Picture | Variants (live style) | Used in |
 |---|---|---|---|---|
-| `menu` | `nether_star` | plain vanilla Nether Star (no pack file); variant "ember" = own pale star with a tiny ember | **vanilla**, ember | hotbar menu item (slot 9) |
 | `currency/money` | `gold_ingot` | round green coin with a $ | one look | economy menus, prices |
 | `currency/shards` | `prismarine_shard` | three pointed pink prism crystals | one look | economy menus |
 | `currency/crystals` | `amethyst_shard` | cut aqua gem | one look | economy menus, Depths |
@@ -42,8 +41,9 @@ Preview of every custom icon and variant: `feature-overview/inspiration/icons-v2
 | `feature/bank` | `gold_block` | white bank building with a gold coin | one look | hub Bank |
 | `feature/top` | `golden_helmet` | gold trophy cup | one look | hub Top (leaderboards) |
 | `feature/auction` | `bell` | gold-banded gavel on its sound block | one look | hub Auction House |
+| `feature/depths_lit` | `iron_pickaxe` | iron pickaxe with a steel-sky glow ring and three white sparkles | one look | tutorial: hub Depths tile and Travel Depths gate while the step is `depths` (`menu.yml → highlights`) |
 
-Switch a variant: `python3 tools/build_icons.py use <key> <style>`, then `pack`, `check`. Style `vanilla` (only `menu`) means no custom model at all.
+Switch a variant: `python3 tools/build_icons.py use <key> <style>`, then `pack`, `check`. Style `vanilla` means no custom model at all (no live key uses it).
 
 ## Plain vanilla keys (49 keys, no custom icon, no letter tile)
 | Menu key | Vanilla material | Was | Why |
@@ -99,6 +99,8 @@ Switch a variant: `python3 tools/build_icons.py use <key> <style>`, then `pack`,
 | `shop/spawners` | `spawner` | `spawner` | spawner |
 
 ## Notes
+- The hotbar menu item is the plain vanilla Nether Star; there is no `menu` key (GUI-ICONS-FINAL, owner V3-Q7 a).
+- Owner picks (1 Nov 2026, V3-Q6 a): nav Back/Prev/Next/Close style **B**, Confirm/Cancel and Buy/Sell/Sell all style **C**.
 - **Home no longer shows a purple cube.** The old pack replaced `items/red_bed.json` with a copy of the 1.21.5 definition, which points at
   `minecraft:item/red_bed`. That model was removed in 26.3 (the bed became a composite of block models), so the client drew the missing-model cube.
   Fixed twice: `feature/home` is now a plain vanilla bed (no override file at all), and `python3 tools/build_icons.py verify-jars --jar <client.jar>...`

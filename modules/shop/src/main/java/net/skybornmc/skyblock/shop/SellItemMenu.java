@@ -199,8 +199,12 @@ final class SellItemMenu extends Menu {
     private MenuButton typeButton(SellInfo info, long carried, SellQuote all) {
         SellStates.State state = SellStates.of(info.sellable(), carried, 0, total(all));
         long max = Math.max(1, Math.min(carried, module.settings.maxAmount));
-        ItemStack shown = service.item(SellStates.clickable(state) ? Material.NAME_TAG : Material.GRAY_DYE, viewer, ShopModule.ID,
-                "sell.button.type", Msg.number("max", max));
+        TagResolver maxTag = Msg.number("max", max);
+        Component name = service.text(viewer, ShopModule.ID, "sell.button.type.name", maxTag);
+        List<Component> lore = service.lines(viewer, ShopModule.ID, "sell.button.type.lore", maxTag);
+        ItemStack shown = SellStates.clickable(state)
+                ? service.icon(viewer, "ui/type", name, lore)
+                : service.item(Material.GRAY_DYE, name, lore);
         if (!SellStates.clickable(state)) {
             return MenuButton.of(shown, click -> service.sound(click.player(), "error"));
         }

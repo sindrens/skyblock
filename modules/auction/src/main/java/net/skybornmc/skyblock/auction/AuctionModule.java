@@ -91,6 +91,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
+        warnIgnoredIcons();
         main = new MainThread(core.plugin());
         codec = new ItemCodec(core.items());
         engine = new AuctionEngine(new AuctionStore(core.database()),
@@ -138,7 +139,18 @@ public final class AuctionModule implements SkyblockModule, Listener {
     @Override
     public void reload() {
         core.configs().load(config);
+        warnIgnoredIcons();
         core.messages().load(ID);
+    }
+
+    private boolean searchIconWarned;
+
+    /** GUI-ICONS-FINAL: the Search button is the {@code nav/search} icon; an old {@code menu.icons} search entry is ignored. */
+    private void warnIgnoredIcons() {
+        if (!searchIconWarned && config.icons.stream().anyMatch(e -> e.toLowerCase(java.util.Locale.ROOT).startsWith("search:"))) {
+            searchIconWarned = true;
+            core.plugin().getLogger().info("[auction] icons.search is ignored, the icon is nav/search");
+        }
     }
 
     /**

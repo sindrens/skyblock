@@ -23,6 +23,8 @@ hub:
   # G9 / I9 tooltip: bold name in the row's area colour, one grey sentence, then the yellow action line.
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
+  # Tutorial highlight line (menu.yml → highlights), above the action line.
+  highlight: "<c:action>● Start here</c:action>"
   # A button added in menu.yml without texts here: <name> = its id (hub buttons take their group's area colour instead).
   fallback-name: "<c:flame><bold><name>"
   # Your head (slot 4). <money>, <crystals>, <playtime> are plain text.

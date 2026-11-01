@@ -1,5 +1,4 @@
 {"version": 2, "icons": [
-  {"key": "menu", "base": "nether_star", "name": "Menu", "meaning": "reward", "file": "menu", "slice": 1, "motif": "plain vanilla Nether Star (no pack file); variant \"ember\" = own pale star with a tiny ember", "used": "hotbar menu item (slot 9)", "variants": ["vanilla", "ember"], "style": "vanilla"},
   {"key": "currency/money", "base": "gold_ingot", "name": "Money", "meaning": "currency-money", "file": "currency_money", "slice": 1, "motif": "round green coin with a $", "used": "economy menus, prices"},
   {"key": "currency/shards", "base": "prismarine_shard", "name": "Shards", "meaning": "currency-shards", "file": "currency_shards", "slice": 1, "motif": "three pointed pink prism crystals", "used": "economy menus"},
   {"key": "currency/crystals", "base": "amethyst_shard", "name": "Crystals", "meaning": "currency-crystals", "file": "currency_crystals", "slice": 1, "motif": "cut aqua gem", "used": "economy menus, Depths"},
@@ -25,6 +24,7 @@
   {"key": "shop/fill", "base": "chest_minecart", "name": "Fill inventory", "meaning": "money", "file": "shop_fill", "slice": 3, "motif": "backpack stuffed with goods", "used": "shop Fill inventory (P3)"},
   {"key": "feature/bank", "base": "gold_block", "name": "Bank", "meaning": "money", "file": "feature_bank", "slice": 2, "motif": "white bank building with a gold coin", "used": "hub Bank"},
   {"key": "feature/top", "base": "golden_helmet", "name": "Top", "meaning": "reward", "file": "feature_top", "slice": 2, "motif": "gold trophy cup", "used": "hub Top (leaderboards)"},
+  {"key": "feature/depths_lit", "base": "iron_pickaxe", "name": "The Depths (lit)", "meaning": "depths", "file": "feature_depths_lit", "slice": 3, "motif": "iron pickaxe with a pulsing aqua glow ring and three white sparkles", "used": "tutorial: hub Depths tile and Travel Depths gate while the step is depths"},
   {"key": "feature/auction", "base": "bell", "name": "Auction House", "meaning": "money", "file": "feature_auction", "slice": 2, "motif": "gold-banded gavel on its sound block", "used": "hub Auction House"}
 ],
 "vanilla": {

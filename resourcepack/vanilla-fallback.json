@@ -1081,6 +1081,10 @@
   "model": "minecraft:item/iron_bars",
   "type": "minecraft:model"
  },
+ "iron_pickaxe": {
+  "model": "minecraft:item/iron_pickaxe",
+  "type": "minecraft:model"
+ },
  "lime_concrete": {
   "model": "minecraft:block/lime_concrete",
   "type": "minecraft:model"
@@ -1091,10 +1095,6 @@
  },
  "name_tag": {
   "model": "minecraft:item/name_tag",
-  "type": "minecraft:model"
- },
- "nether_star": {
-  "model": "minecraft:item/nether_star",
   "type": "minecraft:model"
  },
  "oak_sign": {

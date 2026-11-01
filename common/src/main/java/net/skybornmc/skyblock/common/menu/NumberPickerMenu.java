@@ -105,7 +105,8 @@ public final class NumberPickerMenu extends Menu {
         set(SLOT_VALUE, service.item(Material.SUNFLOWER, viewer, "number.value", Msg.p("value", Format.number(value)),
                 Msg.p("compact", Format.compact(value)), Msg.p("min", Format.number(min)), Msg.p("max", Format.number(max))));
         set(SLOT_MIN, service.item(Material.BUCKET, viewer, "number.set-min", Msg.p("min", Format.number(min))), click -> setTo(min));
-        set(SLOT_CUSTOM, service.item(Material.NAME_TAG, viewer, "number.custom"), click -> askCustom(click.player()));
+        set(SLOT_CUSTOM, service.icon(viewer, "ui/type", service.text(viewer, "number.custom.name"),
+                service.lines(viewer, "number.custom.lore")), click -> askCustom(click.player()));
         set(SLOT_MAX, service.item(Material.WATER_BUCKET, viewer, "number.set-max", Msg.p("max", Format.number(max))), click -> setTo(max));
         ItemStack confirm = service.icon(viewer, "state/confirm",
                 service.text(viewer, "number.confirm.name", Msg.p("value", Format.number(value))),

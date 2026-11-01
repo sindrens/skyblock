@@ -118,6 +118,7 @@ public final class MenusModule implements SkyblockModule {
             nav.you = ButtonLayout.you(hub, icons, this::problem);
             nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
             nav.travel = WarpLayout.parse(hub, icons, this::problem);
+            nav.highlights = Highlights.parse(hub.getConfigurationSection("highlights"), core.menus().icons()::has, this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {

@@ -37,6 +37,10 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
     private final Nav nav;
     private final Buttons buttons;
     private int shownReady = -1;
+    /** Hub button ids drawn in their tutorial highlight look by the last build. */
+    private final Set<String> litShown = new HashSet<>();
+    /** Hub button ids the last build drew as clickable tiles (the only ones a highlight can change). */
+    private final Set<String> litCandidates = new HashSet<>();
     private boolean claiming;
 
     HubMenu(Nav nav) {
@@ -72,14 +76,33 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void tick() {
-        if (!claiming && shownReady >= 0 && readyCount() != shownReady) {
+        if (claiming) {
+            return;
+        }
+        if ((shownReady >= 0 && readyCount() != shownReady) || !litNow().equals(litShown)) {
             refresh();
         }
+    }
+
+    /** Hub button ids that the tutorial highlights right now (compared with the last build, GUI-ICONS-FINAL step 6). */
+    private Set<String> litNow() {
+        if (nav.highlights.isEmpty()) {
+            return Set.of();
+        }
+        Set<String> lit = new HashSet<>();
+        for (String id : litCandidates) {
+            if (nav.highlight(viewer, "hub." + id).isPresent()) {
+                lit.add(id);
+            }
+        }
+        return lit;
     }
 
     @Override
     protected void build() {
         navBar();
+        litShown.clear();
+        litCandidates.clear();
         Set<String> services = buttons.services();
         for (ButtonLayout.Button button : nav.hub.buttons()) {
             ButtonLayout.State state = buttons.state(button, services);
@@ -122,7 +145,15 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
             return;
         }
         String own = "hub.buttons." + button.id() + ".action";
-        lore.addAll(nav.lines(viewer, nav.core.messages().raw(Nav.TEXTS, own) != null ? own : "hub.action"));
+        List<Component> action = nav.lines(viewer, nav.core.messages().raw(Nav.TEXTS, own) != null ? own : "hub.action");
+        litCandidates.add(button.id());
+        Optional<Highlights.Rule> lit = nav.highlight(viewer, "hub." + button.id());
+        if (lit.isPresent()) {
+            litShown.add(button.id());
+            set(button.slot(), nav.highlighted(viewer, lit.get(), name, lore, action), click -> open(click.player(), button));
+            return;
+        }
+        lore.addAll(action);
         set(button.slot(), nav.icon(viewer, button.icon(), name, lore), click -> open(click.player(), button));
     }
 

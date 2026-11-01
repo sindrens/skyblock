@@ -304,8 +304,7 @@ def build(args):
     # --- hotbar star options
     hot = {0: v('iron_sword'), 1: v('iron_pickaxe'), 2: v('bread'), 3: v('golden_apple')}
     star_vanilla = v('nether_star')
-    star_ember = custom('menu', 'ember')
-    for tag, star in (('vanilla', star_vanilla), ('ember', star_ember)):
+    for tag, star in (('vanilla', star_vanilla),):
         im = Image.new('RGBA', (176, 22), (0, 0, 0, 0))
         bevel(im, 0, 0, 175, 21, PANEL, WHITE, SHADOW)
         for c in range(9):
@@ -427,15 +426,10 @@ Minecraft item are custom; everything with a good vanilla item stays that vanill
 The generator switches by name: <code>python3 tools/build_icons.py use nav/back B</code>. The &#9733; marks my pick.</div></header>''' % NAME)
 
     # 1 hotbar
-    p.append('<section><h2>1 · The hotbar Menu item</h2><p class="intro">Today it is a yellow star that replaces the Nether Star. '
-             'Two natural options, both on the real Nether Star item. <b>Vanilla</b> needs no pack file at all, a Bedrock phone and a Java client look identical. '
-             '<b>Ember</b> is my own drawing in the vanilla style with a tiny flame in its heart (Java with the pack only).</p><div class="row">')
-    for tag, label, sub, pick in (('vanilla', 'Option 1: plain vanilla Nether Star', 'no custom model, nothing to download', True),
-                                  ('ember', 'Option 2: vanilla look + ember', 'own pixels, a tiny flame at the heart', False)):
-        star = 'v:nether_star' if tag == 'vanilla' else 'i:menu:ember'
-        p.append('<div class="style"><h3>%s%s</h3><div class="row">%s</div>%s<br><small>%s</small></div>'
-                 % (label, ' <b class="pick">&#9733; my pick</b>' if pick else '', cell_raw(crop, star, SC),
-                    crop('s:hotbar:' + tag, 4), sub))
+    p.append('<section><h2>1 · The hotbar Menu item</h2><p class="intro">The plain vanilla Nether Star (owner pick V3-Q7 a): '
+             'no custom model and no pack file, a Bedrock phone and a Java client look identical.</p><div class="row">')
+    p.append('<div class="style"><h3>Plain vanilla Nether Star</h3><div class="row">%s</div>%s<br><small>%s</small></div>'
+             % (cell_raw(crop, 'v:nether_star', SC), crop('s:hotbar:vanilla', 4), 'no custom model, nothing to download'))
     p.append('</div></section>')
 
     # 2 currencies
@@ -464,7 +458,8 @@ The generator switches by name: <code>python3 tools/build_icons.py use nav/back 
     for key, label in (('nav/danger', 'Danger'), ('nav/help', 'Help'), ('ui/info', 'Info'), ('nav/search', 'Search (auction)'),
                        ('state/locked', 'Locked'), ('state/undo', 'Undo'), ('state/on', 'Switch on'), ('state/off', 'Switch off'),
                        ('shop/fill', 'Fill inventory'), ('ui/type', 'Type an amount'), ('feature/bank', 'Bank'),
-                       ('feature/top', 'Top'), ('feature/auction', 'Auction House')):
+                       ('feature/top', 'Top'), ('feature/auction', 'Auction House'),
+                       ('feature/depths_lit', 'The Depths (lit, tutorial)')):
         p.append(cell(key, label))
     p.append('</div>%s%s</section>' % (scene('x:hub'), scene('x:misc')))
 

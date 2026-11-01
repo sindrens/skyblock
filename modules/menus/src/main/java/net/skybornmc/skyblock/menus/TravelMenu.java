@@ -85,7 +85,13 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
             }
             String actionKey = nav.core.messages().raw(Nav.TEXTS, "travel.places." + warp.id() + ".action") != null
                     ? "travel.places." + warp.id() + ".action" : "travel.action";
-            lore.addAll(nav.lines(viewer, actionKey));
+            List<Component> action = nav.lines(viewer, actionKey);
+            Optional<Highlights.Rule> lit = nav.highlight(viewer, "travel." + warp.id());
+            if (lit.isPresent()) {
+                set(slots[i], nav.highlighted(viewer, lit.get(), name, lore, action), click -> go(click.player(), warp, name));
+                continue;
+            }
+            lore.addAll(action);
             set(slots[i], nav.icon(viewer, warp.icon(), name, lore), click -> go(click.player(), warp, name));
         }
     }

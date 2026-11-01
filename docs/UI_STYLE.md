@@ -342,6 +342,7 @@ Fewer than three step sizes leave their slots empty. Bedrock uses the same picke
 - Close the GUI on teleport or on long actions.
 
 ### 5.5 Feature icon map (same icon everywhere for the same feature)
+**The contract is [`docs/design/ICON_MAP.md`](design/ICON_MAP.md)** (27 custom keys, 49 plain vanilla keys, icon set v3); the table below is a short overview and ICON_MAP wins on any difference.
 Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`. Two buttons on one screen never share a base item (documented exception: You → Store and Credits are both diamond, I9 §9).
 
 | Feature | Base item | Icon key |

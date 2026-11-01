@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.shop;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.Centered;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.menu.MenuButton;
@@ -109,8 +110,9 @@ final class BuyMenu extends Menu {
             choices.add(buyButton("typed", typed, balance, fits, now, "buy.typed"));
         } else {
             typed = 0;
-            choices.add(MenuButton.of(service.item(Material.NAME_TAG, viewer, ShopModule.ID, "buy.type",
-                    Msg.number("max", module.settings.maxAmount)), click -> askAmount(click.player())));
+            TagResolver max = Msg.number("max", module.settings.maxAmount);
+            choices.add(MenuButton.of(service.icon(viewer, "ui/type", service.text(viewer, ShopModule.ID, "buy.type.name", max),
+                    service.lines(viewer, ShopModule.ID, "buy.type.lore", max)), click -> askAmount(click.player())));
         }
         int[] columns = Centered.columns(choices.size());
         for (int i = 0; i < choices.size(); i++) {

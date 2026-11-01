@@ -22,7 +22,7 @@ vanilla item under a stable key in `"vanilla"`. To give one a custom picture lat
 
 ## Switch a look, replace an icon (owner)
 1. Open `feature-overview/inspiration/icons-v2-preview.html` (made by `python3 tools/icons_preview.py --out feature-overview/inspiration --open`) and pick a style.
-2. `python3 tools/build_icons.py use nav/back B`, then `pack` and `check` (must print `OK`). Style `vanilla` (the hotbar star) removes the custom model.
+2. `python3 tools/build_icons.py use nav/back B`, then `pack` and `check` (must print `OK`). Style `vanilla` removes the custom model. The hotbar menu item is the plain vanilla Nether Star (no key, no PNG). `feature/depths_lit` is the lit Depths pickaxe shown during the tutorial's Depths step.
 3. Draw your own: put a **16x16 or 32x32 RGBA** PNG over `pack/.../icon/<file>.png` (key with `/` replaced by `_`). Keep the vanilla look: no anti-aliasing, a dark outline.
 4. Rebuild the plugin (`./gradlew build`). The new pack has a new hash, so clients download it again; online players get it after `/pack reload`.
 
