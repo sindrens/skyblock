@@ -63,7 +63,7 @@ public final class MenuConfig extends ModuleConfig {
     @Setting(path = "gui.font.enabled", desc = "Frame layer master switch (GUI-FONT): Java players with the icon pack see menus as "
             + "our panel with a plaque and soft tiles, and the logo on the scoreboard and tab. false = nobody gets any glyph "
             + "(menus, scoreboard, tab); everyone sees the plain chest. Bedrock never sees glyphs.")
-    public boolean fontEnabled = true;
+    public boolean fontEnabled = false;
 
     @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off.")
     public boolean fontPanels = true;
