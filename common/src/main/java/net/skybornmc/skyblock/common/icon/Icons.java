@@ -55,23 +55,29 @@ public final class Icons {
         return catalog.has(key);
     }
 
-    /** The vanilla base item of {@code key}; {@link Material#BARRIER} for an unknown key or base. */
+    /**
+     * The vanilla item of {@code key}: the base item of a custom icon, or the item of a plain vanilla key;
+     * {@link Material#BARRIER} for an unknown key or an id that is not an item.
+     */
     public Material base(String key) {
-        return materials.computeIfAbsent(key == null ? "" : key, k -> catalog.get(k)
-                .map(def -> {
-                    Material m = Material.matchMaterial(def.base());
-                    if (m == null || !m.isItem()) {
-                        warnOnce("base:" + k, "icon '" + k + "' has base '" + def.base() + "', which is not an item; showing a barrier");
-                        return Material.BARRIER;
-                    }
-                    return m;
-                })
-                .orElse(Material.BARRIER));
+        return materials.computeIfAbsent(key == null ? "" : key, k -> {
+            String id = catalog.get(k).map(IconDef::base).or(() -> catalog.vanilla(k)).orElse(null);
+            if (id == null) {
+                return Material.BARRIER;
+            }
+            Material m = Material.matchMaterial(id);
+            if (m == null || !m.isItem()) {
+                warnOnce("base:" + k, "icon '" + k + "' has item '" + id + "', which is not an item; showing a barrier");
+                return Material.BARRIER;
+            }
+            return m;
+        });
     }
 
     /**
-     * The icon for {@code viewer}: the base item, plus the model string when the viewer has the pack loaded. An unknown
-     * key logs once and returns a plain barrier (never a missing-model cube).
+     * The icon for {@code viewer}: the base item, plus the model string when the viewer has the pack loaded and the key
+     * is a custom icon. A plain vanilla key is the real item for everyone, never tagged. An unknown key logs once and
+     * returns a plain barrier (never a missing-model cube).
      */
     public ItemStack item(Player viewer, String key) {
         boolean known = has(key);
@@ -80,7 +86,7 @@ public final class Icons {
             return new ItemStack(Material.BARRIER);
         }
         ItemStack item = new ItemStack(base(key));
-        if (shouldTag(status(viewer), true)) {
+        if (shouldTag(status(viewer), catalog.isCustom(key))) {
             item.editMeta(meta -> {
                 CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
                 cmd.setStrings(List.of(key));

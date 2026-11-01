@@ -3,10 +3,10 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/feature_titles",
+     "model": "phoenix:item/icon/ui_type",
      "type": "minecraft:model"
     },
-    "when": "feature/titles"
+    "when": "ui/type"
    }
   ],
   "fallback": {

@@ -7,27 +7,34 @@ declined, failed or still-loading players see the plain base item. No fonts, gly
 ## Files
 | Path | What |
 |---|---|
-| `icons.json` | **The catalogue** (single source of truth): key, base item, name, meaning colour, file, slice, motif, where it is used. Bundled into the plugin (`icons/icons.json`) by Gradle. |
-| `vanilla-fallback.json` | The vanilla 1.21.5 item definition of every base item (structure only, no textures). Written once by `fetch-vanilla`. |
+| `icons.json` | **The catalogue** (single source of truth). `icons` = custom icons (key, base item, name, meaning colour, file, slice, motif, where used, optional `variants` + `style`); `vanilla` = menu keys that are plain vanilla items (key -> item id). Bundled into the plugin (`icons/icons.json`) by Gradle. |
+| `vanilla-fallback.json` | The vanilla item definition of every base item (structure only, no textures), from the 1.21.5 client. Written by `fetch-vanilla`; compared with newer clients by `verify-jars`. |
 | `pack/` | The pack tree that is zipped into the plugin jar (`modules/pack`, Gradle task `packZip`). |
-| `pack/assets/phoenix/textures/item/icon/<file>.png` | **The art.** One PNG per catalogue key. |
-| `preview/contact-sheet.png` | Every icon at 4x on the vanilla slot grey, with key and base item. |
+| `pack/assets/phoenix/textures/item/icon/<file>.png` | **The live art.** One PNG per live custom icon. |
+| `variants/<file>/<style>.png` | Every variant of an icon with several looks (A/B/C, `ember`). Not in the pack. |
+| `preview/contact-sheet.png` | Every icon and variant at 4x. |
+| `../docs/design/ICON_MAP.md` | Which keys are custom and which vanilla material every other key uses. |
 
-## Replace an icon (owner)
-1. Open `preview/contact-sheet.png` to find the icon and its file name (`key` with `/` replaced by `_`, e.g. `feature/home` -> `feature_home.png`).
-2. Draw `pack/assets/phoenix/textures/item/icon/<file>.png`: **16x16 or 32x32, RGBA**, transparent background. Keep the look of a vanilla item: no anti-aliasing, a dark 1 px outline, light top-left, dark bottom-right. The `motif` field in `icons.json` says what the picture should show.
-3. Run `python3 tools/build_icons.py pack` (and `sheet` to refresh the preview), then `python3 tools/build_icons.py check` (must print `OK`).
-4. Rebuild the plugin (`./gradlew build`). The new pack has a new hash, so clients download it again; players who are online get it after `/pack reload`.
+## Rule: custom only when there is no good vanilla item
+A custom icon exists only for things that are not a real Minecraft item: currencies, UI actions (Back, pages, Close, Confirm, Cancel, Buy, Sell,
+Sell all, Info, Help, Danger, Search, Lock, Undo, Fill, Type, switches) and a few feature symbols (Bank, Top, Auction). Everything else is a plain
+vanilla item under a stable key in `"vanilla"`. To give one a custom picture later: add it to `icons`, remove it from `vanilla`.
 
-The generator **never overwrites an existing PNG** (only `art --force-art` or `art --only <key>` do). Most icons are
-still generator placeholders: hand-drawn pictures for the menu star, currencies, navigation and states, and a
-coloured letter badge for every feature, travel, island and shop icon. Those badges are waiting for real art.
+## Switch a look, replace an icon (owner)
+1. Open `feature-overview/inspiration/icons-v2-preview.html` (made by `python3 tools/icons_preview.py --out feature-overview/inspiration --open`) and pick a style.
+2. `python3 tools/build_icons.py use nav/back B`, then `pack` and `check` (must print `OK`). Style `vanilla` (the hotbar star) removes the custom model.
+3. Draw your own: put a **16x16 or 32x32 RGBA** PNG over `pack/.../icon/<file>.png` (key with `/` replaced by `_`). Keep the vanilla look: no anti-aliasing, a dark outline.
+4. Rebuild the plugin (`./gradlew build`). The new pack has a new hash, so clients download it again; online players get it after `/pack reload`.
+
+The generator **never overwrites an existing PNG** (only `art --force-art` or `art --only <key>` do), so hand-drawn art survives.
+The art itself is code (`tools/icons_lib/sprites.py`, ASCII sprites with an automatic outline), so a redesign is a diff, not a binary.
 
 ## Add or change an icon (developer)
-1. Add a row to `icons.json` (key `group/name`, a base item that exists in 1.21.5, a meaning from the list in the build spec).
-2. New base item: `python3 tools/build_icons.py fetch-vanilla` (one-time download of the 1.21.5 client jar into `tools/icons_lib/.cache/`, git-ignored).
-3. `python3 tools/build_icons.py art` (draws only the missing PNG), `pack`, `sheet`, `check`.
+1. Add a row to `icons.json` `icons` (key `group/name`, a base item that exists in 1.21.5, a meaning, optional `variants` + `style`).
+2. `python3 tools/build_icons.py fetch-vanilla` if the base item is new (needs network, or `--jar client.jar`), then `verify-jars --jar` for 1.21.5, the newest release and the Paper client version.
+3. Add the sprite to `sprites.py` (`SINGLE` or `VARIANTS`), then `art`, `pack`, `sheet`, `check`.
 4. Use it in code with `core.menus().icon(viewer, "group/name", name, lore)`.
 
-Two icons may share a base item; two buttons on the same screen never do. Never point `item_model` at a pack-only
-model (a client without the pack would show the missing-model cube).
+Never base a custom icon on an item whose definition differs between client versions (`verify-jars` fails for those: bed, compass, shield, spyglass
+and filled map are examples); the pack REPLACES the whole item definition, so a stale fallback shows the purple missing-model cube.
+Never point `item_model` at a pack-only model.

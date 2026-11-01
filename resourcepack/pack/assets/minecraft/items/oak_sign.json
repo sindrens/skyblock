@@ -3,10 +3,10 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/island_chat_off",
+     "model": "phoenix:item/icon/ui_info",
      "type": "minecraft:model"
     },
-    "when": "island/chat_off"
+    "when": "ui/info"
    }
   ],
   "fallback": {

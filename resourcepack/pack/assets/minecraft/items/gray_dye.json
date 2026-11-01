@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/state_locked",
-     "type": "minecraft:model"
-    },
-    "when": "state/locked"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/state_off",
      "type": "minecraft:model"
     },

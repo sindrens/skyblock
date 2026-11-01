@@ -3,10 +3,10 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/island_visitors_locked",
+     "model": "phoenix:item/icon/state_locked",
      "type": "minecraft:model"
     },
-    "when": "island/visitors_locked"
+    "when": "state/locked"
    }
   ],
   "fallback": {
