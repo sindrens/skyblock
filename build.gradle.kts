@@ -45,7 +45,10 @@ subprojects {
 
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
-        testLogging { events("passed", "skipped", "failed") }
+        // Only skipped and failed tests are printed (522 test classes made "passed" lines drown the failures).
+        testLogging { events("skipped", "failed") }
+        // Test classes of one module run in several JVMs at once (each H2 test uses its own @TempDir database).
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
     }
 }
 
