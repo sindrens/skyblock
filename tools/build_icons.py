@@ -58,7 +58,7 @@ MANIFEST = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 # 1.21.5 .. 26.3 (v1 values; re-check the 26.3 number in the Paper changelog before a release).
 FORMAT_MIN, FORMAT_MAX = 55, 97
 DESCRIPTION = 'Phoenix Skyblock icons'
-SIZE_BUDGET = 150 * 1024
+SIZE_BUDGET = 250 * 1024   # GUI-FONT: the frame layer adds about 20-30 KB (I7 target 200 KB, hard limit 1 MB)
 
 KEY_RE = re.compile(r'^[a-z0-9_]+(/[a-z0-9_]+)?$')
 MEANINGS = ('money', 'reward', 'move', 'depths', 'skills', 'people', 'home', 'danger', 'neutral', 'locked',

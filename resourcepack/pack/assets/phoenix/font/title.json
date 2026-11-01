@@ -1,0 +1,32 @@
+{
+ "providers": [
+  {
+   "type": "space",
+   "advances": {
+    " ": 4
+   }
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/title/letters.png",
+   "ascent": 17,
+   "height": 17,
+   "chars": [
+    "ABCDEFGHIJKLMNOP",
+    "QRSTUVWXYZ012345",
+    "6789&'-!?()/.,:\u0000"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/title/letters.png",
+   "ascent": 17,
+   "height": 17,
+   "chars": [
+    "abcdefghijklmnop",
+    "qrstuvwxyz\u0000\u0000\u0000\u0000\u0000\u0000",
+    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+   ]
+  }
+ ]
+}
