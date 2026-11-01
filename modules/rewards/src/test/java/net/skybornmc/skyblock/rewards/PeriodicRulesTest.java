@@ -36,10 +36,12 @@ class PeriodicRulesTest {
 
     @Test
     void resetCountdownsAreDstSafe() {
-        // 2026-10-25 the clocks go back: Sunday 25 Oct 12:00 to Monday 26 Oct 00:00 is 13 real hours.
-        assertEquals(Duration.ofHours(13), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2026, 10, 25, 12, 0), OSLO));
-        // 2027-03-28 the clocks go forward: Sunday 28 Mar 12:00 to Monday 00:00 is 12 real hours.
-        assertEquals(Duration.ofHours(12), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2027, 3, 28, 12, 0), OSLO));
+        // 2026-10-25 03:00 the clocks go back: Saturday 24 Oct 12:00 to Monday 26 Oct 00:00 is 36 + 1 = 37 real hours.
+        assertEquals(Duration.ofHours(37), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2026, 10, 24, 12, 0), OSLO));
+        // 2027-03-28 02:00 the clocks go forward: Saturday 27 Mar 12:00 to Monday 29 Mar 00:00 is 36 - 1 = 35 real hours.
+        assertEquals(Duration.ofHours(35), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2027, 3, 27, 12, 0), OSLO));
+        assertEquals(Duration.ofHours(12), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2027, 3, 28, 12, 0), OSLO),
+                "after the switch the same day it is plain 12 h");
         assertEquals(Duration.ofHours(1), PeriodicRules.untilReset(PeriodicRules.Period.MONTH, at(2026, 11, 30, 23, 0), OSLO));
         assertEquals(Duration.ofDays(7), PeriodicRules.untilReset(PeriodicRules.Period.WEEK, at(2026, 11, 9, 0, 0), OSLO));
     }
