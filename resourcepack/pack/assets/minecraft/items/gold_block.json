@@ -3,10 +3,10 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/feature_auction",
+     "model": "phoenix:item/icon/feature_bank",
      "type": "minecraft:model"
     },
-    "when": "feature/auction"
+    "when": "feature/bank"
    }
   ],
   "fallback": {

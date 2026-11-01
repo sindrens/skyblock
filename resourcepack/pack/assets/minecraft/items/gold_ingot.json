@@ -7,13 +7,6 @@
      "type": "minecraft:model"
     },
     "when": "currency/money"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/island_stats",
-     "type": "minecraft:model"
-    },
-    "when": "island/stats"
    }
   ],
   "fallback": {

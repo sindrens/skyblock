@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/state_loading",
-     "type": "minecraft:model"
-    },
-    "when": "state/loading"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/state_undo",
      "type": "minecraft:model"
     },
