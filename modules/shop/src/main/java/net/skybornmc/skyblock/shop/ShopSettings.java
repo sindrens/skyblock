@@ -90,11 +90,11 @@ public final class ShopSettings extends ModuleConfig {
         return java.util.Map.ofEntries(
                 java.util.Map.entry("spawners.income-per-hour", "ECON-SPAWNERS: income comes from the spawner drop's sell price "
                         + "(stacking + sell.yml), not a fixed number per tier"),
-                java.util.Map.entry("buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)",
-                "quick-buy.left-amount", "Shop v2: a click opens the buy page (Buy 1/16/64, Fill inventory, Type an amount)",
-                "quick-buy.right-amount", "Shop v2: a click opens the buy page; Java shift-click buys one stack",
-                "quick-buy.start-amount", "Shop v2: the amount screen became the buy page",
-                "buy.picker-steps", "Shop v2: the buy page has fixed Buy 1/16/64 buttons");
+                java.util.Map.entry("buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)"),
+                java.util.Map.entry("quick-buy.left-amount", "Shop v2: a click opens the buy page (Buy 1/16/64, Fill inventory, Type an amount)"),
+                java.util.Map.entry("quick-buy.right-amount", "Shop v2: a click opens the buy page; Java shift-click buys one stack"),
+                java.util.Map.entry("quick-buy.start-amount", "Shop v2: the amount screen became the buy page"),
+                java.util.Map.entry("buy.picker-steps", "Shop v2: the buy page has fixed Buy 1/16/64 buttons"));
     }
 
     @Override
