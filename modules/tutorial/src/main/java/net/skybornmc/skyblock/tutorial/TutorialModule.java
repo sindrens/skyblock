@@ -90,6 +90,7 @@ public final class TutorialModule implements SkyblockModule {
         pip.cleanStray();
         guides.start();
         cameras.start();
+        pip.start();
         optional.start();
         stats.startPurge();
         // Players already online (reload): load them quietly. The reward title is added to cosmetics when missing.
@@ -120,6 +121,7 @@ public final class TutorialModule implements SkyblockModule {
             stats.clear();
             publishStarter();
             guides.start();
+            pip.start();
             if (!config.enabled) {
                 guides.hideAll();
             } else {
@@ -157,6 +159,7 @@ public final class TutorialModule implements SkyblockModule {
             guides.hideAll();
         }
         if (pip != null) {
+            pip.stop();
             pip.hideAll();
         }
         if (listener != null) {
@@ -209,7 +212,7 @@ public final class TutorialModule implements SkyblockModule {
 
     private String objectiveText(Player player) {
         Progress p = engine == null ? null : engine.progress(player.getUniqueId());
-        if (p == null || p.state != State.ACTIVE || p.step == null || !config.enabled) {
+        if (p == null || p.state != State.ACTIVE || p.step == null || !config.enabled || !config.scoreboardObjective) {
             return "";
         }
         return engine.objective(p.step);

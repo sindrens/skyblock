@@ -22,7 +22,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,9 +33,16 @@ import java.util.UUID;
 
 /**
  * The guides of a running tutorial, for Java and Bedrock (TUTORIAL.md §9.3): boss bar compass (Bedrock-safe arrows),
- * action bar hint, flame trail and flame column (per-player particles), dust markers on farm spots and ore, and a
- * hologram over the target that only this player sees (text display, or a name-tag armor stand for Bedrock viewers,
- * TQ32). One repeating task for every tutorial player. Main thread.
+ * the walkable dotted guide trail and a small dust column at the target ({@link Trail}, per-player particles), dust
+ * markers on farm spots and ore, Pip's target and route ({@link Pip}), and a hologram over the target that only this
+ * player sees (text display, or a name-tag armor stand for Bedrock viewers, TQ32). One repeating task for every tutorial
+ * player. Main thread.
+ *
+ * <p>TUT-FIX2, one place per message (owner 31 Oct: the same instruction reached the player in up to six places): the
+ * boss bar always carries the current instruction; chat gets one line when a step is done or once as a hint after
+ * {@code guide.hint-after-seconds} with nothing done; a title only at the start of a step; a hologram only at the target
+ * of {@code guide.hologram-steps}. The action bar hint ({@code guide.action-bar-hint}) and Pip's chat lines
+ * ({@code pip.chat}) are off by default.</p>
  *
  * <p>PERF7: the boss bar, action bar hint and hologram texts are parsed once per distinct value (shared
  * {@link TextMemo}, keyed by every input and the messages generation) instead of on every run (every
@@ -63,6 +69,10 @@ final class Guides {
         List<MarkerScan.Hit> order = List.of();
         /** No hologram spawn before this time (the last one was refused). */
         long hologramRetryAt;
+        /** The walkable guide trail of this player (TUT-FIX2). */
+        final Trail.State trail = new Trail.State();
+        /** The step whose wait hint was already sent in chat (once per step). */
+        String hinted;
     }
 
     private final TutorialModule module;
@@ -71,6 +81,7 @@ final class Guides {
     private final Map<UUID, View> views = new HashMap<>();
     /** Parsed bar / hint / hologram texts by every input (PERF7); the compass distance makes a few hundred at most. */
     private final TextMemo<Component> texts = new TextMemo<>(512);
+    private final Trail trail;
     private Scheduler.Task task;
     private long ticks;
 
@@ -78,6 +89,11 @@ final class Guides {
         this.module = module;
         this.core = module.core();
         this.tag = new NamespacedKey(core.plugin(), "tutorial_hologram");
+        this.trail = new Trail(module);
+    }
+
+    Trail trail() {
+        return trail;
     }
 
     void start() {
@@ -129,6 +145,7 @@ final class Guides {
         ticks += every;
         boolean particles = module.config().particles && ticks % Math.max(every, module.config().particleTicks) < every;
         long now = System.currentTimeMillis();
+        trail.newRun();
         for (Map.Entry<UUID, View> e : new ArrayList<>(views.entrySet())) {
             Player player = Bukkit.getPlayer(e.getKey());
             Progress p = module.engine().progress(e.getKey());
@@ -150,12 +167,46 @@ final class Guides {
                 }
                 continue;
             }
-            Optional<Location> target = draw(player, p, e.getValue(), particles);
-            core.scheduler().timer().time("tutorial-guides-pip", () -> module.pip().update(player, target));
+            View v = e.getValue();
+            Optional<Location> target = draw(player, p, v, particles);
+            Route route = p.step != null && p.step.equals(v.trail.step) ? v.trail.route : null; // never an old step's way
+            module.pip().guide(player, p.step, perch(player, p, v, target), route, v.trail.cursor);
             module.listener().tick(player, p);
+            waitHint(player, p, v, now);
             idle(player, p, now);
         }
         module.pip().prune();
+    }
+
+    /** Where Pip lands for this step: the first farm spot / ore marker on the counted steps, else the target. */
+    private Optional<Location> perch(Player player, Progress p, View v, Optional<Location> target) {
+        if ((Steps.CROP.equals(p.step) || Steps.MINE.equals(p.step)) && p.step.equals(v.markersFor) && !v.markers.isEmpty()) {
+            Location m = v.markers.getFirst();
+            if (sameWorld(player, m)) {
+                // Farm spots are the dirt block itself; ore markers sit one block under the ore (see ores()).
+                return Optional.of(m.clone().add(0.5, Steps.MINE.equals(p.step) ? 2.0 : 1.0, 0.5));
+            }
+        }
+        return target;
+    }
+
+    /**
+     * TUT-FIX2: a player who did nothing on the step for {@code guide.hint-after-seconds} gets the hint once as one chat
+     * line (the boss bar already shows the instruction all the time).
+     */
+    private void waitHint(Player player, Progress p, View v, long now) {
+        int after = module.config().hintAfterSeconds;
+        String step = p.step;
+        if (after <= 0 || step == null || step.equals(v.hinted) || !module.msg().has("steps." + step + ".hint")) {
+            return;
+        }
+        long since = Math.max(p.stepStartedAt, p.lastActivity);
+        if (since <= 0 || now - since < after * 1000L) {
+            return;
+        }
+        v.hinted = step;
+        module.msg().send(player, "hint.chat", Msg.c("hint", module.msg().component(player, "steps." + step + ".hint", counts(p, step))));
+        core.sounds().play(player, "notify");
     }
 
     private void idle(Player player, Progress p, long now) {
@@ -164,7 +215,8 @@ final class Guides {
             return;
         }
         p.idleReminded = true;
-        module.msg().title(player, "idle.title", Msg.c("step", module.engine().stepName(player, p.step)));
+        // TUT-FIX2: one chat line (titles are only for the start of a step) and Pip's call.
+        module.msg().send(player, "idle.chat", Msg.c("step", module.engine().stepName(player, p.step)));
         core.sounds().play(player, "notify");
         module.pip().say(player, "idle");
         module.engine().event(player, p, "idle");
@@ -180,7 +232,7 @@ final class Guides {
             core.scheduler().timer().time("tutorial-guides-bar", () -> bar(player, p, v, target));
         }
         long now = System.currentTimeMillis();
-        if (now - v.lastHint >= 2000 && module.msg().has("steps." + step + ".hint")) {
+        if (module.config().actionBarHint && now - v.lastHint >= 2000 && module.msg().has("steps." + step + ".hint")) {
             v.lastHint = now;
             int have = p.count(step);
             int needed = needed(step);
@@ -188,6 +240,7 @@ final class Guides {
                     () -> module.msg().component(player, "steps." + step + ".hint", counts(p, step))));
         }
         core.scheduler().timer().time("tutorial-guides-hologram", () -> hologram(player, p, v, target));
+        trail.update(player, step, target, v.trail);
         if (particles) {
             particles(player, p, v, target);
         }
@@ -315,11 +368,11 @@ final class Guides {
     private void particles(Player player, Progress p, View v, Optional<Location> target) {
         String step = p.step;
         TutorialConfig c = module.config();
-        if (step.equals(Steps.PORTAL)) {
-            trail(player);
+        trail.draw(player, step, v.trail);
+        if (c.column) {
+            target.filter(t -> sameWorld(player, t) && t.distanceSquared(player.getLocation()) < 96 * 96)
+                    .ifPresent(t -> column(player, t, c.columnHeight, trail.dust(step)[0]));
         }
-        target.filter(t -> sameWorld(player, t) && t.distanceSquared(player.getLocation()) < 96 * 96)
-                .ifPresent(t -> column(player, t, c.columnHeight));
         if (step.equals(Steps.CROP) || step.equals(Steps.MINE)) {
             long now = System.currentTimeMillis();
             if (!step.equals(v.markersFor) || now - v.lastMarkerScan > 2000) {
@@ -330,91 +383,16 @@ final class Guides {
             }
             for (Location m : v.markers) {
                 if (sameWorld(player, m)) {
-                    player.spawnParticle(Particle.HAPPY_VILLAGER, m.clone().add(0.5, 1.15, 0.5), 4, 0.25, 0.1, 0.25, 0);
+                    player.spawnParticle(Particle.HAPPY_VILLAGER, m.getX() + 0.5, m.getY() + 1.15, m.getZ() + 0.5, 3, 0.25, 0.1, 0.25, 0);
                 }
             }
         }
     }
 
-    /** Flames every {@code guide.trail.spacing} blocks along the trail nodes, up to {@code guide.trail.ahead} ahead. */
-    private List<String> trailSource;
-    private List<TargetSpec.Point> trailPoints = List.of();
-
-    /** The trail nodes, parsed once per config list (PERF2, P-21: they were parsed for every node on every particle tick). */
-    private List<TargetSpec.Point> trailPoints() {
-        List<String> raw = module.config().trailNodes;
-        if (raw != trailSource) {
-            List<TargetSpec.Point> points = new ArrayList<>();
-            for (String node : raw) {
-                TargetSpec.parse(node).ifPresent(spec -> {
-                    if (spec instanceof TargetSpec.Point pt) {
-                        points.add(pt);
-                    }
-                });
-            }
-            trailPoints = List.copyOf(points);
-            trailSource = raw;
-        }
-        return trailPoints;
-    }
-
-    private void trail(Player player) {
-        List<Location> nodes = new ArrayList<>();
-        World here = player.getWorld();
-        for (TargetSpec.Point pt : trailPoints()) {
-            if (pt.world() != null && pt.world().equalsIgnoreCase(here.getName())) {
-                nodes.add(new Location(here, pt.x(), pt.y(), pt.z()));
-            }
-        }
-        if (nodes.size() < 2) {
-            return;
-        }
-        Location at = player.getLocation();
-        // Nearest segment, then walk forward from the player's projection.
-        int bestSeg = 0;
-        double bestDist = Double.MAX_VALUE;
-        double bestT = 0;
-        for (int i = 0; i < nodes.size() - 1; i++) {
-            Vector a = nodes.get(i).toVector();
-            Vector b = nodes.get(i + 1).toVector();
-            Vector ab = b.clone().subtract(a);
-            double len2 = ab.lengthSquared();
-            double t = len2 == 0 ? 0 : Math.max(0, Math.min(1, at.toVector().subtract(a).dot(ab) / len2));
-            double d = a.clone().add(ab.clone().multiply(t)).distanceSquared(at.toVector());
-            if (d < bestDist) {
-                bestDist = d;
-                bestSeg = i;
-                bestT = t;
-            }
-        }
-        if (bestDist > 40 * 40) {
-            return; // far away from the road: the compass leads
-        }
-        double spacing = Math.max(1, module.config().trailSpacing);
-        double left = module.config().trailAhead;
-        double offset = spacing;
-        for (int i = bestSeg; i < nodes.size() - 1 && left > 0; i++) {
-            Vector a = nodes.get(i).toVector();
-            Vector b = nodes.get(i + 1).toVector();
-            Vector ab = b.clone().subtract(a);
-            double len = ab.length();
-            if (len < 1e-6) {
-                continue;
-            }
-            Vector dir = ab.clone().multiply(1 / len);
-            double startAt = i == bestSeg ? bestT * len : 0;
-            for (double s = startAt + offset; s <= len && left > 0; s += spacing) {
-                Vector pos = a.clone().add(dir.clone().multiply(s));
-                player.spawnParticle(Particle.FLAME, pos.getX(), pos.getY() + 0.2, pos.getZ(), 1, 0.05, 0.02, 0.05, 0.002);
-                left -= spacing;
-            }
-            offset = spacing;
-        }
-    }
-
-    private void column(Player player, Location t, int height) {
-        for (double y = 0; y <= height; y += 0.75) {
-            player.spawnParticle(y % 1.5 == 0 ? Particle.FLAME : Particle.END_ROD, t.getX(), t.getY() + y, t.getZ(), 1, 0.08, 0.05, 0.08, 0.002);
+    /** TUT-FIX2: a soft dust column in the trail colour (no fire): one dot per block, from the target up. */
+    private static void column(Player player, Location t, int height, Particle.DustOptions dust) {
+        for (int y = 1; y <= height; y++) {
+            player.spawnParticle(Particle.DUST, t.getX(), t.getY() + y, t.getZ(), 1, 0.05, 0.05, 0.05, 0, dust);
         }
     }
 
@@ -519,6 +497,7 @@ final class Guides {
         String step = p.step;
         String key = "hologram." + step;
         boolean wanted = module.config().holograms && target.isPresent() && module.msg().has(key)
+                && module.config().hologramSteps.stream().anyMatch(h -> h.strip().equalsIgnoreCase(step))
                 && sameWorld(player, target.get()) && target.get().distanceSquared(player.getLocation())
                 < (double) module.config().hologramRange * module.config().hologramRange;
         if (!wanted) {
