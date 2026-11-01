@@ -1223,7 +1223,7 @@ topics:
 
   auction:
     icon: gold_block
-    aliases: [ah, auctions, auction-house, sell-items, collection-bin]
+    aliases: [ah, auctions, auction-house, sell-items]
     name: "<c:flame>Auction house"
     summary: ["<c:text>Buy and sell items with other", "<c:text>players, even when they're offline."]
     take-me-there: "ah"
@@ -1244,9 +1244,9 @@ topics:
       - title: "<c:value>Getting items back"
         lines:
           - "<c:text>Unsold, cancelled and bought items that"
-          - "<c:text>don't fit wait in your <c:value>Collection bin</c:value><c:text>."
+          - "<c:text>don't fit go to your <c:value>/box</c:value><c:text>."
           - "<c:text>Cancel a listing in <c:value>My listings</c:value><c:text>."
-          - "<c:text>You can have 5 listings at once."
+          - "<c:text>Better ranks give more listing slots."
       - title: "<c:value>Rules"
         lines:
           - "<c:text>Starter kit items and money notes"

@@ -84,10 +84,18 @@ final class AuctionEngine {
         /** Someone else is paying for it right now. */
         BUSY,
         /** Unknown outcome (database problem); resolved automatically, the buyer either gets the item or keeps the money. */
-        PROCESSING
+        PROCESSING,
+        /**
+         * C1-R1-07: the buyer's profile has not earned {@code send-gate.required} yet and the seller is not on its island
+         * ({@link BuyResult#missing()} = how much more). Nothing changed.
+         */
+        GATED
     }
 
-    record BuyResult(BuyOutcome outcome, Listing listing, Long collectionId, Long buyerBalance) {
+    record BuyResult(BuyOutcome outcome, Listing listing, Long collectionId, Long buyerBalance, long missing) {
+        BuyResult(BuyOutcome outcome, Listing listing, Long collectionId, Long buyerBalance) {
+            this(outcome, listing, collectionId, buyerBalance, 0);
+        }
     }
 
     enum CancelOutcome { CANCELLED, GONE, BUSY, ERROR }
@@ -269,8 +277,29 @@ final class AuctionEngine {
 
     // ================================================================== buy
 
-    /** Buys a listing (after the confirm dialog). Never completes exceptionally. */
+    /** Buys a listing without the earned gate (tests and gate-free callers). Never completes exceptionally. */
     CompletableFuture<BuyResult> buy(long id, UUID buyer, String buyerName, Actor actor) {
+        return buy(id, buyer, buyerName, actor, net.skybornmc.skyblock.common.economy.SendGate.Check.OPEN);
+    }
+
+    /**
+     * Buys a listing (after the confirm dialog). {@code gate} is the earned-money check of the buyer's profile against the
+     * seller (ECON-SELL-SHOP-AH C4, read on the main thread); a refused gate ends here with {@link BuyOutcome#GATED} before
+     * the conditional UPDATE, so a second click cannot skip it. {@code null} = refused (fail closed). Never completes
+     * exceptionally.
+     */
+    CompletableFuture<BuyResult> buy(long id, UUID buyer, String buyerName, Actor actor, net.skybornmc.skyblock.common.economy.SendGate.Check gate) {
+        if (gate == null || !gate.allowed()) {
+            Listing l = active.get(id);
+            long missing = gate == null ? 0 : gate.missing();
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("listing", id);
+            details.put("earned", gate == null ? -1 : gate.earned());
+            details.put("required", gate == null ? -1 : gate.required());
+            details.put("gate", gate == null ? "missing" : "refused");
+            audit.logPlayer(AuditCategory.AUCTION, "ah_buy_gated", actor, buyer, buyerName, l == null ? null : l.price(), null, details);
+            return CompletableFuture.completedFuture(new BuyResult(BuyOutcome.GATED, l, null, null, missing));
+        }
         if (!inFlight.add(id)) {
             return CompletableFuture.completedFuture(new BuyResult(BuyOutcome.BUSY, active.get(id), null, null));
         }
@@ -532,6 +561,11 @@ final class AuctionEngine {
             });
             return entry;
         });
+    }
+
+    /** ECON-SELL-SHOP-AH C3: every waiting row of an owner, each taken exactly once (for the /box drain). */
+    CompletableFuture<List<CollectionEntry>> takeAll(UUID owner) {
+        return store.takeAll(owner);
     }
 
     /** Puts what did not fit back into the bin. */

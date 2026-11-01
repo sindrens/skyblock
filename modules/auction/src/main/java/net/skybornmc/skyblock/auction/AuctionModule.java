@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 /**
- * Auction house (M3.6): {@code /ah} browse menu (categories, search, sort, own listings, collection bin), {@code /ah sell}
+ * Auction house (M3.6): {@code /ah} browse menu (categories, search, sort, own listings), {@code /ah sell}
  * for the held item, buy confirm dialog. The dupe-safe state machine lives in {@link AuctionEngine}; this class is the
  * Bukkit side: commands, menus, inventories, notifications and background tasks.
  * Settings: {@code auction.yml}; texts: {@code messages/auction.yml}; data: {@code db/auction}.
@@ -68,6 +68,11 @@ public final class AuctionModule implements SkyblockModule, Listener {
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Decoded listing items for the menus (bytes of a listing never change). */
     private final Map<Long, ItemStack> decoded = new java.util.concurrent.ConcurrentHashMap<>();
+    private AuctionBoxDrain drain;
+    /** C5: typical price per item key (median price per item), rebuilt by the async hints job. */
+    private volatile Map<String, PriceStats.Stat> typical = Map.of();
+    /** C5: far-from-typical prices waiting for their second click/command: player → token and when it expires. */
+    private final Map<UUID, Map.Entry<String, Long>> farConfirm = new java.util.concurrent.ConcurrentHashMap<>();
 
     public AuctionModule(Core core) {
         this.core = core;
@@ -91,6 +96,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
+        // ECON-SELL-SHOP-AH C3: the collection bin is gone (items go to /box); old texts are upgraded unless edited.
+        core.messages().retire(ID, AuctionTexts.RETIRED);
+        core.messages().load(ID);
         main = new MainThread(core.plugin());
         codec = new ItemCodec(core.items());
         engine = new AuctionEngine(new AuctionStore(core.database()),
@@ -107,8 +115,20 @@ public final class AuctionModule implements SkyblockModule, Listener {
             @Override
             public void expired(Listing listing) {
                 main.execute(() -> notifyExpired(listing));
+                drain.drain(listing.seller());
+            }
+
+            @Override
+            public void feeFailed(Listing listing, long collectionId) {
+                main.execute(() -> {
+                    if (online(listing.seller()) == null) {
+                        drain.drain(listing.seller());
+                    }
+                });
             }
         });
+        drain = new AuctionBoxDrain(engine, () -> net.skybornmc.skyblock.common.box.ItemBox.of(core.services()), core.audit(), main,
+                ItemCodec::decode, core.plugin().getLogger());
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         // P7 (spec 13.1 "Block trading"): staff can cancel all listings of a player (items to the collection bin)
@@ -127,6 +147,13 @@ public final class AuctionModule implements SkyblockModule, Listener {
             core.plugin().getLogger().log(Level.WARNING, "Auction: expiry check failed", Database.cause(e));
             return List.of();
         })));
+        // C3: rows left from the collection bin (and any a failed box delivery kept) go to /box now and every few minutes.
+        core.scheduler().later("auction:drain", 40L, drain::drainAll);
+        long drainTicks = 20L * config.boxDrainSeconds;
+        tasks.add(core.scheduler().asyncRepeat(drainTicks, drainTicks, drain::drainAll));
+        // C5: typical prices from the sales of the last hints.median-days days.
+        long hints = 20L * 60 * config.hintsRefreshMinutes;
+        tasks.add(core.scheduler().asyncRepeat(100L, hints, this::refreshHints));
         long resync = 20L * config.cacheResyncSeconds;
         tasks.add(core.scheduler().asyncRepeat(resync, resync, () -> engine.refreshCache()
                 .thenCompose(v -> engine.recover(config.recoverAfterSeconds * 1000L)).exceptionally(e -> {
@@ -148,15 +175,20 @@ public final class AuctionModule implements SkyblockModule, Listener {
     private java.util.concurrent.CompletableFuture<Integer> cancelAllOf(UUID player, String reason, Actor actor) {
         return engine.refreshCache().thenCompose(v -> {
             List<java.util.concurrent.CompletableFuture<Boolean>> runs = new ArrayList<>();
+            java.util.Set<UUID> sellers = new java.util.HashSet<>();
             for (Listing l : engine.activeListings()) {
                 if (player.equals(profiles().ownerOf(l.seller()))) {
+                    sellers.add(l.seller());
                     runs.add(engine.cancel(l.id(), l.seller(), true, actor, reason)
                             .thenApply(r -> r.outcome() == AuctionEngine.CancelOutcome.CANCELLED)
                             .exceptionally(e -> false));
                 }
             }
             return java.util.concurrent.CompletableFuture.allOf(runs.toArray(java.util.concurrent.CompletableFuture[]::new))
-                    .thenApply(x -> (int) runs.stream().filter(java.util.concurrent.CompletableFuture::join).count());
+                    .thenApply(x -> {
+                        sellers.forEach(drain::drain); // C3: the items go to each profile's /box
+                        return (int) runs.stream().filter(java.util.concurrent.CompletableFuture::join).count();
+                    });
         }).exceptionally(e -> {
             core.plugin().getLogger().log(Level.WARNING, "Auction: cancelling listings for a sanction failed", Database.cause(e));
             return 0;
@@ -263,6 +295,11 @@ public final class AuctionModule implements SkyblockModule, Listener {
      * <b>before</b> the database call; it comes back only if nothing was stored.
      */
     void startListing(Player player, int slot, ItemStack expected, long price, String durationKey) {
+        startListing(player, slot, expected, price, durationKey, false);
+    }
+
+    /** @param farConfirmed the far-from-typical price was already confirmed (sell dialog) */
+    void startListing(Player player, int slot, ItemStack expected, long price, String durationKey, boolean farConfirmed) {
         Duration duration = Pricing.offered(config, durationKey);
         if (duration == null) {
             send(player, "sell.bad-duration", Msg.p("choices", String.join(", ", Pricing.durations(config))));
@@ -282,6 +319,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (problem.isPresent()) {
             send(player, problem.get(), sellPlaceholders(player, price));
             return;
+        }
+        if (!farConfirmed && !farPriceOk(player, now, price)) {
+            return; // C5: asked to confirm a price far from the typical one (the same command again lists it)
         }
         ItemSnapshot snapshot;
         try {
@@ -308,6 +348,75 @@ public final class AuctionModule implements SkyblockModule, Listener {
                     }
                     listingResult(online, uuid, snapshot, result, price);
                 }, main);
+    }
+
+    // ================================================================== typical prices (C5)
+
+    /** The typical price per item of this stack, or empty (hints off, too few sales). Main thread, memory only. */
+    java.util.OptionalDouble typicalPrice(ItemStack stack) {
+        if (!config.hintsEnabled || stack == null || stack.isEmpty()) {
+            return java.util.OptionalDouble.empty();
+        }
+        PriceStats.Stat st = typical.get(ItemCodec.itemKey(stack));
+        return st == null ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(st.median());
+    }
+
+    /** The typical price per item of a listing's item, or empty. */
+    java.util.OptionalDouble typicalPrice(Listing l) {
+        if (!config.hintsEnabled) {
+            return java.util.OptionalDouble.empty();
+        }
+        PriceStats.Stat st = typical.get(l.item().itemKey());
+        return st == null ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(st.median());
+    }
+
+    /**
+     * C5: a price per item more than {@code hints.warn-factor} times above or below the typical price needs a second
+     * click or command within {@code hints.confirm-seconds}. Returns true when the listing may go ahead (no typical price,
+     * close enough, or this is the second time); otherwise asks (chat) and returns false.
+     */
+    boolean farPriceOk(Player player, ItemStack stack, long price) {
+        java.util.OptionalDouble t = typicalPrice(stack);
+        double unit = price / (double) Math.max(1, stack.getAmount());
+        if (t.isEmpty() || !PriceStats.farFromTypical(unit, t.getAsDouble(), config.hintsWarnFactor)) {
+            return true;
+        }
+        String token = ItemCodec.itemKey(stack) + ":" + stack.getAmount() + ":" + price;
+        long now = System.currentTimeMillis();
+        Map.Entry<String, Long> pending = farConfirm.get(player.getUniqueId());
+        if (pending != null && pending.getKey().equals(token) && pending.getValue() >= now) {
+            farConfirm.remove(player.getUniqueId());
+            return true;
+        }
+        farConfirm.put(player.getUniqueId(), Map.entry(token, now + config.hintsConfirmSeconds * 1000L));
+        send(player, "confirm.far-price", Msg.p("factor", Format.number(Math.round(PriceStats.factor(unit, t.getAsDouble())))),
+                typicalTag(player, t.getAsDouble()));
+        sound(player, "error");
+        return false;
+    }
+
+    /** {@code <typical>}: a typical price per item (cents shown below $10). */
+    TagResolver typicalTag(CommandSender viewer, double typical) {
+        String value = typical >= 10 ? Format.number(Math.round(typical)) : String.format(java.util.Locale.ROOT, "%.2f", typical);
+        return Msg.c("typical", msg.component(viewer, "format.money", Msg.p("value", value)));
+    }
+
+    /** Async job: rebuilds the typical prices from the sales of the last hints.median-days days. */
+    private void refreshHints() {
+        if (!config.hintsEnabled) {
+            typical = Map.of();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        long since = now - Duration.ofDays(config.hintsMedianDays).toMillis();
+        engine.store().salesSince(since).thenCompose(sales -> {
+            Map<String, PriceStats.Stat> fresh = PriceStats.build(sales, config.hintsMinSales, config.hintsMinSellers, config.hintsMinBuyers);
+            typical = Map.copyOf(fresh);
+            return engine.store().writeStats(fresh, now);
+        }).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.WARNING, "Auction: typical prices could not be refreshed", Database.cause(e));
+            return null;
+        });
     }
 
     private void listingResult(Player player, UUID uuid, ItemSnapshot snapshot, AuctionEngine.CreateResult result, long price) {
@@ -370,13 +479,17 @@ public final class AuctionModule implements SkyblockModule, Listener {
             overflow(uuid, left.values());
             return;
         }
+        if (net.skybornmc.skyblock.common.box.ItemBox.of(core.services()).isPresent()) {
+            overflow(uuid, List.of(ItemCodec.decode(snapshot.bytes()))); // C3: offline = straight to /box
+            return;
+        }
         engine.putBack(uuid, snapshot.bytes(), snapshot.material(), snapshot.amount(), snapshot.name()).exceptionally(e -> {
             lost(uuid, snapshot.bytes(), e);
             return null;
         });
     }
 
-    /** Owner answer 7: what does not fit goes to /box; without the box module back into the collection bin as before. */
+    /** Owner answer 7: what does not fit goes to /box; without the box module it waits in ah_collection (drained later). */
     private void overflow(UUID owner, java.util.Collection<ItemStack> rest) {
         if (rest.isEmpty()) {
             return;
@@ -438,10 +551,33 @@ public final class AuctionModule implements SkyblockModule, Listener {
             return;
         }
         UUID uuid = key(player);
-        engine.buy(listing.id(), uuid, player.getName(), Actor.player(player)).whenCompleteAsync((r, error) -> {
+        String name = player.getName();
+        Actor actor = Actor.player(player);
+        // C4 (C1-R1-07): the $10k earned gate, read on the main thread (island membership), fail closed when it is missing.
+        java.util.concurrent.CompletableFuture<net.skybornmc.skyblock.common.economy.SendGate.Check> gate;
+        if (!config.buyGateEnabled) {
+            gate = java.util.concurrent.CompletableFuture.completedFuture(net.skybornmc.skyblock.common.economy.SendGate.Check.OPEN);
+        } else {
+            Optional<net.skybornmc.skyblock.common.economy.SendGate> sendGate = net.skybornmc.skyblock.common.economy.SendGate.of(core.services());
+            java.util.concurrent.CompletableFuture<net.skybornmc.skyblock.common.economy.SendGate.Check> check;
+            try {
+                check = sendGate.isEmpty() ? java.util.concurrent.CompletableFuture.completedFuture(null)
+                        : sendGate.get().check(uuid, listing.seller(), Currency.MONEY);
+            } catch (RuntimeException e) {
+                check = java.util.concurrent.CompletableFuture.failedFuture(e);
+            }
+            gate = check.exceptionally(e -> {
+                core.plugin().getLogger().log(Level.WARNING, "Auction: the buy gate failed for " + name + "; buying refused", Database.cause(e));
+                return null;
+            });
+        }
+        gate.thenCompose(check -> engine.buy(listing.id(), uuid, name, actor, check)).whenCompleteAsync((r, error) -> {
             Player online = online(uuid);
             if (online == null) {
-                return; // bought items wait in the collection bin
+                if (r != null && r.outcome() == AuctionEngine.BuyOutcome.SOLD) {
+                    drain.drain(uuid); // C3: bought while leaving or switching: the item goes to /box
+                }
+                return;
             }
             if (error != null || r == null) {
                 send(online, "error");
@@ -479,6 +615,10 @@ public final class AuctionModule implements SkyblockModule, Listener {
                     sound(online, "error");
                 }
                 case PROCESSING -> send(online, "buy.processing", Msg.p("item", item));
+                case GATED -> {
+                    send(online, r.missing() > 0 ? "buy.gated" : "buy.gate-off", moneyTag("missing", online, r.missing()));
+                    sound(online, "error");
+                }
             }
             refreshMenus();
         }, main);
@@ -491,6 +631,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         UUID uuid = key(player);
         engine.cancel(listing.id(), uuid, staff, Actor.player(player), reason).whenCompleteAsync((r, error) -> {
             Player online = online(uuid);
+            if (r != null && r.outcome() == AuctionEngine.CancelOutcome.CANCELLED && (staff || online == null)) {
+                drain.drain(listing.seller()); // C3: staff removals and offline sellers: straight to the seller's /box
+            }
             if (online == null) {
                 return;
             }
@@ -522,23 +665,17 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }, main);
     }
 
-    // ================================================================== delivery from the collection bin
+    // ================================================================== delivery (outbox row → inventory, rest to /box)
 
     /**
-     * Moves one collection bin entry into the player's inventory if it fits (taken from the database exactly once). If it
-     * doesn't fit it stays in the bin and the player is told.
+     * Moves one waiting entry (the outbox row written with the state change) to the player: inventory first, the rest to
+     * {@code /box} (C3: no collection bin). Taken from the database exactly once.
      *
-     * @param bytes    the item as listed (only used to check the space; the database copy is what is given)
+     * @param bytes    the item as listed (only used for the message; the database copy is what is given)
      * @param announce tell the player where the item went
      */
     void deliver(Player player, long entryId, byte[] bytes, boolean announce) {
         ItemStack preview = ItemCodec.decode(bytes);
-        if (!ItemCodec.fits(player.getInventory(), preview)) {
-            if (announce) {
-                send(player, "collection.full", Msg.p("item", ItemCodec.plainName(preview)));
-            }
-            return;
-        }
         claim(player, entryId, ok -> {
             if (ok && announce) {
                 send(player, "collection.delivered", Msg.p("item", ItemCodec.plainName(preview)));
@@ -566,7 +703,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
             ItemStack item = ItemCodec.decode(entry.get().bytes());
             Player p = online(uuid);
             if (p == null) {
-                putBack(uuid, item);
+                overflow(uuid, List.of(item)); // C3: left meanwhile: to the /box of that profile
                 done.accept(false);
                 return;
             }
@@ -589,6 +726,10 @@ public final class AuctionModule implements SkyblockModule, Listener {
         send(seller, "notify.sold", Msg.p("item", l.item().name()), Msg.number("amount", l.item().amount()),
                 Msg.p("buyer", l.buyerName() == null ? "?" : l.buyerName()), moneyTag("price", seller, l.price()),
                 moneyTag("net", seller, l.price() - l.tax()), moneyTag("tax", seller, l.tax()));
+        if (config.notifyPopup) {
+            msg.actionBar(seller, "notify.popup", Msg.p("item", l.item().name()), Msg.p("buyer", l.buyerName() == null ? "?" : l.buyerName()),
+                    moneyTag("net", seller, l.price() - l.tax()));
+        }
         sound(seller, "money");
         engine.store().clearNotice(l.id());
         refreshMenus();
@@ -604,17 +745,24 @@ public final class AuctionModule implements SkyblockModule, Listener {
         refreshMenus();
     }
 
+    /** C3: a profile switch drains what waits for the new profile (normally nothing: the box already has it). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        drain.drain(key(event.getPlayer()));
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         UUID uuid = key(event.getPlayer());
+        drain.drain(uuid);
         core.scheduler().later("auction:join", config.joinNoticeDelayTicks, () -> {
             if (online(uuid) == null) {
                 return;
             }
             // PERF6: only the online check runs on the main thread; the two reads (and their first-run class loading
             // and lambda linking after a restart) start off it. The notices still show on the main thread.
-            core.scheduler().async(() -> engine.store().takeNotices(uuid).thenCombine(engine.store().collectionCount(uuid), (notices, bin) -> {
-                main.execute(() -> joinNotices(uuid, notices, bin));
+            core.scheduler().async(() -> engine.store().takeNotices(uuid).thenApply(notices -> {
+                main.execute(() -> joinNotices(uuid, notices));
                 return null;
             }).exceptionally(e -> {
                 core.plugin().getLogger().log(Level.WARNING, "Auction: join notices failed", Database.cause(e));
@@ -623,7 +771,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         });
     }
 
-    private void joinNotices(UUID uuid, List<Listing> notices, int bin) {
+    private void joinNotices(UUID uuid, List<Listing> notices) {
         Player p = online(uuid);
         if (p == null) {
             return;
@@ -652,9 +800,6 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         if (expired > 0) {
             send(p, "notify.expired-offline", Msg.number("count", expired));
-        }
-        if (bin > 0) {
-            send(p, "notify.collection", Msg.number("count", bin));
         }
     }
 
