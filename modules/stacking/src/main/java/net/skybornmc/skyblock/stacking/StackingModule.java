@@ -305,6 +305,15 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     }
 
     /** ECON-SPAWNERS step 9: a disband or reset deletes the island's kill counts (progress is gone; audit keeps the rows). */
+    /** Loads the joining player's island kill counts so the first /shop open already shows them. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+        if (unlock == null) {
+            return;
+        }
+        islands().flatMap(i -> i.islandOf(event.getPlayer().getUniqueId())).map(IslandService.IslandInfo::id).ifPresent(unlock::preload);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onIslandRemoved(net.skybornmc.skyblock.common.island.IslandRemovedEvent event) {
         if (unlock == null || event.islandId() == null || !SpawnerManager.clearsSpawners(event.reason())) {
@@ -501,7 +510,15 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
             return Unlock.OPEN;
         }
         List<String> previous = t.sellableTypes().stream().filter(type -> t.tier(type).orElse(0) == tier - 1).toList();
-        return UnlockRules.status(tier, needed, unlockMobs(tier), previous, island == null ? java.util.Map.of() : unlock.kills(island));
+        if (island == null) {
+            return UnlockRules.status(tier, needed, unlockMobs(tier), previous, java.util.Map.of());
+        }
+        java.util.Map<String, Long> kills = unlock.kills(island);
+        if (!unlock.loaded(island)) {
+            // Counts still loading: locked, never a wrong unlock. The shop shows "loading" and the next open is right.
+            return new Unlock(false, 0, needed, UnlockRules.LOADING, List.of());
+        }
+        return UnlockRules.status(tier, needed, unlockMobs(tier), previous, kills);
     }
 
     /**

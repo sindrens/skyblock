@@ -12,6 +12,9 @@ import java.util.Map;
  */
 final class UnlockRules {
 
+    /** {@code mobsLabelKey} of a locked status while the island's counts are still loading. */
+    static final String LOADING = "loading";
+
     private UnlockRules() {
     }
 

@@ -223,6 +223,12 @@ final class SpawnerManager implements Listener {
         return module.steps().seconds(speedLevel(sp));
     }
 
+    /** The Mob Loot multiplier of this block's island (1.0 without an island or upgrade). */
+    double loot(Spawner sp) {
+        int level = sp.island == null ? 0 : module.islands().map(s -> s.mobLootLevel(sp.island)).orElse(0);
+        return module.steps().loot(level);
+    }
+
     /** Mobs each spawner of this block adds per spawn (mob step of the island). */
     double mobsPerSpawn(Spawner sp) {
         return module.config().mobsPerSpawner * module.steps().mobs(mobsLevel(sp));
