@@ -239,6 +239,7 @@ public final class CratesModule implements SkyblockModule, Listener {
                 }
                 yaml = bundled;
             } else {
+                migrateV2(file, yaml);
                 boolean added = CatalogMerge.addMissing(yaml, bundled);
                 boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
                 if (upgraded) {
@@ -255,6 +256,27 @@ public final class CratesModule implements SkyblockModule, Listener {
         CrateCatalog loaded = CrateCatalog.load(yaml, core.plugin().getLogger()::warning);
         core.plugin().getLogger().info("Crates: " + loaded.size() + " crates.");
         return loaded;
+    }
+
+    /**
+     * ECON-SHARDS step 16: upgrades a live crates.yml once (no shard rewards, premium spawners out, shard blocks in). The old
+     * file is kept as {@code crates.yml.before-v2}, every step is written to {@code crates-migration-v2.log}.
+     */
+    private void migrateV2(File file, YamlConfiguration yaml) throws IOException {
+        if (!CatalogMigration.needed(yaml)) {
+            return;
+        }
+        java.nio.file.Path backup = file.toPath().resolveSibling(CrateCatalog.FILE + ".before-v2");
+        if (!java.nio.file.Files.exists(backup)) {
+            java.nio.file.Files.copy(file.toPath(), backup);
+        }
+        CatalogMigration.Result result = CatalogMigration.migrate(yaml);
+        java.nio.file.Files.write(file.toPath().resolveSibling("crates-migration-v2.log"), result.log(), java.nio.charset.StandardCharsets.UTF_8);
+        yaml.save(file);
+        result.log().forEach(line -> core.plugin().getLogger().info("crates.yml v2 → " + line));
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "migrate",
+                net.skybornmc.skyblock.common.audit.Actor.system("crates-v2"), CrateCatalog.FILE, null, (long) result.log().size(),
+                null, java.util.Map.of("upgrade", "catalog-version 2 (ECON-SHARDS)", "steps", result.log()));
     }
 
     private YamlConfiguration bundled() {
@@ -474,7 +496,6 @@ public final class CratesModule implements SkyblockModule, Listener {
         return switch (reward.type()) {
             case MONEY -> format(Currency.MONEY, CrateMath.money(reward.minutes(), tier, refPerMinute));
             case CRYSTALS -> format(Currency.CRYSTALS, CrateMath.crystals(reward.base(), tier, settings.crystalGrowth));
-            case SHARDS -> format(Currency.SHARDS, reward.amount());
             case FUEL -> durationText(reward.minutes());
             case COMING_SOON -> format(Currency.CRYSTALS, CrateMath.crystals(reward.fallback(), tier, settings.crystalGrowth));
             default -> String.valueOf(reward.amount());
@@ -512,7 +533,6 @@ public final class CratesModule implements SkyblockModule, Listener {
         return switch (reward.type()) {
             case MONEY -> Material.GOLD_NUGGET;
             case CRYSTALS -> Material.PRISMARINE_CRYSTALS;
-            case SHARDS -> Material.AMETHYST_SHARD;
             case KEY -> Material.TRIPWIRE_HOOK;
             case ENCHANT_BOOK -> Material.ENCHANTED_BOOK;
             case SCROLL -> Material.PAPER;

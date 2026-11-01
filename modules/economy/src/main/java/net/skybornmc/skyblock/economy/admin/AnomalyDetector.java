@@ -74,6 +74,8 @@ public final class AnomalyDetector {
     private final Map<String, Long> lastSent = new HashMap<>();
     private final Map<PairKey, Deque<Hit>> pairs = new HashMap<>();
     private final Map<Aggregation.AccountKey, NoteCount> notes = new HashMap<>();
+    /** ECON-SHARDS: shards from shard blocks per profile and hour ({@code count} = shards). */
+    private final Map<Aggregation.AccountKey, NoteCount> shardHours = new HashMap<>();
     private final LinkedHashMap<BalanceKey, Long> balances = new LinkedHashMap<>(1024, 0.75f, true);
     private long lastId;
 
@@ -94,6 +96,7 @@ public final class AnomalyDetector {
     public void reset() {
         pairs.clear();
         notes.clear();
+        shardHours.clear();
         balances.clear();
         lastId = 0;
     }
@@ -131,6 +134,9 @@ public final class AnomalyDetector {
             }
             if (c.noteEnabled && currencies.contains(row.currency())) {
                 note(row, c, out);
+            }
+            if (c.shardBlockEnabled) {
+                shardBlock(row, c, out);
             }
         }
         pruneNotes(Buckets.hour(now));
@@ -247,6 +253,24 @@ public final class AnomalyDetector {
         if (count.count >= c.noteCount) {
             out.add(new AlertDraft(Rule.NOTE_REDEEM, AlertDraft.Severity.WATCH, row.currency(), key.owner(), null, row.amount(),
                     c.noteCount, count.count, row.hour(), List.copyOf(count.ids)));
+        }
+    }
+
+    /** ECON-SHARDS: many shards from shard blocks for one profile in one hour (alert only, the cap still holds). */
+    private void shardBlock(LedgerRow row, WatchConfig c, List<AlertDraft> out) {
+        if (!TxReason.SHARD_BLOCK.equals(row.reason()) || row.to() == null || !row.to().isPlayer()) {
+            return;
+        }
+        Aggregation.AccountKey key = new Aggregation.AccountKey(row.hour(), row.to().owner(), row.currency());
+        NoteCount sum = shardHours.computeIfAbsent(key, k -> new NoteCount());
+        sum.count += (int) Math.min(Integer.MAX_VALUE, row.amount());
+        sum.ids.addLast(row.id());
+        while (sum.ids.size() > c.evidenceRows) {
+            sum.ids.pollFirst();
+        }
+        if (sum.count >= c.shardBlockAmount) {
+            out.add(new AlertDraft(Rule.SHARD_BLOCK, AlertDraft.Severity.WATCH, row.currency(), key.owner(), null, sum.count,
+                    c.shardBlockAmount, sum.ids.size(), row.hour(), List.copyOf(sum.ids)));
         }
     }
 
@@ -385,6 +409,7 @@ public final class AnomalyDetector {
 
     private void pruneNotes(long currentHour) {
         notes.keySet().removeIf(k -> k.hour() < currentHour - 1);
+        shardHours.keySet().removeIf(k -> k.hour() < currentHour - 1);
     }
 
     private void prunePairs(long now, WatchConfig c) {

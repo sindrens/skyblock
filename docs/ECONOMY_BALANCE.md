@@ -951,15 +951,19 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 
 Credit uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, credit sets (tier II–III, also in crates), profile slots, and (C1-R1-32/38) island perks and boosters inside their caps. **Credits never directly grant money, upgrade levels, task progress, crystals, set XP or crate keys (C1-R2-06).** There is no credit→money exchange.
 
-### 9.3 Shards (tradeable, decided; earning is an open question)
-| Source (proposal, `OPEN_QUESTIONS.md` #1) | Shards |
-|---|---|
-| World boss, top-3 damage | 20 / 15 / 10, everyone else with ≥ 1% damage: 3 |
-| KOTH capture | 10 |
-| Envoy crate | 1–3 |
-| Depths tier 9+ rare drop | 1 (≈ 1 per hour of play) |
+### 9.3 Shards (tradeable; owner 1 Nov 2026: "shards only from blocks, no other rewards", ECON-SHARDS)
+Shards come **only** from **shard blocks** on islands (module `shardblock`): breaking a ready block pays 1 shard (a double roll pays 2), the block regrows (30 min at level 0, 7 min at level 5), max 4 blocks per island, max 100 shards per profile and Oslo day (checked in the payout transaction), nothing while away. Bosses, KOTH, envoys, Depths, crates, daily/vote/pass/quests/tutorial never pay shards (source-scan rule; crates may drop a `shard_block` item as a rare reward).
 
-Shards only buy from the **Black Market** (rotating, limited stock: tier 5 spawners, crate sets), so supply is set by events, not by grinding.
+| Level | Respawn (s) | Shards/h per block, attended | Double chance | Respawn upgrade (crystals) | Double upgrade (shards) |
+|---|---|---|---|---|---|
+| 0 | 1,800 | 2.00 | 0% | start | start |
+| 1 | 1,500 | 2.40 | 5% | 100 | 10 |
+| 2 | 1,200 | 3.00 | 10% | 300 | 25 |
+| 3 | 900 | 4.00 | 15% | 900 | 50 |
+| 4 | 600 | 6.00 | 20% | 2,700 | 100 |
+| 5 | 420 | 8.57 | 25% | 8,100 | 200 |
+
+Budget: a regular (1 block, respawn 2, double 1, 3 h attended) ≈ 9.5 shards a day; dedicated (2 blocks, 4 h) ≈ 55; whale (4 blocks maxed, 4 h) 171, capped to 100. Shards only buy from the **Black Market** (premium spawners 400, set tokens, keys, books, Island Charter). Revisit after one week of real inflow (`/shardblock stats`).
 
 ### 9.4 Money notes and crates
 - Notes (`/withdraw`) are only a transfer, so **no fee**. Each note has a unique id; copies are confiscated (M3.2).

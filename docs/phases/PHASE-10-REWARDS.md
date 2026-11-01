@@ -21,7 +21,7 @@ Depends on Phases 0–5 (box, economy, crystals, enchants, wardrobe, spawners, i
 - **Vote party** exists (R7, FI 53). **Playtime rewards:** 1 h small, 10 h key, 50 h title (R6).
 - **Boosters:** same type never stacks, it extends the time; personal and global; all inside the +300% sell cap (R3, R4, O11). `/boosters` and `/thanks` are approved (R4, RW2).
 - **Weekly top pays keys** (V1, details in `PHASE-5-PROGRESSION.md` PG27).
-- **Island size above 9x9:** gems or the **Black Market** (157). The Black Market is paid in **shards** (CR2, DESIGN §6). Shards come from bosses, envoys, KOTH and high Depths tiers (#43) and are tradeable.
+- **Island size above 9x9:** gems or the **Black Market** (157). The Black Market is paid in **shards** (CR2, DESIGN §6). Shards come only from shard blocks on islands (owner 1 Nov 2026, ECON-SHARDS; supersedes #43) and are tradeable.
 - **Spawners:** tier 3 from the Depths + crates, tier 4 from crates, tier 5 from crates + Black Market (S26, SK5–SK7).
 - **Secret sets** may come from completing the collection log (SE2).
 - **Crate money must stay small** (BAL2, `ECONOMY_BALANCE.md` §9.4).

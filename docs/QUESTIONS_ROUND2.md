@@ -250,7 +250,7 @@ Not in our plans yet. Every module we have built (money, skills, islands, ender 
 40. New accounts (< 2 h) can't `/pay`, `/withdraw`, list or buy on the AH? [yes]
 41. Price recovery 2% of the gap per 10 min, Hot Item +25% for 24 h? [yes]
 42. Personal bank tier unlock cost 2% of capacity? [yes]
-43. Shards: how are they earned? [bosses, envoys, KOTH, high Depths tiers]
+43. Shards: how are they earned? [bosses, envoys, KOTH, high Depths tiers] **Answered 1 Nov 2026: shard blocks only (ECON-SHARDS).**
 44. Gems at season reset: kept? [kept]
 45. Personal bank: perks per tier (10 tiers)? [owner list]
 46. Max total sell multiplier? [+100%]

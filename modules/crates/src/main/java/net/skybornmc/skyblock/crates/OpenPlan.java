@@ -54,9 +54,6 @@ final class OpenPlan {
             if (kind.equals(RewardType.CRYSTALS.key()) || kind.equals(FALLBACK)) {
                 return Currency.CRYSTALS;
             }
-            if (kind.equals(RewardType.SHARDS.key())) {
-                return Currency.SHARDS;
-            }
             return null;
         }
 
@@ -137,7 +134,6 @@ final class OpenPlan {
             }
             case CRYSTALS -> new Grant(openId, r, RewardType.CRYSTALS.key(), "crystals",
                     CrateMath.crystals(r.base(), ctx.tier(), ctx.crystalGrowth()), bound, top, forced);
-            case SHARDS -> new Grant(openId, r, RewardType.SHARDS.key(), "shards", r.amount(), bound, top, forced);
             case KEY -> new Grant(openId, r, RewardType.KEY.key(), r.crate(), r.amount(), bound, top, forced);
             case ENCHANT_BOOK -> {
                 List<String> pool = ctx.bookIds().apply(r.pool());

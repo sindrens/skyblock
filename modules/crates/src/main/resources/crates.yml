@@ -8,19 +8,22 @@
 #   live yet, x crystal-growth^(tier-1)).
 # rewards: a catalog LIST, one map per reward. Never put plain settings inside it.
 #   id      unique per crate (names in messages/crates.yml -> rewards.<crate>.<id>)
-#   type    money | crystals | shards | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | booster |
+#   type    money | crystals | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | booster |
 #           global-booster | coming-soon
 #   chance  percent (used as a weight; the preview shows the real share)
 #   top     true = top band (counts for pity, marked with a star)
-#   money: minutes (of reference income at your tier) · crystals: base · shards/key/scroll/set-token/spawner/item: amount
+#   money: minutes (of reference income at your tier) · crystals: base · key/scroll/set-token/spawner/item: amount
 #   key: crate · enchant-book: pool (rarity), level · set-token: sets (one picked at random) · spawner: tier (random type)
-#   item: material · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
+#   item: material (a vanilla item, or custom:<id> of a custom item such as custom:shard_block) · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
 #   booster / global-booster (M10.2): booster (sell | skill_xp | tool_xp | crystals), percent, minutes, amount. Personal
 #           boosters are always bound to the opener; global ones are bound when opened with a bound key (and by default
 #           always: boosters.yml -> global.always-bound). Without the boosters module they pay their crystal value.
 #   coming-soon: a reward whose system is not built yet (tomes, skins, sell wands, collectors, pet eggs);
 #                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
 #   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
+
+# ECON-SHARDS: shards are only found in shard blocks (no 'shards' rewards); premium spawners are sold by the Black Market.
+catalog-version: 2
 
 crates:
   ember:
@@ -84,6 +87,7 @@ crates:
       - {id: tome, type: coming-soon, chance: 1.5, top: true, icon: book, fallback: 250}
       - {id: lorekeeper_token, type: set-token, chance: 1, sets: [lorekeeper], amount: 1, top: true, rarity: epic}
       - {id: blueprint, type: coming-soon, chance: 0.5, top: true, icon: paper, rarity: epic, fallback: 400}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 0.5, amount: 1}
   inferno:
     rarity: epic
     icon: ender_chest
@@ -106,7 +110,7 @@ crates:
       - {id: greater_tome, type: coming-soon, chance: 3, top: true, icon: enchanted_book, rarity: legendary, fallback: 600}
       - {id: set_token_a, type: set-token, chance: 3, sets: [deepforge, cropwarden, dreadguard], amount: 1, top: true, rarity: legendary}
       - {id: set_token_b, type: set-token, chance: 3, sets: [thornward, stormkeel], amount: 1, top: true, rarity: legendary}
-      - {id: spawner_t5, type: spawner, chance: 2, tier: 5, amount: 1, top: true, rarity: legendary}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 1, amount: 1, top: true, rarity: rare}
       - {id: phoenix_key, type: key, chance: 1.5, crate: phoenix, amount: 1, top: true, rarity: legendary}
       - {id: blueprint, type: coming-soon, chance: 1.5, top: true, icon: paper, rarity: legendary, fallback: 600}
   phoenix:
@@ -129,7 +133,7 @@ crates:
       - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
       - {id: blueprint, type: coming-soon, chance: 4, icon: paper}
       - {id: phoenix_key, type: key, chance: 2, crate: phoenix, amount: 1}
-      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 1, top: true}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: elytra, type: item, chance: 3, material: elytra, amount: 1, top: true}
       - {id: voidforged_token, type: set-token, chance: 2, sets: [voidforged], amount: 1, top: true}
       - {id: title, type: title, chance: 2, ids: [], top: true, fallback: 1500}
@@ -148,7 +152,7 @@ crates:
       - {id: month_tag, type: tag, chance: 10, ids: [inferno]}
       - {id: month_theme, type: coming-soon, chance: 8, icon: firework_star}
       - {id: pet_egg, type: coming-soon, chance: 8, icon: sniffer_egg}
-      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 2}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 3, amount: 1, top: true, rarity: epic}
       - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
       - {id: collector, type: coming-soon, chance: 4, icon: hopper}
       - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 60, icon: beacon}
@@ -166,7 +170,7 @@ crates:
     fallback-crystals: 250
     rewards:
       - {id: money, type: money, chance: 15, minutes: 30}
-      - {id: shards, type: shards, chance: 15, amount: 5}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: combat_rare_book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: scroll, type: scroll, chance: 10, amount: 1}
       - {id: banneret_token, type: set-token, chance: 10, sets: [banneret], amount: 1}

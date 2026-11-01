@@ -761,6 +761,9 @@ watch:
     staff-transfer:
       name: "Staff transfer"
       text: "<c:value><player></c:value> <c:text>moved <amount> <c:text>to <c:value><other></c:value> <c:muted>(a staff account; alert from <expected>)"
+    shard-block:
+      name: "Shard block farming"
+      text: "<c:value><player></c:value> <c:text>got <amount> <c:text>from shard blocks in the hour from <hour> <c:muted>(alert from <expected>)"
     sink-ratio:
       name: "Inflation"
       text: "<c:text>Only <c:value><ratio>%</c:value> <c:text>of new money was removed over the last 14 days, <c:value><hits></c:value> <c:text>days below <line>% <c:muted>(see /eco admin)"

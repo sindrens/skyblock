@@ -181,7 +181,7 @@ The Depths ≈ 50% of income (active, main), island production ≈ 35% (steady, 
 | **Money** | Selling, quests, events, interest | Upgrades, shop, auction house, everything general |
 | **Crystals** (island crystals) | Using custom tools (breaking, killing, chopping, farming) and island missions | Island shop, custom enchants (`/enchanter`), Forge extras. **Not tradeable** (no `/pay`, not on the AH) |
 | **Gems** | Store credits, voting, saying "gg" when someone buys from the store | Premium items in-game |
-| **Shards** | (see open questions) | The **Black Market** (rotating rare shop) |
+| **Shards** | Shard blocks on islands only (ECON-SHARDS: 1 per break, regrows, 4 per island, 100 per day) | The **Black Market** (rotating rare shop) |
 
 - Island crystals replaced tokens (owner decision O8 / #39, CR1–CR4 in `DECISIONS_2026-10-30.md`); old `tokens` data, config keys and placeholders are migrated or aliased to crystals.
 - `/pay <player> <amount> [currency]`. Tradeable currencies are configurable per currency (money and shards yes; gems and crystals no).

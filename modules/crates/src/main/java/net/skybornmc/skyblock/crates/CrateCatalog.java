@@ -204,6 +204,10 @@ final class CrateCatalog {
         }
         String rawType = text(map, "type", "");
         Optional<RewardType> type = RewardType.byKey(rawType);
+        if ("shards".equalsIgnoreCase(rawType.trim())) {
+            warn.accept(where + " (" + id + "): type 'shards' is not allowed: shards are only found in shard blocks (ECON-SHARDS), skipped");
+            return Optional.empty();
+        }
         if (type.isEmpty()) {
             warn.accept(where + " (" + id + "): unknown type '" + rawType + "', skipped");
             return Optional.empty();
@@ -229,7 +233,6 @@ final class CrateCatalog {
         String problem = switch (t) {
             case MONEY -> minutes < 1 ? "'minutes' must be at least 1" : null;
             case CRYSTALS -> base < 1 ? "'base' must be at least 1" : null;
-            case SHARDS -> null;
             case KEY -> crate.isEmpty() ? "'crate' is missing" : null;
             case ENCHANT_BOOK -> RARITIES.contains(pool) ? null : "'pool' must be a rarity";
             case SET_TOKEN -> sets.isEmpty() ? "'sets' is empty" : null;

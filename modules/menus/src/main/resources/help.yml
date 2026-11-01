@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
-    topics: [money, bank, shop, sell, notes, auction, trade, box]
+    topics: [money, bank, shop, sell, notes, auction, trade, box, shards]
   progression:
     icon: experience_bottle
     status: active
@@ -1332,8 +1332,8 @@ topics:
         lines:
           - "<c:value>/blackmarket</c:value> <c:text>or the trader in the"
           - "<c:text>Market Square alley. Pay with"
-          - "<c:text>shards from bosses, events and"
-          - "<c:text>the deepest Depths tiers."
+          - "<c:text>shards. Shards come from shard"
+          - "<c:text>blocks on your island."
       - title: "<c:value>The stock"
         lines:
           - "<c:text>New offers at 00:00 and 12:00:"
@@ -1352,6 +1352,33 @@ topics:
           - "<c:text>step at a time, with shards or"
           - "<c:text>credits. It lasts this season only:"
           - "<c:text>islands are wiped at the reset."
+
+  shards:
+    icon: amethyst_shard
+    aliases: [shard, shard-block, shard-blocks, shardblock]
+    name: "<c:flame>Shards and shard blocks"
+    summary: ["<c:text>Shards buy rare things at the", "<c:text>Black Market. Shard blocks make them."]
+    take-me-there: "blackmarket"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>What a shard is"
+        lines:
+          - "<cur:shards>Shards</cur:shards> <c:text>are a rare currency for"
+          - "<c:text>the <c:value>Black Market</c:value><c:text>. You can pay"
+          - "<c:text>them to friends. The only way to"
+          - "<c:text>get new ones: shard blocks."
+      - title: "<c:value>The shard block"
+        lines:
+          - "<c:text>Place it on your island and break"
+          - "<c:text>it for a shard. It turns to bedrock"
+          - "<c:text>and regrows. Up to 4 per island,"
+          - "<c:text>up to 100 shards per day."
+      - title: "<c:value>Upgrades"
+        lines:
+          - "<c:text>Right-click the block: crystals make"
+          - "<c:text>it regrow faster, shards give a"
+          - "<c:text>chance of 2 shards. Pick it up and"
+          - "<c:text>the levels stay on the block."
 
   crates:
     icon: tripwire_hook

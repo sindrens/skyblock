@@ -87,7 +87,7 @@ final class ClaimEngine {
      */
     static List<Transaction> transactions(Payout payout, UUID profile, String reason, String key, Actor actor, Map<String, Object> details) {
         List<Transaction> out = new ArrayList<>();
-        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS_EARNED, Currency.SHARDS)) {
+        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS_EARNED)) { // ECON-SHARDS: never shards
             long total = payout.total(currency);
             if (total <= 0) {
                 continue;

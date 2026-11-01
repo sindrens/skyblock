@@ -48,6 +48,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries, M5.7 leaderboards |
 | [quests](commands/quests.md) | Quests (`modules/quests`) |
 | [rewards](commands/rewards.md) | Rewards (`modules/rewards`) |
+| [shardblock](commands/shardblock.md) | Shard blocks (`modules/shardblock`) |
 | [shop](commands/shop.md) | Builder shop (`modules/shop`) |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |
 | [social](commands/social.md) | Social (`modules/social`) |

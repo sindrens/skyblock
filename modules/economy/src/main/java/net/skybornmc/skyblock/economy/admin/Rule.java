@@ -21,7 +21,9 @@ public enum Rule {
     /** The 14-day sink ratio stayed below the act line (ECONOMY_BALANCE §7.2). */
     SINK_RATIO("sink-ratio"),
     /** Owner answer 334: a big transfer to or from a staff account (staff play normally; admins are told). */
-    STAFF_TRANSFER("staff-transfer");
+    STAFF_TRANSFER("staff-transfer"),
+    /** ECON-SHARDS: a profile got many shards from shard blocks in one hour (auto-clicker pattern; alert only). */
+    SHARD_BLOCK("shard-block");
 
     private final String id;
 

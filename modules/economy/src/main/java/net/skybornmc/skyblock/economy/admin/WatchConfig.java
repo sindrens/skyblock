@@ -226,6 +226,14 @@ public final class WatchConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ rule: note redemptions
 
+    @Setting(path = "rules.shard-block.enabled", desc = "ECON-SHARDS: alert when one profile gets many shards from shard blocks "
+            + "in one hour (auto-clicker pattern; the daily cap still applies).")
+    public boolean shardBlockEnabled = true;
+
+    @Setting(path = "rules.shard-block.amount", desc = "Shards from shard blocks in one hour that make an alert (default half the "
+            + "daily cap of 100).", min = 1, max = 1_000_000)
+    public long shardBlockAmount = 50;
+
     @Setting(path = "rules.note-redeem.enabled", desc = "Alert when one profile cashes many money notes in one hour.")
     public boolean noteEnabled = true;
 

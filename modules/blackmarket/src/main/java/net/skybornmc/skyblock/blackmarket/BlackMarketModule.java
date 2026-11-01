@@ -81,6 +81,10 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
 
     public BlackMarketModule(Core core) {
         this.core = core;
+        // ECON-SHARDS: shards come only from shard blocks; the old "bosses, events, deep Depths" texts are upgraded unless edited.
+        core.messages().retire(ID, java.util.Map.of(
+                "buy.no-shards", "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from bosses, events and deep Depths tiers.",
+                "menu.wallet.lore", "<c:text>Credits: <cur:credits><credits>\n<c:text>Shards come from bosses, events\n<c:text>and deep Depths tiers."));
         this.msg = core.messages(ID);
         this.market = new Market(this);
         this.purchases = new Purchases(this);

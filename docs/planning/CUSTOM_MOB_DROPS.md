@@ -34,7 +34,7 @@
 
 **One custom drop per mob type**, for example: Zombie → Rotten Sinew, Skeleton → Bone Shard, Spider → Silk Gland, Creeper → Blast Powder.
 - **Uses:** Forge recipes, enchant upgrades, summon sigils, island fuel cells, quests and collections.
-- **Sell value:** low money value, below their crafting value. A few rare ones (elite drops) sell for shards.
+- **Sell value:** low money value, below their crafting value. Never for shards (shards come only from shard blocks, ECON-SHARDS).
 - All in `mobs.yml` / `drops.yml`, so you can change every drop.
 
 **Villagers and emeralds:**

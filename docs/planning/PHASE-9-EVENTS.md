@@ -7,7 +7,7 @@
 - **DESIGN §8 / §10:** KOTH gives Conquest XP to the capturer's island; envoys are scheduled supply drops; islands always safe; fairness for new players (low-level events). Automatic events: treasure hunt, money event, farming event, mining rush, double XP. **No** drop parties, **no** build contests.
 - **Ideas 75-81:** KOTH, envoys, island competitions, treasure hunts, boss events, fishing competitions, chat games: yes. **82 lottery: no.**
 - **EV1:** island competitions rotate weekly (most crops, mined, mobs, sold), top 3 get keys. **EV2:** fishing contest every 4 h, 15 min. **EV3:** chat games every 20 min, $5k.
-- **#43:** shards come from bosses, envoys, KOTH and high Depths tiers.
+- **#43 (superseded 1 Nov 2026, ECON-SHARDS):** shards come only from shard blocks; events pay keys, XP, crystals, money and at most a rare `shard_block` item.
 - **CA7:** the KOTH crate is the **Conqueror Crate**.
 - **P5-8:** the Conquest pillar is hidden until KOTH or events exist.
 - **345 / 285:** teleports in events take 3 s.
