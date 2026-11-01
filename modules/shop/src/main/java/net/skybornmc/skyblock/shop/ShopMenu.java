@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The item grid of one shop category (GUI-P3 5.2): 6 rows, the 7x4 grid filled left to right (28 per page, paper page
- * arrows), no tab row. 4 your balance · 45 Back (to the categories) · 46 sell chest · 47 Undo · 49 Close · 52/53 pages.
+ * The item grid of one shop category (GUI-P3 5.2, MENUS-V3 6.2): 6 rows, the grouped 7-wide grid ({@link ShopGrid}: one
+ * group per row, centred, whole groups per page), page arrows, no tab row. 4 the wallet tile ({@code Your Money}) · 45
+ * Back (to the categories) · 46 sell chest · 47 Undo · 49 Close · 52/53 pages.
  * <p>Clicks on a tile ({@code ClickRoute}): left / Bedrock tap = buy GUI; right = sell GUI (error sound when not
  * sellable); Shift + Left = buy one stack (a big buy arms first); middle or Shift + Right = sell every one you carry.</p>
  */
@@ -56,6 +57,33 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
         module.undoButton(viewer).ifPresent(b -> set(SLOT_ACTION_B, b));
     }
 
+    /** GUI-FONT plaque: the tab's short noun ({@code categories.<id>.short}, e.g. {@code FARMING}). */
+    @Override
+    public String plaqueKey() {
+        return "categories." + categoryId + ".short";
+    }
+
+    /**
+     * MENUS-V3 6.2: the grouped grid ({@link ShopGrid}): one group per row, centred, a page holds whole groups. Without
+     * {@code groups:} in shop.yml the tab is one group in file order.
+     */
+    @Override
+    protected net.skybornmc.skyblock.common.menu.PageLayout<ShopCatalog.Item> pageLayout() {
+        return entries -> {
+            java.util.Map<String, ShopCatalog.Item> shown = new java.util.LinkedHashMap<>();
+            entries.forEach(i -> shown.put(i.id(), i));
+            List<ShopCatalog.Group> groups = category().map(ShopCatalog.Category::displayGroups).orElse(List.of());
+            List<net.skybornmc.skyblock.common.menu.PageLayout.Page<ShopCatalog.Item>> out = new ArrayList<>();
+            for (ShopGrid.Page page : ShopGrid.pages(groups, shown::get)) {
+                out.add(new net.skybornmc.skyblock.common.menu.PageLayout.Page<>(page.items(), page.slots()));
+            }
+            if (out.isEmpty()) {
+                out.add(new net.skybornmc.skyblock.common.menu.PageLayout.Page<>(List.of(), new int[0]));
+            }
+            return out;
+        };
+    }
+
     @Override
     protected String emptyKey() {
         return category().map(c -> c.kind() == ShopCatalog.Kind.SPAWNER && !module.settings.spawnersEnabled).orElse(false)
@@ -78,7 +106,7 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
 
     @Override
     protected void decorate() {
-        set(SLOT_SUMMARY, module.balanceTile(viewer));
+        setWallet("money", module.moneyText(module.balance(viewer)), null);
         module.sellChestButton(viewer, this).ifPresent(b -> set(SLOT_ACTION_A, b));
         module.undoButton(viewer).ifPresent(b -> set(SLOT_ACTION_B, b));
     }

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * {@code /shop}: the category menu (GUI-P3 5.1, I9 section 2). The categories of {@code shop.yml}, in file order, centred
  * by {@link Centered}: nine = 4 rows, 5 + 4 tiles (9, 11, 13, 15, 17 / 19, 21, 23, 25); eight or fewer re-centre on 3
- * rows. Slot 4 = your balance. Bottom row: Back (when opened from another menu), the sell chest on action A, Undo on
+ * rows. Slot 4 = the wallet tile ({@code Your Money}, MENUS-V3). Bottom row: Back (when opened from another menu), the sell chest on action A, Undo on
  * action B, Close. A click opens that category's grid ({@link ShopMenu}) with Back to here.
  */
 final class ShopCategoryMenu extends Menu {
@@ -42,6 +42,12 @@ final class ShopCategoryMenu extends Menu {
         return ShopModule.ID;
     }
 
+    /** GUI-FONT plaque: {@code menu.short} ({@code SHOP}). */
+    @Override
+    public String plaqueKey() {
+        return "menu.short";
+    }
+
     @Override
     public int tickInterval() {
         return 20;
@@ -50,7 +56,7 @@ final class ShopCategoryMenu extends Menu {
     /** Once a second: the Undo countdown and the balance (nothing else changes here). */
     @Override
     protected void tick() {
-        set(SLOT_SUMMARY, module.balanceTile(viewer));
+        setWallet("money", module.moneyText(module.balance(viewer)), null);
         int undoSlot = MenuLayout.actionB(rows());
         module.undoButton(viewer).ifPresentOrElse(b -> set(undoSlot, b), () -> set(undoSlot, (net.skybornmc.skyblock.common.menu.MenuButton) null));
     }
@@ -63,7 +69,7 @@ final class ShopCategoryMenu extends Menu {
             setEmpty(ShopModule.ID, "menu.empty");
             return;
         }
-        set(SLOT_SUMMARY, module.balanceTile(viewer));
+        setWallet("money", module.moneyText(module.balance(viewer)), null);
         int[] slots = Centered.layout(list.size()).slots();
         for (int i = 0; i < list.size(); i++) {
             ShopCatalog.Category c = list.get(i);

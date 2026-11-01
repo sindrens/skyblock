@@ -81,10 +81,31 @@ public final class ShopCatalog {
      * @param icon vanilla item id (the plain icon for owner-added categories without a catalogue icon)
      * @param slot parsed from shop.yml but no longer used for layout (GUI-P3: the category menu is centred in file order)
      */
-    public record Category(String id, String icon, int slot, Kind kind, List<Item> items) {
+    public record Category(String id, String icon, int slot, Kind kind, List<Item> items, List<Group> groups) {
 
         public Category {
             items = List.copyOf(items);
+            groups = groups == null ? List.of() : List.copyOf(groups);
+        }
+
+        /** A category without {@code groups:} (flat file order). */
+        public Category(String id, String icon, int slot, Kind kind, List<Item> items) {
+            this(id, icon, slot, kind, items, List.of());
+        }
+
+        /**
+         * The groups the grid shows (MENUS-V3 6.2): the {@code groups:} of shop.yml in file order, then a last group
+         * {@code more} with every item in no group (file order). Without {@code groups:} that is one group of all items.
+         */
+        public List<Group> displayGroups() {
+            List<Group> out = new ArrayList<>(groups);
+            Set<String> grouped = new HashSet<>();
+            groups.forEach(g -> grouped.addAll(g.items()));
+            List<String> rest = items.stream().map(Item::id).filter(id -> !grouped.contains(id)).toList();
+            if (!rest.isEmpty()) {
+                out.add(new Group(MORE, rest));
+            }
+            return out;
         }
 
         /** The icon catalogue key of this category ({@code shop/stone_earth}); I7 pack v2. */
@@ -96,6 +117,16 @@ public final class ShopCatalog {
             return items.stream().filter(Item::enabled).toList();
         }
     }
+
+    /** One group of a tab: its id ({@code /admin} name in {@code messages/shop.yml groups.<tab>.<id>}) and item ids in display order. */
+    public record Group(String id, List<String> items) {
+        public Group {
+            items = List.copyOf(items);
+        }
+    }
+
+    /** Id of the implicit last group (items in no group). */
+    public static final String MORE = "more";
 
     private final List<Category> categories;
     private final Map<String, Item> items;
@@ -159,6 +190,41 @@ public final class ShopCatalog {
         return worthOnly;
     }
 
+    /**
+     * {@code categories.<tab>.groups.<group>: [item ids]} (MENUS-V3 6.2, optional). An id that is not an item of this tab or
+     * is already in a group is reported and skipped (so the item lists can change without breaking the groups).
+     */
+    static List<Group> readGroups(ConfigurationSection section, List<Item> items, String where, Consumer<String> problems) {
+        List<Group> out = new ArrayList<>();
+        if (section == null) {
+            return out;
+        }
+        Set<String> known = new HashSet<>();
+        items.forEach(i -> known.add(i.id()));
+        Set<String> used = new HashSet<>();
+        for (String groupId : section.getKeys(false)) {
+            if (MORE.equals(groupId)) {
+                problems.accept(where + "." + groupId + ": '" + MORE + "' is the name of the last group of ungrouped items (skipped)");
+                continue;
+            }
+            List<String> ids = new ArrayList<>();
+            for (String raw : section.getStringList(groupId)) {
+                String id = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+                if (!known.contains(id)) {
+                    problems.accept(where + "." + groupId + ": '" + raw + "' is not an item of this tab (skipped)");
+                } else if (!used.add(id)) {
+                    problems.accept(where + "." + groupId + ": '" + raw + "' is already in a group (skipped)");
+                } else {
+                    ids.add(id);
+                }
+            }
+            if (!ids.isEmpty()) {
+                out.add(new Group(groupId, ids));
+            }
+        }
+        return out;
+    }
+
     /** {@link #load(ConfigurationSection, Predicate, Predicate, Consumer)} without a Spawners tab (spawner types rejected). */
     public static ShopCatalog load(ConfigurationSection file, Predicate<String> validMaterial, Consumer<String> problems) {
         return load(file, validMaterial, type -> false, problems);
@@ -214,7 +280,8 @@ public final class ShopCatalog {
             };
             List<Item> items = readItems(cat.getConfigurationSection("items"), id, kind, where + ".items",
                     kind == Kind.SPAWNER ? validSpawner : validMaterial, seen, problems);
-            out.add(new Category(id, icon, out.size(), kind, items));
+            out.add(new Category(id, icon, out.size(), kind, items, readGroups(cat.getConfigurationSection("groups"), items,
+                    where + ".groups", problems)));
         }
         Map<String, Long> worth = new LinkedHashMap<>();
         ConfigurationSection old = file.getConfigurationSection(WORTH_ONLY);

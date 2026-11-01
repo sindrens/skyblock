@@ -1041,12 +1041,6 @@ public final class ShopModule implements SkyblockModule, Listener {
                 .serialize(categoryName(viewer, c)));
     }
 
-    /** The summary tile (slot 4): your balance, our money icon. */
-    MenuButton balanceTile(Player viewer) {
-        return MenuButton.display(core.menus().icon(viewer, "currency/money", core.menus().text(viewer, ID, "menu.balance.name"),
-                core.menus().lines(viewer, ID, "menu.balance.lore", money("balance", balance(viewer)))));
-    }
-
     /** The sell chest button (46 on the grid, 28/19 on the category menu), when selling exists. */
     Optional<MenuButton> sellChestButton(Player viewer, Menu from) {
         return sellButton(viewer).map(item -> MenuButton.of(item, click -> openSell(click.player(), from)));
