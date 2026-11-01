@@ -89,6 +89,12 @@ public final class NumberPickerMenu extends Menu {
         return ROWS;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.amount";
+    }
+
     @Override
     public Component title() {
         return service.title(viewer, title != null ? title.apply(viewer) : service.text(viewer, "number.crumb"));

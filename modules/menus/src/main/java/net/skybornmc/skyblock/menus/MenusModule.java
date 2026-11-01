@@ -37,6 +37,8 @@ public final class MenusModule implements SkyblockModule {
     static final String PERM_STAFF = "skyblock.staff.menu";
     /** Shared sound groups (common Sounds): owned here because every module's menus and events use them. */
     static final String SETTING_UI_SOUNDS = "ui-sounds";
+    /** GUI-FONT 6.7 (owner V3-Q5 a): the normal Minecraft chest look in menus (Java only; Bedrock always has it). */
+    static final String SETTING_PLAIN_MENUS = "plain-menus";
     static final String SETTING_EVENT_SOUNDS = "event-sounds";
 
     private final Core core;
@@ -68,6 +70,8 @@ public final class MenusModule implements SkyblockModule {
         menuItem = new MenuItem(nav, config);
         Bukkit.getPluginManager().registerEvents(menuItem, core.plugin());
         settings.onChange(MenuItem.SETTING, (player, value) -> menuItem.apply(player));
+        core.menus().plainMenus(player -> settings.get(player, SETTING_PLAIN_MENUS));
+        settings.onChange(SETTING_PLAIN_MENUS, (player, value) -> core.menus().retitle(player));
         menuItem.applyAll();
         menuItem.start();
         registerCommands();
@@ -87,6 +91,7 @@ public final class MenusModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        core.menus().plainMenus(null);
         if (menuItem != null) {
             menuItem.stop();
             HandlerList.unregisterAll(menuItem);
@@ -211,6 +216,7 @@ public final class MenusModule implements SkyblockModule {
         placeholder("particles", SettingCategory.DISPLAY, Material.BLAZE_POWDER, true);
         active(SETTING_UI_SOUNDS, SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
         active(SETTING_EVENT_SOUNDS, SettingCategory.SOUNDS, Material.GOAT_HORN, true);
+        active(SETTING_PLAIN_MENUS, SettingCategory.DISPLAY, Material.PAINTING, false);
     }
 
     private void placeholder(String id, SettingCategory category, Material icon, boolean defaultValue) {

@@ -43,6 +43,12 @@ public final class PlayerPickerMenu extends PagedMenu<Player> {
         this.onPick = onPick;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.players";
+    }
+
     @Override
     protected List<Component> titleCrumbs() {
         return List.of(title != null ? title.apply(viewer) : service.text(viewer, "players.crumb"));

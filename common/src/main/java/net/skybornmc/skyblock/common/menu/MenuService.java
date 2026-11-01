@@ -90,6 +90,10 @@ public final class MenuService implements Listener {
     /** The pack service lookup (set by the plugin once the service registry exists); returns null without a pack. */
     private volatile Supplier<net.skybornmc.skyblock.common.pack.PackService> packs = () -> null;
     private final net.skybornmc.skyblock.common.icon.Icons icons;
+    /** The frame layer gate (GUI-FONT): panel titles and the logo for Java viewers with the pack. */
+    private final net.skybornmc.skyblock.common.frame.Glyphs glyphs;
+    /** Menu classes already warned about a plaque text that does not fit (logged once per class). */
+    private final java.util.Set<String> plaqueWarnings = ConcurrentHashMap.newKeySet();
     private BukkitTask ticker;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
@@ -109,6 +113,9 @@ public final class MenuService implements Listener {
                 () -> net.skybornmc.skyblock.common.icon.IconCatalog.bundled(MenuService.class.getClassLoader(),
                         problem -> plugin.getLogger().warning("icons/icons.json: " + problem)),
                 () -> packs.get(), plugin.getLogger());
+        this.glyphs = new net.skybornmc.skyblock.common.frame.Glyphs(() -> packs.get(), messages::isBedrock,
+                config::fontSwitches, net.skybornmc.skyblock.common.frame.FrameMetrics.bundled(MenuService.class.getClassLoader(),
+                problem -> plugin.getLogger().warning("frame: " + problem)).orElse(null));
         reload();
         this.offers = new Offers(this);
     }
@@ -142,10 +149,12 @@ public final class MenuService implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getPluginManager().registerEvents(offers, plugin);
         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 1L);
+        net.skybornmc.skyblock.common.frame.Glyphs.install(glyphs);
     }
 
     /** Closes every open menu and cancels prompts. Call on plugin disable (before modules save). */
     public void disable() {
+        net.skybornmc.skyblock.common.frame.Glyphs.install(null);
         if (ticker != null) {
             ticker.cancel();
         }
@@ -175,6 +184,17 @@ public final class MenuService implements Listener {
         if (offers != null) {
             offers.reload();
         }
+        if (glyphs != null) {
+            glyphs.reload();
+            plaqueWarnings.clear();
+            // gui.font.* changed: re-title every open menu at once (framed <-> plain).
+            for (Menu menu : List.copyOf(open.values())) {
+                Player viewer = menu.viewer();
+                if (viewer != null && viewer.isOnline() && menu.isOpen()) {
+                    syncTitle(viewer, menu, true);
+                }
+            }
+        }
     }
 
     public JavaPlugin plugin() {
@@ -196,6 +216,24 @@ public final class MenuService implements Listener {
      */
     public void packs(Supplier<net.skybornmc.skyblock.common.pack.PackService> packs) {
         this.packs = packs == null ? () -> null : packs;
+    }
+
+    /** The frame layer (GUI-FONT): the per-viewer gate, framed titles and the logo helper for the HUD. */
+    public net.skybornmc.skyblock.common.frame.Glyphs glyphs() {
+        return glyphs;
+    }
+
+    /** "Plain menus" (menus module setting): players for whom this is true always get the plain chest. */
+    public void plainMenus(java.util.function.Predicate<Player> plainMenus) {
+        glyphs.plainMenus(plainMenus);
+    }
+
+    /** Re-titles the open menu of {@code player} (framed <-> plain) after a setting or pack change; no sound. */
+    public void retitle(Player player) {
+        Menu menu = open.get(player.getUniqueId());
+        if (menu != null && menu.isOpen()) {
+            syncTitle(player, menu, true);
+        }
     }
 
     // ------------------------------------------------------------------ opening
@@ -232,6 +270,7 @@ public final class MenuService implements Listener {
         Inventory inventory = Bukkit.createInventory(menu, rows * 9, title);
         menu.attach(this, player, inventory);
         menu.shownTitle = title;
+        menu.plainTitle = title;
         try {
             menu.build();
         } catch (RuntimeException e) {
@@ -241,6 +280,20 @@ public final class MenuService implements Listener {
             sounds.playUi(player, "error");
             return;
         }
+        // GUI-FONT 6.4: two-phase open. The framed title needs the filled slots, so it is built after build(); the
+        // first inventory was never shown, so a swap here cannot flicker.
+        Component framed = frameTitle(player, menu, title);
+        if (framed != null) {
+            Inventory next = Bukkit.createInventory(menu, rows * 9, framed);
+            next.setContents(inventory.getContents());
+            menu.replaceInventory(next);
+            inventory = next;
+            menu.shownTitle = framed;
+            menu.framed = true;
+            menu.titleSentAt = System.currentTimeMillis();
+        }
+        menu.shownMask = menu.filled();
+        menu.tilesDirty = false;
         open.put(player.getUniqueId(), menu);
         player.openInventory(inventory);
         sounds.playUi(player, previous == null ? "menu-open" : "page");
@@ -267,6 +320,24 @@ public final class MenuService implements Listener {
             return false;
         }
         Component title = menu.title();
+        if (menu.framed || frameGlyphs(player, menu).isPresent()) {
+            // GUI-FONT 6.4: frame viewers. A font title cannot go through setTitle, so syncTitle swaps the inventory
+            // (same holder, same contents) when the tiles, the plaque or the plain title changed.
+            try {
+                menu.refresh();
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
+                player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                messages.send(player, MODULE, "error");
+                sounds.playUi(player, "error");
+                return true;
+            }
+            menu.plainTitle = title;
+            syncTitle(player, menu, false);
+            sounds.playUi(player, "page");
+            return true;
+        }
+        menu.plainTitle = title;
         boolean retitle = !title.equals(menu.shownTitle);
         if (retitle && !config.titleUpdateInPlace) {
             return false;
@@ -280,6 +351,8 @@ public final class MenuService implements Listener {
             sounds.playUi(player, "error");
             return true;
         }
+        menu.shownMask = menu.filled();
+        menu.tilesDirty = false;
         if (retitle) {
             try {
                 setTitle(view, title);
@@ -291,6 +364,96 @@ public final class MenuService implements Listener {
         }
         sounds.playUi(player, "page");
         return true;
+    }
+
+    // ------------------------------------------------------------------ frame layer (GUI-FONT 6.4 - 6.6)
+
+    /** The glyphs {@code menu} may use for {@code player}: none without a panel type, the gate decides the rest. */
+    private java.util.Optional<net.skybornmc.skyblock.common.frame.FrameGlyphs> frameGlyphs(Player player, Menu menu) {
+        if (menu.panelType().isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        return menu.frameForced() ? glyphs.forViewerIgnoringSwitches(player) : glyphs.forViewer(player);
+    }
+
+    /** The framed title of {@code menu} for {@code player}, or {@code null} when the plain title is shown. */
+    private Component frameTitle(Player player, Menu menu, Component plain) {
+        java.util.Optional<net.skybornmc.skyblock.common.frame.FrameGlyphs> g = frameGlyphs(player, menu);
+        if (g.isEmpty()) {
+            return null;
+        }
+        String key = menu.plaqueKey();
+        String raw = key == null ? null : messages.raw(menu.plaqueModule(), key);
+        if (raw != null && !raw.isBlank() && !g.get().plaqueFits(raw)
+                && plaqueWarnings.add(menu.getClass().getName())) {
+            plugin.getLogger().warning("Menu " + menu.getClass().getSimpleName() + ": plaque text '" + raw + "' (" + menu.plaqueModule()
+                    + ".yml " + key + ") is not one short noun of A-Z, 0-9 and & ' - ! ? ( ) / . , : that fits the plaque; "
+                    + "the plain title is shown instead.");
+        }
+        Component framed = g.get().menuTitle(menu.panelType().get(), menu.filled(), raw, plain);
+        return framed == plain ? null : framed;
+    }
+
+    /**
+     * Brings the open window's title in line with the menu (GUI-FONT 6.6): framed titles are sent by swapping the
+     * inventory (one open-screen packet, same holder and contents, no close; the old inventory's close event is
+     * ignored by {@link #onClose}); plain titles use the in-place legacy title. At most one swap per
+     * {@code gui.font.title-resend-min-ms} unless {@code force}; a throttled swap is retried by the ticker.
+     */
+    private void syncTitle(Player player, Menu menu, boolean force) {
+        Component plain = menu.plainTitle != null ? menu.plainTitle : menu.title();
+        Component framed = frameTitle(player, menu, plain);
+        Component target = framed != null ? framed : plain;
+        if (target.equals(menu.shownTitle)) {
+            menu.shownMask = menu.filled();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (framed != null || menu.framed) {
+            if (!force && !net.skybornmc.skyblock.common.frame.TitleThrottle.allow(now, menu.titleSentAt, config.fontTitleResendMinMs)) {
+                menu.tilesDirty = true;
+                return;
+            }
+            swapInventory(player, menu, target);
+            menu.framed = framed != null;
+        } else {
+            try {
+                setTitle(player.getOpenInventory(), plain);
+            } catch (RuntimeException e) {
+                swapInventory(player, menu, plain);
+            }
+        }
+        menu.shownTitle = target;
+        menu.shownMask = menu.filled();
+        menu.titleSentAt = now;
+    }
+
+    /** Re-opens the same menu in a new inventory with {@code title} (no close sound, no MenuOpenedEvent). */
+    private void swapInventory(Player player, Menu menu, Component title) {
+        Inventory old = menu.getInventory();
+        Inventory next = Bukkit.createInventory(menu, old.getSize(), title);
+        next.setContents(old.getContents());
+        menu.replaceInventory(next);
+        player.openInventory(next);
+    }
+
+    /** Ticker: a framed menu whose filled slots changed (or whose swap was throttled) gets its title re-sent. */
+    private void syncFrame(Menu menu) {
+        menu.tilesDirty = false;
+        Player viewer = menu.viewer();
+        if (!menu.framed || viewer == null || !menu.isOpen()) {
+            return;
+        }
+        syncTitle(viewer, menu, false);
+    }
+
+    /** I7: the pack loaded or went away while a menu is open: plain -> framed or framed -> plain at once. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPack(net.skybornmc.skyblock.common.pack.PackStatusEvent event) {
+        Player player = event.player();
+        if (player.isOnline()) {
+            retitle(player);
+        }
     }
 
     /**
@@ -1001,6 +1164,9 @@ public final class MenuService implements Listener {
                     menu.tickInternal();
                 } else {
                     timer.time(TICK_NAMES.get(menu.getClass()), menu::tickInternal);
+                }
+                if (menu.tilesDirty) {
+                    syncFrame(menu);
                 }
             } catch (RuntimeException e) {
                 plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " tick failed", e);

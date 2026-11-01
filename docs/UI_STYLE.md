@@ -246,6 +246,10 @@ Rules:
 
 ## 5. GUIs
 
+**FORMAT (I9 v3) is the template for every new screen:** `docs/FORMAT.md` (panel types P3/P4/P6/List, tile limits, wallet tile, icon keys, frame keys). Where this section and FORMAT disagree, FORMAT wins.
+
+**Frame layer (GUI-FONT, Java with the icon pack only):** a 3, 4 or 6-row menu is drawn as our panel (empty slots hidden, a soft tile behind each item) with a plaque holding one short cartoon noun from `Menu#plaqueKey()` (a message key, e.g. `title.short: "SHOP"`; A-Z 0-9 `& ' - ! ? ( ) / . , :`, at most 16 letters; anything else falls back to the plain title). Bedrock, no pack, the **Plain menus** setting and `menus.yml gui.font.enabled: false` see the same layout on the plain chest. Menus with real drop slots override `panel()` with `false`. Lore, chat, holograms and the boss bar never use the fonts.
+
 ### 5.1 Layout standard (I9 v2: compact, no frame, empty slots stay empty)
 Built by the menu framework (`common/menu`, `navBar()`), so every menu behaves the same automatically. Sizes are **3, 4 or 6 rows** (5 rows only in old menus until their pass). **No border, no filler panes**: empty slots stay empty (a pane may only mark a state, e.g. the red error glass).
 ```

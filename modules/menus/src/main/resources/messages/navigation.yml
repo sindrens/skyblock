@@ -334,6 +334,9 @@ settings:
     menu-item:
       name: "<c:value>Menu item"
       lore: ["<c:text>The Nether Star in hotbar", "<c:text>slot 9 that opens /menu."]
+    plain-menus:
+      name: "<c:value>Plain menus"
+      lore: ["<c:text>Use the normal Minecraft chest", "<c:text>look in menus. Only changes", "<c:text>Java; Bedrock always sees it."]
     tips:
       name: "<c:value>Tips"
       lore: ["<c:text>Short tips in chat the first", "<c:text>time you open a feature."]

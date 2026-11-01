@@ -94,6 +94,17 @@ public final class PickListMenu<T> extends Menu {
         return infoKey;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.pick";
+    }
+
+    @Override
+    public String plaqueModule() {
+        return MenuService.MODULE;
+    }
+
     @Override
     public Component title() {
         Pagination pages = new Pagination(options.size(), Math.max(1, PickListLayout.perPage(options.size())));

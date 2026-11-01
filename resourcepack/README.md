@@ -38,3 +38,21 @@ The art itself is code (`tools/icons_lib/sprites.py`, ASCII sprites with an auto
 Never base a custom icon on an item whose definition differs between client versions (`verify-jars` fails for those: bed, compass, shield, spyglass
 and filled map are examples); the pack REPLACES the whole item definition, so a stale fallback shows the purple missing-model cube.
 Never point `item_model` at a pack-only model.
+
+## Frame layer: panels, plaques, tiles, title letters and the logo (GUI-FONT)
+Two fonts in the pack: `phoenix:frame` (panel `E300-E302`, plaques `E320-E322`, soft tile `E330-E335` one per row, logo `E340`/`E341`,
+space glyphs `F800-F80F`) and `phoenix:title` (the cartoon capitals; lowercase maps to the same pictures). `minecraft:default` is never
+touched. Code points stay out of `E000-E1FF` (Bedrock's own emoji). Only Java players with the pack loaded ever get these glyphs.
+
+| File | What |
+|---|---|
+| `frame/panels.json` | **Source of truth**: code points, geometry constants (`title_origin_x`, `title_baseline`, `plaque_extend`, `advance_pad`), the vanilla corner mask, plaque sizes, letter set. |
+| `frame/art/*.png` | The sprites (`panel_frame` 24x24 9-slice, `panel_cell` 18x18, `tile` 18x18, `plaque_left/mid/right` 12/8/12 x 20, `letters` 256x36, `logo` 96x20). `art` only draws missing ones. |
+| `frame/owner-final/<final>.png` | Optional: a finished glyph by name (`panel_p6.png`, `plaque_m.png`, `cell.png`, `logo.png`, `letters.png`) used verbatim by `pack` (size is checked). |
+| `frame/frame-metrics.json` | Generated: every pixel number the Java title builder needs, measured from the final PNGs; bundled into the plugin. |
+| `pack/assets/phoenix/font/{frame,title}.json`, `pack/assets/phoenix/textures/font/**` | Generated fonts and final glyph PNGs. |
+| `preview/frame-sheet.png` | Generated preview: three framed menus at 3x, the letter set and the logo (our own art only). |
+
+Commands: `python3 tools/build_panels.py art | pack | sheet | check | metrics`. Release: `build_panels.py pack && check`, `build_icons.py pack && check`,
+`./gradlew build`. Tuning after the in-game spike (`/pack glyphtest`): change only `panels.json` (`title_origin_x`, `title_baseline`,
+`plaque_extend`, `advance_pad`), then `pack` and `check`; no Java change. The whole pack tree must stay under 250 KB.

@@ -72,6 +72,12 @@ public final class ConfirmMenu extends Menu {
         return 3;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.confirm";
+    }
+
     @Override
     public Component title() {
         Component main = crumb != null ? crumb.apply(viewer) : service.text(viewer, "confirm.crumb");

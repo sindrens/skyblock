@@ -15,6 +15,15 @@ title:
   # Used when a menu's own title text is missing or empty (an empty chest title shows "Large Chest" on Bedrock).
   fallback: "Phoenix Skyblock"
 
+# Frame layer plaques (GUI-FONT, Java with the icon pack only): one short all-caps noun in the cartoon letters above
+# the panel. Allowed: A-Z 0-9 space & ' - ! ? ( ) / . , : and at most 16 letters; anything else shows the plain title.
+plaque:
+  confirm: "CONFIRM"
+  amount: "AMOUNT"
+  pick: "PICK ONE"
+  players: "PLAYERS"
+  offer: "REQUEST"
+
 # The standard buttons (GUI_DESIGN section 1): 6 rows: 45 Back, 48 ?, 49 Close, 50 Main menu, 52/53 pages.
 # 3 rows: 18 Back, 22 Close. The main menu shows Help & guides on 50 instead of Main menu.
 frame:

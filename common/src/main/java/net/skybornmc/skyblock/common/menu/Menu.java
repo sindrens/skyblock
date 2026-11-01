@@ -65,6 +65,18 @@ public abstract class Menu implements InventoryHolder {
     private final ItemStack[] navItems = new ItemStack[2];
     /** The title the open window shows (to update it in place only when it changed). */
     Component shownTitle;
+    /** The plain title of the last build ({@link #title()}), the source of a framed title (GUI-FONT). */
+    Component plainTitle;
+    /** True while the window shows a frame title (panel glyphs). */
+    boolean framed;
+    /** Top inventory slots that hold an item now. */
+    private final java.util.BitSet filledMask = new java.util.BitSet();
+    /** The filled slots the shown frame title was built for. */
+    java.util.BitSet shownMask = new java.util.BitSet();
+    /** A slot went empty or filled (or a title swap was throttled): the framework re-checks the frame title. */
+    boolean tilesDirty;
+    /** When the last frame title was sent (epoch ms; 0 = never), for {@code gui.font.title-resend-min-ms}. */
+    long titleSentAt;
 
     /** Number of rows (1-6). */
     public abstract int rows();
@@ -142,6 +154,60 @@ public abstract class Menu implements InventoryHolder {
     protected void onClose() {
     }
 
+    // ------------------------------------------------------------------ frame layer (GUI-FONT 6.3)
+
+    /**
+     * Framed for Java viewers with the pack (panel, hidden empty slots, soft tiles). Override with {@code false} for
+     * menus whose empty slots are real drop slots (the sell chest, deliver screens): they keep the plain chest.
+     */
+    public boolean panel() {
+        return true;
+    }
+
+    /** The panel of this menu: empty when {@link #panel()} is false or the menu has 1, 2 or 5 rows. */
+    public final java.util.Optional<net.skybornmc.skyblock.common.frame.PanelType> panelType() {
+        if (!panel()) {
+            return java.util.Optional.empty();
+        }
+        return net.skybornmc.skyblock.common.frame.PanelType.forRows(rows());
+    }
+
+    /**
+     * Message key (in {@link #messageModule()}) of the plaque noun, e.g. {@code title.short} = {@code SHOP}; at most 16
+     * letters, all caps. {@code null} = the panel shows the plain title text in its top band.
+     */
+    public String plaqueKey() {
+        return null;
+    }
+
+    /** The messages module of {@link #plaqueKey()} (default {@link #messageModule()}). */
+    public String plaqueModule() {
+        return messageModule();
+    }
+
+    /** True only for the staff glyph test: framed for Java with the pack even when {@code gui.font.*} is off. */
+    public boolean frameForced() {
+        return false;
+    }
+
+    /** Top inventory slots that hold an item (a copy). */
+    final java.util.BitSet filled() {
+        return (java.util.BitSet) filledMask.clone();
+    }
+
+    /** Swaps the window's inventory for a new one with the same holder and contents (frame title update). */
+    final void replaceInventory(Inventory next) {
+        this.inventory = next;
+    }
+
+    private void track(int slot, ItemStack item) {
+        boolean now = item != null && !item.getType().isAir();
+        if (filledMask.get(slot) != now) {
+            filledMask.set(slot, now);
+            tilesDirty = true;
+        }
+    }
+
     // ------------------------------------------------------------------ API for subclasses
 
     /** Puts a button in a slot (replaces what was there). */
@@ -152,17 +218,20 @@ public abstract class Menu implements InventoryHolder {
         if (button == null) {
             buttons.remove(slot);
             inventory.setItem(slot, null);
+            track(slot, null);
             return;
         }
         ItemStack item = service.mark(button.item());
         buttons.put(slot, button.withItem(item));
         inventory.setItem(slot, item);
+        track(slot, item);
     }
 
     /** Framework only: puts an item that is already marked as a menu item (the cached Back and Close). */
     final void setMarked(int slot, ItemStack marked, Consumer<MenuClick> onClick) {
         buttons.put(slot, new MenuButton(marked, onClick));
         inventory.setItem(slot, marked);
+        track(slot, marked);
     }
 
     /** The Back and Close items built for this opening, reused by every refresh (PERF2). */
@@ -243,6 +312,10 @@ public abstract class Menu implements InventoryHolder {
         }
         buttons.clear();
         inventory.clear();
+        if (!filledMask.isEmpty()) {
+            filledMask.clear();
+            tilesDirty = true;
+        }
         build();
     }
 
@@ -292,6 +365,11 @@ public abstract class Menu implements InventoryHolder {
         java.util.Arrays.fill(this.navItems, null);
         this.ticks = 0;
         this.open = true;
+        this.filledMask.clear();
+        this.shownMask = new java.util.BitSet();
+        this.framed = false;
+        this.tilesDirty = false;
+        this.titleSentAt = 0;
     }
 
     final void detach() {
