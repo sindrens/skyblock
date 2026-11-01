@@ -19,3 +19,11 @@ tasks.processResources {
         into("icons")
     }
 }
+
+// Frame layer (GUI-FONT 4.3): the generated metrics (tools/build_panels.py pack) are bundled as frame/frame-metrics.json,
+// so the Java title builder never hard-codes a pixel.
+tasks.processResources {
+    from(rootProject.layout.projectDirectory.file("resourcepack/frame/frame-metrics.json")) {
+        into("frame")
+    }
+}
