@@ -356,9 +356,20 @@ public final class ShopModule implements SkyblockModule, Listener {
         return yaml;
     }
 
-    /** A mob type the stacking module sells as a spawner (any tier; the shop's own max tier is checked when buying). */
+    /**
+     * ECON-SPAWNERS step 12: a mob the shop may list as a spawner: sold for money (not premium, not legacy) and its tier at
+     * most {@code spawners.max-tier}. Anything else in shop.yml is skipped by the catalog loader with a console line.
+     */
     private boolean isSpawnerType(String type) {
-        return stacking().map(st -> st.spawnerTier(type).isPresent()).orElse(false);
+        return stacking().map(st -> st.spawnerSellable(type)
+                && st.spawnerTier(type).orElse(0) >= 1 && st.spawnerTier(type).orElse(0) <= settings.spawnerMaxTier).orElse(false);
+    }
+
+    /** The island the player plays on (active profile), or null. Main thread. */
+    private java.util.UUID islandOf(Player player) {
+        return player == null ? null : core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                .flatMap(i -> i.islandOf(player.getUniqueId()))
+                .map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::id).orElse(null);
     }
 
     Optional<StackingService> stacking() {
@@ -560,8 +571,106 @@ public final class ShopModule implements SkyblockModule, Listener {
         return Math.max(0, Math.min(100, p));
     }
 
+    /**
+     * ECON-SPAWNERS step 13: money one spawner of this mob earns per production hour at base levels (first spawner, no
+     * island upgrades; upgrades only shorten the payback) x {@code spawners.dynamic-factor} (the average dynamic sell
+     * price). 0 without a sellable drop, so the lore shows "never".
+     */
     long incomePerHour(ShopCatalog.Item item) {
-        return settings.incomePerHour(spawnerTier(item));
+        if (!item.spawner()) {
+            return 0;
+        }
+        double perHour = stacking().map(st -> st.spawnerIncomePerHour(null, item.mob())).orElse(0.0);
+        return Math.max(0, Math.round(perHour * settings.spawnerDynamicFactor));
+    }
+
+    /** What stops this player's island from buying the spawner: an empty result = nothing. Main thread. */
+    private Optional<SpawnerBlock> spawnerBlock(Player viewer, ShopCatalog.Item item, int tier) {
+        Optional<StackingService> st = stacking();
+        java.util.UUID island = islandOf(viewer);
+        if (st.isEmpty() || island == null) {
+            return Optional.empty(); // no island: the spawner can't be placed anyway; nothing to gate
+        }
+        StackingService.Unlock unlock = st.get().spawnerUnlock(island, tier);
+        if (!unlock.unlocked()) {
+            return Optional.of(new SpawnerBlock(unlock, 0, tier));
+        }
+        java.util.OptionalInt cap = st.get().spawnerCap(island, tier);
+        if (cap.isPresent() && st.get().spawnersOfTier(island, tier) >= cap.getAsInt()) {
+            return Optional.of(new SpawnerBlock(null, cap.getAsInt(), tier));
+        }
+        return Optional.empty();
+    }
+
+    /** Why a spawner can't be bought: still locked ({@code unlock} set) or the island's cap of the tier is reached. */
+    private record SpawnerBlock(StackingService.Unlock unlock, int cap, int tier) {
+    }
+
+    /** "tier 1 mobs", or the named mobs ("Zombies"), or "..." while the island's counts load. */
+    private Component unlockWhat(Player viewer, StackingService.Unlock unlock, int tier) {
+        return switch (unlock.mobsLabelKey()) {
+            case "mobs" -> Component.join(net.kyori.adventure.text.JoinConfiguration.commas(true),
+                    unlock.mobs().stream().map(m -> Component.translatable("entity.minecraft." + m)).toList());
+            case "loading" -> core.menus().text(viewer, ID, "entry.spawner-loading");
+            default -> core.menus().text(viewer, ID, "entry.spawner-tier-mobs", Msg.number("tier", tier - 1));
+        };
+    }
+
+    private void spawnerLines(Player viewer, SpawnerBlock block, List<Component> lore) {
+        if (block.unlock() != null) {
+            StackingService.Unlock u = block.unlock();
+            lore.addAll(core.menus().lines(viewer, ID, "entry.spawner-unlock", Msg.number("needed", u.needed()),
+                    Msg.number("have", u.kills()), Msg.c("what", unlockWhat(viewer, u, block.tier()))));
+        } else {
+            lore.addAll(core.menus().lines(viewer, ID, "entry.spawner-cap", Msg.number("max", block.cap())));
+        }
+    }
+
+    /** Tells the player why the spawner is not for them right now; false if nothing blocks it. */
+    private boolean refuseSpawner(Player player, ShopCatalog.Item item) {
+        int tier = spawnerTier(item);
+        Optional<SpawnerBlock> block = item.spawner() ? spawnerBlock(player, item, tier) : Optional.empty();
+        if (block.isEmpty()) {
+            return false;
+        }
+        if (block.get().unlock() != null) {
+            StackingService.Unlock u = block.get().unlock();
+            fail(player, "buy.spawner-locked", Msg.number("left", Math.max(0, u.needed() - u.kills())),
+                    Msg.c("what", unlockWhat(player, u, tier)));
+        } else {
+            fail(player, "buy.spawner-capped", Msg.number("max", block.get().cap()), Msg.number("tier", tier));
+        }
+        return true;
+    }
+
+    /**
+     * ECON-SPAWNERS step 13: extra Information rows of a spawner tile: its drop and today's base sell price, and how many
+     * of the tier the viewer's island holds of its cap. Called from {@code ShopTooltips.spawnerRows} (one seam line).
+     */
+    void spawnerRows(net.skybornmc.skyblock.common.item.LoreBuilder.Section info, Player viewer, ShopCatalog.Item item) {
+        Optional<StackingService> st = stacking();
+        if (st.isEmpty() || !item.spawner()) {
+            return;
+        }
+        st.get().spawnerDropItem(item.mob()).ifPresent(drop -> {
+            String name = core.messages().raw("stacking", "drops." + drop);
+            if (name == null || name.isBlank() || name.startsWith("[missing")) {
+                name = drop;
+            }
+            long price = core.services().optional(SellService.class).flatMap(s -> s.price("custom:" + drop))
+                    .map(p -> Math.round((double) p.base())).orElse(0L);
+            info.row(raw("lore.spawner-drop"), net.skybornmc.skyblock.common.item.LoreBuilder.fill(raw("lore.spawner-drop-value"),
+                    Map.of("item", name, "price", net.skybornmc.skyblock.common.util.Format.number(price))));
+        });
+        java.util.UUID island = islandOf(viewer);
+        int tier = spawnerTier(item);
+        if (island != null && tier > 0) {
+            java.util.OptionalInt cap = st.get().spawnerCap(island, tier);
+            long owned = st.get().spawnersOfTier(island, tier);
+            info.row(raw("lore.spawner-island"), net.skybornmc.skyblock.common.item.LoreBuilder.fill(raw("lore.spawner-island-value"),
+                    Map.of("owned", net.skybornmc.skyblock.common.util.Format.number(owned),
+                            "cap", cap.isPresent() ? net.skybornmc.skyblock.common.util.Format.number(cap.getAsInt()) : raw("lore.spawner-no-cap"))));
+        }
     }
 
     /**
@@ -576,6 +685,11 @@ public final class ShopModule implements SkyblockModule, Listener {
             int tier = spawnerTier(item);
             if (!settings.spawnersEnabled || tier < 1 || tier > settings.spawnerMaxTier) {
                 return "unavailable";
+            }
+            Optional<SpawnerBlock> block = spawnerBlock(viewer, item, tier);
+            if (block.isPresent()) {
+                spawnerLines(viewer, block.get(), lore);
+                return "locked";
             }
         }
         Optional<Map.Entry<String, Integer>> missing = missingRequirement(viewer, item);
@@ -595,6 +709,9 @@ public final class ShopModule implements SkyblockModule, Listener {
             return true;
         }
         String now = state(player, item, new ArrayList<>());
+        if ("locked".equals(now) && refuseSpawner(player, item)) {
+            return true;
+        }
         if (!"open".equals(now)) {
             fail(player, "unavailable".equals(now) ? "buy.unavailable" : "buy.locked-click");
             return true;
@@ -638,6 +755,10 @@ public final class ShopModule implements SkyblockModule, Listener {
         } else if (problem.isEmpty() && item.price() != shown.price()) {
             problem = Optional.of("buy.price-changed");
         } else if (problem.isEmpty() && !"open".equals(state(player, item, new ArrayList<>()))) {
+            if (refuseSpawner(player, item)) {
+                done(after);
+                return;
+            }
             problem = Optional.of(missingRequirement(player, item).isPresent() ? "buy.locked-click" : "buy.unavailable");
         }
         if (problem.isPresent()) {

@@ -212,9 +212,26 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
     }
 
     List<String> spawnerTypes(OfferCatalog.Offer o) {
+        return spawnerTypes(o.ref(), tier -> core.services().optional(StackingService.class).map(s -> s.spawnerTypes(tier)).orElse(List.of()));
+    }
+
+    /**
+     * ECON-SPAWNERS step 15 (pure): the mobs a spawner offer can hand out. {@code <tier>} = every mob of the tier;
+     * {@code <tier>:<mob>} = that mob only, and nothing (offer not shown) when the mob is not in that tier's list.
+     */
+    static List<String> spawnerTypes(String ref, java.util.function.IntFunction<List<String>> tierMobs) {
+        if (ref == null) {
+            return List.of();
+        }
+        int sep = ref.indexOf(':');
         try {
-            int tier = Integer.parseInt(o.ref());
-            return core.services().optional(StackingService.class).map(s -> s.spawnerTypes(tier)).orElse(List.of());
+            int tier = Integer.parseInt(sep < 0 ? ref : ref.substring(0, sep));
+            List<String> mobs = tierMobs.apply(tier);
+            if (sep < 0) {
+                return mobs;
+            }
+            String mob = ref.substring(sep + 1);
+            return mobs.contains(mob) ? List.of(mob) : List.of();
         } catch (NumberFormatException e) {
             return List.of();
         }

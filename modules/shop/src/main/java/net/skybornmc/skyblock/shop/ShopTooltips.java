@@ -148,5 +148,6 @@ final class ShopTooltips {
                     case POOR -> "lore.payback-poor";
                 }), Map.of("hours", hoursText))
                 : module.raw("lore.never"));
+        module.spawnerRows(info, viewer, item); // ECON-SPAWNERS step 13 (the one seam in this file)
     }
 }

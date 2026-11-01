@@ -162,6 +162,16 @@ offers:
   spawner_t5:
     name: "<rarity:legendary>Tier 5 Spawner"
     lore: ["<c:text>A random tier 5 mob."]
+  # ECON-SPAWNERS step 15: premium spawners (tier 5), one fixed mob each.
+  spawner_iron_golem:
+    name: "<rarity:epic>Iron Golem Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
+  spawner_wither_skeleton:
+    name: "<rarity:epic>Wither Skeleton Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
+  spawner_evoker:
+    name: "<rarity:epic>Evoker Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
   blueprint:
     name: "<rarity:rare>Blueprint"
   bm_tag:

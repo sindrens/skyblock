@@ -18,8 +18,8 @@ class OfferCatalogTest {
         List<String> problems = new ArrayList<>();
         OfferCatalog c = OfferCatalog.parse(new BlackMarketSettings().offers, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(16, c.all().size());
-        assertEquals(1, c.of(OfferCatalog.Slot.FIXED).size());
+        assertEquals(18, c.all().size());
+        assertEquals(4, c.of(OfferCatalog.Slot.FIXED).size(), "scroll + 3 premium spawners (ECON-SPAWNERS)");
         assertEquals(3, c.of(OfferCatalog.Slot.HEADLINE).size());
     }
 
@@ -33,12 +33,39 @@ class OfferCatalogTest {
         OfferCatalog.Offer eclipse = c.get("eclipse_key").orElseThrow();
         assertEquals(75, eclipse.price());
         assertEquals(OfferCatalog.Period.MONTH, eclipse.period());
-        assertEquals(2, c.get("phoenix_key").orElseThrow().limit());
+        assertEquals(1, c.get("phoenix_key").orElseThrow().limit(), "ECON-SHARDS: 1 per rotation");
+        assertTrue(c.get("spawner_t5").isEmpty(), "the random tier 5 spawner is gone");
+        OfferCatalog.Offer golem = c.get("spawner_iron_golem").orElseThrow();
+        assertEquals("5:iron_golem", golem.ref());
+        assertEquals(400, golem.price());
+        assertEquals(OfferCatalog.Period.DAY, golem.period());
         assertEquals(8, c.get("scroll").orElseThrow().price());
         assertFalse(c.get("sell_wand").orElseThrow().rollable(), "coming soon is never rolled");
         assertFalse(c.get("scroll").orElseThrow().rollable(), "the fixed row is not rolled");
         assertTrue(c.get("elytra").orElseThrow().rollable());
         assertFalse(c.liveIds().contains("blueprint"));
+    }
+
+    @Test
+    void spawnerOffersTakeAnOptionalMob() {
+        assertEquals("5:evoker", OfferCatalog.parseLine("x: slot=fixed price=1 reward=spawner:5:evoker").ref());
+        assertEquals("3", OfferCatalog.parseLine("x: slot=rare price=1 reward=spawner:3").ref());
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> OfferCatalog.parseLine("x: slot=fixed price=1 reward=spawner:6:evoker"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> OfferCatalog.parseLine("x: slot=fixed price=1 reward=spawner:5:Evoker!"));
+        java.util.function.IntFunction<List<String>> tiers = t -> t == 5 ? List.of("iron_golem", "wither_skeleton", "evoker") : List.of();
+        assertEquals(List.of("evoker"), BlackMarketModule.spawnerTypes("5:evoker", tiers));
+        assertEquals(List.of(), BlackMarketModule.spawnerTypes("5:shulker", tiers), "a mob outside the tier is not offered");
+        assertEquals(3, BlackMarketModule.spawnerTypes("5", tiers).size());
+        assertEquals(List.of(), BlackMarketModule.spawnerTypes("x", tiers));
+    }
+
+    @Test
+    void anUntouchedOfferListMigrates() {
+        var change = new BlackMarketSettings().valueChanges().get(2).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V1, change.from());
+        assertEquals(new BlackMarketSettings().offers, change.to());
     }
 
     @Test

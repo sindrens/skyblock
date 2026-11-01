@@ -20,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The bundled shop.yml (Shop v2), the parser and the one-time v1 → v2 catalog migration. */
 class ShopCatalogTest {
 
-    /** stacking.yml defaults: tier 1 and 2 spawner types (owner SK3/SK4). */
+    /** stacking.yml defaults: the spawner types of tiers 1 to 4 the shop sells (ECON-SPAWNERS / ECON-TABLES A). */
     static final Set<String> SPAWNER_TYPES = Set.of("pig", "cow", "chicken", "sheep", "rabbit",
-            "zombie", "skeleton", "spider", "cave_spider", "slime", "squid");
+            "zombie", "skeleton", "spider", "cave_spider", "slime",
+            "creeper", "witch", "drowned", "husk", "stray",
+            "blaze", "enderman", "guardian", "hoglin", "zombified_piglin");
 
     static YamlConfiguration resource(String name) throws Exception {
         YamlConfiguration yaml = new YamlConfiguration();
@@ -78,8 +80,9 @@ class ShopCatalogTest {
     @Test
     void about253ItemsWithTheDesignCounts() throws Exception {
         ShopCatalog c = catalog();
-        assertEquals(253, c.size());
-        int[] expected = {26, 27, 24, 28, 28, 53, 28, 28, 11};
+        // ECON-SPAWNERS: the Spawners tab holds 20 mobs (tiers 1 to 4); ECON shop lists (Part B) change the rest later.
+        assertEquals(262, c.size());
+        int[] expected = {26, 27, 24, 28, 28, 53, 28, 28, 20};
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }

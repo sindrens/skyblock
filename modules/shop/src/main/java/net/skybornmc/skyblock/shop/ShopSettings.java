@@ -34,25 +34,15 @@ public final class ShopSettings extends ModuleConfig {
             + "(the tab says so).", level = Setting.Level.OWNER)
     public boolean spawnersEnabled = true;
 
-    @Setting(path = "spawners.max-tier", desc = "Owner S5: highest spawner tier (stacking.yml spawners.tier-N) the shop "
-            + "may sell; higher tiers in shop.yml show as not for sale.", min = 1, max = 5, level = Setting.Level.OWNER)
-    public int spawnerMaxTier = 2;
+    @Setting(path = "spawners.max-tier", desc = "Highest spawner tier (stacking.yml spawners.tier-N) the shop may sell. "
+            + "ECON-SPAWNERS: tiers 1 to 4 are sold for money; tier 5 (premium) is Black Market only.", min = 1, max = 5,
+            level = Setting.Level.OWNER)
+    public int spawnerMaxTier = 4;
 
-    @Setting(path = "spawners.income-per-hour.tier-1", desc = "Money one tier 1 spawner earns per hour at full output "
-            + "(ECONOMY_BALANCE §4.3, 1 mob per spawn); only for the payback time in the lore.", min = 1)
-    public long incomeTier1 = 1_900;
-
-    @Setting(path = "spawners.income-per-hour.tier-2", desc = "Money one tier 2 spawner earns per hour at full output.", min = 1)
-    public long incomeTier2 = 3_500;
-
-    @Setting(path = "spawners.income-per-hour.tier-3", desc = "Money one tier 3 spawner earns per hour at full output.", min = 1)
-    public long incomeTier3 = 6_500;
-
-    @Setting(path = "spawners.income-per-hour.tier-4", desc = "Money one tier 4 spawner earns per hour at full output.", min = 1)
-    public long incomeTier4 = 11_800;
-
-    @Setting(path = "spawners.income-per-hour.tier-5", desc = "Money one tier 5 spawner earns per hour at full output.", min = 1)
-    public long incomeTier5 = 35_000;
+    @Setting(path = "spawners.dynamic-factor", desc = "ECON-SPAWNERS: the average dynamic sell price of spawner drops as a "
+            + "share of their base price; only for the payback time in the shop lore (income = drop price x this).",
+            min = 0.05, max = 2.0, level = Setting.Level.OWNER)
+    public double spawnerDynamicFactor = 0.85;
 
     @Setting(path = "spawners.payback-good-hours", desc = "Owner F2: a spawner that pays back within this many hours "
             + "shows its payback time in green.", min = 1, level = Setting.Level.OWNER)
@@ -83,11 +73,24 @@ public final class ShopSettings extends ModuleConfig {
             + "endless money if a price is too low.", level = Setting.Level.OWNER)
     public boolean checkSellPrices = true;
 
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** ECON-SPAWNERS step 11: the shop now sells tiers 1 to 4 (an owner-chosen value stays). */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("spawners.max-tier", ValueChange.of(2, 4)));
+    }
+
     /** REVIEW3 §3.6: the buy confirm screen is gone (SELL2 quick-buy); its threshold key is deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of(
-                "buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)",
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("spawners.income-per-hour", "ECON-SPAWNERS: income comes from the spawner drop's sell price "
+                        + "(stacking + sell.yml), not a fixed number per tier"),
+                java.util.Map.entry("buy.confirm-above", "the buy confirm screen was removed (quick-buy, R3-29/F14 plan the replacement)",
                 "quick-buy.left-amount", "Shop v2: a click opens the buy page (Buy 1/16/64, Fill inventory, Type an amount)",
                 "quick-buy.right-amount", "Shop v2: a click opens the buy page; Java shift-click buys one stack",
                 "quick-buy.start-amount", "Shop v2: the amount screen became the buy page",
@@ -103,17 +106,5 @@ public final class ShopSettings extends ModuleConfig {
     public String header() {
         return "Builder shop settings (M3.5). Items and prices: shop.yml. Texts: messages/shop.yml.\n"
                 + "Reload: /skyblock reload shop";
-    }
-
-    /** Income per hour of one spawner of {@code tier} (1-5) at full output; 0 for an unknown tier. */
-    public long incomePerHour(int tier) {
-        return switch (tier) {
-            case 1 -> incomeTier1;
-            case 2 -> incomeTier2;
-            case 3 -> incomeTier3;
-            case 4 -> incomeTier4;
-            case 5 -> incomeTier5;
-            default -> 0;
-        };
     }
 }

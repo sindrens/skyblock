@@ -310,23 +310,34 @@ categories:
       activator_rail: 30
       minecart: 60
       trapped_chest: 15
-  # Spawners (owner S5 / F2): tier 1-2 only (shop-settings.yml spawners.max-tier), fixed price. Keys are mob types
-  # from stacking.yml spawners.tier-N. The lore shows how well the next one works and the payback time.
+  # Spawners (ECON-SPAWNERS): tiers 1 to 4, 5 mobs each, one round price per tier (shop-settings.yml spawners.max-tier;
+  # tier 5 is Black Market only, legacy mobs are never sold). Keys are mob types from stacking.yml spawners.tier-N.
+  # A tier unlocks per island by kills of the previous tier (stacking.yml spawners.unlock.*). The lore shows the drop,
+  # how well the next one works and the payback time.
   spawners:
     icon: spawner
     kind: spawners
     items:
-      pig: 117000
-      cow: 117000
-      chicken: 117000
-      sheep: 117000
-      rabbit: 117000
-      zombie: 213000
-      skeleton: 213000
-      spider: 213000
-      cave_spider: 213000
-      slime: 213000
-      squid: 213000
+      pig: 100000
+      cow: 100000
+      chicken: 100000
+      sheep: 100000
+      rabbit: 100000
+      zombie: 250000
+      skeleton: 250000
+      spider: 250000
+      cave_spider: 250000
+      slime: 250000
+      creeper: 500000
+      witch: 500000
+      drowned: 500000
+      husk: 500000
+      stray: 500000
+      blaze: 1000000
+      enderman: 1000000
+      guardian: 1000000
+      hoglin: 1000000
+      zombified_piglin: 1000000
 
 # Not sold any more (Shop v2); the price is only the block worth for the island level and trade hints.
 worth-only:

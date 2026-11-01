@@ -46,7 +46,7 @@ final class OfferCatalog {
         SCROLL("scroll", false),
         /** Keys of the crate {@code ref} (bound: the source {@code blackmarket} is not a tradeable key source). */
         KEY("key", true),
-        /** A spawner of a random type of tier {@code ref} (1-5, chosen at the buy). Item. */
+        /** A spawner of tier {@code ref} (1-5): a random mob of the tier chosen at the buy, or {@code <tier>:<mob>}. Item. */
         SPAWNER("spawner", true),
         /** A plain vanilla item {@code ref} (e.g. elytra). Item. */
         ITEM("item", true),
@@ -219,7 +219,13 @@ final class OfferCatalog {
             throw new IllegalArgumentException("reward " + kind.key() + " needs ':<value>'");
         }
         if (kind == Kind.SPAWNER) {
-            number(ref, "spawner tier", 1, 5);
+            // ECON-SPAWNERS step 15: spawner:<tier> (random mob of the tier) or spawner:<tier>:<mob> (that mob; it must be
+            // in the tier's list at load, otherwise the module does not offer it).
+            int mobSep = ref.indexOf(':');
+            number(mobSep < 0 ? ref : ref.substring(0, mobSep), "spawner tier", 1, 5);
+            if (mobSep >= 0 && !ref.substring(mobSep + 1).matches("[a-z_]{1,40}")) {
+                throw new IllegalArgumentException("spawner mob must be a mob type like iron_golem");
+            }
         }
         int amount = (int) number(values.getOrDefault("amount", "1"), "amount", 1, MAX_AMOUNT);
         int level = (int) number(values.getOrDefault("level", "1"), "level", 1, 100);
