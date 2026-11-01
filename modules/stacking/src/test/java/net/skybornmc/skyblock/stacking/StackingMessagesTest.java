@@ -39,7 +39,8 @@ class StackingMessagesTest {
                 Matcher m = LITERAL.matcher(Files.readString(file));
                 while (m.find()) {
                     String key = m.group(1);
-                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("stacking-")) {
+                    // spawners.* are stacking.yml config paths named in problem lines (SpawnerSteps), not message keys.
+                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("stacking-") || key.startsWith("spawners.")) {
                         continue;
                     }
                     if (!yml.contains(key) && !yml.contains(key + ".name") && !yml.isConfigurationSection(key)) {
@@ -73,7 +74,7 @@ class StackingMessagesTest {
         assertEquals(10, c.itemDespawnMinutes);
         assertEquals(64, c.hopperPerTransfer);
         assertEquals(8, c.spawnerStackStart);
-        assertEquals(512, c.spawnerStackMax);
+        assertEquals(32, c.spawnerStackMax); // ECON-SPAWNERS S4 (was 512; blocks above it keep their spawners)
         assertEquals(16, c.activationRange);
         assertEquals(20, c.limitArmorStands);
         assertEquals(60, c.limitItemFrames);
