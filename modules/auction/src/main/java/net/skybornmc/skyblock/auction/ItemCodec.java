@@ -42,6 +42,10 @@ final class ItemCodec {
         if (pdc.has(ItemKeys.DUPE_FLAG)) {
             return Optional.of("dupe-flagged");
         }
+        // AH-1 / owner D7: the hotbar menu item (Nether Star) and menu buttons are controls, never auctionable.
+        if (pdc.has(ItemKeys.HOTBAR_MENU_ITEM) || pdc.has(ItemKeys.MENU_BUTTON)) {
+            return Optional.of("menu-item");
+        }
         // Owner answer 332: items made by staff (/give, /i, creative) never change hands, also not inside a container.
         if (net.skybornmc.skyblock.common.item.StaffItems.containsMarked(stack)) {
             return Optional.of("staff-item");

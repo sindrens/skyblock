@@ -145,6 +145,11 @@ final class PlaytimeService {
         status.remove(p.getUniqueId());
     }
 
+    /** Active seconds counted for the profile but not saved yet (the Weekly Reward adds them to the stored week). */
+    long unsaved(UUID profile) {
+        return unsaved.getOrDefault(profile, 0L);
+    }
+
     void forget(UUID profile) {
         unsaved.remove(profile);
         rows.remove(profile);
@@ -157,7 +162,11 @@ final class PlaytimeService {
         long now = System.currentTimeMillis();
         for (Map.Entry<UUID, Long> e : Map.copyOf(unsaved).entrySet()) {
             try {
-                m.core.database().blockingTransaction(c -> RewardStore.addSeconds(c, e.getKey(), e.getValue(), now));
+                String week = PeriodicRules.key(PeriodicRules.Period.WEEK, now, m.zone());
+                m.core.database().blockingTransaction(c -> {
+                    RewardStore.addWeekSeconds(c, e.getKey(), week, e.getValue(), now);
+                    return RewardStore.addSeconds(c, e.getKey(), e.getValue(), now);
+                });
             } catch (RuntimeException ex) {
                 m.core.plugin().getLogger().log(Level.WARNING, "Rewards: could not save the playtime of profile " + e.getKey(), ex);
             }
@@ -171,7 +180,11 @@ final class PlaytimeService {
             return;
         }
         long now = System.currentTimeMillis();
-        chain(profile, () -> m.core.database().transaction(c -> RewardStore.addSeconds(c, profile, seconds, now)))
+        String week = PeriodicRules.key(PeriodicRules.Period.WEEK, now, m.zone());
+        chain(profile, () -> m.core.database().transaction(c -> {
+            RewardStore.addWeekSeconds(c, profile, week, seconds, now);
+            return RewardStore.addSeconds(c, profile, seconds, now);
+        }))
                 .whenCompleteAsync((row, e) -> {
                     if (e != null) {
                         m.core.plugin().getLogger().log(Level.WARNING, "Rewards: could not save the playtime of profile " + profile

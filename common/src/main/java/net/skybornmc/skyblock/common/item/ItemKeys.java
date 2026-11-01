@@ -26,6 +26,13 @@ public final class ItemKeys {
      * sold, traded, auctioned or sent to others; see {@link StaffItems}.
      */
     public static final NamespacedKey STAFF_ITEM = key("staff_item");
+    /**
+     * The hotbar menu item (the Nether Star that opens /menu; set by the menus module). AH-1 / owner D7: it can never be
+     * listed, traded or put in a shop: it is a control, not an item.
+     */
+    public static final NamespacedKey HOTBAR_MENU_ITEM = key("hotbar_menu_item");
+    /** Menu buttons (GUI framework, {@code MenuService.BUTTON_KEY}); they never leave a menu, refused anywhere anyway. */
+    public static final NamespacedKey MENU_BUTTON = key("menu_item");
 
     private ItemKeys() {
     }

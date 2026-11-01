@@ -64,6 +64,10 @@ public final class TxReason {
 
     /** Money, crystals and earned credits from the daily calendar and its streak (PHASE-10 M10.6); new currency. */
     public static final String DAILY_REWARD = "daily_reward";
+    /** Weekly Reward claim (Reward Core, Complete Developer Spec §6). */
+    public static final String WEEKLY_REWARD = "weekly_reward";
+    /** Monthly Reward claim (Reward Core, Complete Developer Spec §6). */
+    public static final String MONTHLY_REWARD = "monthly_reward";
 
     /** Crystals from active playtime (PHASE-10 M10.6, R6); new currency. */
     public static final String PLAYTIME_REWARD = "playtime_reward";
