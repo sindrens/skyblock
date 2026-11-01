@@ -61,6 +61,12 @@ final class SellItemMenu extends Menu {
         return ShopModule.ID;
     }
 
+    /** GUI-FONT plaque (MENUS-V3 6.4): {@code sell.short} ({@code SELL}). */
+    @Override
+    public String plaqueKey() {
+        return "sell.short";
+    }
+
     @Override
     public int tickInterval() {
         return 20;

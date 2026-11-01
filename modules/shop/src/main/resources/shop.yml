@@ -12,8 +12,14 @@
 #   ...items.<item id>: { price: 120, requires: { farming: 10 } }      skill level needed to buy it (farming, mining ...)
 #   categories.<tab>.kind: spawners                  a Spawners tab: item keys are mob types (pig, zombie ...) from
 #                                                    stacking.yml spawners.tier-N, sold as stacked spawner items
-# Tabs: at most 9, in file order (slots 0-8 of the top row). Item order in a tab = order in this file; 28 items fit a
-# page. Items that are not real item ids are skipped with a console warning.
+#   categories.<tab>.groups.<group>: [ids]           the rows of the grid (MENUS-V3): each group starts a new row, is
+#                                                    centred and split evenly over rows of up to 7 (16 = 6 + 5 + 5); a
+#                                                    page holds whole groups (4 rows). Order inside a group = display
+#                                                    order. Ids not listed in any group form a last group at the end.
+#                                                    An id that is not an item of the tab is skipped with a warning.
+#                                                    Group names (for /admin): messages/shop.yml groups.<tab>.<group>.
+# Tabs: at most 9, in file order (the /shop menu shows 5 on the first row and 4 on the second). Without groups: the
+# items in file order. Items that are not real item ids are skipped with a console warning.
 #
 # THE ONE RULE (checked by a build test and again live, against the current /sell prices):
 #   price > the most the item (and everything in "contains") can ever sell for with /sell
@@ -30,76 +36,20 @@
 # Default prices: the shop takes ~4% of what players earn (docs/ECONOMY_BALANCE.md §1.2 "Shop spend"); a stack of a
 # common block costs about 3-8 minutes of first-hour income. New entries in a plugin update are added to this file
 # automatically; to remove an item set enabled: false (a deleted entry comes back on the next update).
-# config-version 2 = Shop v2. A version-1 file is migrated once on startup (backup: shop.yml.before-v2, every change in
-# the console and in shop-migration-v2.log).
+# config-version 3 = Shop v3 (MENUS-V3: tab order, groups). Older files are migrated once on startup: version 1 -> 2
+# (backup shop.yml.before-v2, shop-migration-v2.log), then 2 -> 3 (backup shop.yml.before-v3, shop-migration-v3.log):
+# your prices, enabled: false, requires and own items stay; default items the new file drops move to worth-only.
 # Reload: /skyblock reload shop
-config-version: 2
+config-version: 3
 
 categories:
-  # Workstations, storage, buckets, tools and food.
-  essentials:
-    icon: crafting_table
-    items:
-      crafting_table: 5
-      furnace: 10
-      blast_furnace: 40
-      smoker: 20
-      chest: 10
-      barrel: 10
-      composter: 10
-      stonecutter: 30
-      grindstone: 30
-      anvil: 400
-      enchanting_table: 1500
-      bookshelf: 60
-      brewing_stand: 300
-      cauldron: 60
-      bucket: 50
-      water_bucket: 60
-      lava_bucket: 200
-      flint_and_steel: 40
-      shears: 60
-      fishing_rod: 150
-      torch: 4
-      ladder: 3
-      scaffolding: 5
-      white_bed: 30
-      bread: 15
-      baked_potato: 15
-  # Seeds and plants. Crops that are their own seed (carrot, potato, sugar cane ...) sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more. Farming tier unlocks come later (requires: { farming: <level> }).
-  farming:
-    icon: wheat_seeds
-    items:
-      wheat_seeds: 10
-      beetroot_seeds: 15
-      melon_seeds: 40
-      pumpkin_seeds: 40
-      carrot: 120
-      potato: 120
-      sugar_cane: 200
-      cocoa_beans: 350
-      cactus: 475
-      sweet_berries: 650
-      oak_sapling: 25
-      spruce_sapling: 25
-      birch_sapling: 25
-      jungle_sapling: 30
-      acacia_sapling: 30
-      dark_oak_sapling: 30
-      cherry_sapling: 35
-      pale_oak_sapling: 35
-      mangrove_propagule: 35
-      bamboo: 10
-      kelp: 8
-      lily_pad: 10
-      brown_mushroom: 10
-      red_mushroom: 10
-      vine: 5
-      glow_berries: 15
-      bone_meal: 30
   # Logs and planks of every tree (a log crafts into 4 planks; an axe strips logs).
   wood:
     icon: oak_log
+    groups:
+      logs: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, cherry_log, pale_oak_log]
+      other: [crimson_stem, warped_stem, bamboo_block]
+      leaves: []
     items:
       oak_log: 8
       oak_planks: 2
@@ -128,6 +78,11 @@ categories:
   # Earth, stone and bricks. Stone breaks into cobblestone, which /sell buys: keep it above 7.5x its sell price.
   stone-earth:
     icon: stone_bricks
+    groups:
+      soil: [dirt, mud, grass_block, podzol, clay]
+      sand: [sand, gravel, red_sand]
+      stone: [tuff, diorite, granite, calcite, cobblestone, stone, bricks]
+      deep: [cobbled_deepslate, deepslate]
     items:
       dirt: 4
       grass_block: 8
@@ -160,6 +115,11 @@ categories:
   # Nether, End, ocean and ice blocks. The Nether and End are off, so this is the only source.
   special:
     icon: quartz_block
+    groups:
+      nether: [netherrack, basalt, blackstone, soul_sand, soul_soil, nether_bricks, red_nether_bricks]
+      end: [end_stone, purpur_block, quartz_block, smooth_quartz]
+      ocean: [prismarine, prismarine_bricks, dark_prismarine]
+      rare: [snow_block, ice, mycelium, amethyst_block, copper_block, obsidian, crying_obsidian]
     items:
       netherrack: 3
       soul_sand: 8
@@ -192,6 +152,11 @@ categories:
   # Concrete, stained glass and terracotta in all 16 colours (2 pages). Wool, carpets and dyes are crafted.
   colors:
     icon: light_blue_stained_glass
+    groups:
+      concrete: [white_concrete, orange_concrete, magenta_concrete, light_blue_concrete, yellow_concrete, lime_concrete, pink_concrete, gray_concrete, light_gray_concrete, cyan_concrete, purple_concrete, blue_concrete, brown_concrete, green_concrete, red_concrete, black_concrete]
+      extras: [glass, terracotta, white_wool, tinted_glass]
+      glass: [white_stained_glass, orange_stained_glass, magenta_stained_glass, light_blue_stained_glass, yellow_stained_glass, lime_stained_glass, pink_stained_glass, gray_stained_glass, light_gray_stained_glass, cyan_stained_glass, purple_stained_glass, blue_stained_glass, brown_stained_glass, green_stained_glass, red_stained_glass, black_stained_glass]
+      terracotta: [white_terracotta, orange_terracotta, magenta_terracotta, light_blue_terracotta, yellow_terracotta, lime_terracotta, pink_terracotta, gray_terracotta, light_gray_terracotta, cyan_terracotta, purple_terracotta, blue_terracotta, brown_terracotta, green_terracotta, red_terracotta, black_terracotta]
     items:
       white_concrete: 6
       orange_concrete: 6
@@ -249,6 +214,12 @@ categories:
   # Lights, furniture and a few plants.
   decoration:
     icon: lantern
+    groups:
+      light: [soul_torch, candle, end_rod, campfire, shroomlight, lantern, ochre_froglight, verdant_froglight, pearlescent_froglight, soul_lantern]
+      display: [flower_pot, iron_bars, decorated_pot, item_frame, glow_item_frame]
+      greens: []
+      nature: [moss_block, azalea, flowering_azalea, spore_blossom]
+      flowers: [dandelion, poppy, cornflower, sunflower]
     items:
       soul_torch: 5
       lantern: 40
@@ -278,9 +249,86 @@ categories:
       poppy: 8
       cornflower: 10
       sunflower: 15
+  # Workstations, storage, buckets, tools and food.
+  essentials:
+    icon: crafting_table
+    groups:
+      basics: [torch, scaffolding, bread, white_bed]
+      tools: [flint_and_steel, bucket, shears, water_bucket, fishing_rod, lava_bucket]
+      workstations: [stonecutter, blast_furnace, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
+    items:
+      crafting_table: 5
+      furnace: 10
+      blast_furnace: 40
+      smoker: 20
+      chest: 10
+      barrel: 10
+      composter: 10
+      stonecutter: 30
+      grindstone: 30
+      anvil: 400
+      enchanting_table: 1500
+      bookshelf: 60
+      brewing_stand: 300
+      cauldron: 60
+      bucket: 50
+      water_bucket: 60
+      lava_bucket: 200
+      flint_and_steel: 40
+      shears: 60
+      fishing_rod: 150
+      torch: 4
+      ladder: 3
+      scaffolding: 5
+      white_bed: 30
+      bread: 15
+      baked_potato: 15
+  # Seeds and plants. Crops that are their own seed (carrot, potato, sugar cane ...) sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more. Farming tier unlocks come later (requires: { farming: <level> }).
+  farming:
+    icon: wheat_seeds
+    groups:
+      seeds: [wheat_seeds, beetroot_seeds, melon_seeds, pumpkin_seeds, bone_meal]
+      crops: [carrot, potato, sugar_cane, cocoa_beans, cactus, sweet_berries]
+      trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
+      plants: [vine, kelp, bamboo, lily_pad, brown_mushroom, red_mushroom, glow_berries]
+      lush: []
+      nether: []
+    items:
+      wheat_seeds: 10
+      beetroot_seeds: 15
+      melon_seeds: 40
+      pumpkin_seeds: 40
+      carrot: 120
+      potato: 120
+      sugar_cane: 200
+      cocoa_beans: 350
+      cactus: 475
+      sweet_berries: 650
+      oak_sapling: 25
+      spruce_sapling: 25
+      birch_sapling: 25
+      jungle_sapling: 30
+      acacia_sapling: 30
+      dark_oak_sapling: 30
+      cherry_sapling: 35
+      pale_oak_sapling: 35
+      mangrove_propagule: 35
+      bamboo: 10
+      kelp: 8
+      lily_pad: 10
+      brown_mushroom: 10
+      red_mushroom: 10
+      vine: 5
+      glow_berries: 15
+      bone_meal: 30
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone
+    groups:
+      power: [daylight_detector, comparator, observer, redstone]
+      machines: [dispenser, piston, redstone_lamp, sticky_piston, crafter, hopper]
+      inputs: [tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, light_weighted_pressure_plate]
+      rails: [rail, detector_rail, activator_rail, powered_rail, minecart]
     items:
       redstone: 260
       redstone_torch: 30
@@ -310,23 +358,39 @@ categories:
       activator_rail: 30
       minecart: 60
       trapped_chest: 15
-  # Spawners (owner S5 / F2): tier 1-2 only (shop-settings.yml spawners.max-tier), fixed price. Keys are mob types
-  # from stacking.yml spawners.tier-N. The lore shows how well the next one works and the payback time.
+  # Spawners (ECON-SPAWNERS): tiers 1 to 4, 5 mobs each, one round price per tier (shop-settings.yml spawners.max-tier;
+  # tier 5 is Black Market only, legacy mobs are never sold). Keys are mob types from stacking.yml spawners.tier-N.
+  # A tier unlocks per island by kills of the previous tier (stacking.yml spawners.unlock.*). The lore shows the drop,
+  # how well the next one works and the payback time.
   spawners:
     icon: spawner
     kind: spawners
+    groups:
+      tier1: [pig, cow, chicken, sheep, rabbit]
+      tier2: [zombie, skeleton, spider, cave_spider, slime]
+      tier3: [creeper, witch, drowned, husk, stray]
+      tier4: [blaze, enderman, guardian, hoglin, zombified_piglin]
     items:
-      pig: 117000
-      cow: 117000
-      chicken: 117000
-      sheep: 117000
-      rabbit: 117000
-      zombie: 213000
-      skeleton: 213000
-      spider: 213000
-      cave_spider: 213000
-      slime: 213000
-      squid: 213000
+      pig: 100000
+      cow: 100000
+      chicken: 100000
+      sheep: 100000
+      rabbit: 100000
+      zombie: 250000
+      skeleton: 250000
+      spider: 250000
+      cave_spider: 250000
+      slime: 250000
+      creeper: 500000
+      witch: 500000
+      drowned: 500000
+      husk: 500000
+      stray: 500000
+      blaze: 1000000
+      enderman: 1000000
+      guardian: 1000000
+      hoglin: 1000000
+      zombified_piglin: 1000000
 
 # Not sold any more (Shop v2); the price is only the block worth for the island level and trade hints.
 worth-only:

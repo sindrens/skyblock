@@ -76,8 +76,9 @@ public final class ShopCatalog {
         }
     }
 
-    /** A tab: id, icon item id, tab slot (0-8), kind, items in file order (disabled ones included). */
     /**
+     * A tab: id, icon item id, tab slot (0-8), kind, items in file order (disabled ones included) and its groups.
+     *
      * @param icon vanilla item id (the plain icon for owner-added categories without a catalogue icon)
      * @param slot parsed from shop.yml but no longer used for layout (GUI-P3: the category menu is centred in file order)
      */
@@ -192,15 +193,29 @@ public final class ShopCatalog {
 
     /**
      * {@code categories.<tab>.groups.<group>: [item ids]} (MENUS-V3 6.2, optional). An id that is not an item of this tab or
-     * is already in a group is reported and skipped (so the item lists can change without breaking the groups).
+     * is already in a group is reported and skipped (so the item lists can change without breaking the groups). In a
+     * Spawners tab the ids are the YAML keys ({@code pig}); the groups hold the catalog ids ({@code spawner_pig}). An
+     * empty list is allowed (a group whose items are not sold yet) and leaves no group.
      */
     static List<Group> readGroups(ConfigurationSection section, List<Item> items, String where, Consumer<String> problems) {
+        return readGroups(section, items, Kind.ITEM, where, problems);
+    }
+
+    static List<Group> readGroups(ConfigurationSection section, List<Item> items, Kind kind, String where,
+                                  Consumer<String> problems) {
         List<Group> out = new ArrayList<>();
         if (section == null) {
             return out;
         }
         Set<String> known = new HashSet<>();
         items.forEach(i -> known.add(i.id()));
+        // An id listed under the tab's items: but skipped there (already reported) leaves its group silently.
+        Set<String> listed = new HashSet<>();
+        ConfigurationSection tab = section.getParent();
+        ConfigurationSection rawItems = tab == null ? null : tab.getConfigurationSection("items");
+        if (rawItems != null) {
+            rawItems.getKeys(false).forEach(k -> listed.add(k.toLowerCase(Locale.ROOT)));
+        }
         Set<String> used = new HashSet<>();
         for (String groupId : section.getKeys(false)) {
             if (MORE.equals(groupId)) {
@@ -209,8 +224,11 @@ public final class ShopCatalog {
             }
             List<String> ids = new ArrayList<>();
             for (String raw : section.getStringList(groupId)) {
-                String id = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-                if (!known.contains(id)) {
+                String key = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+                String id = kind == Kind.SPAWNER ? SPAWNER_PREFIX + key : key;
+                if (!known.contains(id) && listed.contains(key)) {
+                    continue;
+                } else if (!known.contains(id)) {
                     problems.accept(where + "." + groupId + ": '" + raw + "' is not an item of this tab (skipped)");
                 } else if (!used.add(id)) {
                     problems.accept(where + "." + groupId + ": '" + raw + "' is already in a group (skipped)");
@@ -280,7 +298,7 @@ public final class ShopCatalog {
             };
             List<Item> items = readItems(cat.getConfigurationSection("items"), id, kind, where + ".items",
                     kind == Kind.SPAWNER ? validSpawner : validMaterial, seen, problems);
-            out.add(new Category(id, icon, out.size(), kind, items, readGroups(cat.getConfigurationSection("groups"), items,
+            out.add(new Category(id, icon, out.size(), kind, items, readGroups(cat.getConfigurationSection("groups"), items, kind,
                     where + ".groups", problems)));
         }
         Map<String, Long> worth = new LinkedHashMap<>();

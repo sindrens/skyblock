@@ -24,26 +24,18 @@ spawner-name: "<mob> Spawner"
 tab-name: "<c:flame><name>"
 # Categories (ids from shop.yml): the category menu tiles and the grid title. Names are bold green (they are all Shop).
 categories:
-  essentials:
-    short: "ESSENTIALS"
-    name: "<area:money><bold>Essentials"
-    lore: ["<c:text>Workstations, chests, buckets,", "<c:text>tools and food."]
-  farming:
-    short: "FARMING"
-    name: "<area:money><bold>Farming"
-    lore: ["<c:text>Seeds, saplings, plants", "<c:text>and bone meal."]
   wood:
     short: "WOOD"
     name: "<area:money><bold>Wood"
-    lore: ["<c:text>Logs and planks", "<c:text>of every tree."]
+    lore: ["<c:text>Logs, stems and leaves of", "<c:text>every tree. Craft your planks."]
   stone-earth:
     short: "STONE & EARTH"
     name: "<area:money><bold>Stone & Earth"
-    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and bricks."]
+    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and cave blocks."]
   special:
     short: "SPECIAL"
     name: "<area:money><bold>Special Blocks"
-    lore: ["<c:text>Nether, End, quartz, prismarine,", "<c:text>ice and obsidian."]
+    lore: ["<c:text>Nether, End, quartz, ocean", "<c:text>and rare blocks."]
   colors:
     short: "COLORS"
     name: "<area:money><bold>Colors"
@@ -51,7 +43,15 @@ categories:
   decoration:
     short: "DECORATION"
     name: "<area:money><bold>Decoration"
-    lore: ["<c:text>Lights, frames, furniture", "<c:text>and a few plants."]
+    lore: ["<c:text>Lights, frames, flowers", "<c:text>and plants."]
+  essentials:
+    short: "ESSENTIALS"
+    name: "<area:money><bold>Essentials"
+    lore: ["<c:text>Torches, tools, buckets and", "<c:text>advanced workstations."]
+  farming:
+    short: "FARMING"
+    name: "<area:money><bold>Farming"
+    lore: ["<c:text>Seeds, saplings, plants, vines", "<c:text>and bone meal."]
   redstone:
     short: "REDSTONE"
     name: "<area:money><bold>Redstone"
@@ -59,7 +59,20 @@ categories:
   spawners:
     short: "SPAWNERS"
     name: "<area:money><bold>Spawners"
-    lore: ["<c:text>Tier 1 and 2 spawners", "<c:text>for your island."]
+    lore: ["<c:text>Tier 1 to 4 spawners", "<c:text>for your island."]
+
+# Group names of the shop grid (shop.yml categories.<tab>.groups.<group>), for /admin and docs only: the grid draws no
+# captions (MENUS-V3 6.2). Items in no group form the last group "more".
+groups:
+  wood: { logs: "Logs", other: "Stems and bamboo", leaves: "Leaves", more: "More" }
+  stone-earth: { soil: "Soil", sand: "Sand and gravel", stone: "Stone", deep: "Deepslate and caves", more: "More" }
+  special: { nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
+  colors: { concrete: "Concrete", extras: "Glass, terracotta and wool", glass: "Stained glass", terracotta: "Terracotta", more: "More" }
+  decoration: { light: "Lights", display: "Display", greens: "Grass and ferns", nature: "Moss and azalea", flowers: "Flowers", more: "More" }
+  essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", more: "More" }
+  farming: { seeds: "Seeds", crops: "Crops", trees: "Saplings", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
+  redstone: { power: "Power", machines: "Machines", inputs: "Inputs", rails: "Rails", more: "More" }
+  spawners: { tier1: "Tier 1", tier2: "Tier 2", tier3: "Tier 3", tier4: "Tier 4", more: "More" }
 
 menu:
   title: "Shop"

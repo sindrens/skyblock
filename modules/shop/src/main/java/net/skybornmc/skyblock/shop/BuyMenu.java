@@ -62,6 +62,12 @@ final class BuyMenu extends Menu {
         return ShopModule.ID;
     }
 
+    /** GUI-FONT plaque (MENUS-V3 6.4): {@code buy.short} ({@code BUY}). */
+    @Override
+    public String plaqueKey() {
+        return "buy.short";
+    }
+
     @Override
     public int tickInterval() {
         return 10;

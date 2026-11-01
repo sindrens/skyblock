@@ -24,6 +24,24 @@ plaque:
   players: "PLAYERS"
   offer: "REQUEST"
 
+# Wallet tile (FORMAT 4, slot 4 of a screen that spends). <amount> = the full amount with separators ($1,250,000).
+wallet:
+  money:
+    name: "<cur:money><bold>Your Money"
+    amount: "<cur:money><amount>"
+  crystals:
+    name: "<cur:crystals><bold>Your Crystals"
+    amount: "<cur:crystals><amount>"
+  shards:
+    name: "<cur:shards><bold>Your Shards"
+    amount: "<cur:shards><amount>"
+  credits:
+    name: "<cur:credits><bold>Your Credits"
+    amount: "<cur:credits><amount>"
+  bank:
+    name: "<cur:money><bold>Island Bank"
+    amount: "<cur:money><amount>"
+
 # The standard buttons (GUI_DESIGN section 1): 6 rows: 45 Back, 48 ?, 49 Close, 50 Main menu, 52/53 pages.
 # 3 rows: 18 Back, 22 Close. The main menu shows Help & guides on 50 instead of Main menu.
 frame:
