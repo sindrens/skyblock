@@ -275,6 +275,15 @@ public abstract class Menu implements InventoryHolder {
         service.applyNavBar(this);
     }
 
+    /**
+     * The wallet tile on {@link #SLOT_SUMMARY} (FORMAT 4, MENUS-V3): {@code currencyKey} {@code money}, {@code crystals},
+     * {@code shards}, {@code credits} or {@code bank}; {@code amountText} the full amount; {@code noteKey} an optional
+     * muted line from {@code messages/menus.yml} (null = none).
+     */
+    protected final void setWallet(String currencyKey, String amountText, String noteKey) {
+        set(SLOT_SUMMARY, service.wallet(viewer, currencyKey, amountText, noteKey));
+    }
+
     /** The one "nothing here yet" item (cobweb, framework texts) in the middle of the content. */
     protected final void setEmpty() {
         set(MenuLayout.empty(rows()), service.emptyItem(viewer));

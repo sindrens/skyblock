@@ -7,7 +7,8 @@ import java.util.List;
 
 /**
  * A 6-row menu listing entries in the 7x4 grid (slots 10-16, 19-25, 28-34, 37-43), filled left to right; a half
- * empty last row stays left aligned (lists are not centred, I9 section 2). Empty slots stay empty.
+ * empty last row stays left aligned (lists are not centred, I9 section 2). Empty slots stay empty. Subclasses may
+ * place entries differently with {@link #pageLayout()} (grouped shop grid, podium boards).
  * <ul>
  *   <li>The standard bottom row ({@link MenuLayout}): 45 Back on every page (if there is somewhere to go back to),
  *       49 Close, 52 Previous page, 53 Next page (paper, count = target page; only when there is more than one page).
@@ -44,6 +45,14 @@ public abstract class PagedMenu<T> extends Menu {
     protected void decorate() {
     }
 
+    /**
+     * How entries are split into pages and placed (MENUS-V3): default {@link PageLayout#grid()}, the 7x4 list filled
+     * left to right. Override for grouped grids (shop) or podium boards ({@link PodiumPages}).
+     */
+    protected PageLayout<T> pageLayout() {
+        return PageLayout.grid();
+    }
+
     /** Message key (in {@link #messageModule()}) of the item shown when there are no entries ({@code .name}/{@code .lore}). */
     protected String emptyKey() {
         return "empty";
@@ -56,10 +65,10 @@ public abstract class PagedMenu<T> extends Menu {
 
     @Override
     public final Component title() {
-        Pagination pages = new Pagination(entries().size(), CONTENT_SLOTS.length);
-        page = pages.clamp(page);
-        Component suffix = pages.pages() > 1
-                ? service.text(viewer, "title.page", Msg.p("page", page + 1), Msg.p("pages", pages.pages()))
+        int total = pageLayout().pages(entries()).size();
+        page = Math.max(0, Math.min(page, total - 1));
+        Component suffix = total > 1
+                ? service.text(viewer, "title.page", Msg.p("page", page + 1), Msg.p("pages", total))
                 : null;
         return service.title(viewer, titleCrumbs(), suffix);
     }
@@ -71,24 +80,26 @@ public abstract class PagedMenu<T> extends Menu {
         MenuButton atPrevious = button(SLOT_PREVIOUS); // a clickable item here came from decorate()
         boolean customPrevious = atPrevious != null && atPrevious.clickable();
         List<T> list = entries();
-        Pagination pages = new Pagination(list.size(), CONTENT_SLOTS.length);
-        page = pages.clamp(page);
-        int slot = 0;
-        for (int i = pages.from(page); i < pages.to(page); i++) {
-            set(CONTENT_SLOTS[slot++], entry(list.get(i)));
+        List<PageLayout.Page<T>> pages = pageLayout().pages(list);
+        int total = Math.max(1, pages.size());
+        page = Math.max(0, Math.min(page, total - 1));
+        if (!pages.isEmpty()) {
+            PageLayout.Page<T> current = pages.get(page);
+            for (int i = 0; i < current.entries().size(); i++) {
+                set(current.slots()[i], entry(current.entries().get(i)));
+            }
         }
         if (list.isEmpty()) {
             set(SLOT_EMPTY, service.emptyItem(viewer, messageModule(), emptyKey()));
         }
         int shown = page + 1;
-        int total = pages.pages();
-        if (pages.hasPrevious(page)) {
+        if (page > 0) {
             if (customPrevious) {
                 service.warnStandardSlot(this, SLOT_PREVIOUS);
             }
             set(SLOT_PREVIOUS, service.pageItem(viewer, false, shown - 1, total), click -> turn(-1));
         }
-        if (pages.hasNext(page)) {
+        if (page < total - 1) {
             set(SLOT_NEXT, service.pageItem(viewer, true, shown + 1, total), click -> turn(1));
         }
     }

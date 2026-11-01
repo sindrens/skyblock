@@ -561,6 +561,23 @@ public final class MenuService implements Listener {
         return icon(viewer, "nav/back", text(viewer, "frame.back.name"), lines(viewer, "frame.back.lore"));
     }
 
+    /**
+     * The wallet tile (FORMAT 4, owner V3-Q8 a): display only, on slot 4 of a screen that spends. {@code currencyKey}
+     * = {@code money}, {@code crystals}, {@code shards}, {@code credits} or {@code bank} (the island bank); name
+     * {@code wallet.<key>.name} ("Your Money"), lore {@code wallet.<key>.amount} with {@code <amount>} = the FULL amount
+     * text the caller formats ({@code $1,250,000}; credits always exact), then the optional muted {@code noteKey} line
+     * (framework texts, {@code messages/menus.yml}).
+     */
+    public MenuButton wallet(Player viewer, String currencyKey, String amountText, String noteKey) {
+        String key = currencyKey == null ? "money" : currencyKey;
+        String icon = "bank".equals(key) ? "feature/bank" : "currency/" + key;
+        List<Component> lore = new ArrayList<>(lines(viewer, "wallet." + key + ".amount", Msg.p("amount", amountText == null ? "-" : amountText)));
+        if (noteKey != null) {
+            lore.addAll(lines(viewer, noteKey));
+        }
+        return MenuButton.display(icon(viewer, icon, text(viewer, "wallet." + key + ".name"), lore));
+    }
+
     /** Close (barrier, {@code nav/close}); never red, red is danger only (I9 section 5). */
     public ItemStack closeItem(Player viewer) {
         return icon(viewer, "nav/close", text(viewer, "frame.close.name"), lines(viewer, "frame.close.lore"));

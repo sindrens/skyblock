@@ -6,7 +6,7 @@ package net.skybornmc.skyblock.common.menu;
  *  Rows | Back | Action A | Action B | Close | Search | Previous | Next | Danger corner
  *   6   |  45  |    46    |    47    |  49   |   51   |    52    |  53  |   8
  *   4   |  27  |    28    |    29    |  31   |   -    |    34    |  35  |   8
- *   3   |  18  |    19    |    20    |  22   |   -    |    -     |  -   |   8
+ *   3   |  18  |    19    |    20    |  22   |   -    |    25    |  26  |   8
  *   5   |  36  |    37    |    38    |  40   |   -    |    43    |  44  |   8   (legacy, until migrated)
  *  1-2  |  no standard buttons
  * </pre>
@@ -49,12 +49,14 @@ public final class MenuLayout {
         return rows == 6 ? 51 : NONE;
     }
 
+    /** Previous page; 3-row menus have it on 25 (FORMAT 3.1, MENUS-V3). */
     public static int previous(int rows) {
-        return rows >= 4 && rows <= 6 ? bar(rows) + 7 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) + 7 : rows == 3 ? 25 : NONE;
     }
 
+    /** Next page; 3-row menus have it on 26 (FORMAT 3.1, MENUS-V3). */
     public static int next(int rows) {
-        return rows >= 4 && rows <= 6 ? bar(rows) + 8 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) + 8 : rows == 3 ? 26 : NONE;
     }
 
     /** The red danger tile corner (top right, far from Back, pages and the main action; I9 section 5). */
