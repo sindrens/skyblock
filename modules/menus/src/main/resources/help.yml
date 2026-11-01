@@ -245,9 +245,9 @@ topics:
           - "<c:text>Each profile has its own satchel."
       - title: "<c:value>Opening it"
         lines:
-          - "<c:text>Open <c:value>/dungeon</c:value> <c:text>and click"
-          - "<c:value>Satchel</c:value><c:text>. The scoreboard shows how"
-          - "<c:text>full it is, e.g. Satchel 412 / 640."
+          - "<c:text>Type <c:value>/satchel</c:value> <c:text>or open"
+          - "<c:value>/dungeon</c:value> <c:text>and click <c:value>Satchel</c:value><c:text>."
+          - "<c:value>/satchel status</c:value> <c:text>shows how full it is."
       - title: "<c:value>Selling"
         lines:
           - "<c:value>Sell all</c:value> <c:text>sells everything at today's"
@@ -256,8 +256,8 @@ topics:
           - "<c:text>to take it out into your inventory."
       - title: "<c:value>When it's full"
         lines:
-          - "<c:text>A full satchel stops your mining"
-          - "<c:text>(nothing is lost). Sell, or get"
+          - "<c:text>Drops go to your inventory, then"
+          - "<c:value>/box</c:value> <c:text>(nothing is lost). Sell, or get"
           - "<c:text>more space from Mining and Foraging"
           - "<c:text>levels and the upgrades in the menu."
       - title: "<c:value>Crystals and the Forge"

@@ -149,11 +149,11 @@ public final class DepthsDrops implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCheck(ResourceBreakEvent event) {
         if (!config.satchelEnabled || lookup(event) == null) {
-            return;
+            return; // satchel off: nothing to refuse, the drops go to the inventory, then /box (D2.1)
         }
         Player player = event.getPlayer();
         SatchelManager.Status status = satchel.status(player);
-        DropOverflow.Route route = DropOverflow.forBreak(status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL,
+        DropOverflow.Route route = DropOverflow.forBreak(true, status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL,
                 status == SatchelManager.Status.FULL && ItemBox.hardFull(core.services(), player));
         switch (route) {
             case REFUSE_LOADING -> {
@@ -172,9 +172,6 @@ public final class DepthsDrops implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(ResourceBreakEvent event) {
-        if (!config.satchelEnabled) {
-            return;
-        }
         Lookup found = lookup(event);
         lastEvent = null;
         if (found == null) {
@@ -269,10 +266,10 @@ public final class DepthsDrops implements Listener {
         if (amount <= 0 || item == null) {
             return;
         }
-        SatchelManager.Status status = satchel.status(player);
+        SatchelManager.Status status = config.satchelEnabled ? satchel.status(player) : SatchelManager.Status.OK;
         DropOverflow.Route route = kill
                 ? DropOverflow.forKill(config.satchelEnabled, status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL)
-                : DropOverflow.forBreak(status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL, false);
+                : DropOverflow.forBreak(config.satchelEnabled, status != SatchelManager.Status.LOADING, status == SatchelManager.Status.FULL, false);
         if (route == DropOverflow.Route.SATCHEL) {
             satchel.add(player, item, amount);
             return;

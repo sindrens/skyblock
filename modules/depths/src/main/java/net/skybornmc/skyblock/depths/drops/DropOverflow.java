@@ -27,9 +27,13 @@ public final class DropOverflow {
 
     /**
      * Mining (a block break can simply not happen): satchel first; full → inventory → /box; refused only while the
-     * satchel loads or when the satchel is full and the /box is at its hard cap.
+     * satchel loads or when the satchel is full and the /box is at its hard cap. ECON-SELL-SHOP-AH D2.1: a satchel that is
+     * switched off ({@code satchel.enabled: false}) never loses drops: they go to the inventory, then /box.
      */
-    public static Route forBreak(boolean loaded, boolean satchelFull, boolean boxHardFull) {
+    public static Route forBreak(boolean satchelEnabled, boolean loaded, boolean satchelFull, boolean boxHardFull) {
+        if (!satchelEnabled) {
+            return Route.OVERFLOW;
+        }
         if (!loaded) {
             return Route.REFUSE_LOADING;
         }

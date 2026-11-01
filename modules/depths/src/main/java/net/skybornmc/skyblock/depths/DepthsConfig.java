@@ -162,7 +162,7 @@ public final class DepthsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ satchel (M4.4)
 
-    @Setting(path = "satchel.enabled", desc = "Depths drops go into the satchel (virtual storage per profile). Off = no drops are given at all.")
+    @Setting(path = "satchel.enabled", desc = "Depths drops go into the satchel (virtual storage per profile). Off = drops go to the inventory, then /box.")
     public boolean satchelEnabled = true;
 
     @Setting(path = "satchel.base-capacity", desc = "Items every satchel holds before skills and upgrades.", min = 1, max = 1000000)
@@ -182,6 +182,9 @@ public final class DepthsConfig extends ModuleConfig {
 
     @Setting(path = "satchel.take-out", desc = "Players can take items out of the satchel into their inventory (to trade them). Selling and the Forge work without it.")
     public boolean satchelTakeOut = true;
+
+    @Setting(path = "satchel.status-top", desc = "/satchel status lists this many of the fullest items (0 = none).", min = 0, max = 10)
+    public int satchelStatusTop = 3;
 
     @Setting(path = "satchel.save-seconds", desc = "Seconds between batched satchel saves (new drops). Take-outs, sales and Forge use are saved at once.", min = 1, max = 60)
     public int satchelSaveSeconds = 5;

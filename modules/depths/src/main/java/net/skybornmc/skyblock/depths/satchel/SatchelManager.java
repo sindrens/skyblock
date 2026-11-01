@@ -572,6 +572,14 @@ public final class SatchelManager implements SatchelService, Listener {
      * they are given; what no longer fits when they arrive goes back into the satchel.
      */
     public void takeOut(Player player, String itemId, boolean all) {
+        takeOut(player, itemId, all ? SatchelMath.WANT_ALL : SatchelMath.WANT_STACK);
+    }
+
+    /**
+     * Takes items out (menu buttons and {@code /satchel take}). {@code wanted}: {@link SatchelMath#WANT_STACK} = one
+     * stack, {@link SatchelMath#WANT_ALL} = as many as fit, {@code n} = that many (reduced to what is held and fits).
+     */
+    public void takeOut(Player player, String itemId, long wanted) {
         SatchelState state = state(player);
         if (!config.satchelTakeOut) {
             msg.send(player, "satchel.take-off");
@@ -590,20 +598,20 @@ public final class SatchelManager implements SatchelService, Listener {
         ItemStack proto = core.items().create(itemId, 1, "satchel", null);
         int maxStack = Math.max(1, proto.getMaxStackSize());
         long fits = fits(player.getInventory(), proto, maxStack);
-        long n = SatchelMath.takeAmount(all ? held : maxStack, held, fits);
+        long n = SatchelMath.takeAmount(SatchelMath.requested(wanted, held, maxStack), held, fits);
         if (n <= 0) {
             msg.send(player, "satchel.inventory-full");
             sound(player, "error");
             return;
         }
-        Map<String, Long> wanted = Map.of(itemId, n);
-        if (!state.escrow(wanted)) {
+        Map<String, Long> escrow = Map.of(itemId, n);
+        if (!state.escrow(escrow)) {
             msg.send(player, "satchel.changed");
             return;
         }
         state.busy = true;
         UUID playerId = player.getUniqueId();
-        ledger.takeOut(state, wanted).whenComplete((ok, error) -> {
+        ledger.takeOut(state, escrow).whenComplete((ok, error) -> {
             state.busy = false;
             Player online = Bukkit.getPlayer(playerId);
             boolean committed = Boolean.TRUE.equals(ok);
@@ -662,6 +670,57 @@ public final class SatchelManager implements SatchelService, Listener {
             }
         }
         return SatchelMath.fit(empty, maxStack, partial);
+    }
+
+    /**
+     * {@code /satchel status}: fill, about what it is worth before the sell bonus, and the fullest items (chat).
+     * Memory only.
+     */
+    public void sendStatus(Player player) {
+        SatchelState state = state(player);
+        if (state == null || !state.loaded()) {
+            msg.send(player, "satchel.not-loaded");
+            sound(player, "error");
+            return;
+        }
+        long used = state.used();
+        long max = capacity(player);
+        long worth = 0;
+        for (Map.Entry<String, Long> e : state.amounts().entrySet()) {
+            worth += value(e.getKey(), e.getValue());
+        }
+        msg.send(player, "satchel.status", Msg.number("used", used), Msg.number("max", max),
+                Msg.p("percent", SatchelMath.percent(used, max)), Msg.p("worth", money(worth)));
+        List<Map.Entry<String, Long>> top = state.amounts().entrySet().stream().filter(e -> e.getValue() > 0)
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed()).limit(Math.max(0, config.satchelStatusTop)).toList();
+        if (top.isEmpty()) {
+            msg.send(player, "satchel.status-empty");
+            return;
+        }
+        List<Component> parts = new ArrayList<>();
+        for (Map.Entry<String, Long> e : top) {
+            DropItems.Def def = items.def(e.getKey());
+            parts.add(msg.component(player, "satchel.status-item", Msg.number("amount", e.getValue()),
+                    Msg.mm("item", def == null ? e.getKey() : items.name(def))));
+        }
+        Component joined = Component.join(net.kyori.adventure.text.JoinConfiguration.separator(msg.component(player, "satchel.status-separator")), parts);
+        msg.send(player, "satchel.status-top", Msg.c("items", joined));
+    }
+
+    /** Item ids with at least one item in the player's loaded satchel (tab completion of {@code /satchel take}). */
+    public List<String> heldIds(Player player) {
+        SatchelState state = state(player);
+        if (state == null || !state.loaded()) {
+            return List.of();
+        }
+        List<String> out = new ArrayList<>();
+        state.amounts().forEach((id, n) -> {
+            if (n != null && n > 0) {
+                out.add(id);
+            }
+        });
+        out.sort(null);
+        return out;
     }
 
     /** The next upgrade (null when all are bought). */

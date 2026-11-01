@@ -35,7 +35,6 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |
 | `/settings` | Personal toggles | `skyblock.settings` | ⬜ |
 | `/stats [player]`, `/titles`, `/cosmetics` | Profile, titles, cosmetics | `skyblock.stats` … | ⬜ |
-| `/satchel` | Depths satchel + sell all | `skyblock.depths.satchel` | ⬜ |
 | `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
 | `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
 | `/tags` | Choose an owned cosmetic tag shown in chat/tab | `skyblock.tags` | ⬜ |

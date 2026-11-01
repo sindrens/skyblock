@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Economy v2 (build specs ECON-SELL-SHOP-AH, ECON-SHARDS, ECON-SPAWNERS; PROVISIONAL, cards still in review, built on the owner's order of 1 Nov 2026)
+- **`/satchel` (E4, Part D):** `/satchel` opens the satchel, `/satchel status` shows fill, worth and the fullest items (`depths.yml satchel.status-top`, 3), `/satchel take <item> [amount|stack|all]` takes items out in one transaction (tab completion lists only the items in your satchel). `satchel.enabled: false` no longer loses drops: they go to the inventory, then `/box`. New drop self-check at enable/reload (unregistered or unpriced drop items: one console warning each, count in `/depths debug`).
 ### Fixed
 - **Tutorial experience (TUT-FIX2, owner feedback 31 Oct "tutorial has not been fixed"; rewards, step count and steps unchanged):**
   - **Guide trail:** the flame trail is replaced by a soft dotted line of coloured dust on the ground that starts where the player stands and follows the walkable route to the target (bounded A* path search, never through walls or into unloaded chunks, searched once per step change or when the player leaves it, shared for launch bursts), fades with distance and creeps toward the target; one colour per kind of step; the flame column is a small dust column. New `tutorial.yml guide.trail.*` keys (`steps`, `max-particles`, `dot-size`, `color`, `colors`, `animate`, `min-distance`, `max-distance`, `max-nodes`, `paths-per-run`, `repath-distance`, `repath-seconds`, `cache-seconds`), `guide.column.enabled`.

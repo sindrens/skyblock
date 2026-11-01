@@ -69,6 +69,8 @@ public final class DepthsModule implements SkyblockModule {
     private SatchelManager satchel;
     private DepthsDrops drops;
     private volatile TreeTemplates trees = TreeTemplates.DEFAULTS;
+    /** Problems found by the last drop self-check (ECON-SELL-SHOP-AH D2.2), shown by /depths debug. */
+    private volatile int selfCheckProblems;
     private ForestGuard forest;
     private CombatZones combat;
     private AmbientMobs ambient;
@@ -206,6 +208,7 @@ public final class DepthsModule implements SkyblockModule {
                             DepthsDebug.flags(core.services().optional(RegionFlags.class).orElse(null), msg, ctx.player(), shown);
                             combat.debug(ctx.player(), shown);
                             ambient.debug(ctx.player(), shown);
+                            msg.send(ctx.player(), "debug.self-check", Msg.p("problems", selfCheckProblems));
                         }))
                 .sub(CommandSpec.sub("generate")
                         .description("Build the placeholder layout (The Gate, zones, boss arena); skips zones marked built")
@@ -229,6 +232,31 @@ public final class DepthsModule implements SkyblockModule {
                 .description("Teleport to your unlocked Depths tiers; see what the locked ones need").category("Depths")
                 .permission(DepthsPerms.DUNGEON).playerOnly().example("dungeon")
                 .executes(ctx -> dungeon.open(ctx.player())));
+        // ECON-SELL-SHOP-AH D3: /satchel opens the same menu as /dungeon > Satchel; status and take for chat users.
+        Arg<String> satchelItem = Args.word("item", net.skybornmc.skyblock.common.command.Suggest.bySender(
+                sender -> sender instanceof Player p ? satchel.heldIds(p) : List.of()));
+        Arg<String> satchelAmount = Args.word("amount", net.skybornmc.skyblock.common.command.Suggest.of("stack", "all", "16", "64", "128"));
+        core.commands().register(CommandSpec.command("satchel")
+                .description("Open your satchel").category("Depths")
+                .permission(DepthsPerms.SATCHEL).playerOnly().example("satchel")
+                .executes(ctx -> satchel.open(ctx.player()))
+                .sub(CommandSpec.sub("status")
+                        .description("How full your satchel is and what it is worth")
+                        .permission(DepthsPerms.SATCHEL).playerOnly().example("satchel status")
+                        .executes(ctx -> satchel.sendStatus(ctx.player())))
+                .sub(CommandSpec.sub("take")
+                        .description("Take items out of your satchel (one stack by default)")
+                        .permission(DepthsPerms.SATCHEL).playerOnly().arg(satchelItem).optional(satchelAmount)
+                        .example("satchel take depths_coal 64")
+                        .executes(ctx -> {
+                            Long wanted = net.skybornmc.skyblock.depths.satchel.SatchelMath.parseWanted(ctx.getOr(satchelAmount, null));
+                            String item = ctx.get(satchelItem).toLowerCase(java.util.Locale.ROOT);
+                            if (wanted == null || item.isBlank()) {
+                                msg.send(ctx.player(), "satchel.take-usage");
+                                return;
+                            }
+                            satchel.takeOut(ctx.player(), item, wanted);
+                        })));
     }
 
     /**
@@ -249,6 +277,22 @@ public final class DepthsModule implements SkyblockModule {
         MobCatalog catalog = MobCatalog.parse(mobs, dropItems.ids(), net.skybornmc.skyblock.depths.combat.MobFactory::spawnableMob, warnMobs);
         combat.catalog(catalog);
         ambient.catalog(catalog);
+        java.util.Set<String> referenced = new java.util.LinkedHashSet<>(dropItems.ids());
+        referenced.addAll(drops.table().items());
+        catalog.mobs().values().forEach(m -> m.drops().forEach(d -> referenced.add(d.item())));
+        catalog.dropTables().values().forEach(list -> list.forEach(d -> referenced.add(d.item())));
+        // Prices come from the economy module, which may enable after this one: checked one tick later.
+        core.scheduler().later("depths-drop-self-check", 1L, () -> runSelfCheck(referenced));
+    }
+
+    /** ECON-SELL-SHOP-AH D2.2: registered and priced drop items; one warning per problem, the count for /depths debug. */
+    private void runSelfCheck(java.util.Set<String> referenced) {
+        java.util.Optional<net.skybornmc.skyblock.common.sell.SellService> sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class);
+        String fragment = config.fragmentsItem;
+        List<String> problems = net.skybornmc.skyblock.depths.drops.DropSelfCheck.check(referenced, id -> core.items().get(id).isPresent(),
+                sell.<java.util.function.Predicate<String>>map(s -> id -> id.equals(fragment) || s.price("custom:" + id).isPresent()).orElse(null));
+        problems.forEach(p -> core.plugin().getLogger().warning("Depths drop self-check → " + p));
+        selfCheckProblems = problems.size();
     }
 
     /**

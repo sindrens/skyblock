@@ -16,24 +16,24 @@ class DropOverflowTest {
 
     @Test
     void miningGoesToSatchelWhileItHasRoom() {
-        assertEquals(Route.SATCHEL, DropOverflow.forBreak(true, false, false));
-        assertEquals(Route.SATCHEL, DropOverflow.forBreak(true, false, true), "box state does not matter while the satchel has room");
+        assertEquals(Route.SATCHEL, DropOverflow.forBreak(true, true, false, false));
+        assertEquals(Route.SATCHEL, DropOverflow.forBreak(true, true, false, true), "box state does not matter while the satchel has room");
     }
 
     @Test
     void fullSatchelNoLongerRefusesTheBreak() {
-        assertEquals(Route.OVERFLOW, DropOverflow.forBreak(true, true, false));
+        assertEquals(Route.OVERFLOW, DropOverflow.forBreak(true, true, true, false));
     }
 
     @Test
     void miningStopsOnlyAtTheBoxHardCap() {
-        assertEquals(Route.REFUSE_BOX_FULL, DropOverflow.forBreak(true, true, true));
+        assertEquals(Route.REFUSE_BOX_FULL, DropOverflow.forBreak(true, true, true, true));
     }
 
     @Test
     void loadingSatchelStillWaits() {
-        assertEquals(Route.REFUSE_LOADING, DropOverflow.forBreak(false, false, false));
-        assertEquals(Route.REFUSE_LOADING, DropOverflow.forBreak(false, true, true));
+        assertEquals(Route.REFUSE_LOADING, DropOverflow.forBreak(true, false, false, false));
+        assertEquals(Route.REFUSE_LOADING, DropOverflow.forBreak(true, false, true, true));
     }
 
     @Test
