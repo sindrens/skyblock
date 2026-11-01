@@ -1,0 +1,89 @@
+# Shard blocks (ECON-SHARDS): the only source of shards. MiniMessage + style tags (style.yml).
+# Reload: /skyblock reload shardblock
+
+# The item (plain text except the name). <level> in the level lines.
+item:
+  name: "<rarity:rare>Shard Block"
+  subtitle: "<c:muted>Place it on your island."
+  description: "Break it for a shard. It regrows. Right-click to upgrade."
+  action: "to place"
+  respawn-level: "<c:bar>| </c:bar><c:text>Respawn level <c:value><level>"
+  double-level: "<c:bar>| </c:bar><c:text>Double chance level <c:value><level>"
+
+# Placing. <max> <amount>
+place:
+  ok: "<prefix><c:success><sym:check></c:success> <c:text>Shard block placed. Break it for <cur:shards><amount> shard</cur:shards><c:text>."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>This island already has <c:value><max></c:value> <c:text>shard blocks."
+  no-perm: "<prefix><c:error><sym:cross></c:error> <c:text>Your role can't use shard blocks here."
+  world: "<prefix><c:error><sym:cross></c:error> <c:text>Shard blocks only work on islands."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment and try again."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Shard blocks are off right now. Try again later."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. Your shard block is back (or in <c:value>/box</c:value><c:text>)."
+
+# Breaking (action bar). <amount> <s> <time> <cap>
+break:
+  bar: "<c:success><sym:check></c:success> <cur:shards>+<amount> shard<s></cur:shards> <c:muted><sym:dot> regrows in <time>"
+  regrowing: "<c:muted>Regrows in <c:value><time>"
+  cap: "<c:error><sym:cross></c:error> <c:text>Daily shard limit reached (<c:value><cap></c:value><c:text>). New day at 00:00 Oslo."
+  slow: "<c:muted>Slow down."
+  no-perm: "<c:error><sym:cross></c:error> <c:text>Your role can't use shard blocks here."
+  "off": "<c:error><sym:cross></c:error> <c:text>Shards can't be paid right now. Try again soon."
+  failed: "<c:error><sym:cross></c:error> <c:text>That didn't work, nothing changed. Try again."
+
+# The menu (right-click). Lines are at most 36 characters.
+menu:
+  title: "Shard Block"
+  no-perm: "<prefix><c:error><sym:cross></c:error> <c:text>Your role can't use shard blocks here."
+  # <crystals> <shards> <state>
+  wallet:
+    name: "<c:value><bold>Your Wallet"
+    lore:
+      - "<c:bar>| </c:bar><c:text>Crystals: <cur:crystals><crystals>"
+      - "<c:bar>| </c:bar><c:text>Shards: <cur:shards><shards>"
+      - "<c:bar>| </c:bar><c:text>Block: <state>"
+  state-ready: "<c:success>ready"
+  state-regrowing: "<c:muted>regrows in <c:value><time>"
+  # <level> <max>
+  level: "<c:bar>| </c:bar><c:text>Level: <c:value><level>/<max>"
+  respawn:
+    name: "<area:skills><bold>Faster Respawn"
+    now: "<c:bar>| </c:bar><c:text>Now: every <c:value><value>"
+    next: "<c:bar>| </c:bar><c:text>Next: every <c:value><value>"
+  double:
+    name: "<area:skills><bold>Double Chance"
+    now: "<c:bar>| </c:bar><c:text>Now: <c:value><value></c:value> <c:text>for 2 shards"
+    next: "<c:bar>| </c:bar><c:text>Next: <c:value><value>"
+  # <price>
+  cost: "<c:bar>| </c:bar><c:text>Cost: <c:value><price>"
+  maxed: "<c:muted><sym:check> Maxed"
+  action: "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
+  pickup:
+    name: "<c:value><bold>Pick Up"
+    lore:
+      - "<c:text>Returns the block with its levels."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick up"
+
+# Upgrades. <upgrade> <level> <price> <have>
+upgrade:
+  ok: "<prefix><c:success><sym:check></c:success> <upgrade> <c:text>is now level <c:value><level></c:value><c:text>. <c:muted>(<price>)"
+  poor: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><price></c:value><c:text>, you have <c:value><have></c:value><c:text>."
+  changed: "<prefix><c:error><sym:cross></c:error> <c:text>Someone changed this block first. Look again."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>Wait a moment, this block is busy."
+  maxed: "<prefix><c:error><sym:cross></c:error> <c:text>That upgrade is maxed."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work, nothing changed. Try again."
+
+pickup:
+  ok: "<prefix><c:success><sym:check></c:success> <c:text>Shard block picked up. Levels kept."
+  box: "<prefix><c:success><sym:check></c:success> <c:text>Shard block picked up. Inventory full: it is in <c:value>/box</c:value><c:text>."
+  not-yours: "<prefix><c:error><sym:cross></c:error> <c:text>Only the placer or an island manager can pick it up."
+
+# Staff (/shardblock). <amount> <player> <id> <owner> <island> <respawn> <double> <state> <breaks> <shards> <blocks> <today> <total> <rank>
+admin:
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><amount>x Shard Block</c:value> <c:text>to <c:value><player></c:value><c:text>."
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>Look at a shard block (up to 6 blocks away)."
+  info: "<prefix><c:text>Shard block <c:value>#<id></c:value> <c:muted><sym:dot></c:muted> <c:text>placed by <c:value><owner></c:value> <c:text>on <c:value><island></c:value><c:text>, respawn <c:value><respawn></c:value><c:text>, double <c:value><double></c:value><c:text>, <state><c:text>, <c:value><breaks></c:value> <c:text>breaks, <cur:shards><shards> shards</cur:shards> <c:text>paid."
+  removed: "<prefix><c:success><sym:check></c:success> <c:text>Removed shard block <c:value>#<id></c:value><c:text>. It is in the placer's /box with its levels."
+  stats: "<prefix><c:text>Shard blocks: <c:value><blocks></c:value> <c:text>placed <c:muted><sym:dot></c:muted> <cur:shards><today></cur:shards> <c:text>shards today <c:muted><sym:dot></c:muted> <cur:shards><total></cur:shards> <c:text>in total."
+  stats-island: " <c:ember><sym:bullet></c:ember> <c:value><rank>.</c:value> <c:text><island>: <c:value><blocks></c:value> <c:text>blocks"
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work. See the console."

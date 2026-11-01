@@ -34,7 +34,7 @@ categories:
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
-    topics: [money, bank, shop, sell, notes, auction, trade, box]
+    topics: [money, bank, shop, sell, notes, auction, trade, box, shards]
   progression:
     icon: experience_bottle
     status: active
@@ -245,9 +245,9 @@ topics:
           - "<c:text>Each profile has its own satchel."
       - title: "<c:value>Opening it"
         lines:
-          - "<c:text>Open <c:value>/dungeon</c:value> <c:text>and click"
-          - "<c:value>Satchel</c:value><c:text>. The scoreboard shows how"
-          - "<c:text>full it is, e.g. Satchel 412 / 640."
+          - "<c:text>Type <c:value>/satchel</c:value> <c:text>or open"
+          - "<c:value>/dungeon</c:value> <c:text>and click <c:value>Satchel</c:value><c:text>."
+          - "<c:value>/satchel status</c:value> <c:text>shows how full it is."
       - title: "<c:value>Selling"
         lines:
           - "<c:value>Sell all</c:value> <c:text>sells everything at today's"
@@ -256,8 +256,8 @@ topics:
           - "<c:text>to take it out into your inventory."
       - title: "<c:value>When it's full"
         lines:
-          - "<c:text>A full satchel stops your mining"
-          - "<c:text>(nothing is lost). Sell, or get"
+          - "<c:text>Drops go to your inventory, then"
+          - "<c:value>/box</c:value> <c:text>(nothing is lost). Sell, or get"
           - "<c:text>more space from Mining and Foraging"
           - "<c:text>levels and the upgrades in the menu."
       - title: "<c:value>Crystals and the Forge"
@@ -1223,7 +1223,7 @@ topics:
 
   auction:
     icon: gold_block
-    aliases: [ah, auctions, auction-house, sell-items, collection-bin]
+    aliases: [ah, auctions, auction-house, sell-items]
     name: "<c:flame>Auction house"
     summary: ["<c:text>Buy and sell items with other", "<c:text>players, even when they're offline."]
     take-me-there: "ah"
@@ -1244,9 +1244,9 @@ topics:
       - title: "<c:value>Getting items back"
         lines:
           - "<c:text>Unsold, cancelled and bought items that"
-          - "<c:text>don't fit wait in your <c:value>Collection bin</c:value><c:text>."
+          - "<c:text>don't fit go to your <c:value>/box</c:value><c:text>."
           - "<c:text>Cancel a listing in <c:value>My listings</c:value><c:text>."
-          - "<c:text>You can have 5 listings at once."
+          - "<c:text>Better ranks give more listing slots."
       - title: "<c:value>Rules"
         lines:
           - "<c:text>Starter kit items and money notes"
@@ -1332,8 +1332,8 @@ topics:
         lines:
           - "<c:value>/blackmarket</c:value> <c:text>or the trader in the"
           - "<c:text>Market Square alley. Pay with"
-          - "<c:text>shards from bosses, events and"
-          - "<c:text>the deepest Depths tiers."
+          - "<c:text>shards. Shards come from shard"
+          - "<c:text>blocks on your island."
       - title: "<c:value>The stock"
         lines:
           - "<c:text>New offers at 00:00 and 12:00:"
@@ -1352,6 +1352,33 @@ topics:
           - "<c:text>step at a time, with shards or"
           - "<c:text>credits. It lasts this season only:"
           - "<c:text>islands are wiped at the reset."
+
+  shards:
+    icon: amethyst_shard
+    aliases: [shard, shard-block, shard-blocks, shardblock]
+    name: "<c:flame>Shards and shard blocks"
+    summary: ["<c:text>Shards buy rare things at the", "<c:text>Black Market. Shard blocks make them."]
+    take-me-there: "blackmarket"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>What a shard is"
+        lines:
+          - "<cur:shards>Shards</cur:shards> <c:text>are a rare currency for"
+          - "<c:text>the <c:value>Black Market</c:value><c:text>. You can pay"
+          - "<c:text>them to friends. The only way to"
+          - "<c:text>get new ones: shard blocks."
+      - title: "<c:value>The shard block"
+        lines:
+          - "<c:text>Place it on your island and break"
+          - "<c:text>it for a shard. It turns to bedrock"
+          - "<c:text>and regrows. Up to 4 per island,"
+          - "<c:text>up to 100 shards per day."
+      - title: "<c:value>Upgrades"
+        lines:
+          - "<c:text>Right-click the block: crystals make"
+          - "<c:text>it regrow faster, shards give a"
+          - "<c:text>chance of 2 shards. Pick it up and"
+          - "<c:text>the levels stay on the block."
 
   crates:
     icon: tripwire_hook

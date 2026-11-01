@@ -96,6 +96,16 @@ entry:
   name: "<c:value><bold><item>"
   locked: "<c:error><sym:cross> Locked"
   requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
+  # ECON-SPAWNERS step 13: a spawner tier unlocks per island by kills. <needed> <have> <what>
+  spawner-unlock:
+    - "<c:text>Unlock: kill <c:value><needed></c:value> <what>"
+    - "<c:muted><have>/<needed>"
+  # <what> when the unlock counts any mob of the previous tier. <tier>
+  spawner-tier-mobs: "tier <tier> mobs"
+  # <what> while the island's kill counts are still loading (a moment after joining).
+  spawner-loading: "<c:muted>(loading...)"
+  # The island holds the most spawners of this tier. <max>
+  spawner-cap: "<c:text>This island holds <c:value><max></c:value> <c:text>of this tier"
   unavailable:
     - "<c:error><sym:cross> Not for sale right now"
     - "<c:muted>Staff are fixing it."
@@ -115,6 +125,12 @@ lore:
   payback-good: "<c:success>about {hours} h"
   payback-ok: "<c:warning>about {hours} h"
   payback-poor: "<c:error>{hours} h <sym:dot> Poor deal"
+  # ECON-SPAWNERS step 13 (plain labels; {item} {price} {owned} {cap} are filled in).
+  spawner-drop: "Drops"
+  spawner-drop-value: "{item}, ${price} each"
+  spawner-island: "On your island"
+  spawner-island-value: "{owned}/{cap}"
+  spawner-no-cap: "no limit"
   action-input: "CLICK"
   action: "to choose an amount"
 
@@ -189,6 +205,9 @@ buy:
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That item isn't for sale right now."
   locked: "<prefix><c:error><sym:cross></c:error> <c:text>You need <c:value><skill> <level></c:value> <c:text>to buy that."
   locked-click: "<prefix><c:error><sym:cross></c:error> <c:text>That item is locked. Its lore says what you need."
+  # ECON-SPAWNERS step 13. <left> <what>; <max> <tier>
+  spawner-locked: "<prefix><c:error><sym:cross></c:error> <c:text>Locked. Kill <c:value><left></c:value> <c:text>more <what> on this island."
+  spawner-capped: "<prefix><c:error><sym:cross></c:error> <c:text>This island already holds <c:value><max></c:value> <c:text>tier <tier> spawners."
 
 # The sell GUI (right click on an item, or Sell on the buy GUI; 3 rows). Sales use the /sell rules (prices, bonus,
 # ledger). <item> item name, <carried> how many you carry, <total> money, <amount> button amount, <max> type limit.

@@ -17,7 +17,7 @@ buy:
   limit: "<prefix><c:error><sym:cross></c:error> <c:text>You bought as many as you can for now."
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>That offer changed. Nothing was paid, please look again."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last buy is still saving."
-  no-shards: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from bosses, events and deep Depths tiers."
+  no-shards: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from shard blocks on your island."
   no-credits: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><price></cur:credits><c:text>. <c:muted>Earned credits are spent first. See yours: /credit bal"
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was paid, so just try again."
   done: "<prefix><c:success><sym:check></c:success> <c:text>You bought <offer> <c:text>for <c:value><price></c:value><c:text>. <c:muted>(left: <balance>)"
@@ -74,8 +74,8 @@ menu:
     name: "<c:value>Your shards: <cur:shards><shards>"
     lore:
       - "<c:text>Credits: <cur:credits><credits>"
-      - "<c:text>Shards come from bosses, events"
-      - "<c:text>and deep Depths tiers."
+      - "<c:text>Shards come from shard blocks"
+      - "<c:text>on your island."
   disabled:
     name: "<c:muted>The Black Market is closed"
     lore: ["<c:text>Staff closed it for now."]
@@ -162,6 +162,16 @@ offers:
   spawner_t5:
     name: "<rarity:legendary>Tier 5 Spawner"
     lore: ["<c:text>A random tier 5 mob."]
+  # ECON-SPAWNERS step 15: premium spawners (tier 5), one fixed mob each.
+  spawner_iron_golem:
+    name: "<rarity:epic>Iron Golem Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
+  spawner_wither_skeleton:
+    name: "<rarity:epic>Wither Skeleton Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
+  spawner_evoker:
+    name: "<rarity:epic>Evoker Spawner"
+    lore: ["<c:text>Tier 5 spawner. Works on every island."]
   blueprint:
     name: "<rarity:rare>Blueprint"
   bm_tag:

@@ -143,6 +143,23 @@ credit:
       - " <c:muted><sym:bullet></c:muted> <c:text>Earned: <earned> <c:muted>(votes, streaks, thanks; stay yours)"
       - " <c:muted>Earned credits are spent first."
     other: "<prefix><c:value><player></c:value><c:text>'s credits: <total>"
+  # Tebex store (CREDIT-SHOP 5.2/5.3). Console: <player> <credits> <package> <tx> <list> <taken> <owed> <reason>
+  grant:
+    ok: "<tag:store> <c:value><player></c:value> <c:text>+<c:value><credits></c:value> <c:text>credits (<package>, tx <tx>)"
+    duplicate: "<tag:store> <c:text>Already granted: tx <c:value><tx></c:value> <c:text>(<package>). Nothing changed."
+    unknown-package: "<tag:store> <c:error>Unknown package <c:value><package></c:value><c:error>. Known: <c:value><list>"
+    unknown-player: "<tag:store> <c:error>Unknown player <c:value><player></c:value><c:error>. Use the UUID or XUID ({id} in Tebex)."
+    bad-tx: "<tag:store> <c:error>That is not a Tebex transaction id: <c:value><tx>"
+    too-big: "<tag:store> <c:error>Package <c:value><package></c:value> <c:error>gives <credits> credits, above credit-store.max-grant (<max>). Refused."
+    console-only: "<prefix><c:error><sym:cross></c:error> <c:text>This command is for the console (Tebex)."
+    failed: "<tag:store> <c:error>Grant FAILED for <c:value><player></c:value> <c:error>(<package>, tx <tx>). Nothing was paid; resend it from Tebex."
+    thanks: "<tag:store> <c:success>Thank you!</c:success> <c:text>+<c:value><credits></c:value> <c:text>credits."
+  chargeback:
+    done: "<tag:store> <c:text>Chargeback tx <c:value><tx></c:value><c:text>: took <c:value><taken></c:value> <c:text>credits from <c:value><player></c:value><c:text>, <c:value><owed></c:value> <c:text>owed (already spent)."
+    none: "<tag:store> <c:text>Nothing to charge back for <c:value><player></c:value> <c:text>tx <c:value><tx></c:value><c:text>."
+    failed: "<tag:store> <c:error>Chargeback FAILED for <c:value><player></c:value> <c:error>tx <tx>. Try again."
+  alert:
+    failed-grant: "<prefix><c:error><sym:cross></c:error> <c:text>Store grant failed: <c:value><player></c:value><c:text>, package <package>, tx <tx> (<reason>)."
 
 # Tab completion hints (C1-R3-03). Staff can type any reason; these are only suggestions.
 tab-hints:
@@ -761,6 +778,9 @@ watch:
     staff-transfer:
       name: "Staff transfer"
       text: "<c:value><player></c:value> <c:text>moved <amount> <c:text>to <c:value><other></c:value> <c:muted>(a staff account; alert from <expected>)"
+    shard-block:
+      name: "Shard block farming"
+      text: "<c:value><player></c:value> <c:text>got <amount> <c:text>from shard blocks in the hour from <hour> <c:muted>(alert from <expected>)"
     sink-ratio:
       name: "Inflation"
       text: "<c:text>Only <c:value><ratio>%</c:value> <c:text>of new money was removed over the last 14 days, <c:value><hits></c:value> <c:text>days below <line>% <c:muted>(see /eco admin)"

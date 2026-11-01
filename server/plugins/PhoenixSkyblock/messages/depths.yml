@@ -24,6 +24,8 @@ debug:
   combat-zone: " <c:ember><sym:bullet></c:ember> <c:text>This zone (<zone>): <c:value><alive></c:value> <c:text>alive, target <c:value><target></c:value> <c:muted><sym:dot> <players> players <sym:dot> mini-boss: <boss>"
   abilities: " <c:ember><sym:bullet></c:ember> <c:text>Mob abilities: <c:value><mobs></c:value> <c:text>mobs <sym:dot> <c:value><active></c:value><c:muted>/<max> effects running"
   region-flags: " <c:ember><sym:bullet></c:ember> <c:text>Region flags at feet: <c:value><regions></c:value> <c:muted><sym:dot> denied: <denied> <sym:dot> bypass: <bypass>"
+  # ECON-SELL-SHOP-AH D2.2: drop items that are not registered or have no sell price (details in the console). <problems>
+  self-check: " <c:ember><sym:bullet></c:ember> <c:text>Drop self-check: <c:value><problems></c:value> <c:muted>problems (see the console)"
   region-flags-off: " <c:ember><sym:bullet></c:ember> <c:muted>Region flags: the worlds module isn't running"
   "yes": "yes"
   "no": "no"
@@ -151,6 +153,15 @@ satchel:
   # <amount> <item>
   taken: "<prefix><c:success><sym:check></c:success> <c:text>Took <c:value><amount>x</c:value> <item> <c:text>out of your satchel."
   taken-rest: "<prefix><c:text><c:value><amount></c:value> didn't fit and stayed in your satchel."
+  # /satchel status. <used> <max> <percent> <worth>
+  status: "<prefix><c:text>Satchel <c:value><used>/<max></c:value> <c:muted>(<percent>%)</c:muted> <c:text><sym:dot> worth about <c:value><worth>"
+  # <items> = status-item entries joined by status-separator
+  status-top: "<prefix><c:muted>Most: <items>"
+  status-item: "<c:value><amount>x</c:value> <item>"
+  status-separator: "<c:muted>, "
+  status-empty: "<prefix><c:muted>Your satchel is empty."
+  # /satchel take without a valid item or amount
+  take-usage: "<prefix><c:error><sym:cross></c:error> <c:text>Use <c:value>/satchel take <item> [amount|stack|all]"
   # Upgrades. <level> <capacity> <max> <price>
   upgraded: "<prefix><c:success><sym:check></c:success> <c:text>Satchel upgrade <c:value><level></c:value> bought: <c:value>+<capacity></c:value> space <c:muted>(now <max>)</c:muted><c:text>."
   upgrade-money: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:money><price></cur:money> <c:text>for the next upgrade."

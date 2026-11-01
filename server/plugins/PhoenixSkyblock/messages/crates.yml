@@ -29,7 +29,6 @@ crates:
 reward-types:
   money: "Money Pouch (<amount>)"
   crystals: "Crystal Pouch (<amount>)"
-  shards: "Shards (<amount>)"
   key: "<key>"
   enchant-book: "Enchant Book"
   scroll: "Disenchant Scroll"
@@ -88,6 +87,7 @@ rewards:
     tome: "Wardrobe Tome"
     lorekeeper_token: "Lorekeeper Robes Set Token"
     blueprint: "Blueprint"
+    shard_block: "Shard Block"
   inferno:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
@@ -104,7 +104,7 @@ rewards:
     greater_tome: "Greater Wardrobe Tome"
     set_token_a: "Deepforge, Cropwarden or Dreadguard Token"
     set_token_b: "Thornward or Stormkeel Token"
-    spawner_t5: "Tier 5 Spawner"
+    shard_block: "Shard Block"
     phoenix_key: "<key>"
     blueprint: "Blueprint"
   phoenix:
@@ -121,7 +121,7 @@ rewards:
     autosell_chest: "Auto-sell Chest, tier 3"
     blueprint: "Blueprint (rare ability)"
     phoenix_key: "<key> (open again)"
-    spawner_t5: "Tier 5 Spawner"
+    shard_block: "Shard Block"
     elytra: "Elytra"
     voidforged_token: "Voidforged Plate Set Token"
     title: "Legendary Title"
@@ -134,7 +134,7 @@ rewards:
     month_tag: "The Month's Tag"
     month_theme: "The Month's Border Theme"
     pet_egg: "Pet Egg"
-    spawner_t5: "Tier 5 Spawner"
+    shard_block: "Shard Block"
     greater_tome: "Greater Wardrobe Tome"
     collector: "Chunk Collector, tier 3"
     global_booster: "Global Sell Booster +50%, 60 min"
@@ -145,7 +145,7 @@ rewards:
     month_title: "The Month's Mythic Title"
   conqueror:
     money: "Money Pouch (<amount>)"
-    shards: "Shards (<amount>)"
+    shard_block: "Shard Block"
     combat_rare_book: "Rare Enchant Book"
     scroll: "Disenchant Scroll"
     banneret_token: "Banneret Tabard Set Token"
