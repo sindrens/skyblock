@@ -43,7 +43,25 @@ final class CatalogMigration {
             "eclipse", shardRow(3, "epic"),
             "conqueror", shardRow(2, "rare"));
 
+    /**
+     * The row that takes up the chance the removed rows leave (or gives back the shard block's share), so an untouched table
+     * still adds up to 100: the most common plain reward of each crate (same numbers as the bundled file).
+     */
+    static final Map<String, String> FILLER = Map.of(
+            "blaze", "money", "inferno", "money", "phoenix", "book", "eclipse", "book", "conqueror", "money");
+
     private CatalogMigration() {
+    }
+
+    private static double total(List<? extends Map<?, ?>> rows) {
+        double sum = 0;
+        for (Map<?, ?> r : rows) {
+            Object c = r.get("chance");
+            if (c instanceof Number n) {
+                sum += n.doubleValue();
+            }
+        }
+        return sum;
     }
 
     private static Map<String, Object> row(String id, String type, double chance, Map<String, Object> rest) {
@@ -122,6 +140,21 @@ final class CatalogMigration {
                     out.add(new LinkedHashMap<>(add));
                     log.add(crate + ": added reward 'shard_block' " + add);
                     changed = true;
+                }
+                // A table that added up to 100 before still does: the filler row takes the difference.
+                String filler = FILLER.get(crate);
+                double diff = Math.round((100 - total(out)) * 1000) / 1000.0;
+                if (changed && filler != null && Math.abs(total(rewards) - 100) < 1e-9 && Math.abs(diff) > 1e-9) {
+                    for (Map<String, Object> row : out) {
+                        if (filler.equals(String.valueOf(row.get("id"))) && row.get("chance") instanceof Number n
+                                && n.doubleValue() + diff >= 0) {
+                            double now = Math.round((n.doubleValue() + diff) * 1000) / 1000.0;
+                            row.put("chance", now == Math.rint(now) ? (Object) (int) now : (Object) now);
+                            log.add(crate + ": reward '" + filler + "' chance " + n + " -> " + row.get("chance")
+                                    + " so the table still adds up to 100");
+                            break;
+                        }
+                    }
                 }
                 if (changed) {
                     section.set("rewards", out);
