@@ -125,4 +125,49 @@ public interface StackingService {
     default int nextSpawnerOutputPercent(Player player, String type) {
         return 100;
     }
+
+    // ------------------------------------------------------------------ ECON-SPAWNERS step 1
+
+    /** Spawners of {@code tier} an island may hold (cap incl. the perk bonus); empty = no limit info. Main thread. */
+    default java.util.OptionalInt spawnerCap(java.util.UUID island, int tier) {
+        return java.util.OptionalInt.empty();
+    }
+
+    /** Spawners of {@code tier} placed on the island, from memory. Main thread. */
+    default long spawnersOfTier(java.util.UUID island, int tier) {
+        return 0;
+    }
+
+    /**
+     * Whether a tier's spawners can be bought for this island (kills of the previous tier's mobs on the island).
+     *
+     * @param unlocked     true when the shop may sell this tier here
+     * @param kills        counted kills
+     * @param needed       kills needed (0 = no gate)
+     * @param mobsLabelKey {@code tier} when every mob of the previous tier counts, else {@code mobs}
+     * @param mobs         the mob ids that count
+     */
+    record Unlock(boolean unlocked, long kills, long needed, String mobsLabelKey, List<String> mobs) {
+        public static final Unlock OPEN = new Unlock(true, 0, 0, "tier", List.of());
+    }
+
+    /** Tier 1 and the premium tier are always open. Main thread (loads the island's kills lazily). */
+    default Unlock spawnerUnlock(java.util.UUID island, int tier) {
+        return Unlock.OPEN;
+    }
+
+    /** Money per production hour of one full spawner of {@code mob} on the island (0 = no sellable drop). Main thread. */
+    default double spawnerIncomePerHour(java.util.UUID island, String mob) {
+        return 0;
+    }
+
+    /** The custom drop item id of a spawner mob ({@code mobdrop_pig}), or empty (legacy, unknown). */
+    default java.util.Optional<String> spawnerDropItem(String mob) {
+        return java.util.Optional.empty();
+    }
+
+    /** True for a mob that is sold as a spawner (tiers 1-5); false for legacy and unknown mobs. */
+    default boolean spawnerSellable(String mob) {
+        return true;
+    }
 }

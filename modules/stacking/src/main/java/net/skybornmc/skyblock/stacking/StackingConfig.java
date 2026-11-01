@@ -83,16 +83,86 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.stack-start", desc = "Spawners one block holds without upgrades (owner S20: 8).", min = 1, max = 100_000, level = Setting.Level.OWNER)
     public int spawnerStackStart = 8;
 
-    @Setting(path = "spawners.stack-max", desc = "Spawners one block can ever hold, with the Spawner Stack Limit mastery (owner S20: 512).", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerStackMax = 512;
+    @Setting(path = "spawners.stack-max", desc = "Spawners one block can ever hold, with the Spawner Stack Limit upgrade (ECON-SPAWNERS S4: 32; was 512). Blocks above it keep their spawners but can't grow.", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int spawnerStackMax = 32;
 
-    @Setting(path = "spawners.min-interval-seconds", desc = "Shortest time between two spawns of one spawner block (vanilla 10).", min = 1, max = 3600, level = Setting.Level.OWNER)
+    @Setting(path = "spawners.min-interval-seconds", desc = "Kept for reference: since ECON-SPAWNERS every spawner spawns on the speed step of its island (spawners.speed-steps-seconds, 10 s at level 0).", min = 1, max = 3600, level = Setting.Level.OWNER)
     public int spawnerMinIntervalSeconds = 10;
 
-    @Setting(path = "spawners.max-interval-seconds", desc = "Longest time between two spawns of one spawner block (vanilla 40).", min = 1, max = 3600, level = Setting.Level.OWNER)
-    public int spawnerMaxIntervalSeconds = 40;
+    @Setting(path = "spawners.max-interval-seconds", desc = "Kept for reference (ECON-SPAWNERS: 10; was 40). The spawn time comes from spawners.speed-steps-seconds.", min = 1, max = 3600, level = Setting.Level.OWNER)
+    public int spawnerMaxIntervalSeconds = 10;
 
-    @Setting(path = "spawners.mobs-per-spawner", desc = "Mobs each stacked spawner adds per spawn (owner answer 641: 1; vanilla up to 4). Output = this x stack x Spawner Rate mastery (owner S23).", min = 0.01, max = 100, level = Setting.Level.OWNER)
+    @Setting(path = "spawners.interval-jitter-percent", desc = "Random spread of each spawn interval in percent (0 = exact; a little desyncs many spawners).", min = 0, max = 50)
+    public int spawnerIntervalJitterPercent = 0;
+
+    @Setting(path = "spawners.interval-floor-seconds", desc = "No spawner ever spawns faster than this, whatever the steps say (protects the main thread).", min = 1, max = 60, level = Setting.Level.OWNER)
+    public int spawnerIntervalFloorSeconds = 4;
+
+    @Setting(path = "spawners.speed-steps-seconds", desc = "Seconds between spawns per speed upgrade level (level 0 first; /is upgrade). A level above the list uses the last step.", level = Setting.Level.OWNER)
+    public List<String> speedSteps = List.of("10", "9", "8", "7", "6", "5");
+
+    @Setting(path = "spawners.mob-steps", desc = "Mobs each spawner adds per spawn, per mobs upgrade level (level 0 first).", level = Setting.Level.OWNER)
+    public List<String> mobSteps = List.of("1.0", "1.25", "1.5", "1.75", "2.0");
+
+    @Setting(path = "spawners.loot-steps", desc = "Custom drop multiplier per Mob Loot upgrade level (level 0 first).", level = Setting.Level.OWNER)
+    public List<String> lootSteps = List.of("1.0", "1.1", "1.2", "1.3", "1.4", "1.5");
+
+    @Setting(path = "spawners.max-per-tier", desc = "Spawners of one tier an island can hold (all blocks; ECON-SPAWNERS S3: 32). 0 = no cap. Islands above it keep theirs (grandfathered) but can't add more.", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public int spawnerMaxPerTier = 32;
+
+    @Setting(path = "spawners.cap-perk-max", desc = "Most extra spawners per tier a credit perk can add to the cap.", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public int spawnerCapPerkMax = 64;
+
+    @Setting(path = "spawners.legacy", desc = "Spawner types that left the roster (mob:tier): they keep working with vanilla loot, count in that tier, but are never sold.", level = Setting.Level.OWNER)
+    public List<String> legacy = List.of("squid:2", "magma_cube:3", "glow_squid:4", "piglin:4", "shulker:5", "ravager:5", "breeze:5");
+
+    @Setting(path = "spawners.unlock.tier-2.kills", desc = "Kills of tier 1 mobs on an island before its shop sells tier 2 spawners (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
+    public long unlockTier2Kills = 1000;
+
+    @Setting(path = "spawners.unlock.tier-3.kills", desc = "Kills of tier 2 mobs before tier 3 spawners are sold (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
+    public long unlockTier3Kills = 5000;
+
+    @Setting(path = "spawners.unlock.tier-4.kills", desc = "Kills of tier 3 mobs before tier 4 spawners are sold (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
+    public long unlockTier4Kills = 20000;
+
+    @Setting(path = "spawners.unlock.tier-5.kills", desc = "Kills of tier 4 mobs before tier 5 spawners are sold (premium: 0 = no gate).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
+    public long unlockTier5Kills = 0;
+
+    @Setting(path = "spawners.unlock.tier-2.mobs", desc = "Only these tier 1 mobs count for the tier 2 unlock (empty = every tier 1 mob).")
+    public List<String> unlockTier2Mobs = List.of();
+
+    @Setting(path = "spawners.unlock.tier-3.mobs", desc = "Only these tier 2 mobs count for the tier 3 unlock (empty = every tier 2 mob).")
+    public List<String> unlockTier3Mobs = List.of();
+
+    @Setting(path = "spawners.unlock.tier-4.mobs", desc = "Only these tier 3 mobs count for the tier 4 unlock (empty = every tier 3 mob).")
+    public List<String> unlockTier4Mobs = List.of();
+
+    @Setting(path = "spawners.unlock.tier-5.mobs", desc = "Only these tier 4 mobs count for the tier 5 unlock (empty = every tier 4 mob).")
+    public List<String> unlockTier5Mobs = List.of();
+
+    @Setting(path = "spawners.unlock.save-seconds", desc = "Kill counts are written in one batch this often.", min = 5, max = 600, restart = true)
+    public int unlockSaveSeconds = 30;
+
+    @Setting(path = "spawners.drops", desc = "Custom drop per spawner mob: mob:item id:amount per mob (ECON-SPAWNERS S6). Spawner mobs with a line drop only this item; others keep vanilla loot.", level = Setting.Level.OWNER)
+    public List<String> spawnerDrops = List.of("pig:mobdrop_pig:1", "cow:mobdrop_cow:1", "chicken:mobdrop_chicken:1", "sheep:mobdrop_sheep:1",
+            "rabbit:mobdrop_rabbit:1", "zombie:mobdrop_zombie:1", "skeleton:mobdrop_skeleton:1", "spider:mobdrop_spider:1",
+            "cave_spider:mobdrop_cave_spider:1", "slime:mobdrop_slime:1", "creeper:mobdrop_creeper:1", "witch:mobdrop_witch:1",
+            "drowned:mobdrop_drowned:1", "husk:mobdrop_husk:1", "stray:mobdrop_stray:1", "blaze:mobdrop_blaze:1",
+            "enderman:mobdrop_enderman:1", "guardian:mobdrop_guardian:1", "hoglin:mobdrop_hoglin:1",
+            "zombified_piglin:mobdrop_zombified_piglin:1", "iron_golem:mobdrop_iron_golem:1",
+            "wither_skeleton:mobdrop_wither_skeleton:1", "evoker:mobdrop_evoker:1");
+
+    @Setting(path = "spawners.drop-items", desc = "Custom drop items: item id=material:rarity (names in messages/stacking.yml drops.<id>, sell prices in sell.yml custom-items.spawner-drops). Pick inert materials (no food, block, potion or tool).", level = Setting.Level.OWNER)
+    public List<String> spawnerDropItems = List.of("mobdrop_pig=clay_ball:common", "mobdrop_cow=clay_ball:common",
+            "mobdrop_chicken=clay_ball:common", "mobdrop_sheep=clay_ball:common", "mobdrop_rabbit=clay_ball:common",
+            "mobdrop_zombie=flint:uncommon", "mobdrop_skeleton=flint:uncommon", "mobdrop_spider=flint:uncommon",
+            "mobdrop_cave_spider=flint:uncommon", "mobdrop_slime=flint:uncommon", "mobdrop_creeper=iron_nugget:uncommon",
+            "mobdrop_witch=iron_nugget:uncommon", "mobdrop_drowned=iron_nugget:uncommon", "mobdrop_husk=iron_nugget:uncommon",
+            "mobdrop_stray=iron_nugget:uncommon", "mobdrop_blaze=gold_nugget:rare", "mobdrop_enderman=gold_nugget:rare",
+            "mobdrop_guardian=gold_nugget:rare", "mobdrop_hoglin=gold_nugget:rare", "mobdrop_zombified_piglin=gold_nugget:rare",
+            "mobdrop_iron_golem=echo_shard:epic", "mobdrop_wither_skeleton=echo_shard:epic", "mobdrop_evoker=echo_shard:epic");
+
+    @Setting(path = "spawners.mobs-per-spawner", desc = "Mobs each stacked spawner adds per spawn (owner answer 641: 1; vanilla up to 4). Output = this x mob step x stack x F2 efficiency.", min = 0.01, max = 100, level = Setting.Level.OWNER)
     public double mobsPerSpawner = 1.0;
 
     @Setting(path = "spawners.activation-range", desc = "A spawner runs while a player is this close (owner S24: 16 blocks), or while the island has fuel and nobody is online.", min = 1, max = 128)
@@ -110,23 +180,23 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.tier-1", desc = "Tier 1 spawner types (owner SK3, shop).", level = Setting.Level.OWNER)
     public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit");
 
-    @Setting(path = "spawners.tier-2", desc = "Tier 2 spawner types (owner SK4, shop + The Depths).", level = Setting.Level.OWNER)
-    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "squid");
+    @Setting(path = "spawners.tier-2", desc = "Tier 2 spawner types (Cave; ECON-SPAWNERS: 5 mobs, unlock by tier 1 kills).", level = Setting.Level.OWNER)
+    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "cave_spider", "slime");
 
-    @Setting(path = "spawners.tier-3", desc = "Tier 3 spawner types (owner SK5, The Depths + crates).", level = Setting.Level.OWNER)
-    public List<String> tier3 = List.of("creeper", "witch", "drowned", "husk", "stray", "magma_cube");
+    @Setting(path = "spawners.tier-3", desc = "Tier 3 spawner types (Wild; unlock by tier 2 kills).", level = Setting.Level.OWNER)
+    public List<String> tier3 = List.of("creeper", "witch", "drowned", "husk", "stray");
 
-    @Setting(path = "spawners.tier-4", desc = "Tier 4 spawner types (owner SK6, crates).", level = Setting.Level.OWNER)
-    public List<String> tier4 = List.of("blaze", "enderman", "guardian", "piglin", "zombified_piglin", "hoglin", "glow_squid");
+    @Setting(path = "spawners.tier-4", desc = "Tier 4 spawner types (Nether; unlock by tier 3 kills).", level = Setting.Level.OWNER)
+    public List<String> tier4 = List.of("blaze", "enderman", "guardian", "hoglin", "zombified_piglin");
 
-    @Setting(path = "spawners.tier-5", desc = "Tier 5 spawner types (owner SK7, crates + Black Market). Villager, warden, wither, ender dragon, elder guardian and allay are never allowed (SK8).", level = Setting.Level.OWNER)
-    public List<String> tier5 = List.of("iron_golem", "wither_skeleton", "shulker", "evoker", "ravager", "breeze");
+    @Setting(path = "spawners.tier-5", desc = "Tier 5 = premium spawner types (Black Market for shards, credit shop later; never in /shop). Villager, warden, wither, ender dragon, elder guardian and allay are never allowed (SK8).", level = Setting.Level.OWNER)
+    public List<String> tier5 = List.of("iron_golem", "wither_skeleton", "evoker");
 
     @Setting(path = "spawners.efficiency", desc = "Owner F2: diminishing output per island and tier. All spawners of one tier on an island are counted (every block, outposts later); the k-th one works at the percent of its band. Format from-to:percent, the last band open (129+:10). Bands start at 1 without gaps. Empty list = every spawner at 100%. A broken list falls back to these defaults.", level = Setting.Level.OWNER)
     public List<String> spawnerEfficiency = List.of("1-16:100", "17-32:60", "33-64:35", "65-128:20", "129+:10");
 
     @Setting(path = "spawners.rare-drops", desc = "Strong drops from spawner mobs get this chance per mob instead of the vanilla one (owner SK10: very rare). Format mob:item:chance, chance 0-1.", level = Setting.Level.OWNER)
-    public List<String> rareDrops = List.of("evoker:totem_of_undying:0.02", "shulker:shulker_shell:0.05");
+    public List<String> rareDrops = List.of("evoker:totem_of_undying:0.02");
 
     // ------------------------------------------------------------------ island entity limits (owner SK2)
 
@@ -185,6 +255,29 @@ public final class StackingConfig extends ModuleConfig {
 
     @Setting(path = "crops.per-tick", desc = "Most crops checked in one tick (a check round is spread over several ticks).", min = 10, max = 100_000)
     public int cropsPerTick = 2000;
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "spawners.max-interval-seconds", ValueChange.of(40, 10),
+                "spawners.stack-max", ValueChange.of(512, 32),
+                "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "squid"),
+                        List.of("zombie", "skeleton", "spider", "cave_spider", "slime")),
+                "spawners.tier-3", ValueChange.of(List.of("creeper", "witch", "drowned", "husk", "stray", "magma_cube"),
+                        List.of("creeper", "witch", "drowned", "husk", "stray")),
+                "spawners.tier-4", ValueChange.of(List.of("blaze", "enderman", "guardian", "piglin", "zombified_piglin", "hoglin", "glow_squid"),
+                        List.of("blaze", "enderman", "guardian", "hoglin", "zombified_piglin")),
+                "spawners.tier-5", ValueChange.of(List.of("iron_golem", "wither_skeleton", "shulker", "evoker", "ravager", "breeze"),
+                        List.of("iron_golem", "wither_skeleton", "evoker")),
+                "spawners.rare-drops", ValueChange.of(List.of("evoker:totem_of_undying:0.02", "shulker:shulker_shell:0.05"),
+                        List.of("evoker:totem_of_undying:0.02"))));
+    }
 
     @Override
     public String fileName() {

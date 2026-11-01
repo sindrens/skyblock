@@ -870,9 +870,36 @@ final class IslandManager implements IslandService {
     }
 
     @Override
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public double spawnerRateMultiplier(UUID islandId) {
         var e = effects(islandId);
         return e == null ? 1.0 : Math.max(0, e.spawnerRateMultiplier(islandId));
+    }
+
+    // ECON-SPAWNERS section 3: level hooks of the progression lane (0 = no upgrade).
+    @Override
+    public int spawnerSpeedLevel(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.spawnerSpeedLevel(islandId));
+    }
+
+    @Override
+    public int spawnerMobsLevel(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.spawnerMobsLevel(islandId));
+    }
+
+    @Override
+    public int mobLootLevel(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.mobLootLevel(islandId));
+    }
+
+    @Override
+    public int spawnerCapBonus(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, e.spawnerCapBonus(islandId));
     }
 
     @Override

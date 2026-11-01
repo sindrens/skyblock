@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -461,6 +462,7 @@ final class MobStacker implements Listener {
         boolean spawnerMob = isSpawnerMob(entity);
         int stack = count(entity);
         if (stack <= 1 && !spawnerMob) {
+            module.recordKills(entity.getLocation(), entity.getType(), 1); // ECON-SPAWNERS: unlock progress, any source
             return;
         }
         long start = module.perf().start();
@@ -483,7 +485,17 @@ final class MobStacker implements Listener {
             long rolls = StackMath.extraRolls(killed, bonus.extraLootPercent(), () -> ThreadLocalRandom.current().nextDouble());
             long lootMobs = StackMath.lootMobs(killed, true, rolls);
             Location at = entity.getLocation();
-            List<Drop> extras = lootMobs > 0 ? extraLoot(entity, killer, lootMobs, event.getDrops()) : new ArrayList<>();
+            module.recordKills(at, entity.getType(), killed); // ECON-SPAWNERS: unlock progress
+            Optional<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrop(entity.getType()) : Optional.empty();
+            List<Drop> extras;
+            if (custom.isPresent()) {
+                // ECON-SPAWNERS S6: spawner mobs drop only their custom item (x the island's Mob Loot level).
+                event.getDrops().clear();
+                extras = new ArrayList<>();
+                customDrop(custom.get(), at, killed, rolls, extras);
+            } else {
+                extras = lootMobs > 0 ? extraLoot(entity, killer, lootMobs, event.getDrops()) : new ArrayList<>();
+            }
             if (spawnerMob) {
                 applyRareDrops(entity.getType(), event.getDrops(), extras, killed);
             }
@@ -558,7 +570,15 @@ final class MobStacker implements Listener {
             long rolls = StackMath.extraRolls(killed, bonus.extraLootPercent(), () -> ThreadLocalRandom.current().nextDouble());
             long lootMobs = StackMath.lootMobs(killed, false, rolls);
             Location at = stack.getLocation();
-            List<Drop> loot = extraLoot(stack, killer, lootMobs, List.of());
+            module.recordKills(at, stack.getType(), killed); // ECON-SPAWNERS: unlock progress
+            Optional<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrop(stack.getType()) : Optional.empty();
+            List<Drop> loot;
+            if (custom.isPresent()) {
+                loot = new ArrayList<>();
+                customDrop(custom.get(), at, killed, rolls, loot);
+            } else {
+                loot = extraLoot(stack, killer, lootMobs, List.of());
+            }
             if (spawnerMob) {
                 applyRareDrops(stack.getType(), new ArrayList<>(), loot, killed);
             }
@@ -630,6 +650,16 @@ final class MobStacker implements Listener {
             }
         }
         return out;
+    }
+
+    /** ECON-SPAWNERS step 8: the custom drop of {@code killed} spawner mobs (+ extra loot rolls) at the island's loot level. */
+    private void customDrop(SpawnerDrops.Drop drop, Location at, long killed, long rolls, List<Drop> out) {
+        double loot = module.lootMultiplier(at);
+        long amount = SpawnerDrops.amount(killed, rolls, drop.perMob(), loot, () -> ThreadLocalRandom.current().nextDouble());
+        if (amount <= 0 || module.core().items().get(drop.item()).isEmpty()) {
+            return;
+        }
+        out.add(new Drop(module.core().items().create(drop.item(), 1, "spawner", null), amount));
     }
 
     /**

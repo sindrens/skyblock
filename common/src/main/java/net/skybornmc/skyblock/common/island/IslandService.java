@@ -147,9 +147,37 @@ public interface IslandService {
         return java.util.OptionalInt.empty();
     }
 
-    /** Upgrade hook ("Spawner Rate" mastery): multiplier on every spawner's output on this island (1.0 = no upgrade). */
+    /**
+     * Upgrade hook ("Spawner Rate" mastery): multiplier on every spawner's output on this island (1.0 = no upgrade).
+     *
+     * @deprecated ECON-SPAWNERS S9: the stacking module no longer reads it (speed, mobs and loot levels instead).
+     */
+    @Deprecated
     default double spawnerRateMultiplier(UUID islandId) {
         return 1.0;
+    }
+
+    /**
+     * ECON-SPAWNERS section 3 (progression lane contract, answered from IslandUpgradeEffects): speed level of every spawner on the island, an index into
+     * {@code stacking.yml spawners.speed-steps-seconds} (0 = no upgrade, one mob every 10 s).
+     */
+    default int spawnerSpeedLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** ECON-SPAWNERS: mobs-per-spawn level, an index into {@code spawners.mob-steps} (0 = 1 mob per spawner). */
+    default int spawnerMobsLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** ECON-SPAWNERS: Mob Loot level, an index into {@code spawners.loot-steps} (0 = 1.0x custom drops). */
+    default int mobLootLevel(UUID islandId) {
+        return 0;
+    }
+
+    /** ECON-SPAWNERS / C1-R2-14: extra spawners per tier on the island (credit perk); clamped to {@code spawners.cap-perk-max}. */
+    default int spawnerCapBonus(UUID islandId) {
+        return 0;
     }
 
     /**

@@ -205,33 +205,54 @@ final class SpawnerManager implements Listener {
         queue.add(new Due(tick, sp));
     }
 
-    private int interval() {
-        StackingConfig c = module.config();
-        return StackMath.intervalTicks(c.spawnerMinIntervalSeconds, c.spawnerMaxIntervalSeconds, ThreadLocalRandom.current().nextDouble());
+    /** ECON-SPAWNERS step 6: ticks to the next spawn from the island's speed level (identical for every spawner at level 0). */
+    private long interval(Spawner sp) {
+        return module.steps().intervalTicks(speedLevel(sp), module.config().spawnerIntervalJitterPercent, ThreadLocalRandom.current().nextDouble());
     }
 
-    /** The most spawners this block may hold (owner S20 + Spawner Stack Limit mastery hook). */
+    int speedLevel(Spawner sp) {
+        return sp.island == null ? 0 : module.islands().map(s -> s.spawnerSpeedLevel(sp.island)).orElse(0);
+    }
+
+    int mobsLevel(Spawner sp) {
+        return sp.island == null ? 0 : module.islands().map(s -> s.spawnerMobsLevel(sp.island)).orElse(0);
+    }
+
+    /** Seconds between spawns of this block (menu). */
+    double seconds(Spawner sp) {
+        return module.steps().seconds(speedLevel(sp));
+    }
+
+    /** Mobs each spawner of this block adds per spawn (mob step of the island). */
+    double mobsPerSpawn(Spawner sp) {
+        return module.config().mobsPerSpawner * module.steps().mobs(mobsLevel(sp));
+    }
+
+    /**
+     * The most spawners this block may hold: the Spawner Stack Limit upgrade (start 8), at most {@code spawners.stack-max}
+     * (32) and never more than the island's cap of the tier (ECON-SPAWNERS S4).
+     */
     int limit(Spawner sp) {
         OptionalInt mastery = sp.island == null ? OptionalInt.empty()
                 : module.islands().map(s -> s.spawnerStackLimit(sp.island)).orElse(OptionalInt.empty());
-        return StackMath.stackLimit(mastery, module.config().spawnerStackStart, module.config().spawnerStackMax);
+        int cap = module.spawnerCapFor(sp.island);
+        int max = cap > 0 ? Math.min(module.config().spawnerStackMax, cap) : module.config().spawnerStackMax;
+        return StackMath.stackLimit(mastery, module.config().spawnerStackStart, max);
     }
 
-    /** The island's Spawner Rate mastery (the menu's "Speed"). */
+    /** ECON-SPAWNERS S9: the old Spawner Rate mastery is no longer read; always 1.0. */
     double masteryMultiplier(Spawner sp) {
-        return sp.island == null ? 1.0 : module.islands().map(s -> s.spawnerRateMultiplier(sp.island)).orElse(1.0);
+        return 1.0;
     }
 
-    /** Everything that scales this block's output: Spawner Rate mastery x F2 diminishing output ({@code E(n)/n}). */
+    /** Everything that scales this block's output besides the steps: F2 diminishing output ({@code E(n)/n}). */
     double rateMultiplier(Spawner sp) {
-        return masteryMultiplier(sp) * efficiencyFactor(sp);
+        return efficiencyFactor(sp);
     }
 
-    /** Mobs per minute at the average interval (menu). */
+    /** Mobs per minute (menu). */
     double mobsPerMinute(Spawner sp) {
-        StackingConfig c = module.config();
-        double avgSeconds = (c.spawnerMinIntervalSeconds + c.spawnerMaxIntervalSeconds) / 2.0;
-        return module.config().mobsPerSpawner * sp.amount * rateMultiplier(sp) * 60.0 / Math.max(1, avgSeconds);
+        return mobsPerSpawn(sp) * sp.amount * rateMultiplier(sp) * 60.0 / Math.max(1, seconds(sp));
     }
 
     // ================================================================== ticking
@@ -264,13 +285,13 @@ final class SpawnerManager implements Listener {
     private void run(Spawner sp, long now) {
         World world = Bukkit.getWorld(sp.pos.world());
         if (world == null || !world.isChunkLoaded(sp.pos.x() >> 4, sp.pos.z() >> 4)) {
-            schedule(sp, now + interval());
+            schedule(sp, now + interval(sp));
             return;
         }
         Block block = world.getBlockAt(sp.pos.x(), sp.pos.y(), sp.pos.z());
         if (block.getType() != Material.SPAWNER) {
             if (sp.busy) {
-                schedule(sp, now + interval()); // a change (or the first save) is still running: decide after it
+                schedule(sp, now + interval(sp)); // a change (or the first save) is still running: decide after it
                 return;
             }
             orphan(sp, "block_gone");
@@ -279,12 +300,12 @@ final class SpawnerManager implements Listener {
         if (!sp.configured) {
             configure(block, sp);
         }
-        schedule(sp, now + interval());
+        schedule(sp, now + interval(sp));
         EntityType type = module.entityType(sp.type);
         if (sp.busy || type == null || !active(sp, world)) {
             return;
         }
-        StackMath.Output out = StackMath.spawnerOutput(module.config().mobsPerSpawner, sp.amount, rateMultiplier(sp), sp.carry);
+        StackMath.Output out = StackMath.spawnerOutput(mobsPerSpawn(sp), sp.amount, rateMultiplier(sp), sp.carry);
         sp.carry = out.carry();
         if (out.mobs() > 0) {
             module.mobs().addSpawned(block.getLocation(), type, out.mobs());
@@ -550,6 +571,17 @@ final class SpawnerManager implements Listener {
             deny(player, "spawner.busy");
             return;
         }
+        int tier = module.tiers().tier(type.get()).orElse(0);
+        if (island != null && tier > 0) {
+            int cap = module.spawnerCapFor(island);
+            long owned = islandCount(island, tier);
+            if (SpawnerRules.room(owned, cap) < 1) {
+                event.setCancelled(true);
+                deny(player, "spawner.cap-reached", Msg.p("max", Format.number(cap)), Msg.p("tier", tier));
+                capRefused(player, island, tier, owned, cap, block.getLocation());
+                return;
+            }
+        }
         long now = System.currentTimeMillis();
         Spawner sp = new Spawner(pos, type.get(), 1, island, player.getUniqueId(), now);
         sp.busy = true;
@@ -584,7 +616,7 @@ final class SpawnerManager implements Listener {
                 () -> module.core().database().async(c -> store.insert(c, row, now))), ok -> {
             sp.busy = false;
             if (Boolean.TRUE.equals(ok)) {
-                schedule(sp, Bukkit.getCurrentTick() + interval());
+                schedule(sp, Bukkit.getCurrentTick() + interval(sp));
                 audit("spawner_place", Actor.player(playerId, name), sp, 0, 1, block.getLocation(), Map.of());
                 Player online = Bukkit.getPlayer(playerId);
                 if (online != null) {
@@ -746,6 +778,19 @@ final class SpawnerManager implements Listener {
             deny(player, "spawner.full", Msg.p("max", limit));
             return;
         }
+        int tier = tierOf(sp);
+        if (sp.island != null && tier > 0) {
+            int cap = module.spawnerCapFor(sp.island);
+            long owned = islandCount(sp.island, tier);
+            long capRoom = SpawnerRules.room(owned, cap);
+            if (capRoom < 1) {
+                deny(player, "spawner.cap-reached", Msg.p("max", Format.number(cap)), Msg.p("tier", tier));
+                World w = Bukkit.getWorld(sp.pos.world());
+                capRefused(player, sp.island, tier, owned, cap, w == null ? null : sp.pos.center(w));
+                return;
+            }
+            room = (int) Math.min(room, capRoom);
+        }
         int taken = takeFromInventory(player.getInventory(), sp.type, Math.min(wanted, room));
         if (taken <= 0) {
             deny(player, "spawner.none-in-inventory", mob(sp.type));
@@ -891,6 +936,16 @@ final class SpawnerManager implements Listener {
     }
 
     // ================================================================== helpers
+
+    /** ECON-SPAWNERS: audit of a placement or add refused by the island's tier cap. */
+    private void capRefused(Player player, UUID island, int tier, long owned, int cap, Location at) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("tier", tier);
+        details.put("owned", owned);
+        details.put("cap", cap);
+        module.core().audit().log(AuditCategory.ISLAND, "spawner_cap_refused", Actor.player(player), island.toString(), null,
+                owned, at, details);
+    }
 
     static TagResolver mob(String type) {
         return Msg.mm("mob", SpawnerItems.mobTag(type));

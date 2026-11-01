@@ -59,6 +59,11 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private SpawnerTiers tiers;
     private SpawnerEfficiency efficiency = SpawnerEfficiency.defaults();
     private List<SpawnerTiers.RareDrop> rareDrops = List.of();
+    private SpawnerSteps steps = SpawnerSteps.DEFAULTS;
+    private SpawnerDrops drops = SpawnerDrops.EMPTY;
+    private SpawnerDropItems dropItems;
+    private UnlockTracker unlock;
+    private final MobDropGuard dropGuard = new MobDropGuard();
     private MobStacker mobs;
     private ItemStacker items;
     private SpawnerManager spawners;
@@ -87,13 +92,16 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         items = new ItemStacker(this);
         spawners = new SpawnerManager(this);
         spawnerItems = new SpawnerItems(this);
+        dropItems = new SpawnerDropItems(core.items(), key -> core.messages().raw(ID, key));
+        unlock = new UnlockTracker(core.database(), core.plugin().getLogger(), this::countsForUnlock,
+                r -> core.scheduler().main("stacking-unlock", r));
         limits = new EntityLimits(this);
         crops = new CropGrowth(this);
         hoppers = new HopperCounter(this);
         applyConfig();
         spawnerItems.register();
         spawners.load();
-        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers)) {
+        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers, dropGuard)) {
             Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         }
         indexLoaded();
@@ -103,6 +111,8 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         tasks.add(core.scheduler().repeat("stacking-crops", 40L, 1L, crops::tick));
         tasks.add(core.scheduler().repeat("stacking-mob-merge", 40L, Math.max(10, config.naturalMergeIntervalTicks), mobs::mergeMoving));
         tasks.add(core.scheduler().repeat("stacking-perf", 1200L, 1200L, perf::report));
+        long save = 20L * Math.max(5, config.unlockSaveSeconds);
+        tasks.add(core.scheduler().repeat("stacking-unlock-save", save, save, unlock::flush));
     }
 
     @Override
@@ -118,7 +128,10 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
-        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers)) {
+        if (unlock != null) {
+            unlock.flushBlocking();
+        }
+        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard)) {
             if (listener != null) {
                 HandlerList.unregisterAll(listener);
             }
@@ -138,13 +151,24 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         if (spawnerItems != null) {
             spawnerItems.unregister();
         }
+        if (dropItems != null) {
+            dropItems.unregister();
+        }
     }
 
     private void applyConfig() {
         worlds = new HashSet<>(config.worlds);
         List<String> problems = new ArrayList<>();
-        tiers = SpawnerTiers.load(List.of(config.tier1, config.tier2, config.tier3, config.tier4, config.tier5),
+        tiers = SpawnerTiers.load(List.of(config.tier1, config.tier2, config.tier3, config.tier4, config.tier5), config.legacy,
                 id -> isMobType(entityType(id)), problems::add);
+        steps = SpawnerSteps.parse(config.speedSteps, config.mobSteps, config.lootSteps, config.spawnerIntervalFloorSeconds, problems::add);
+        dropItems.load(config.spawnerDropItems, problems::add);
+        drops = SpawnerDrops.parse(config.spawnerDrops, id -> isMobType(entityType(id)), id -> dropItems.ids().contains(id), problems::add);
+        for (String mob : tiers.sellableTypes()) {
+            if (drops.of(mob).isEmpty()) {
+                problems.add("stacking.yml → spawners.drops: sold spawner mob '" + mob + "' has no custom drop (it keeps vanilla loot)");
+            }
+        }
         efficiency = SpawnerEfficiency.parse(config.spawnerEfficiency, problems::add);
         rareDrops = SpawnerTiers.rareDrops(config.rareDrops, id -> isMobType(entityType(id)),
                 id -> Material.matchMaterial(id) != null && Material.matchMaterial(id).isItem(), problems::add);
@@ -202,7 +226,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
 
     private void registerCommand() {
         Arg<Player> player = Args.onlinePlayer("player");
-        Arg<String> type = Args.oneOf("type", () -> tiers.types());
+        Arg<String> type = Args.oneOf("type", () -> tiers.types()); // legacy and premium types too (staff give and restore)
         Arg<Integer> amount = Args.integer("amount", 1, 2304, "1", "8", "64");
         core.commands().register(CommandSpec.command("spawner")
                 .description("Stacked spawners (staff tools)").category("Staff")
@@ -212,6 +236,97 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
                         .arg(player).arg(type).optional(amount)
                         .example("spawner give Steve zombie 8")
                         .executes(ctx -> spawners.staffGive(ctx.sender(), ctx.get(player), ctx.get(type), ctx.getOr(amount, 1)))));
+    }
+
+    // ------------------------------------------------------------------ ECON-SPAWNERS helpers
+
+    SpawnerSteps steps() {
+        return steps;
+    }
+
+    UnlockTracker unlock() {
+        return unlock;
+    }
+
+    /** Only mobs of the sold tiers 1-4 are counted for unlocks (no map growth). */
+    private boolean countsForUnlock(String mob) {
+        SpawnerTiers t = tiers;
+        if (t == null || !t.sellable(mob)) {
+            return false;
+        }
+        int tier = t.tier(mob).orElse(0);
+        return tier >= 1 && tier <= 4;
+    }
+
+    /** Records kills of a mob at a location for the island there (main thread; one island lookup per kill batch). */
+    void recordKills(org.bukkit.Location at, EntityType type, long killed) {
+        if (killed <= 0 || type == null || at == null || unlock == null || !countsForUnlock(type.getKey().getKey())) {
+            return;
+        }
+        islands().flatMap(i -> i.islandAt(at)).ifPresent(info -> unlock.record(info.id(), type.getKey().getKey(), killed));
+    }
+
+    /** The custom drop of a spawner mob type, if it has one. */
+    Optional<SpawnerDrops.Drop> spawnerDrop(EntityType type) {
+        return type == null ? Optional.empty() : drops.of(type.getKey().getKey());
+    }
+
+    /** The Mob Loot multiplier of the island at a location (1.0 without an island or upgrade). */
+    double lootMultiplier(org.bukkit.Location at) {
+        int level = islands().flatMap(i -> i.islandAt(at).map(info -> i.mobLootLevel(info.id()))).orElse(0);
+        return steps.loot(level);
+    }
+
+    /** The island's cap per tier with the perk bonus (0 = no cap). */
+    int spawnerCapFor(java.util.UUID island) {
+        int bonus = island == null ? 0 : islands().map(i -> i.spawnerCapBonus(island)).orElse(0);
+        return SpawnerRules.cap(config.spawnerMaxPerTier, bonus, config.spawnerCapPerkMax);
+    }
+
+    long unlockNeeded(int tier) {
+        return switch (tier) {
+            case 2 -> config.unlockTier2Kills;
+            case 3 -> config.unlockTier3Kills;
+            case 4 -> config.unlockTier4Kills;
+            case 5 -> config.unlockTier5Kills;
+            default -> 0;
+        };
+    }
+
+    List<String> unlockMobs(int tier) {
+        List<String> raw = switch (tier) {
+            case 2 -> config.unlockTier2Mobs;
+            case 3 -> config.unlockTier3Mobs;
+            case 4 -> config.unlockTier4Mobs;
+            case 5 -> config.unlockTier5Mobs;
+            default -> List.of();
+        };
+        return raw.stream().map(SpawnerTiers::normalize).filter(m -> !m.isEmpty()).toList();
+    }
+
+    /** ECON-SPAWNERS step 9: a disband or reset deletes the island's kill counts (progress is gone; audit keeps the rows). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandRemoved(net.skybornmc.skyblock.common.island.IslandRemovedEvent event) {
+        if (unlock == null || event.islandId() == null || !SpawnerManager.clearsSpawners(event.reason())) {
+            return;
+        }
+        java.util.UUID island = event.islandId();
+        java.util.Map<String, Long> before = new java.util.HashMap<>(unlock.kills(island));
+        unlock.clear(island).whenComplete((rows, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Stacking: could not delete the kill counts of island " + island,
+                        net.skybornmc.skyblock.common.db.Database.cause(error));
+                return;
+            }
+            if (rows != null && rows > 0) {
+                java.util.Map<String, Object> details = new java.util.LinkedHashMap<>();
+                details.put("reason", event.reason());
+                details.put("rows", rows);
+                details.put("kills", before);
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ISLAND, "spawner_unlock_reset", event.actor(),
+                        island.toString(), null, (long) rows, null, details);
+            }
+        });
     }
 
     // ------------------------------------------------------------------ shared helpers
@@ -354,13 +469,72 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         return mobs.killBatch(stack, count, killer);
     }
 
+    /** Sold types of a tier (legacy types never: crates and the Black Market pick from these). */
     @Override
     public List<String> spawnerTypes(int tier) {
         SpawnerTiers t = tiers;
         if (t == null) {
             return List.of();
         }
-        return t.types().stream().filter(type -> t.tier(type).orElse(0) == tier).toList();
+        return t.sellableTypes().stream().filter(type -> t.tier(type).orElse(0) == tier).toList();
+    }
+
+    // ------------------------------------------------------------------ ECON-SPAWNERS step 1
+
+    @Override
+    public java.util.OptionalInt spawnerCap(java.util.UUID island, int tier) {
+        int cap = spawnerCapFor(island);
+        return cap <= 0 ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(cap);
+    }
+
+    @Override
+    public long spawnersOfTier(java.util.UUID island, int tier) {
+        SpawnerManager s = spawners;
+        return s == null || island == null ? 0 : s.islandCount(island, tier);
+    }
+
+    @Override
+    public Unlock spawnerUnlock(java.util.UUID island, int tier) {
+        SpawnerTiers t = tiers;
+        long needed = unlockNeeded(tier);
+        if (t == null || tier <= 1 || needed <= 0 || unlock == null) {
+            return Unlock.OPEN;
+        }
+        List<String> previous = t.sellableTypes().stream().filter(type -> t.tier(type).orElse(0) == tier - 1).toList();
+        return UnlockRules.status(tier, needed, unlockMobs(tier), previous, island == null ? java.util.Map.of() : unlock.kills(island));
+    }
+
+    /**
+     * Money per production hour of one full spawner of {@code mob} at the island's levels (speed, mobs, loot) and today's
+     * BASE sell price of its drop (the shop applies its own dynamic factor). 0 when the mob has no sellable drop.
+     */
+    @Override
+    public double spawnerIncomePerHour(java.util.UUID island, String mob) {
+        Optional<SpawnerDrops.Drop> drop = drops.of(mob);
+        if (drop.isEmpty() || tiers == null || !tiers.sellable(mob)) {
+            return 0;
+        }
+        double base = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class)
+                .flatMap(s -> s.price("custom:" + drop.get().item())).map(p -> (double) p.base()).orElse(0.0);
+        if (base <= 0) {
+            return 0;
+        }
+        Optional<IslandService> is = island == null ? Optional.empty() : islands();
+        int speed = is.map(i -> i.spawnerSpeedLevel(island)).orElse(0);
+        int mobsLevel = is.map(i -> i.spawnerMobsLevel(island)).orElse(0);
+        int loot = is.map(i -> i.mobLootLevel(island)).orElse(0);
+        return SpawnerIncome.perHour(steps.seconds(speed), config.mobsPerSpawner * steps.mobs(mobsLevel), drop.get().perMob() * steps.loot(loot), base);
+    }
+
+    @Override
+    public Optional<String> spawnerDropItem(String mob) {
+        return drops.of(mob).map(SpawnerDrops.Drop::item);
+    }
+
+    @Override
+    public boolean spawnerSellable(String mob) {
+        SpawnerTiers t = tiers;
+        return t != null && t.sellable(mob);
     }
 
     /**
