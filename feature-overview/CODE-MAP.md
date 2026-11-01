@@ -104,5 +104,6 @@ Module column is what refresh.py shows in INDEX.md. Paths: `modules/<m>/`, `comm
 | I4 | PvE, bosses and pets | common/pet (verify) |
 | I5 | Seasons | not built (docs/planning/PHASE-12-SEASONS.md) |
 | I6 | Store and Discord | perks, common/discord (docs/planning/PHASE-11-STORE-DISCORD.md) |
-| I7 | Resource pack | pack (+ common/pack; docs/plans/RESOURCE_PACK*.md) |
+| I7 | Resource pack v2 + font | pack (+ common/pack, common/icon, common/frame (new, GUI-FONT), resourcepack/icons.json, resourcepack/frame/, tools/build_icons.py, tools/build_panels.py (new)) |
+| I9 | GUI and menu standard v3 + FORMAT | common/menu (+ common/frame, menus, islands IslandMenu, progression TopMenu, shop menus, every module's menus) |
 | I8 | Launch prep | not built (docs/planning/PHASE-13-LAUNCH.md) |

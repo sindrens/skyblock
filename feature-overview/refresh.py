@@ -37,7 +37,7 @@ def state(i):
     if status[i] == 'Built': return 'Built (verify)' if rounds(i) == 0 else 'Built (reviewed)'
     return 'Reviewing' if rounds(i) else 'Todo'
 TIER_A = set('C1 B17 C4 C14 C5 B13 B14 B15 B16 I5 H7 A3 A4 E1 E3 E5 E10 E12 F1 F2 F5 D2 D6 C6 C13 I6'.split())
-TIER_B = set('D1 D3 D4 D5 D7 D8 D9 D10 E2 E4 E6 E7 E8 E9 E11 E13 E14 F3 F4 F6 F7 F8 F9 F10 F11 C2 C3 C7 C8 C9 C10 C11 C12 B3 B4 B10 B11 B12 I1 I2 I3 I4 I7 I8 H2 H9'.split())
+TIER_B = set('D1 D3 D4 D5 D7 D8 D9 D10 E2 E4 E6 E7 E8 E9 E11 E13 E14 F3 F4 F6 F7 F8 F9 F10 F11 C2 C3 C7 C8 C9 C10 C11 C12 B3 B4 B10 B11 B12 I1 I2 I3 I4 I7 I8 I9 H2 H9'.split())
 def tier(i): return 'A' if i in TIER_A else ('B' if i in TIER_B else 'C')
 FIRST = ['C1','B17','C4','C14','B14','B13','E1','E3','E2','E4','E5','F5','F2','F1','I5',
          'D2','D1','D5','D6','D7','D3','D4','E10','E12','E13','E14',

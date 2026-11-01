@@ -1,0 +1,390 @@
+{
+  "cluster": "GUI-PACK",
+  "title": "Menus, GUI and resource pack (restart)",
+  "questions": [
+    {
+      "id": "GUI-Q1",
+      "card": "I7",
+      "title": "How much resource pack?",
+      "context": "The old pack is going away. A new one can only repaint item icons and, if you want, give every chest window one new background. Everything works without it.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Icons first, background later",
+          "detail": "We start with about 55 repainted icons (under 100 KB). You decide on a background after you have seen them in game.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Icons and one background now",
+          "detail": "Same icons plus one new chest-window look. It shows on every chest screen, real chests too, and you must draw it and keep text readable on it."
+        },
+        {
+          "key": "c",
+          "label": "No pack at all",
+          "detail": "Pure vanilla for good: nothing to download, nothing to draw, nothing to test on Bedrock."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q2",
+      "card": "I7",
+      "title": "Should the pack be forced?",
+      "context": "Before, you wanted a forced pack with a prompt before joining. With only icons, every menu works the same without it, and nothing important is hidden.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Optional offer",
+          "detail": "A short prompt; nobody is kicked for saying no, and players can get it later with /pack. This reverses the old answers 33 and 77.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Forced, as before",
+          "detail": "Players who decline cannot join and are shown how to turn it on. Everyone sees the same icons, but some players will leave."
+        },
+        {
+          "key": "c",
+          "label": "Optional now, forced at launch",
+          "detail": "Test with real players first, then require it when the server opens."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q3",
+      "card": "I7",
+      "title": "Remove the old pack now?",
+      "context": "The old pack changes menu titles, rank badges, icons, crate models and sounds. Removing it first shows how the game looks on plain vanilla.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Remove it all now",
+          "detail": "Run pure vanilla until the new icons exist. Ranks show as plain coloured [Name] text and crates stay normal blocks.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep it until the new one is ready",
+          "detail": "Two systems live side by side for weeks, with the old fonts and badges."
+        },
+        {
+          "key": "c",
+          "label": "Remove all but the crate chests",
+          "detail": "Crates keep their 3D chests and keys; everything else goes."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q4",
+      "card": "I9",
+      "title": "Menu size and empty slots",
+      "context": "Chest windows are always 9 slots wide, but they can have fewer rows. Today every menu has a dark border with red corners.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Compact, empty slots stay empty",
+          "detail": "3, 4 or 6 rows depending on the content, buttons centred with gaps. No border and no filler panes.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Compact, quiet grey panes",
+          "detail": "Same sizes, but empty slots in small menus get a plain grey pane so the window looks filled."
+        },
+        {
+          "key": "c",
+          "label": "Keep today's frame",
+          "detail": "Every menu keeps 6 rows with the black border and red corners. Safe, but busy."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q5",
+      "card": "I9",
+      "title": "The bottom row of every menu",
+      "context": "Every menu shows the same buttons in the same places. Today: Back, ?, Close, Main menu and page arrows. MC Hub only has arrow, search, arrow.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Keep ours and add Search",
+          "detail": "Back on the left, ? Close and Main menu in the middle, page arrows on the right, and a Search button next to the arrows on long lists.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "MC Hub minimal row",
+          "detail": "Only Back, Search and page arrows. Esc closes the menu; help comes from NPCs and the menu star."
+        },
+        {
+          "key": "c",
+          "label": "Same as ours, but no Close",
+          "detail": "Esc closes on Java and Bedrock has its own X, so the barrier button goes away."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q6",
+      "card": "I9",
+      "title": "How names in menus look",
+      "context": "A button name can be plain or in brackets, and it can be coloured by what the button does.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Plain bold names, colour by meaning",
+          "detail": "Green for money, gold for rewards, violet for skills, lime for island, aqua for the Depths, red only for danger. A yellow '» CLICK to open' line under each.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Bracket names like MC Hub",
+          "detail": "[Members] and [Island Menu] with '* Click to view *'. They look like the clickable buttons in chat, which can confuse."
+        },
+        {
+          "key": "c",
+          "label": "One colour for all names",
+          "detail": "Every name in flame orange. Simplest, but no colour hint about what a button does."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q7",
+      "card": "I9",
+      "title": "Delete and reset buttons",
+      "context": "Things you cannot undo (delete island or profile, disband, leave, permanent ban) must be hard to hit by accident.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Red TNT in a corner, then confirm",
+          "detail": "One red TNT tile far from the safe buttons. A click opens a confirm screen; things that can never be undone ask twice.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "One confirm screen only",
+          "detail": "Same red tile, but always a single confirm screen."
+        },
+        {
+          "key": "c",
+          "label": "Type the name to confirm",
+          "detail": "For island and profile delete you must type the name. Safest, but slow on phones."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q8",
+      "card": "I9",
+      "title": "Right-click on a shop item",
+      "context": "Left click opens the buy page and shift-click buys a stack on Java (both built). Right-click is still free; MC Hub uses it to sell. Bedrock cannot right-click, so it can only ever be a shortcut.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Right-click sells one",
+          "detail": "Sells one of that item from your inventory (shift: a stack) at the live sell price, only if the sell chest accepts it. The sell chest stays for bulk. Replaces the 'right-click buys a stack' idea in C5-Q1.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Right-click buys a stack",
+          "detail": "Same as shift-click but easier. Selling stays only in the sell chest."
+        },
+        {
+          "key": "c",
+          "label": "No right-click shortcut",
+          "detail": "One plain click everywhere; shift-click still buys a stack on Java."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q9",
+      "card": "I9",
+      "title": "Currency look in text and menus",
+      "context": "Money, crystals, shards and credits each need a colour, a text symbol that also shows on Bedrock, and an item to show in menus.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Colour, symbol, vanilla item",
+          "detail": "$ green money, ◆ aqua crystals, ✧ pink shards, ✦ orange credits (the old gem star). Menu items: gold ingot, amethyst shard, prismarine shard, diamond.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Colour and word only",
+          "detail": "'1,200 Credits' with no symbols. No Bedrock risk, but longer lines on the scoreboard."
+        },
+        {
+          "key": "c",
+          "label": "Credits without a symbol",
+          "detail": "Credits stay '120 Credits' while the other three keep symbols (today's rule)."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q10",
+      "card": "I9",
+      "title": "Search in long lists",
+      "context": "Long lists are slow to scan. A Search button asks for a word (chat on Java, a small text box on Bedrock) and shows the matches on one page.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Every list over 3 pages",
+          "detail": "Shop, auction house, island browser, player lists, collection and warps get a Search button next to the page arrows.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Shop and auction house only",
+          "detail": "The two biggest lists. Everything else uses tabs and filters."
+        },
+        {
+          "key": "c",
+          "label": "No search",
+          "detail": "Tabs and pick menus only."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q11",
+      "card": "G9",
+      "title": "Shape of the /menu hub",
+      "context": "The hub that is built now has your head and 14 buttons in four rows: Play, Money, Power and More. Rewards shows how many things wait.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Keep the clean hub",
+          "detail": "Your head and 14 buttons in 4 coloured rows. Features that are not built are hidden. Easy to learn.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Smart hub",
+          "detail": "Adds Recent and Pinned rows and category buttons. More to learn and more to build."
+        },
+        {
+          "key": "c",
+          "label": "Seven category buttons",
+          "detail": "Island, Depths, Economy, Progress, Rewards, Community, Settings, each opening a small menu. Cleanest, but one more click for everything."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q12",
+      "card": "G7",
+      "title": "How the scoreboard looks",
+      "context": "The scoreboard stays plain text with no custom font. MC Hub shows two sections, a thin progress line and a timer.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Two sections with progress and timer",
+          "detail": "'| You' and one place section (Island, Depths ...), 3 rows each, 10 lines at most. A progress line and a timer appear only while something runs.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Two sections, no progress or timer",
+          "detail": "Same shape, but only plain rows. Progress stays in the action bar and boss bars."
+        },
+        {
+          "key": "c",
+          "label": "Keep today's boards",
+          "detail": "Up to three sections and no progress or timer lines."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q13",
+      "card": "A3",
+      "title": "Tutorial bar colour and text",
+      "context": "The tutorial bar at the top of the screen should show one instruction and one progress. Today it is red and its fill sometimes shows distance instead of progress.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Yellow bar, step and instruction",
+          "detail": "'Tutorial 3/11 · Plant 3 wheat'. The bar fills with steps done, never with distance. Red stays for events and bosses.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep the red bar",
+          "detail": "Same text and fill rules but red, like boss and event bars."
+        },
+        {
+          "key": "c",
+          "label": "Blue like MC Hub",
+          "detail": "A calm blue bar that no event uses, but not a phoenix colour."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q14",
+      "card": "A5",
+      "title": "Hologram and NPC names",
+      "context": "Spawn holograms and NPC labels should say one title, one action and 'Click me'. MC Hub puts the NPC name in brackets with its command.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Bracket NPC names, command, Click me",
+          "detail": "'[ Banker ]' then '/bank' then 'Click me'. Holograms: bold yellow title, white lines, 'Click me' only on clickable ones.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Names without brackets",
+          "detail": "'Banker' then 'Click', as today, with the same yellow titles and white lines for holograms."
+        },
+        {
+          "key": "c",
+          "label": "Title only",
+          "detail": "No command hint and no 'Click me' line; just a bold yellow name."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q15",
+      "card": "G1",
+      "title": "Ranks and event tags in chat",
+      "context": "Colour makes chat easy to read. The old pack drew rank badges with a custom font; that is gone, so ranks are plain coloured text.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Coloured [RANK] words and event tags",
+          "detail": "'[MOD] Pouched' in the rank colour, every rank a different colour. Server event lines start with a tag: [Crate], [Store], [Market], [Event], [Booster].",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Rank words, no event tags",
+          "detail": "Only the rank colours; event lines stay plain sentences."
+        },
+        {
+          "key": "c",
+          "label": "Small symbols instead of words",
+          "detail": "A symbol per rank instead of [MOD]. Shorter, but players must learn them and Bedrock shows few symbols."
+        }
+      ]
+    },
+    {
+      "id": "GUI-Q16",
+      "card": "I7",
+      "title": "What do you draw first?",
+      "context": "You draw all the icons. Starting small shows quickly whether the pipeline and the look work, before you draw 50 more.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Tiny first slice: 5 icons",
+          "detail": "Menu star and the 4 currencies. We check them on Java and Bedrock, then do the hub, buttons and shop tabs.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Hub first: about 45 icons",
+          "detail": "Menu star, currencies, all hub, You and Travel icons and the navigation buttons in one go."
+        },
+        {
+          "key": "c",
+          "label": "Own items first",
+          "detail": "Crate keys and tool tiers, because they have no vanilla look. The rest waits."
+        }
+      ]
+    }
+  ]
+}

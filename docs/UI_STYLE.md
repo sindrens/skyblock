@@ -2,6 +2,8 @@
 
 The look and feel of every message, item, GUI, sound and HUD element. **Consistency is a feature:** players learn the language once and understand every new system instantly.
 
+> **FORMAT (v3 proposal, 1 Nov 2026): [`docs/FORMAT.md`](FORMAT.md)** is the compact one-page format for every surface (menus, tooltips, titles, shop grids, scoreboard, tab, boss bar, holograms, chat, messages, items, sounds) with the "is my new feature in the FORMAT?" checklist. Read it before building any new screen or message.
+
 All colors, symbols and templates below live in a shared `style.yml` in `common` (never hardcoded). Modules reference them by name: `<c:money>`, `<c:error>`, `<rarity:epic>`.
 
 ---
