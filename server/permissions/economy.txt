@@ -16,6 +16,11 @@ lp group owner permission set skyblock.owner.economy true
 # needed: an inherited exact false would beat the owner's '*' wildcard in LuckPerms.
 lp group admin permission set skyblock.economy.credits.grant false
 lp group owner permission set skyblock.economy.credits.grant true
+# Owner 31 Oct 2026: admins and the owner may use /eco (give|take|set|reset|note) on their OWN account. Helpers and
+# mods never get it. The owner inherits admin; the owner's own true keeps it if inheritance is ever removed. Switch off for
+# everyone with the config eco.allow-self.
+lp group admin permission set skyblock.economy.eco.self true
+lp group owner permission set skyblock.economy.eco.self true
 # Owner R3-6: /eco changes above the limit ($1T money) wait until another owner or admin clicks Allow (owner inherits admin).
 lp group admin permission set skyblock.admin.economy.approve true
 # M3.8 economy dashboard (/eco admin) and anomaly alerts: moderators and up (admin and owner inherit mod; admins also get

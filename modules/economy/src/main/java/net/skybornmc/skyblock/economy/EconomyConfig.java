@@ -208,9 +208,15 @@ public final class EconomyConfig extends ModuleConfig {
             + "without an Allow.", min = 1, max = 120, level = Setting.Level.OWNER)
     public int ecoPendingMinutes = 10;
 
-    @Setting(path = "eco.block-same-ip", desc = "Owner R3-39: /eco can't change your own account or an account that ever "
-            + "joined from one of your addresses (alt/IP history of the social module).", level = Setting.Level.OWNER)
+    @Setting(path = "eco.block-same-ip", desc = "Owner R3-39: /eco can't change another account that ever joined from one "
+            + "of your addresses or is online on your address now (alt/IP history of the social module).",
+            level = Setting.Level.OWNER)
     public boolean ecoBlockSameIp = true;
+
+    @Setting(path = "eco.allow-self", desc = "Owner 31 Oct 2026: staff with skyblock.economy.eco.self (admin and owner) may "
+            + "use /eco give|take|set|reset and /eco note on their OWN account. Still flagged, still waits above the limit "
+            + "for another owner or admin. Off = nobody can change their own balance (R3-39).", level = Setting.Level.OWNER)
+    public boolean ecoAllowSelf = true;
 
     // ------------------------------------------------------------------ sending money (owner F1)
 

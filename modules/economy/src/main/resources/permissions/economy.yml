@@ -59,3 +59,6 @@ skyblock.credit.bal:
 skyblock.economy.credits.grant:
   description: Create or set BOUGHT credits by hand (/eco give|set|reset <player> credits, ledger reason admin_buy). Owner only (C1-R1-18); admins get an explicit false in server/permissions/economy.txt. Earned credits (credits_earned) stay with skyblock.admin.economy.
   default: op
+skyblock.economy.eco.self:
+  description: Use /eco give|take|set|reset and /eco note on your OWN account (admin and owner, owner 31 Oct 2026; the config switch eco.allow-self turns it off). Bought credits still need skyblock.economy.credits.grant, changes above the limit still wait for ANOTHER owner or admin, and every own-account change is flagged (audit eco_flagged + eco_self, staff alert). Other accounts on your address stay refused.
+  default: false

@@ -32,13 +32,19 @@ final class EcoApprovals {
         boolean expired(long now) {
             return now >= expires;
         }
+
+        /** True if the requester asked to change their own account. */
+        boolean self() {
+            return staff.equals(target);
+        }
     }
 
     /** Why someone can't allow or deny a waiting change; {@code key} is under {@code eco.approve.} in the messages. */
     enum Problem {
         UNKNOWN("unknown"),
         NO_PERMISSION("no-permission"),
-        OWN_REQUEST("own-request");
+        OWN_REQUEST("own-request"),
+        OWN_ACCOUNT("own-account");
 
         final String key;
 
@@ -66,6 +72,9 @@ final class EcoApprovals {
     /**
      * Who may decide: an approver (owner/admin permission) who did not ask for it, or anyone with the approve-own permission
      * (the owner: "click in the alert to allow", R3-6). The console ({@code approver == null}) may always decide.
+     * <p>
+     * A change to the approver's <b>own</b> account (an admin's or the owner's own-account /eco, owner 31 Oct 2026) is
+     * never decided by that person, not even with approve-own: another owner or admin (or the console) must decide it.
      */
     static Optional<Problem> canDecide(Pending p, UUID approver, boolean hasPermission) {
         return canDecide(p, approver, hasPermission, false);
@@ -80,6 +89,9 @@ final class EcoApprovals {
         }
         if (!hasPermission) {
             return Optional.of(Problem.NO_PERMISSION);
+        }
+        if (approver.equals(p.target())) {
+            return Optional.of(Problem.OWN_ACCOUNT);
         }
         if (approver.equals(p.staff()) && !mayApproveOwn) {
             return Optional.of(Problem.OWN_REQUEST);
