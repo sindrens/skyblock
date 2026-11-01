@@ -83,6 +83,14 @@ travel:
   forge-quarter: {icon: feature/forge,      target: "point entries forge_road"}
   visit-islands: {icon: travel/visit,       target: "command is visit"}
 
+# Tutorial highlights (GUI-ICONS-FINAL): while the tutorial's current step is `step`, the tile `target` (hub.<button id>
+# or travel.<place id>) glints, shows "● Start here" (messages/navigation.yml → hub.highlight) and uses `icon` (an icon
+# catalogue key: our lit picture for Java with the pack, its base item for everyone else). Clicks do the same as always.
+# To switch a rule off set its step to none (deleted rules come back from the defaults on the next start).
+highlights:
+  hub-depths:  {target: "hub.depths",         step: depths, icon: feature/depths_lit}
+  gate-depths: {target: "travel.depths-gate", step: depths, icon: feature/depths_lit}
+
 # /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.
 staff-entries:
   display:      {slot: 20, icon: painting,         command: "display",     status: auto, permission: "skyblock.admin.display"}

@@ -83,6 +83,12 @@ final class SellMenu extends Menu {
         return 6;
     }
 
+    /** GUI-FONT 6.3: empty slots here are real drop slots, so this menu keeps the plain chest (no panel). */
+    @Override
+    public boolean panel() {
+        return false;
+    }
+
     @Override
     public Component title() {
         return service.title(viewer, service.text(viewer, EconomyModule.ID, "sell.chest.title"));

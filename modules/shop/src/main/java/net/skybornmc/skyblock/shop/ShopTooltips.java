@@ -13,9 +13,9 @@ import java.util.OptionalDouble;
 import java.util.function.LongFunction;
 
 /**
- * Shop tile tooltips (GUI-P3 5.5, I9 sections 6 and 12): {@code | Buy Price} (bold green), {@code | Sell Price} (bold red,
- * or a red {@code Not sellable}), one live price note, the spawner Information section, Java-only muted hints and the
- * yellow {@code » CLICK to buy} line last. Bedrock viewers get no click words and no hints. Labels: {@code tooltip.*} in
+ * Shop tile tooltips (GUI-P3 5.5, I9 sections 6 and 12, MENUS-V3 6.4): {@code | Buy Price} (bold green), {@code | Sell
+ * Price} (bold red, or a red {@code Not sellable}), one live price note, the spawner Information section, ONE Java-only
+ * muted hint and the yellow {@code » CLICK to buy} line last. Bedrock viewers get no click words and no hints. Labels: {@code tooltip.*} in
  * {@code messages/shop.yml}; values are escaped. The decisions are pure and unit-testable.
  */
 final class ShopTooltips {
@@ -80,18 +80,28 @@ final class ShopTooltips {
         if (item.spawner()) {
             spawnerSection(lore, module, viewer, item);
         }
-        if (java) {
-            if (info.sellable()) {
-                lore.hint(module.raw("tooltip.hint-sell-all"));
-            }
-            if (openState) {
-                lore.hint(module.raw("tooltip.hint-stack"));
-            }
+        String hint = javaHint(java, info.sellable(), openState);
+        if (hint != null) {
+            lore.hint(module.raw(hint));
         }
         if (openState) {
             lore.action(module.raw("tooltip.action-input"), module.raw("tooltip.action"));
         }
         return lore.components(module.core.messages(), viewer);
+    }
+
+    /**
+     * The one Java hint of a grid tile (MENUS-V3 D6, owner V3-Q15 a): {@code Right-click: sell} when the item sells,
+     * else {@code Shift-click: buy a stack} when it can be bought; Bedrock gets none. Pure.
+     */
+    static String javaHint(boolean java, boolean sellable, boolean openState) {
+        if (!java) {
+            return null;
+        }
+        if (sellable) {
+            return "tooltip.hint-sell";
+        }
+        return openState ? "tooltip.hint-stack" : null;
     }
 
     /** The buy GUI item tile: the price lines without click words, then stack price, how many you can afford, spawner rows. */
@@ -113,11 +123,11 @@ final class ShopTooltips {
 
     /** {@code | Buy Price}, {@code | Sell Price} or Not sellable, and the live note (one block, no blank lines between). */
     private static void prices(LoreBuilder lore, ShopModule module, ShopCatalog.Item item, SellInfo info, boolean java) {
-        lore.priceLine(LoreBuilder.fill(module.raw(java ? "tooltip.buy-java" : "tooltip.buy"),
+        lore.priceLine(LoreBuilder.fill(module.raw("tooltip.buy"),
                 Map.of("price", LoreBuilder.escape(module.moneyText(item.price())))));
         if (info.sellable() && info.price().isPresent()) {
             SellPrice price = info.price().get();
-            lore.priceLine(LoreBuilder.fill(module.raw(java ? "tooltip.sell-java" : "tooltip.sell"),
+            lore.priceLine(LoreBuilder.fill(module.raw("tooltip.sell"),
                     Map.of("price", LoreBuilder.escape(sellPriceText(price.unit(), module::moneyText)))));
             LiveNote note = liveNote(price, module.settings.noteMinPercent);
             String key = noteKey(note.kind());

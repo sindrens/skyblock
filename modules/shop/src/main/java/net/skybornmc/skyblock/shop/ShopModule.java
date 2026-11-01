@@ -96,6 +96,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String PERM_USE = "skyblock.shop.use";
     static final String CATALOG_FILE = "shop.yml";
     static final String V1_DEFAULTS = "migrations/shop-v1.yml";
+    /** The frozen Shop v2 defaults: target of the v1 migration, baseline of the v3 one (MENUS-V3 6.3). */
+    static final String V2_DEFAULTS = "migrations/shop-v2.yml";
     /** /settings toggle ids (F14). */
     static final String SETTING_UNDO = "shop-undo";
     static final String SETTING_BIG_BUY = "shop-big-buy";
@@ -228,10 +230,11 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     /**
-     * Reads {@code shop.yml}; a missing file is written from the bundled one. A version-1 file is migrated once to Shop v2
-     * ({@link ShopCatalogMigration}: backup {@code shop.yml.before-v2}, every change in the console, in
-     * {@code shop-migration-v2.log} and in the audit log). Items that are new in the bundled file are added to an existing
-     * file (switch an item off with {@code enabled: false} instead of deleting it).
+     * Reads {@code shop.yml}; a missing file is written from the bundled one. An older file is migrated once per version
+     * ({@link ShopCatalogMigration}): version 1 to Shop v2 (backup {@code shop.yml.before-v2}, {@code shop-migration-v2.log}),
+     * then version 2 to v3 (MENUS-V3: backup {@code shop.yml.before-v3}, {@code shop-migration-v3.log}); every change also
+     * in the console and the audit log. Items that are new in the bundled file are added to an existing file afterwards
+     * (switch an item off with {@code enabled: false} instead of deleting it; parked items are never added back).
      */
     private ShopCatalog loadCatalog() {
         File file = new File(core.plugin().getDataFolder(), CATALOG_FILE);
@@ -258,10 +261,16 @@ public final class ShopModule implements SkyblockModule, Listener {
                 }
                 yaml = bundled;
             } else {
-                Optional<ShopCatalogMigration.Result> migrated = ShopCatalogMigration.migrate(yaml, bundled, bundled(V1_DEFAULTS));
+                YamlConfiguration v2Defaults = bundled(V2_DEFAULTS);
+                Optional<ShopCatalogMigration.Result> migrated = ShopCatalogMigration.migrate(yaml, v2Defaults, bundled(V1_DEFAULTS));
                 if (migrated.isPresent()) {
                     yaml = migrated.get().yaml();
-                    writeMigration(file, yaml, migrated.get().changes());
+                    writeMigration(file, yaml, migrated.get().changes(), ShopCatalogMigration.V2);
+                }
+                Optional<ShopCatalogMigration.Result> v3 = ShopCatalogMigration.migrateV3(yaml, bundled, v2Defaults);
+                if (v3.isPresent()) {
+                    yaml = v3.get().yaml();
+                    writeMigration(file, yaml, v3.get().changes(), ShopCatalogMigration.V3);
                 }
                 if (addMissing(yaml, bundled)) {
                     yaml.save(file);
@@ -275,18 +284,21 @@ public final class ShopModule implements SkyblockModule, Listener {
         return loaded;
     }
 
-    /** Saves a migrated shop.yml: backup first, then the file, the change log and one audit row. */
-    private void writeMigration(File file, YamlConfiguration yaml, List<String> changes) throws IOException {
-        File backup = new File(file.getParentFile(), CATALOG_FILE + ".before-v2");
+    /**
+     * Saves a migrated shop.yml: backup of the file as it was ({@code shop.yml.before-v<version>}, first time only), then
+     * the file, the change log ({@code shop-migration-v<version>.log}) and one audit row.
+     */
+    private void writeMigration(File file, YamlConfiguration yaml, List<String> changes, int version) throws IOException {
+        File backup = new File(file.getParentFile(), CATALOG_FILE + ".before-v" + version);
         if (!backup.exists()) {
             java.nio.file.Files.copy(file.toPath(), backup.toPath());
         }
         yaml.save(file);
-        java.nio.file.Files.write(new File(file.getParentFile(), "shop-migration-v2.log").toPath(), changes, StandardCharsets.UTF_8);
-        core.plugin().getLogger().info("Shop: shop.yml moved to Shop v2 (9 tabs). Backup: " + backup.getName() + ". Changes:");
+        java.nio.file.Files.write(new File(file.getParentFile(), "shop-migration-v" + version + ".log").toPath(), changes, StandardCharsets.UTF_8);
+        core.plugin().getLogger().info("Shop: shop.yml moved to Shop v" + version + ". Backup: " + backup.getName() + ". Changes:");
         changes.forEach(c -> core.plugin().getLogger().info("Shop migration: " + c));
         Map<String, Object> details = new LinkedHashMap<>();
-        details.put("version", ShopCatalogMigration.VERSION);
+        details.put("version", version);
         details.put("changes", changes.size());
         details.put("log", changes.size() > 150 ? new ArrayList<>(changes.subList(0, 150)) : changes);
         core.audit().log(AuditCategory.CONFIG, "shop_catalog_migrate", Actor.system(ID), details);
@@ -1160,12 +1172,6 @@ public final class ShopModule implements SkyblockModule, Listener {
     Component categoryCrumb(Player viewer, ShopCatalog.Category c) {
         return Component.text(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                 .serialize(categoryName(viewer, c)));
-    }
-
-    /** The summary tile (slot 4): your balance, our money icon. */
-    MenuButton balanceTile(Player viewer) {
-        return MenuButton.display(core.menus().icon(viewer, "currency/money", core.menus().text(viewer, ID, "menu.balance.name"),
-                core.menus().lines(viewer, ID, "menu.balance.lore", money("balance", balance(viewer)))));
     }
 
     /** The sell chest button (46 on the grid, 28/19 on the category menu), when selling exists. */

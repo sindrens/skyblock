@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.common.icon;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -22,26 +23,33 @@ import java.util.regex.Pattern;
  * The icon catalogue (I7 pack v2, GUI-P1-PACK D2). Pure: parses the JSON text of {@code icons/icons.json} (JSON is
  * valid YAML, so {@link YamlConfiguration} reads it and no JSON library is needed). Invalid entries are reported and
  * skipped; the rest stays usable.
+ *
+ * <p>Two kinds of key (icon set v3): a <b>custom</b> icon ({@code icons} list: own picture in the pack, base item as the
+ * fallback) and a <b>plain vanilla</b> key ({@code vanilla} map: key to item id, no picture, no model; the menu keeps its
+ * stable key but shows the real Minecraft item for everyone). {@link #has} is true for both.
  */
 public final class IconCatalog {
 
     /** Classpath location of the bundled catalogue (copied from {@code resourcepack/icons.json} by Gradle). */
     public static final String RESOURCE = "icons/icons.json";
     private static final Pattern KEY = Pattern.compile("[a-z0-9_]+(/[a-z0-9_]+)?");
+    private static final Pattern ITEM = Pattern.compile("[a-z0-9_]+");
     public static final Set<String> MEANINGS = Set.of("money", "reward", "move", "depths", "skills", "people", "home",
             "danger", "neutral", "locked", "currency-money", "currency-crystals", "currency-shards", "currency-credits");
 
     private final Map<String, IconDef> icons;
+    private final Map<String, String> vanilla;
     private final List<String> problems;
 
-    private IconCatalog(Map<String, IconDef> icons, List<String> problems) {
+    private IconCatalog(Map<String, IconDef> icons, Map<String, String> vanilla, List<String> problems) {
         this.icons = Collections.unmodifiableMap(icons);
+        this.vanilla = Collections.unmodifiableMap(vanilla);
         this.problems = List.copyOf(problems);
     }
 
     /** An empty catalogue (every key unknown). */
     public static IconCatalog empty() {
-        return new IconCatalog(new LinkedHashMap<>(), List.of());
+        return new IconCatalog(new LinkedHashMap<>(), new LinkedHashMap<>(), List.of());
     }
 
     /** Parses the catalogue; problems are collected ({@link #problems()}). */
@@ -62,7 +70,7 @@ public final class IconCatalog {
             yaml.loadFromString(jsonText == null ? "" : jsonText);
         } catch (InvalidConfigurationException e) {
             report.accept("icons.json is not valid JSON: " + e.getMessage());
-            return new IconCatalog(out, found);
+            return new IconCatalog(out, new LinkedHashMap<>(), found);
         }
         List<Map<?, ?>> list = yaml.getMapList("icons");
         Set<String> files = new HashSet<>();
@@ -98,7 +106,21 @@ public final class IconCatalog {
             }
             out.put(key, new IconDef(key, base, name, meaning, file, ((Number) slice).intValue()));
         }
-        return new IconCatalog(out, found);
+        Map<String, String> plain = new LinkedHashMap<>();
+        ConfigurationSection section = yaml.getConfigurationSection("vanilla");
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                String item = section.getString(key);
+                if (!KEY.matcher(key).matches() || item == null || !ITEM.matcher(item).matches()) {
+                    report.accept("vanilla." + key + ": must be a group/name key and an item id (a-z, 0-9, _)");
+                } else if (out.containsKey(key)) {
+                    report.accept("vanilla." + key + ": also a custom icon, skipped");
+                } else {
+                    plain.put(key, item);
+                }
+            }
+        }
+        return new IconCatalog(out, plain, found);
     }
 
     /** The catalogue bundled in the plugin jar; an empty catalogue (reported) when it is missing. */
@@ -119,12 +141,29 @@ public final class IconCatalog {
         return value instanceof String s ? s : null;
     }
 
+    /** The custom icon of {@code key}; empty for a plain vanilla key and an unknown key. */
     public Optional<IconDef> get(String key) {
         return Optional.ofNullable(key == null ? null : icons.get(key));
     }
 
+    /** The vanilla item id of a plain vanilla key (no custom picture); empty for a custom or unknown key. */
+    public Optional<String> vanilla(String key) {
+        return Optional.ofNullable(key == null ? null : vanilla.get(key));
+    }
+
+    /** True for a custom icon and for a plain vanilla key. */
     public boolean has(String key) {
+        return key != null && (icons.containsKey(key) || vanilla.containsKey(key));
+    }
+
+    /** True only for a key with its own picture in the pack. */
+    public boolean isCustom(String key) {
         return key != null && icons.containsKey(key);
+    }
+
+    /** The plain vanilla keys (key to item id). */
+    public Map<String, String> vanillaKeys() {
+        return vanilla;
     }
 
     public Collection<IconDef> all() {

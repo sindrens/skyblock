@@ -17,6 +17,10 @@ public final class MenusConfig extends ModuleConfig {
     @Setting(path = "menu-item.material", desc = "Item used for the menu item.")
     public String menuItemMaterial = "nether_star";
 
+    @Setting(path = "menu-item.glint", desc = "Force the enchant glint on the menu item. The vanilla Nether Star glints by "
+            + "itself; set true only if it does not on your client version.")
+    public boolean menuItemGlint = false;
+
     @Setting(path = "menu-item.check-seconds", desc = "Seconds between checks that put a missing menu item back "
             + "(it is also restored on join, respawn, world/game mode change and after closing an inventory). 0 = off.",
             min = 0, max = 300)

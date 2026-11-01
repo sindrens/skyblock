@@ -1127,10 +1127,10 @@ topics:
         lines:
           - "<c:text>Left click: buy (1, 16, 64, fill"
           - "<c:text>your inventory or type an amount)."
-          - "<c:text>Right click: sell that item."
+          - "<c:text>Right-click: sell that item."
+          - "<c:text>Shift-click: buy a stack."
           - "<c:text>Middle click or Shift + Right-click:"
           - "<c:text>sell every one you carry."
-          - "<c:text>Shift + Left-click: buy a stack."
       - title: "<c:value>On a phone"
         lines:
           - "<c:text>Tap an item to buy. The Sell button"

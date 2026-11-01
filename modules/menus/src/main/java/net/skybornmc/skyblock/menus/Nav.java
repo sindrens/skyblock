@@ -31,6 +31,8 @@ public final class Nav {
     volatile HubLayout staff = new HubLayout(List.of());
     volatile WarpLayout travel = new WarpLayout(List.of());
     volatile HelpBook help = HelpBook.empty();
+    /** Tutorial highlights ({@code menu.yml → highlights}, GUI-ICONS-FINAL step 6). */
+    volatile List<Highlights.Rule> highlights = List.of();
     /** Test server: show unbuilt hub/You buttons in the "Coming soon" look ({@code navigation.yml → hub.show-unbuilt}). */
     volatile boolean showUnbuilt;
     /** {@code /menu → Top} (GUI-4c): seconds a loaded player board (richest, top skills) is reused. */
@@ -98,6 +100,33 @@ public final class Nav {
             return core.menus().icon(viewer, spec, name, lore);
         }
         return item(material(spec, Material.BOOK), name, lore);
+    }
+
+    /**
+     * The tutorial highlight of menu tile {@code target} ({@code hub.depths}, {@code travel.depths-gate}) for
+     * {@code viewer}: a rule while the tutorial runs and its current step is the rule's step; empty otherwise (also
+     * when the tutorial module is off).
+     */
+    java.util.Optional<Highlights.Rule> highlight(Player viewer, String target) {
+        List<Highlights.Rule> rules = highlights;
+        if (rules.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
+                .flatMap(t -> Highlights.pick(rules, target, t.isActive(viewer), t.currentStep(viewer.getUniqueId())));
+    }
+
+    /**
+     * A tile in its highlight look: the rule's icon (our lit picture only for Java with the pack; the base item for
+     * everyone else), the glint, and {@code hub.highlight} ({@code ● Start here}) before the action line.
+     */
+    ItemStack highlighted(Player viewer, Highlights.Rule rule, Component name, List<Component> description, List<Component> action) {
+        List<Component> lore = new ArrayList<>(description);
+        lore.addAll(lines(viewer, "hub.highlight"));
+        lore.addAll(action);
+        ItemStack item = icon(viewer, rule.icon(), name, lore);
+        item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+        return item;
     }
 
     /** Text of {@code key}, or {@code fallback-key} with the prettified {@code id} when an owner-added button has no texts yet. */

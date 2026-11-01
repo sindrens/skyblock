@@ -53,13 +53,14 @@ class MenuFrameworkTest {
     }
 
     @Test
-    void threeRowMenusHaveBackAndCloseOnly() {
+    void threeRowMenusHaveBackCloseAndPages() {
         assertEquals(18, MenuLayout.back(3));
         assertEquals(22, MenuLayout.close(3));
         assertEquals(Menu.SLOT_SMALL_BACK, MenuLayout.back(3));
         assertEquals(Menu.SLOT_SMALL_CLOSE, MenuLayout.close(3));
         assertEquals(MenuLayout.NONE, MenuLayout.search(3));
-        assertEquals(MenuLayout.NONE, MenuLayout.previous(3));
+        assertEquals(25, MenuLayout.previous(3));
+        assertEquals(26, MenuLayout.next(3));
         assertEquals(13, MenuLayout.empty(3));
         for (int rows = 1; rows <= 2; rows++) {
             assertEquals(MenuLayout.NONE, MenuLayout.back(rows));

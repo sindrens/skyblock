@@ -246,6 +246,10 @@ Rules:
 
 ## 5. GUIs
 
+**FORMAT (I9 v3) is the template for every new screen:** `docs/FORMAT.md` (panel types P3/P4/P6/List, tile limits, wallet tile, icon keys, frame keys). Where this section and FORMAT disagree, FORMAT wins.
+
+**Frame layer (GUI-FONT, Java with the icon pack only):** a 3, 4 or 6-row menu is drawn as our panel (empty slots hidden, a soft tile behind each item) with a plaque holding one short cartoon noun from `Menu#plaqueKey()` (a message key, e.g. `title.short: "SHOP"`; A-Z 0-9 `& ' - ! ? ( ) / . , :`, at most 16 letters; anything else falls back to the plain title). Bedrock, no pack, the **Plain menus** setting and `menus.yml gui.font.enabled: false` see the same layout on the plain chest. Menus with real drop slots override `panel()` with `false`. Lore, chat, holograms and the boss bar never use the fonts.
+
 ### 5.1 Layout standard (I9 v2: compact, no frame, empty slots stay empty)
 Built by the menu framework (`common/menu`, `navBar()`), so every menu behaves the same automatically. Sizes are **3, 4 or 6 rows** (5 rows only in old menus until their pass). **No border, no filler panes**: empty slots stay empty (a pane may only mark a state, e.g. the red error glass).
 ```
@@ -342,6 +346,7 @@ Fewer than three step sizes leave their slots empty. Bedrock uses the same picke
 - Close the GUI on teleport or on long actions.
 
 ### 5.5 Feature icon map (same icon everywhere for the same feature)
+**The contract is [`docs/design/ICON_MAP.md`](design/ICON_MAP.md)** (27 custom keys, 49 plain vanilla keys, icon set v3); the table below is a short overview and ICON_MAP wins on any difference.
 Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`. Two buttons on one screen never share a base item (documented exception: You → Store and Credits are both diamond, I9 §9).
 
 | Feature | Base item | Icon key |

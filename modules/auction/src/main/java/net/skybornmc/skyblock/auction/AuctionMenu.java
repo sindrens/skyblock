@@ -145,9 +145,10 @@ final class AuctionMenu extends PagedMenu<Listing> {
         set(SLOT_CATEGORY, filterButton(categoryIcon(category), "browse.category", categoryName(category)), click -> pickCategory());
         set(SLOT_SORT, filterButton(cfg.icon("sort", Material.HOPPER), "browse.sort",
                 service.text(viewer, AuctionModule.ID, "sort." + sort.key())), click -> pickSort());
-        set(SLOT_SEARCH, service.item(cfg.icon("search", Material.OAK_SIGN), viewer, AuctionModule.ID,
-                search == null ? "browse.search" : "browse.search-active", Msg.p("search", search == null ? "" : search)),
-                click -> askSearch());
+        String searchKey = search == null ? "browse.search" : "browse.search-active";
+        TagResolver searchTag = Msg.p("search", search == null ? "" : search);
+        set(SLOT_SEARCH, service.icon(viewer, "nav/search", service.text(viewer, AuctionModule.ID, searchKey + ".name", searchTag),
+                service.lines(viewer, AuctionModule.ID, searchKey + ".lore", searchTag)), click -> askSearch());
         if (search != null) {
             set(SLOT_CLEAR, service.item(cfg.icon("clear-search", Material.BARRIER), viewer, AuctionModule.ID, "browse.clear-search",
                     Msg.p("search", search)), click -> {

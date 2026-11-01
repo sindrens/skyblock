@@ -60,6 +60,32 @@ public final class MenuConfig extends ModuleConfig {
             + "their on-screen keyboard instead of the chat (needs Floodgate). false = chat for everyone.")
     public boolean bedrockForms = true;
 
+    @Setting(path = "gui.font.enabled", desc = "Frame layer master switch (GUI-FONT): Java players with the icon pack see menus as "
+            + "our panel with a plaque and soft tiles, and the logo on the scoreboard and tab. false = nobody gets any glyph "
+            + "(menus, scoreboard, tab); everyone sees the plain chest. Bedrock never sees glyphs.")
+    public boolean fontEnabled = false;
+
+    @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off.")
+    public boolean fontPanels = true;
+
+    @Setting(path = "gui.font.titles", desc = "Plaque with the cartoon title letters (needs panels). false = the panel shows the plain title text.")
+    public boolean fontTitles = true;
+
+    @Setting(path = "gui.font.tiles", desc = "Soft tile behind every filled slot (needs panels). false = items float on the panel.")
+    public boolean fontTiles = true;
+
+    @Setting(path = "gui.font.logo", desc = "Logo glyph for the scoreboard title and the tab header (independent of panels).")
+    public boolean fontLogo = true;
+
+    @Setting(path = "gui.font.title-resend-min-ms", desc = "At most one frame title update per player per this many milliseconds "
+            + "(a menu whose tiles change while open re-sends its title).", min = 100, max = 5000)
+    public int fontTitleResendMinMs = 500;
+
+    /** The frame layer switches of this file. */
+    public net.skybornmc.skyblock.common.frame.FrameSwitches fontSwitches() {
+        return new net.skybornmc.skyblock.common.frame.FrameSwitches(fontEnabled, fontPanels, fontTitles, fontTiles, fontLogo);
+    }
+
     @Override
     public String fileName() {
         return "menus.yml";

@@ -99,6 +99,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
         // ECON-SELL-SHOP-AH C3: the collection bin is gone (items go to /box); old texts are upgraded unless edited.
         core.messages().retire(ID, AuctionTexts.RETIRED);
         core.messages().load(ID);
+        warnIgnoredIcons();
         main = new MainThread(core.plugin());
         codec = new ItemCodec(core.items());
         engine = new AuctionEngine(new AuctionStore(core.database()),
@@ -165,7 +166,18 @@ public final class AuctionModule implements SkyblockModule, Listener {
     @Override
     public void reload() {
         core.configs().load(config);
+        warnIgnoredIcons();
         core.messages().load(ID);
+    }
+
+    private boolean searchIconWarned;
+
+    /** GUI-ICONS-FINAL: the Search button is the {@code nav/search} icon; an old {@code menu.icons} search entry is ignored. */
+    private void warnIgnoredIcons() {
+        if (!searchIconWarned && config.icons.stream().anyMatch(e -> e.toLowerCase(java.util.Locale.ROOT).startsWith("search:"))) {
+            searchIconWarned = true;
+            core.plugin().getLogger().info("[auction] icons.search is ignored, the icon is nav/search");
+        }
     }
 
     /**

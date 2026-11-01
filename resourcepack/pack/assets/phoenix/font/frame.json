@@ -1,0 +1,151 @@
+{
+ "providers": [
+  {
+   "type": "space",
+   "advances": {
+    "\uf800": -1,
+    "\uf801": -2,
+    "\uf802": -4,
+    "\uf803": -8,
+    "\uf804": -16,
+    "\uf805": -32,
+    "\uf806": -64,
+    "\uf807": -128,
+    "\uf808": 1,
+    "\uf809": 2,
+    "\uf80a": 4,
+    "\uf80b": 8,
+    "\uf80c": 16,
+    "\uf80d": 32,
+    "\uf80e": 64,
+    "\uf80f": 128
+   }
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/panel_p3.png",
+   "ascent": 13,
+   "height": 167,
+   "chars": [
+    "\ue300"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/panel_p4.png",
+   "ascent": 13,
+   "height": 185,
+   "chars": [
+    "\ue301"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/panel_p6.png",
+   "ascent": 13,
+   "height": 221,
+   "chars": [
+    "\ue302"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/plaque_s.png",
+   "ascent": 21,
+   "height": 21,
+   "chars": [
+    "\ue320"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/plaque_m.png",
+   "ascent": 21,
+   "height": 21,
+   "chars": [
+    "\ue321"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/plaque_l.png",
+   "ascent": 21,
+   "height": 21,
+   "chars": [
+    "\ue322"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -4,
+   "height": 18,
+   "chars": [
+    "\ue330"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -22,
+   "height": 18,
+   "chars": [
+    "\ue331"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -40,
+   "height": 18,
+   "chars": [
+    "\ue332"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -58,
+   "height": 18,
+   "chars": [
+    "\ue333"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -76,
+   "height": 18,
+   "chars": [
+    "\ue334"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/cell.png",
+   "ascent": -94,
+   "height": 18,
+   "chars": [
+    "\ue335"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/logo.png",
+   "ascent": 18,
+   "height": 20,
+   "chars": [
+    "\ue340"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "phoenix:font/frame/logo.png",
+   "ascent": 8,
+   "height": 20,
+   "chars": [
+    "\ue341"
+   ]
+  }
+ ]
+}

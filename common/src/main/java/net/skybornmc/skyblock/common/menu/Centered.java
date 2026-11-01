@@ -78,6 +78,77 @@ public final class Centered {
         return GRID.length;
     }
 
+    /** Widest row of the 7-wide item grid (columns 1-7). */
+    public static final int GRID_WIDTH = 7;
+    /** Most rows of the item grid (screen rows 1-4 of a 6-row menu). */
+    public static final int GRID_ROWS = 4;
+
+    /**
+     * Row sizes of a group of {@code n} items in the 7-wide grid (MENUS-V3 D5): {@code ceil(n / 7)} rows, sizes as equal
+     * as possible, larger rows first ({@code 16 = 6 + 5 + 5}, {@code 9 = 5 + 4}, {@code 12 = 6 + 6}). {@code n <= 7}
+     * gives {@code {n}}; 0 gives an empty array.
+     */
+    public static int[] split(int n) {
+        if (n <= 0) {
+            return new int[0];
+        }
+        int rows = (n + GRID_WIDTH - 1) / GRID_WIDTH;
+        int base = n / rows;
+        int extra = n % rows;
+        int[] out = new int[rows];
+        for (int i = 0; i < rows; i++) {
+            out[i] = base + (i < extra ? 1 : 0);
+        }
+        return out;
+    }
+
+    /**
+     * Columns (1-7, screen columns of a 9-wide row) of a row of {@code count} items in the 7-wide grid (FORMAT 8): odd
+     * counts are contiguous and centred, even counts are split around the centre column.
+     * <pre>1 {4}  2 {3,5}  3 {3,4,5}  4 {2,3,5,6}  5 {2..6}  6 {1,2,3,5,6,7}  7 {1..7}</pre>
+     */
+    public static int[] gridColumns(int count) {
+        return switch (count) {
+            case 0 -> new int[0];
+            case 1 -> new int[]{4};
+            case 2 -> new int[]{3, 5};
+            case 3 -> new int[]{3, 4, 5};
+            case 4 -> new int[]{2, 3, 5, 6};
+            case 5 -> new int[]{2, 3, 4, 5, 6};
+            case 6 -> new int[]{1, 2, 3, 5, 6, 7};
+            case 7 -> new int[]{1, 2, 3, 4, 5, 6, 7};
+            default -> throw new IllegalArgumentException("A grid row holds at most " + GRID_WIDTH + " items, got " + count);
+        };
+    }
+
+    /** Slots of sequential grid rows starting at screen row 1, one row per count ({@link #gridColumns} each). */
+    public static int[] grid(int... rowCounts) {
+        return gridFrom(1, rowCounts);
+    }
+
+    /**
+     * Slots of sequential rows starting at screen row {@code firstRow} ({@code 9 * row + column}). Throws for more than
+     * {@link #GRID_ROWS} rows, a row past screen row 4, or more than 7 items in a row.
+     */
+    public static int[] gridFrom(int firstRow, int... rowCounts) {
+        if (rowCounts.length > GRID_ROWS || firstRow < 1 || firstRow + rowCounts.length - 1 > GRID_ROWS) {
+            throw new IllegalArgumentException("The item grid has rows 1-" + GRID_ROWS + "; got " + rowCounts.length
+                    + " rows from row " + firstRow);
+        }
+        int total = 0;
+        for (int c : rowCounts) {
+            total += c;
+        }
+        int[] out = new int[total];
+        int i = 0;
+        for (int r = 0; r < rowCounts.length; r++) {
+            for (int col : gridColumns(rowCounts[r])) {
+                out[i++] = 9 * (firstRow + r) + col;
+            }
+        }
+        return out;
+    }
+
     private static int[] row(int start, int[] columns) {
         int[] out = new int[columns.length];
         for (int i = 0; i < columns.length; i++) {

@@ -7,13 +7,6 @@
      "type": "minecraft:model"
     },
     "when": "currency/credits"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/feature_store",
-     "type": "minecraft:model"
-    },
-    "when": "feature/store"
    }
   ],
   "fallback": {

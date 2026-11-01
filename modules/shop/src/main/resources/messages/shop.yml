@@ -24,43 +24,61 @@ spawner-name: "<mob> Spawner"
 tab-name: "<c:flame><name>"
 # Categories (ids from shop.yml): the category menu tiles and the grid title. Names are bold green (they are all Shop).
 categories:
-  essentials:
-    name: "<area:money><bold>Essentials"
-    lore: ["<c:text>Workstations, chests, buckets,", "<c:text>tools and food."]
-  farming:
-    name: "<area:money><bold>Farming"
-    lore: ["<c:text>Seeds, saplings, plants", "<c:text>and bone meal."]
   wood:
+    short: "WOOD"
     name: "<area:money><bold>Wood"
-    lore: ["<c:text>Logs and planks", "<c:text>of every tree."]
+    lore: ["<c:text>Logs, stems and leaves of", "<c:text>every tree. Craft your planks."]
   stone-earth:
+    short: "STONE & EARTH"
     name: "<area:money><bold>Stone & Earth"
-    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and bricks."]
+    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and cave blocks."]
   special:
+    short: "SPECIAL"
     name: "<area:money><bold>Special Blocks"
-    lore: ["<c:text>Nether, End, quartz, prismarine,", "<c:text>ice and obsidian."]
+    lore: ["<c:text>Nether, End, quartz, ocean", "<c:text>and rare blocks."]
   colors:
+    short: "COLORS"
     name: "<area:money><bold>Colors"
     lore: ["<c:text>Concrete, stained glass and", "<c:text>terracotta in every colour."]
   decoration:
+    short: "DECORATION"
     name: "<area:money><bold>Decoration"
-    lore: ["<c:text>Lights, frames, furniture", "<c:text>and a few plants."]
+    lore: ["<c:text>Lights, frames, flowers", "<c:text>and plants."]
+  essentials:
+    short: "ESSENTIALS"
+    name: "<area:money><bold>Essentials"
+    lore: ["<c:text>Torches, tools, buckets and", "<c:text>advanced workstations."]
+  farming:
+    short: "FARMING"
+    name: "<area:money><bold>Farming"
+    lore: ["<c:text>Seeds, saplings, plants, vines", "<c:text>and bone meal."]
   redstone:
+    short: "REDSTONE"
     name: "<area:money><bold>Redstone"
     lore: ["<c:text>Pistons, hoppers, rails", "<c:text>and everything that ticks."]
   spawners:
+    short: "SPAWNERS"
     name: "<area:money><bold>Spawners"
-    lore: ["<c:text>Tier 1 and 2 spawners", "<c:text>for your island."]
+    lore: ["<c:text>Tier 1 to 4 spawners", "<c:text>for your island."]
+
+# Group names of the shop grid (shop.yml categories.<tab>.groups.<group>), for /admin and docs only: the grid draws no
+# captions (MENUS-V3 6.2). Items in no group form the last group "more".
+groups:
+  wood: { logs: "Logs", other: "Stems and bamboo", leaves: "Leaves", more: "More" }
+  stone-earth: { soil: "Soil", sand: "Sand and gravel", stone: "Stone", deep: "Deepslate and caves", more: "More" }
+  special: { nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
+  colors: { concrete: "Concrete", extras: "Glass, terracotta and wool", glass: "Stained glass", terracotta: "Terracotta", more: "More" }
+  decoration: { light: "Lights", display: "Display", greens: "Grass and ferns", nature: "Moss and azalea", flowers: "Flowers", more: "More" }
+  essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", more: "More" }
+  farming: { seeds: "Seeds", crops: "Crops", trees: "Saplings", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
+  redstone: { power: "Power", machines: "Machines", inputs: "Inputs", rails: "Rails", more: "More" }
+  spawners: { tier1: "Tier 1", tier2: "Tier 2", tier3: "Tier 3", tier4: "Tier 4", more: "More" }
 
 menu:
   title: "Shop"
-  # The summary tile (slot 4 of the category menu and of every grid).
-  balance:
-    name: "<area:money><bold>Your balance"
-    lore:
-      - "<cur:money><balance></cur:money>"
-      - ""
-      - "<c:muted>Items go straight to your inventory."
+  # Plaque noun (Java with the icon pack): cartoon capitals, A-Z 0-9 & ' - ! ? ( ) / . , :, at most 16 letters.
+  # Slot 4 of the category menu and every grid is the framework wallet tile (messages/menus.yml wallet.money).
+  short: "SHOP"
   empty:
     name: "<c:muted>Nothing here right now"
     lore: ["<c:text>Try another category."]
@@ -76,19 +94,19 @@ menu:
 category:
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
 
-# Grid tile tooltips (GUI-P3, I9 section 12). LoreBuilder labels: {price}, {pct} are filled in. Java viewers get the
-# -java lines (click words) and the muted hints; Bedrock viewers the plain lines and no hints.
+# Grid tile tooltips (GUI-P3, I9 section 12, MENUS-V3 6.4). LoreBuilder labels: {price}, {pct} are filled in. Java viewers
+# get one muted hint; Bedrock viewers none.
 tooltip:
   buy: "<bold><c:buy>| Buy Price: </c:buy><c:value>{price}</c:value></bold><c:muted> each</c:muted>"
-  buy-java: "<bold><c:buy>| Buy Price: </c:buy><c:value>{price}</c:value></bold><c:muted> each · Left-click</c:muted>"
   sell: "<bold><c:sell>| Sell Price: </c:sell><c:value>{price}</c:value></bold><c:muted> each</c:muted>"
-  sell-java: "<bold><c:sell>| Sell Price: </c:sell><c:value>{price}</c:value></bold><c:muted> each · Right-click</c:muted>"
   not-sellable: "<bold><c:sell>| Sell Price: </c:sell><c:error>Not sellable</c:error></bold>"
   falling: "<c:warning>Falling: -{pct}%</c:warning> <c:muted>from base price</c:muted>"
   rising: "<c:success>Rising: +{pct}%</c:success> <c:muted>from base price</c:muted>"
   hot: "<c:success>Hot item today: +{pct}%</c:success>"
-  hint-sell-all: "Middle-click or Shift + Right-click: sell all"
-  hint-stack: "Shift + Left-click: buy a stack"
+  # ONE muted Java hint per tile (MENUS-V3 D6): hint-sell when the item sells, else hint-stack. Shift + Right-click and
+  # middle click still sell every one you carry (taught in /help shop and by the sell GUI's Sell all button).
+  hint-sell: "Right-click: sell"
+  hint-stack: "Shift-click: buy a stack"
   action-input: "CLICK"
   action: "to buy"
 
@@ -136,6 +154,7 @@ lore:
 
 # The buy GUI (left click / tap on an item; 3 rows).
 buy:
+  short: "BUY"
   # Slot 19: switch to the sell GUI of the same item.
   switch-sell:
     name: "<area:money><bold>Sell"
@@ -145,7 +164,6 @@ buy:
     room:
       - ""
       - "<c:text>Room for: <c:value><fits>"
-      - "<c:text>Balance: <cur:money><balance></cur:money>"
     no-stack: ["<c:muted>Doesn't stack: one at a time."]
   quick:
     name: "<c:success><bold>Buy <amount>"
@@ -213,6 +231,7 @@ buy:
 # ledger). <item> item name, <carried> how many you carry, <total> money, <amount> button amount, <max> type limit.
 sell:
   title: "Sell"
+  short: "SELL"
   item:
     name: "<area:money><bold><item>"
     carry: "<c:bar>| </c:bar><c:text>You carry: <c:value><carried></c:value>"

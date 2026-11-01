@@ -23,6 +23,8 @@ hub:
   # G9 / I9 tooltip: bold name in the row's area colour, one grey sentence, then the yellow action line.
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   locked: ["", "<c:error><sym:cross></c:error> <c:text>Your rank can't open this yet."]
+  # Tutorial highlight line (menu.yml → highlights), above the action line.
+  highlight: "<c:action>● Start here</c:action>"
   # A button added in menu.yml without texts here: <name> = its id (hub buttons take their group's area colour instead).
   fallback-name: "<c:flame><bold><name>"
   # Your head (slot 4). <money>, <crystals>, <playtime> are plain text.
@@ -332,6 +334,9 @@ settings:
     menu-item:
       name: "<c:value>Menu item"
       lore: ["<c:text>The Nether Star in hotbar", "<c:text>slot 9 that opens /menu."]
+    plain-menus:
+      name: "<c:value>Plain menus"
+      lore: ["<c:text>Use the normal Minecraft chest", "<c:text>look in menus. Only changes", "<c:text>Java; Bedrock always sees it."]
     tips:
       name: "<c:value>Tips"
       lore: ["<c:text>Short tips in chat the first", "<c:text>time you open a feature."]
