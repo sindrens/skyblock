@@ -26,3 +26,14 @@ owner pasted was cut after §9.3, so §10-29 (Eclipse, island tools, farming, bu
 - Island reset: island id reused or new? Carry-over is keyed to the new island either way (checked at slice 5).
 - Alt-linking data for the wash-trading rule does not exist: only the flagged-account rule and `economy.pair-daily-cap` apply.
 - Trails system does not exist: achievements get cosmetics/trails when it does.
+
+## Slice 6 status: where perks reach the game (checked 2026-11-02)
+| Call site | Family | Target passed | Note |
+|---|---|---|---|
+| `depths/combat/CombatZones.reward` | extra drops (fallback), crystals | mob type | **done** |
+| `depths/drops/DepthsDrops` | extra drops (fallback), crystals, rare finds | block type | **done** |
+| `enchants/StackEnchants.bonus` (stacked kills) | extra drops | mob type | **done** |
+| `tools/ToolTracker.gain` | tool XP | no block in `gain(...)` | **open**: needs the block passed into `gain` |
+| `production/Farming` growth tick | crop growth | computed per island, not per crop | **open**: needs a per-crop growth value |
+| `economy/sell/SellServiceImpl` | sell | one bonus for the whole sale | **open**: needs a per-item bonus in the sale calculator |
+| Island block drops | extra drops | with the tools module, drops use **tool fortune only** (`ToolService.dropMultiplier`): no player bonus source applies, also not masteries or boosters | **owner decision**: should player bonuses (milestones, masteries, boosters) add to island and Depths drops on top of tool fortune? |

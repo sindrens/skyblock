@@ -116,7 +116,8 @@ final class StackEnchants implements StackKillProvider, Listener {
             double loot = 0;
             BonusService bonus = bonusService();
             if (bonus != null) {
-                double total = bonus.total(BonusFamily.EXTRA_DROPS, new BonusContext(killer, weapon, tool, ACTIVITY));
+                // Target = the mob (milestone perks match on it, Complete Developer Spec §9.1).
+                double total = bonus.total(BonusFamily.EXTRA_DROPS, new BonusContext(killer, weapon, tool, ACTIVITY, victim.getType().name()));
                 loot = StackKillMath.extraLootPercent(total, plunder > 0 ? value(PLUNDER, "chance", plunder) : 0,
                         bonus.cap(BonusFamily.EXTRA_DROPS));
             }

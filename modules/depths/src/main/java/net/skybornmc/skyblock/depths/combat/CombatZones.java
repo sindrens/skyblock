@@ -898,7 +898,8 @@ public final class CombatZones implements Listener {
     private void reward(Player player, LivingEntity entity, Tracked t, boolean boss) {
         ItemStack tool = player.getInventory().getItemInMainHand();
         BonusService bonus = core.services().optional(BonusService.class).orElse(null);
-        BonusContext ctx = new BonusContext(player, tool, null, SkillType.COMBAT.id());
+        // Target = the mob (milestone perks match on it, Complete Developer Spec §9.1).
+        BonusContext ctx = new BonusContext(player, tool, null, SkillType.COMBAT.id()).withTarget(entity.getType().name());
         double fortune = core.services().optional(ToolService.class).map(s -> s.dropMultiplier(tool))
                 .orElseGet(() -> bonus == null ? 1.0 : bonus.multiplier(BonusFamily.EXTRA_DROPS, ctx));
         double crystalBonus = bonus == null ? 1.0 : bonus.multiplier(BonusFamily.CRYSTALS, ctx);

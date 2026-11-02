@@ -181,7 +181,8 @@ public final class DepthsDrops implements Listener {
         ItemStack tool = event.getTool();
         String activity = found.zone().aspect().skill().id();
         BonusService bonus = core.services().optional(BonusService.class).orElse(null);
-        BonusContext ctx = new BonusContext(player, tool, null, activity);
+        // Target = the block (milestone perks match on it, Complete Developer Spec §9.1).
+        BonusContext ctx = new BonusContext(player, tool, null, activity).withTarget(event.getBlock().getType().name());
         Optional<ToolService> tools = core.services().optional(ToolService.class);
         double fortune = tools.map(t -> t.dropMultiplier(tool))
                 .orElseGet(() -> bonus == null ? 1.0 : bonus.multiplier(BonusFamily.EXTRA_DROPS, ctx));
