@@ -240,6 +240,13 @@ public final class CratesModule implements SkyblockModule, Listener {
                 yaml = bundled;
             } else {
                 migrateV2(file, yaml);
+                EclipseMigration.Result eclipse = EclipseMigration.migrate(yaml, bundled);
+                if (eclipse.changed()) {
+                    yaml.save(file);
+                    if (!eclipse.log().isEmpty()) {
+                        core.plugin().getLogger().info("crates.yml → " + eclipse.log());
+                    }
+                }
                 boolean added = CatalogMerge.addMissing(yaml, bundled);
                 boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
                 if (upgraded) {

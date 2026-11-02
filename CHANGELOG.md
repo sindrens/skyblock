@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Eclipse Crate: tiered pool (Complete Developer Spec F7a, owner V1-V3)
+- One open gives 3 different rewards from each of common, mid and rare (9 of a pool of 27) plus 1 of 5 jackpots; no pity; an owned cosmetic jackpot pays its fallback crystals (no re-roll). Exact odds in the preview (one row per band, jackpots in the top row).
+- `crates.yml`: `band:` per reward and `draw:` per crate (any crate can be tiered). Live servers switch once while the old Eclipse table is untouched (`eclipse-version: 2`); an edited table stays.
+- Not yet: month stamp/teaser, placing the crate, the credits purchase (waits for spec section 10 and the credit shop).
 ### Island level synergy (owner, 2 Nov 2026: "island level without pillars, plan synergy")
 - **Fix:** without pillar points the level caps squeezed every capped source to about 0; `progression.yml` v3 sets the caps to 0 (off) unless edited (OPEN_QUESTIONS LEVEL-NP1).
 - **Milestones feed the island level:** each completed island milestone tier gives `level.points-per-island-tier` (2) points in the earned source, now named "Milestones & Collections". Counted from one startup query and kept in memory, so offline islands keep them.

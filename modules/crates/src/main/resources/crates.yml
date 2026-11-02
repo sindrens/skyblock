@@ -21,6 +21,8 @@
 #   coming-soon: a reward whose system is not built yet (tomes, skins, sell wands, collectors, pet eggs);
 #                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
 #   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
+#   band (tiered crates only, e.g. Eclipse): common | mid | rare | jackpot; the crate's draw: says how many of each band
+#           one open gives. A tiered crate has no pity.
 
 # ECON-SHARDS: shards are only found in shard blocks (no 'shards' rewards); premium spawners are sold by the Black Market.
 catalog-version: 2
@@ -138,29 +140,50 @@ crates:
       - {id: voidforged_token, type: set-token, chance: 2, sets: [voidforged], amount: 1, top: true}
       - {id: title, type: title, chance: 2, ids: [], top: true, fallback: 1500}
       - {id: eclipse_key, type: key, chance: 1, crate: eclipse, amount: 1, top: true, rarity: mythic}
+  # Eclipse Crate (Complete Developer Spec, owner F7a/V1-V3): a TIERED crate. One open gives 3 different rewards from
+  # each of common, mid and rare (9 of a pool of 27, drawn evenly) plus 1 of 5 jackpots (by chance). No pity: every open
+  # is fresh random. A jackpot cosmetic you already own pays its fallback crystals (no re-roll).
+  # band: common | mid | rare | jackpot · draw: rewards per band per open · chance: only used inside the jackpot band.
+  # PROPOSAL numbers (the balance run sets the value ceiling per month).
   eclipse:
     rarity: mythic
     icon: vault
     order: 6
-    pity: 10
     fallback-crystals: 1000
+    draw: {common: 3, mid: 3, rare: 3, jackpot: 1}
     rewards:
-      - {id: book, type: enchant-book, chance: 17, pool: legendary, level: 1}
-      - {id: money, type: money, chance: 10, minutes: 90}
-      - {id: crystals, type: crystals, chance: 10, base: 1000}
-      - {id: month_skin, type: coming-soon, chance: 10, icon: netherite_upgrade_smithing_template}
-      - {id: month_tag, type: tag, chance: 10, ids: [inferno]}
-      - {id: month_theme, type: coming-soon, chance: 8, icon: firework_star}
-      - {id: pet_egg, type: coming-soon, chance: 8, icon: sniffer_egg}
-      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 3, amount: 1, top: true, rarity: epic}
-      - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
-      - {id: collector, type: coming-soon, chance: 4, icon: hopper}
-      - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 60, icon: beacon}
-      - {id: autosell_chest, type: coming-soon, chance: 3, icon: chest}
-      - {id: phoenix_key, type: key, chance: 3, crate: phoenix, amount: 1, top: true, rarity: legendary}
-      - {id: mythic_book, type: enchant-book, chance: 2, pool: mythic, level: 1, top: true}
-      - {id: regalia_token, type: set-token, chance: 2, sets: [phoenix], amount: 1, top: true}
-      - {id: month_title, type: title, chance: 1, ids: [], top: true, fallback: 3000}
+      - {id: money_s, type: money, band: common, chance: 1, minutes: 30}
+      - {id: crystals_s, type: crystals, band: common, chance: 1, base: 500}
+      - {id: rare_book, type: enchant-book, band: common, chance: 1, pool: rare, level: 1}
+      - {id: scroll, type: scroll, band: common, chance: 1, amount: 1}
+      - {id: fuel, type: fuel, band: common, chance: 1, minutes: 120}
+      - {id: blaze_key, type: key, band: common, chance: 1, crate: blaze, amount: 1}
+      - {id: sell_booster, type: booster, band: common, chance: 1, booster: sell, percent: 25, minutes: 30, icon: gold_ingot}
+      - {id: xp_booster, type: booster, band: common, chance: 1, booster: skill_xp, percent: 25, minutes: 30, icon: experience_bottle}
+      - {id: xp_bottles, type: item, band: common, chance: 1, material: experience_bottle, amount: 32}
+      - {id: money_m, type: money, band: mid, chance: 1, minutes: 60}
+      - {id: crystals_m, type: crystals, band: mid, chance: 1, base: 1000}
+      - {id: epic_book, type: enchant-book, band: mid, chance: 1, pool: epic, level: 1, rarity: epic}
+      - {id: inferno_key, type: key, band: mid, chance: 1, crate: inferno, amount: 1, rarity: epic}
+      - {id: spawner_t3, type: spawner, band: mid, chance: 1, tier: 3, amount: 1}
+      - {id: tool_booster, type: booster, band: mid, chance: 1, booster: tool_xp, percent: 50, minutes: 30, icon: iron_pickaxe}
+      - {id: crystal_booster, type: booster, band: mid, chance: 1, booster: crystals, percent: 50, minutes: 30, icon: amethyst_shard}
+      - {id: scrolls, type: scroll, band: mid, chance: 1, amount: 3}
+      - {id: fuel_l, type: fuel, band: mid, chance: 1, minutes: 360}
+      - {id: money_l, type: money, band: rare, chance: 1, minutes: 120, top: true, rarity: legendary}
+      - {id: crystals_l, type: crystals, band: rare, chance: 1, base: 2500, top: true, rarity: legendary}
+      - {id: legendary_book, type: enchant-book, band: rare, chance: 1, pool: legendary, level: 1, top: true, rarity: legendary}
+      - {id: phoenix_key, type: key, band: rare, chance: 1, crate: phoenix, amount: 1, top: true, rarity: legendary}
+      - {id: spawner_t4, type: spawner, band: rare, chance: 1, tier: 4, amount: 1, top: true, rarity: legendary}
+      - {id: shard_block, type: item, band: rare, chance: 1, material: "custom:shard_block", icon: infested_stone, amount: 1, top: true, rarity: epic}
+      - {id: elytra, type: item, band: rare, chance: 1, material: elytra, amount: 1, top: true, rarity: legendary}
+      - {id: global_booster, type: global-booster, band: rare, chance: 1, booster: sell, percent: 50, minutes: 60, icon: beacon, top: true}
+      - {id: regalia_token, type: set-token, band: rare, chance: 1, sets: [phoenix], amount: 1, top: true, rarity: legendary}
+      - {id: mythic_book, type: enchant-book, band: jackpot, chance: 30, pool: mythic, level: 1, top: true}
+      - {id: month_tag, type: tag, band: jackpot, chance: 25, ids: [eclipse], top: true, fallback: 2500}
+      - {id: month_title, type: title, band: jackpot, chance: 20, ids: [], top: true, fallback: 3000}
+      - {id: voidforged_token, type: set-token, band: jackpot, chance: 15, sets: [voidforged], amount: 1, top: true}
+      - {id: eclipse_key, type: key, band: jackpot, chance: 10, crate: eclipse, amount: 1, top: true}
   conqueror:
     rarity: special
     icon: trial_spawner

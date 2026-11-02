@@ -111,10 +111,14 @@ final class OpenPlan {
 
     static Plan build(CrateCatalog.Crate crate, CrateMath.KeyUse keys, int counter, Context ctx, RandomGenerator rng,
                       Supplier<UUID> ids) {
-        RollEngine.Batch batch = RollEngine.roll(crate, counter, keys.total(), rng, ctx.owns());
+        RollEngine.Batch batch = crate.tiered()
+                ? RollEngine.rollTiered(crate, keys.total(), rng, ctx.owns())
+                : RollEngine.roll(crate, counter, keys.total(), rng, ctx.owns());
+        int perOpen = crate.tiered() ? crate.perOpen() : 1;
         List<Grant> grants = new ArrayList<>(batch.rolls().size());
         for (int i = 0; i < batch.rolls().size(); i++) {
-            grants.add(resolve(batch.rolls().get(i), keys.boundAt(i), ctx, rng, ids.get()));
+            // A tiered open gives several rewards from one key: they all share that key's bound flag.
+            grants.add(resolve(batch.rolls().get(i), keys.boundAt(i / perOpen), ctx, rng, ids.get()));
         }
         return new Plan(ids.get(), crate, keys, grants, batch.pityAfter());
     }
