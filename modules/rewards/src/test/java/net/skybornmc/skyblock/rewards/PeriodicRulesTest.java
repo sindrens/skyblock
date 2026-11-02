@@ -70,7 +70,8 @@ class PeriodicRulesTest {
         assertTrue(weekly.stream().anyMatch(r -> r.kind() == RewardSpec.Kind.KEY && r.ref().equals("blaze") && r.amount() == 1),
                 "owner F5a: one Blaze key a week");
         assertTrue(monthly.stream().anyMatch(r -> r.kind() == RewardSpec.Kind.KEY && r.amount() == 2), "owner F5b: two keys");
-        assertTrue(weekly.stream().anyMatch(r -> r.kind() == RewardSpec.Kind.SHARDS && r.amount() == 25));
+        assertTrue(RewardsModule.rewardLines(List.of("shards 25"), "weekly", p -> { }).isEmpty(),
+                "ECON-SHARDS H11: shards only come from shard blocks, a shards line is refused");
         assertTrue(weekly.stream().anyMatch(r -> r.kind() == RewardSpec.Kind.PASS_XP && r.amount() == 400));
         assertFalse(s.weeklyEnabled || s.monthlyEnabled || s.menuEnabled, "golden rule 10: nothing ships on");
         assertEquals(180, s.weeklyRequiredMinutes);

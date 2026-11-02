@@ -252,7 +252,6 @@ final class PeriodicService {
             d.put("tier", tier);
             d.put("money", payout.total(Currency.MONEY));
             d.put("crystals", payout.total(Currency.CRYSTALS));
-            d.put("shards", payout.total(Currency.SHARDS));
             d.put("rewards", RewardText.summary(payout));
             d.put("key", key);
             d.put("via", quiet ? "claim-all" : name);

@@ -90,7 +90,6 @@ reward:
   money: "<cur:money><amount>"
   crystals: "<cur:crystals><amount>"
   credits: "<cur:credits><amount>"
-  shards: "<cur:shards><amount>"
   key: "<c:value><amount>x <crate> Key"
   fuel: "<c:value>Island Fuel <time>"
   booster: "<c:value><type> Booster +<percent>%</c:value> <c:muted>(<time>)"
@@ -105,7 +104,6 @@ reward-names:
   money: "<cur:money>Money"
   crystals: "<cur:crystals>Crystals"
   credits: "<cur:credits>Credits"
-  shards: "<cur:shards>Shards"
 
 rarities:
   common: "Common"

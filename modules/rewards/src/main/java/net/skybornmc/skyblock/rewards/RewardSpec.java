@@ -42,8 +42,6 @@ record RewardSpec(Kind kind, String ref, long amount, int minutes, long fallback
         BOOK("book", false),
         SCROLL("scroll", false),
         TOME("tome", false),
-        /** Shards (paid in the claim's transaction; weekly and monthly rewards). */
-        SHARDS("shards", true),
         /** Battle pass XP (hand-out after the commit; config word {@code pass-xp}). */
         PASS_XP("pass-xp", false);
 
@@ -118,7 +116,7 @@ record RewardSpec(Kind kind, String ref, long amount, int minutes, long fallback
         List<String> args = words.subList(1, words.size());
         try {
             RewardSpec spec = switch (kind.get()) {
-                case MONEY, CRYSTALS, CREDITS, FUEL, SHARDS, PASS_XP -> new RewardSpec(kind.get(), "", positive(one(args, line), line), 0, fallback);
+                case MONEY, CRYSTALS, CREDITS, FUEL, PASS_XP -> new RewardSpec(kind.get(), "", positive(one(args, line), line), 0, fallback);
                 case KEY -> {
                     if (args.isEmpty() || args.size() > 2 || !args.getFirst().matches("[a-z0-9_-]{1,32}")) {
                         throw new IllegalArgumentException("'" + line + "': write 'key <crate> [amount]'");

@@ -118,10 +118,10 @@ public final class RewardsSettings extends ModuleConfig {
     public int weeklyRequiredMinutes = 180;
 
     @Setting(path = "weekly.rewards", desc = "Weekly Reward contents, one reward per line (same words as calendar.days, plus "
-            + "'shards <n>' and 'pass-xp <n>'). Keys are bound (owner F5a: one Blaze key). Placeholders for the balance run.",
+            + "'pass-xp <n>'; no shards: they only come from shard blocks). Keys are bound (owner F5a: one Blaze key). Placeholders for the balance run.",
             level = Setting.Level.OWNER)
     public List<String> weeklyRewards = List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25", "booster tool_xp 25 30 fallback 25",
-            "crystals 60", "key blaze fallback 60", "shards 25");
+            "crystals 60", "key blaze fallback 60");
 
     @Setting(path = "monthly.enabled", desc = "Monthly Reward (/monthly): once a month (the 1st 00:00) per profile, no requirement "
             + "(owner F5c). Unclaimed = lost. Off by default until the release.", level = Setting.Level.OWNER)
@@ -130,8 +130,7 @@ public final class RewardsSettings extends ModuleConfig {
     @Setting(path = "monthly.rewards", desc = "Monthly Reward contents, one reward per line (owner F5b: bigger, two bound keys). "
             + "Placeholders for the balance run.", level = Setting.Level.OWNER)
     public List<String> monthlyRewards = List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
-            "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150", "key blaze 2 fallback 120",
-            "shards 100");
+            "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150", "key blaze 2 fallback 120");
 
     @Setting(path = "playtime.enabled", desc = "Playtime rewards on (R6): active play only, per profile.")
     public boolean playtimeEnabled = true;
@@ -211,10 +210,27 @@ public final class RewardsSettings extends ModuleConfig {
     @Setting(path = "npc.daily-role", desc = "NPC role whose click opens /daily (sneak-click keeps the help text).")
     public String npcRole = "daily";
 
-    /** Version 2 (card C1): gems were renamed credits (earned credits); the gem keys are moved. */
+    /**
+     * Version 2 (card C1): gems were renamed credits (earned credits); the gem keys are moved. Version 3 (ECON-SHARDS H11,
+     * owner 1 Nov 2026 "shards only from blocks, no other rewards"): the shard lines leave the untouched Weekly and Monthly
+     * defaults (an owner-edited list stays).
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of(
+                "weekly.rewards", ValueChange.of(List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25",
+                        "booster tool_xp 25 30 fallback 25", "crystals 60", "key blaze fallback 60", "shards 25"), List.of("pass-xp 400",
+                        "booster skill_xp 25 30 fallback 25", "booster tool_xp 25 30 fallback 25", "crystals 60", "key blaze fallback 60")),
+                "monthly.rewards", ValueChange.of(List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+                        "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150",
+                        "key blaze 2 fallback 120", "shards 100"), List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+                        "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150",
+                        "key blaze 2 fallback 120"))));
     }
 
     @Override

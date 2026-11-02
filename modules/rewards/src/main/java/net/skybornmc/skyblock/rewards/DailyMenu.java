@@ -291,7 +291,6 @@ final class DailyMenu extends Menu {
             case BOOK -> Material.ENCHANTED_BOOK;
             case SCROLL -> Material.PAPER;
             case TOME -> Material.BOOK;
-            case SHARDS -> Material.PRISMARINE_SHARD;
             case PASS_XP -> Material.EXPERIENCE_BOTTLE;
         };
     }

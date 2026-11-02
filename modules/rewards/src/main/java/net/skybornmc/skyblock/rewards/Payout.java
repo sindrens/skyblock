@@ -82,7 +82,6 @@ final class Payout {
             case MONEY -> money(RewardTables.money(spec.amount(), ctx.tier(), ctx.refPerMinute()), spec);
             case CRYSTALS -> currency(Currency.CRYSTALS, RewardTables.crystals(spec.amount(), ctx.tier(), ctx.growth()), spec, false);
             case CREDITS -> currency(Currency.CREDITS_EARNED, spec.amount(), spec, false); // rewards pay earned credits (C1)
-            case SHARDS -> currency(Currency.SHARDS, spec.amount(), spec, false);
             case PASS_XP -> passXp(spec.amount());
             case KEY -> grantOrFallback(spec, ctx, new Grant(KEY, spec.ref(), spec.amount()), spec.amount());
             case FUEL -> grantOrFallback(spec, ctx, new Grant(FUEL, "", spec.amount()), spec.amount());

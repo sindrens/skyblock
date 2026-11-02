@@ -86,7 +86,6 @@ final class RewardText {
             case MONEY -> m.msg.component(p, "reward.money", Msg.p("amount", format(m, Currency.MONEY, l.value())));
             case CRYSTALS -> m.msg.component(p, "reward.crystals", Msg.p("amount", format(m, Currency.CRYSTALS, l.value())));
             case CREDITS -> m.msg.component(p, "reward.credits", Msg.p("amount", format(m, Currency.CREDITS_EARNED, l.value())));
-            case SHARDS -> m.msg.component(p, "reward.shards", Msg.p("amount", format(m, Currency.SHARDS, l.value())));
             case BOOK -> m.msg.component(p, "reward.book-named", Msg.p("name", pretty(l.ref())));
             default -> name(m, p, l.kind(), l.ref(), l.value(), l.minutes(), l.kind() == RewardSpec.Kind.BOOSTER ? l.value() : 0);
         };
@@ -110,7 +109,6 @@ final class RewardText {
             case BOOK -> m.msg.component(p, "reward.book", Msg.p("rarity", m.raw("rarities." + ref, capitalize(ref))));
             case SCROLL -> m.msg.component(p, "reward.scroll", Msg.number("amount", amount));
             case TOME -> m.msg.component(p, "reward.tome");
-            case SHARDS -> m.msg.component(p, "reward-names.shards");
             case PASS_XP -> m.msg.component(p, "reward.pass-xp", Msg.number("amount", amount));
         };
     }
@@ -123,7 +121,6 @@ final class RewardText {
             case CRYSTALS -> m.msg.component(p, "reward.crystals",
                     Msg.p("amount", format(m, Currency.CRYSTALS, RewardTables.crystals(spec.amount(), ctx.tier(), ctx.growth()))));
             case CREDITS -> m.msg.component(p, "reward.credits", Msg.p("amount", format(m, Currency.CREDITS_EARNED, spec.amount())));
-            case SHARDS -> m.msg.component(p, "reward.shards", Msg.p("amount", format(m, Currency.SHARDS, spec.amount())));
             case BOOSTER -> name(m, p, spec.kind(), spec.ref(), 1, spec.minutes(), spec.amount());
             case BOOK -> name(m, p, spec.kind(), spec.ref(), 1, 0, 0);
             default -> name(m, p, spec.kind(), spec.ref(), spec.amount(), spec.minutes(), 0);
