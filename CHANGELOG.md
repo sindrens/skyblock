@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### v5 batch 4: island farming
+- **Every crop grows on the island's clock**: wheat, carrots, potatoes, beetroot, nether wart, cocoa, sweet berries, melon and pumpkin stems, torchflower and pitcher crops grow one stage every few seconds (the island's crop-growth upgrade sets the full time: 60 s down to 15 s, split over the stages) instead of vanilla's random growth, with a small puff and a soft sound for players nearby (`islandtools.yml growth.*`). Crops join the clock when planted or when they would have grown; only loaded chunks are touched, with a budget per run. Melon/pumpkin fruits, sugar cane, cactus and bamboo stay vanilla.
+- **Look at a crop** on an island: a small text over it shows its stage and the seconds to the next one (only you see it).
+- **Farmland never needs water** on islands: tilling makes moist farmland at once; it never dries, turns back to dirt or gets trampled (`farmland.always-wet`).
+- The island hoe's replanted crops now grow stage by stage on the same clock (same total time as before).
 ### v5 batch 3: tools
 - **Tools follow the world**: island tools only in the island world, Depths tools only in the Depths (`islandtools.yml only-on-island`, `tools.yml world-tools.*`); elsewhere they are put away and come back in the same slot. Depths tools wait in a new `tool_stash` table (dupe-safe: a tool already carried is never given twice). Entering the Depths without Depths tools gives the starter kit. Staff can keep them with `skyblock.tools.world-bypass`. The Forge works in the Depths (the spawn smith points there).
 - **No tools in the starter chest** (tutorial config v7).

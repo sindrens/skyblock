@@ -56,6 +56,7 @@ public final class IslandToolsModule implements SkyblockModule {
     private volatile Upgrades upgrades = Upgrades.parse(List.of(), w -> { });
     private ToolListener listener;
     private HoeFarming farming;
+    private IslandGrowth growth;
     private HoeStorage storage;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Online profile → its tools. */
@@ -96,6 +97,8 @@ public final class IslandToolsModule implements SkyblockModule {
         items.register();
         storage = new HoeStorage(this);
         farming = new HoeFarming(this);
+        growth = new IslandGrowth(this);
+        Bukkit.getPluginManager().registerEvents(growth, core.plugin());
         listener = new ToolListener(this);
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         Bukkit.getPluginManager().registerEvents(farming, core.plugin());
@@ -103,6 +106,7 @@ public final class IslandToolsModule implements SkyblockModule {
                 family == BonusFamily.EXTRA_DROPS ? dropsBonus(ctx.item()) : 0));
         tasks.add(core.scheduler().repeat("islandtools:haste", 40L, 40L, listener::hasteTick));
         tasks.add(core.scheduler().repeat("islandtools:regrow", 20L, 10L, farming::tick));
+        tasks.add(core.scheduler().repeat("islandtools:growth", 20L, 10L, growth::tick));
         tasks.add(core.scheduler().repeat("islandtools:storage", 200L, 200L, storage::flushAll));
         tasks.add(core.scheduler().repeat("islandtools:tasks", 200L, 200L, this::flushTasks));
         long shardTicks = Math.max(1, config.shardPayoutSeconds) * 20L;
@@ -133,6 +137,10 @@ public final class IslandToolsModule implements SkyblockModule {
         if (farming != null) {
             HandlerList.unregisterAll(farming);
             farming.ripenAll();
+        }
+        if (growth != null) {
+            HandlerList.unregisterAll(growth);
+            growth.stop();
         }
         core.services().optional(BonusService.class).ifPresent(b -> b.unregister("island_tool"));
         if (items != null) {
@@ -172,6 +180,10 @@ public final class IslandToolsModule implements SkyblockModule {
 
     HoeFarming farming() {
         return farming;
+    }
+
+    IslandGrowth growth() {
+        return growth;
     }
 
     String raw(String key) {

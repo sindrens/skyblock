@@ -59,6 +59,27 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "placed.memory-hours", desc = "How long a block a player placed is remembered (so breaking it gives no bonus).", min = 1, max = 168)
     public int placedHours = 12;
 
+    @Setting(path = "growth.enabled", desc = "Owner 3 Nov 2026: every crop on an island grows on the island's clock, one stage every few seconds (the regrow time below split over the crop's stages, faster with the crop-growth upgrade), with a puff and a soft sound.")
+    public boolean growthEnabled = true;
+
+    @Setting(path = "growth.step-floor-ms", desc = "Shortest time between two stages of one crop (milliseconds).", min = 100, max = 60000)
+    public long growthStepFloorMillis = 500;
+
+    @Setting(path = "growth.budget", desc = "Most crops grown per half second (the rest wait for the next run; keeps the tick time flat).", min = 10, max = 10000)
+    public int growthBudget = 600;
+
+    @Setting(path = "growth.sound", desc = "A soft sound when a crop near you grows (at most every 2 s per player).")
+    public boolean growthSound = true;
+
+    @Setting(path = "growth.label", desc = "Looking at a crop on an island shows its stage and the time to the next one (only you see it).")
+    public boolean growthLabel = true;
+
+    @Setting(path = "growth.label-range", desc = "How far you can look at a crop for its label (blocks).", min = 1, max = 10)
+    public int growthLabelRange = 5;
+
+    @Setting(path = "farmland.always-wet", desc = "Owner 3 Nov 2026: tilled dirt on islands is moist farmland at once and never dries, turns back to dirt or gets trampled (no water needed).")
+    public boolean farmlandAlwaysWet = true;
+
     @Setting(path = "only-on-island", desc = "Owner 3 Nov 2026: island tools exist only in the island world; in every other world (spawn, the Depths, events) they are put away and come back in the same slot on the island. Off = only the put-away-worlds below.")
     public boolean onlyOnIsland = true;
 

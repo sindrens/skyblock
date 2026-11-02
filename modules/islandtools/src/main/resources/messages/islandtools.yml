@@ -178,3 +178,8 @@ task:
 # Found while grinding with island tools (action bar). <amount>
 shards:
   found: "<cur:shards>+<amount> <sym:shards> shards"
+
+# Owner 3 Nov 2026: the small text over the crop you look at on an island. <crop> <stage> ("3/8 · 6s" or growth.ripe)
+growth:
+  label: "<c:value><crop></c:value> <c:muted>·</c:muted> <c:text><stage>"
+  ripe: "Ripe!"

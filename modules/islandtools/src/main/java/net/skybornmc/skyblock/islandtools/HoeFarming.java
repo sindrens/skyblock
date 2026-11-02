@@ -71,7 +71,6 @@ final class HoeFarming implements Listener {
         if (!m.config().regrowEnabled) {
             return;
         }
-        double seconds = regrowSeconds(p, island);
         Bukkit.getScheduler().runTask(m.core().plugin(), () -> {
             Block b = loc.getBlock();
             Material below = b.getRelative(0, -1, 0).getType();
@@ -84,16 +83,9 @@ final class HoeFarming implements Listener {
                 ripen(b, crop);
                 return;
             }
-            Due d = new Due(loc.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), crop, System.currentTimeMillis() + (long) (seconds * 1000));
-            Due old = byKey.put(d.key(), d);
-            if (old != null) {
-                queue.remove(old);
-            }
-            queue.add(d);
-            while (byKey.size() > m.config().regrowMax && !queue.isEmpty()) {
-                Due drop = queue.poll();
-                byKey.remove(drop.key());
-            }
+            // Owner 3 Nov 2026: the replanted crop grows stage by stage on the island clock (IslandGrowth), so the
+            // player sees it grow; the full time is the same regrow time as before.
+            m.growth().track(b);
         });
     }
 
