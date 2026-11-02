@@ -1066,6 +1066,10 @@
   "model": "minecraft:item/gold_nugget",
   "type": "minecraft:model"
  },
+ "golden_axe": {
+  "model": "minecraft:item/golden_axe",
+  "type": "minecraft:model"
+ },
  "golden_helmet": {
   "cases": [
    {
@@ -1159,6 +1163,10 @@
  },
  "golden_pickaxe": {
   "model": "minecraft:item/golden_pickaxe",
+  "type": "minecraft:model"
+ },
+ "golden_sword": {
+  "model": "minecraft:item/golden_sword",
   "type": "minecraft:model"
  },
  "gray_dye": {
@@ -1323,6 +1331,18 @@
  },
  "wooden_axe": {
   "model": "minecraft:item/wooden_axe",
+  "type": "minecraft:model"
+ },
+ "wooden_hoe": {
+  "model": "minecraft:item/wooden_hoe",
+  "type": "minecraft:model"
+ },
+ "wooden_pickaxe": {
+  "model": "minecraft:item/wooden_pickaxe",
+  "type": "minecraft:model"
+ },
+ "wooden_sword": {
+  "model": "minecraft:item/wooden_sword",
   "type": "minecraft:model"
  },
  "writable_book": {

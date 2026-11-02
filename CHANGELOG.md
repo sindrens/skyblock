@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### Island tools (Complete Developer Spec D1-D12, T1-T13; new module `islandtools`)
+- Wooden island pickaxe, axe, hoe and sword for every profile on first join (bound). `/is tools`: tiers wood → netherite and 7 crystal upgrades per tool (efficiency, fortune, haste, magnet, smelter, extra drops, wisdom; timber, sharpness; row, storage; looting, sweeping, fire aspect, knockback, lifesteal), confirm above 5,000 crystals, a new copy when lost.
+- Only on islands; put away in the Depths and given back in the same slot; kept on death; can't be dropped.
+- Hoe farming: rows of ripe crops into the hoe storage (take a stack or sell all in one sale), crops replant and regrow in 60 s → 15 s with the island's crop-growth upgrade (perks to 10 s), Growth Burst, ripe cue.
+- Textures for every island tool tier.
 ### Eclipse Crate: months, teaser, credits, /warp, rods
 - **Month tables** (owner M1/M4): `crates.yml crates.eclipse.months.<yyyy-MM>.rewards` give a month its own tiered pool; without one the base pool is used and staff with `skyblock.crates.admin` are told `eclipse.warn-days` (7) days before (M5). Keys never expire and open the table of the month they are opened in.
 - **Teaser** from the 25th (M4): a join line once per month and a "Next month: ???" tile in the Eclipse preview.

@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/item_island_sword_netherite",
+     "type": "minecraft:model"
+    },
+    "when": "item/island_sword_netherite"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_sword",
      "type": "minecraft:model"
     },

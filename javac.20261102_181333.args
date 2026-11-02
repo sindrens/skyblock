@@ -1,0 +1,16 @@
+-proc:none
+-d
+/tmp/claude-0/-home-claude/6ff31a36-cf43-5096-abe3-e182216770b6/scratchpad/jc
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/HoeFarming.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/HoeStorage.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/IslandToolsConfig.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/IslandToolsModule.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/Kind.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/StorageMenu.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolItems.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolListener.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolMenu.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolRules.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolStore.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/ToolsMenu.java
+modules/islandtools/src/main/java/net/skybornmc/skyblock/islandtools/Upgrades.java

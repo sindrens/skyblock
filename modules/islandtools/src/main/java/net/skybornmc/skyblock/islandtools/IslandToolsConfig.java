@@ -1,0 +1,105 @@
+package net.skybornmc.skyblock.islandtools;
+
+import net.skybornmc.skyblock.common.config.ModuleConfig;
+import net.skybornmc.skyblock.common.config.Setting;
+
+import java.util.List;
+
+/** Settings of the island tools ({@code islandtools.yml}); texts in messages/islandtools.yml. */
+public final class IslandToolsConfig extends ModuleConfig {
+
+    @Setting(path = "enabled", desc = "Island tools on (owner D2/D12: every profile gets the wooden island set on first join).")
+    public boolean enabled = true;
+
+    @Setting(path = "tier-costs", desc = "Crystals for each tier-up, wood→stone, stone→iron, iron→gold, gold→diamond, diamond→netherite (T3, T7).")
+    public List<Integer> tierCosts = List.of(500, 2500, 8000, 25000, 75000);
+
+    @Setting(path = "confirm-above", desc = "T8: a confirm screen for an upgrade or tier-up costing at least this many crystals (0 = never).", min = 0, max = 100_000_000)
+    public long confirmAbove = 5000;
+
+    @Setting(path = "put-away-worlds", desc = "T1/D1: worlds where island tools are put away (and given back on the island in the same slot).")
+    public List<String> putAwayWorlds = List.of("depths");
+
+    @Setting(path = "upgrades", desc = "D4: 7 upgrades per tool, 'kind:id:effect:max:base-cost:growth'. Effects: enchant=<id>, haste, magnet, "
+            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe). Cost of level n+1 = base x growth^n.")
+    public List<String> upgrades = List.of(
+            "pickaxe:efficiency:enchant=efficiency:5:150:2.2", "pickaxe:fortune:enchant=fortune:3:400:2.8", "pickaxe:haste:haste:2:600:3",
+            "pickaxe:magnet:magnet:1:900:1", "pickaxe:smelter:smelt:5:250:2", "pickaxe:extra_drops:drops:5:300:2.2",
+            "pickaxe:experience:experience:5:200:2",
+            "axe:efficiency:enchant=efficiency:5:150:2.2", "axe:extra_drops:drops:5:300:2.2", "axe:timber:timber:5:400:2.3",
+            "axe:haste:haste:2:600:3", "axe:magnet:magnet:1:900:1", "axe:sharpness:enchant=sharpness:3:250:2.4",
+            "axe:experience:experience:5:200:2",
+            "hoe:row:row:4:300:3", "hoe:storage:storage:5:250:2.5", "hoe:fortune:enchant=fortune:3:400:2.8",
+            "hoe:extra_drops:drops:5:300:2.2", "hoe:magnet:magnet:1:900:1", "hoe:efficiency:enchant=efficiency:3:150:2.2",
+            "hoe:haste:haste:2:600:3",
+            "sword:sharpness:enchant=sharpness:5:200:2.2", "sword:looting:enchant=looting:3:400:2.8",
+            "sword:sweeping:enchant=sweeping_edge:3:300:2.4", "sword:fire_aspect:enchant=fire_aspect:2:500:2.8",
+            "sword:knockback:enchant=knockback:2:200:2.5", "sword:extra_drops:drops:5:300:2.2", "sword:lifesteal:lifesteal:3:600:2.5");
+
+    @Setting(path = "effects.drops-per-level", desc = "EXTRA_DROPS bonus percent per level of a 'drops' upgrade (the family cap applies on top).", min = 0, max = 100)
+    public double dropsPerLevel = 8;
+
+    @Setting(path = "effects.smelt-per-level", desc = "Auto-smelt chance percent per level of 'smelt'.", min = 0, max = 100)
+    public double smeltPerLevel = 20;
+
+    @Setting(path = "effects.timber-per-level", desc = "Logs above the broken one that fall too, per level of 'timber'.", min = 0, max = 10)
+    public int timberPerLevel = 2;
+
+    @Setting(path = "effects.experience-per-level", desc = "Extra block XP percent per level of 'experience'.", min = 0, max = 500)
+    public double experiencePerLevel = 25;
+
+    @Setting(path = "effects.lifesteal-per-level", desc = "Percent of damage dealt healed per level of 'lifesteal'.", min = 0, max = 50)
+    public double lifestealPerLevel = 3;
+
+    @Setting(path = "hoe.row-lengths", desc = "T9: hoe row length for Row level 0, 1, 2 ... (default 1, 3, 5, 7, 9).")
+    public List<Integer> rowLengths = List.of(1, 3, 5, 7, 9);
+
+    @Setting(path = "hoe.storage-base", desc = "T9: hoe storage at Storage level 0 (items).", min = 1, max = 1_000_000)
+    public long storageBase = 256;
+
+    @Setting(path = "hoe.storage-factor", desc = "T9: storage multiplier per Storage level (about x3).", min = 1, max = 10)
+    public double storageFactor = 3;
+
+    @Setting(path = "regrow.enabled", desc = "T11: crops harvested with the island hoe replant themselves and are ripe again after the regrow time.")
+    public boolean regrowEnabled = true;
+
+    @Setting(path = "regrow.base-seconds", desc = "T11: regrow time without upgrades.", min = 5, max = 3600)
+    public double regrowBase = 60;
+
+    @Setting(path = "regrow.top-seconds", desc = "T11: regrow time at the top island upgrade.", min = 1, max = 3600)
+    public double regrowTop = 15;
+
+    @Setting(path = "regrow.full-at-percent", desc = "Island upgrade value (percent) that gives the top regrow time.", min = 1, max = 10_000)
+    public double regrowFullAt = 120;
+
+    @Setting(path = "regrow.min-seconds", desc = "G11: floor after the CROP_GROWTH perks.", min = 1, max = 3600)
+    public double regrowFloor = 10;
+
+    @Setting(path = "regrow.upgrade-effect", desc = "Island upgrade effect (upgrades.yml) that speeds up regrowing.")
+    public String regrowEffect = "crop-growth";
+
+    @Setting(path = "regrow.max-tracked", desc = "Most regrowing crops remembered at once (oldest dropped: they grow normally).", min = 100, max = 1_000_000)
+    public int regrowMax = 50_000;
+
+    @Setting(path = "burst.percent-per-growth", desc = "T12: Growth Burst chance (percent) per percent of the island's crop-growth upgrade.", min = 0, max = 10)
+    public double burstPerGrowth = 0.05;
+
+    @Setting(path = "burst.max-percent", desc = "T12: highest Growth Burst chance.", min = 0, max = 100)
+    public double burstMax = 10;
+
+    @Setting(path = "cue.near-blocks", desc = "T13: players this close see a strong ripe cue.", min = 1, max = 64)
+    public double cueNear = 6;
+
+    @Setting(path = "cue.far-blocks", desc = "T13: players this close see a subtle cue (one particle).", min = 1, max = 128)
+    public double cueFar = 16;
+
+    @Override
+    public String fileName() {
+        return "islandtools.yml";
+    }
+
+    @Override
+    public String header() {
+        return "Island tools (Complete Developer Spec D1-D12, T1-T13). Texts: messages/islandtools.yml. Reload: /skyblock reload islandtools";
+    }
+}

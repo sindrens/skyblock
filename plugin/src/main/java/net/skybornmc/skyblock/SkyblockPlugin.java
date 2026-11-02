@@ -338,6 +338,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // milestones-settings.yml enabled: true. Needs islands (island chains) and profiles (personal chains).
         modules.register(new net.skybornmc.skyblock.milestones.MilestonesModule(core));
         modules.register(new net.skybornmc.skyblock.guide.GuideModule(core));
+        modules.register(new net.skybornmc.skyblock.islandtools.IslandToolsModule(core));
         // Shard block (ECON-SHARDS): the only source of shards; needs economy, islands and profiles (registered above).
         modules.register(new net.skybornmc.skyblock.shardblock.ShardBlockModule(core));
     }

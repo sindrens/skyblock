@@ -36,6 +36,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [guide](commands/guide.md) | Guide module (`modules/guide`): the island guide Kindle (docs/planning/ISLAND_GUIDE.md) |
 | [hud](commands/hud.md) | Scoreboard (M1.4, module `hud`) |
 | [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.5, M2.6, M2.7, ISL2, NOTES |
+| [islandtools](commands/islandtools.md) | Island tools module (`modules/islandtools`): the island pickaxe, axe, hoe and sword (Complete Developer Spec D1-D12, T1-T13) |
 | [logs](commands/logs.md) | Logs (`modules/logs`, M1.10) |
 | [menus](commands/menus.md) | Menus module (`modules/menus`): M1.6 + M1.7 + staff hub and `/admin` (M1.12) |
 | [milestones](commands/milestones.md) | Milestones commands |

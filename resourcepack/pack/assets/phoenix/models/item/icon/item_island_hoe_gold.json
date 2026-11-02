@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/handheld",
+ "textures": {
+  "layer0": "phoenix:item/icon/item_island_hoe_gold"
+ }
+}

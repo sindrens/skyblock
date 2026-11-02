@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/item_island_axe_iron",
+     "type": "minecraft:model"
+    },
+    "when": "item/island_axe_iron"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_axe",
      "type": "minecraft:model"
     },

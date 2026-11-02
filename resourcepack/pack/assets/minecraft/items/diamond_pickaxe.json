@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/item_island_pickaxe_diamond",
+     "type": "minecraft:model"
+    },
+    "when": "item/island_pickaxe_diamond"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_pickaxe",
      "type": "minecraft:model"
     },

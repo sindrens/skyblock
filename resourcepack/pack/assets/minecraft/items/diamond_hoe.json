@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/item_island_hoe_diamond",
+     "type": "minecraft:model"
+    },
+    "when": "item/island_hoe_diamond"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_hoe",
      "type": "minecraft:model"
     },

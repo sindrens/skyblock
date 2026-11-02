@@ -1025,6 +1025,24 @@ for _skin, (_head, _handle, _glow) in {'frostbite': ('9fe6ff', 'e8f8ff', None), 
     icon('item/skin_%s_rod' % _skin, base='fishing_rod', parent='minecraft:item/handheld_rod')(_msr())
 
 
+# Island tools (Complete Developer Spec D2/T3): wood, stone, iron, gold, diamond, netherite for each kind; a warm handle
+# and a small ember gem so they read as "island" next to the Depths tools.
+ISLAND_TIERS = [('wood', 'b8834f', 'wooden'), ('stone', '9aa0ae', 'stone'), ('iron', 'd8dde6', 'iron'), ('gold', 'f5c542', 'golden'),
+                ('diamond', '4fe3e0', 'diamond'), ('netherite', '5a4a52', 'netherite')]
+
+
+def island_tool(p, kind, head):
+    tool(p, kind, head, rgb('c98a4a'))
+    p.circle(70, 186, 14, rgb('ff8c1a'), w=8)
+
+
+for _kind in ('pickaxe', 'axe', 'hoe', 'sword'):
+    for _id, _col, _mat in ISLAND_TIERS:
+        def _mi(kind=_kind, col=_col):
+            return lambda p: island_tool(p, kind, rgb(col))
+        icon('item/island_%s_%s' % (_kind, _id), base='%s_%s' % (_mat, _kind), parent='minecraft:item/handheld')(_mi())
+
+
 # Tool skins (/tool → Skins): one picture per skin and kind, on every base that kind can have.
 SKINS = {'frostbite': ('9fe6ff', 'e8f8ff', (150, 230, 255, 70)), 'phoenix_flame': ('ff5a2e', 'ffd24a', (255, 140, 40, 80)),
          'royal_gold': ('f5c542', '7a3fd0', None)}

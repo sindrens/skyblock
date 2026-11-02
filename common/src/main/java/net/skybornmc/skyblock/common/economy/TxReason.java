@@ -59,6 +59,9 @@ public final class TxReason {
     /** Money, crystals and shards from crate opens (PHASE-10 M10.1); a source on the economy dashboard (M10.13). */
     public static final String CRATE_REWARD = "crate_reward";
 
+    /** Crystals paid for an island tool tier-up or upgrade (Complete Developer Spec T7); a sink. */
+    public static final String ISLAND_TOOL_UPGRADE = "island_tool_upgrade";
+
     /** Credits paid for an Eclipse key (owner F6/V5: the Eclipse credits purchase); a sink. */
     public static final String CRATE_KEY_PURCHASE = "crate_key_purchase";
 

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_island_sword_gold",
+     "type": "minecraft:model"
+    },
+    "when": "item/island_sword_gold"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/golden_sword",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}
