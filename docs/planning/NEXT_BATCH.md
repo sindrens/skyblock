@@ -16,3 +16,5 @@ pillars. Plan synergy and implement. Full season wipe is planned later."
 | 7 | Icon pack: shop arrows, scoreboard and tab logo | TODO |
 | 8 | Island tools, Eclipse Crate, farming, build order | TODO. Spec sections 14-24 and 10 were cut off in chat; build from section 1.2 decisions (D1-D12, T1-T13) and 0.5 notes, owner checks |
 | 9 | Full season wipe | later (owner) |
+| 10 | Owner badge yellow &e&l | **done**: owner look #FFFF55, bold on Java when the legacy code has &l (chat.yml v3 moves an untouched list) |
+| 11 | Donator ranks | TODO: build RANKS-V2 (`specs/feature-overview/build-specs/RANKS-V2.md`, 7 donor ranks above default, store packages, perks); owner asked 2 Nov to implement it, so the "until F2 Locked" hold is lifted |

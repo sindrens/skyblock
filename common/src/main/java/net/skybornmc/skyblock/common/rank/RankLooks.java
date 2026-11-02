@@ -29,6 +29,14 @@ public final class RankLooks {
      * The shipped looks, copied exactly from the retired pack v1 {@code pack-ids.yml badges.ranks} (colour and Bedrock
      * code; the font, shine, family and cap fields only drew the font badge and are gone).
      */
+    /** The shipped looks before 2 Nov 2026 (owner was amber #FFC21A); chat.yml v3 moves an untouched list to {@link #DEFAULTS}. */
+    public static final List<String> DEFAULTS_V1 = List.of(
+            "default=#B5ABA4|&7", "hatchling=#FF9A4D|&6", "fledgling=#9BE84A|&a", "firewing=#4FB4FF|&9", "flamecrest=#B06BFF|&5",
+            "sunfeather=#FFD21A|&e", "pyrelord=#FF3B4A|&c", "immortal=#FFE27A,#FF8C1A,#FF2D3F|&e&l>&6&l>&c&l",
+            "torchbearer=#2EE6D0|&3", "flameheart=#FF5FD2|&d", "firecrown=#FFFFFF|&f&l", "owner=#FFC21A|&e&l",
+            "admin=#FF6B6B|&c&l", "mod=#6CC4FF|&9&l", "helper=#7CEB8A|&a&l", "builder=#FF9A3D|&6&l");
+
+    /** Owner 2 Nov 2026: the owner badge is plain yellow (&e) and bold, like the Bedrock code. */
     public static final List<String> DEFAULTS = List.of(
             "default=#B5ABA4|&7",
             "hatchling=#FF9A4D|&6",
@@ -41,7 +49,7 @@ public final class RankLooks {
             "torchbearer=#2EE6D0|&3",
             "flameheart=#FF5FD2|&d",
             "firecrown=#FFFFFF|&f&l",
-            "owner=#FFC21A|&e&l",
+            "owner=#FFFF55|&e&l",
             "admin=#FF6B6B|&c&l",
             "mod=#6CC4FF|&9&l",
             "helper=#7CEB8A|&a&l",

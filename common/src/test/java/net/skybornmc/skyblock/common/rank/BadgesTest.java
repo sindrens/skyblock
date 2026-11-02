@@ -25,7 +25,7 @@ class BadgesTest {
         assertEquals(TextColor.color(0xB5ABA4), Badges.nameColor(LOOKS, "default", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0xFF9A4D), Badges.nameColor(LOOKS, "hatchling", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0xFF8C1A), Badges.nameColor(LOOKS, "immortal", BadgeOptions.PLAIN));
-        assertEquals(TextColor.color(0xFFC21A), Badges.nameColor(LOOKS, "owner", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0xFFFF55), Badges.nameColor(LOOKS, "owner", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0x6CC4FF), Badges.nameColor(LOOKS, "mod", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0x7CEB8A), Badges.nameColor(LOOKS, "helper", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0xFF9A3D), Badges.nameColor(LOOKS, "builder", BadgeOptions.PLAIN));

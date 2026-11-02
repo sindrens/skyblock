@@ -154,14 +154,17 @@ public final class ChatConfig extends ModuleConfig {
     /** Version 2 (owner answer 301): the English starter word lists fill the lists that were still empty. */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of(
                 "protection.words.replace", ValueChange.of(List.of(), STARTER_REPLACE),
-                "protection.words.block", ValueChange.of(List.of(), STARTER_BLOCK)));
+                "protection.words.block", ValueChange.of(List.of(), STARTER_BLOCK)),
+                // Version 3 (owner 2 Nov 2026): owner badge yellow &e&l instead of amber.
+                3, java.util.Map.of("ranks.looks", ValueChange.of(net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS_V1,
+                        net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS)));
     }
 
     @Override

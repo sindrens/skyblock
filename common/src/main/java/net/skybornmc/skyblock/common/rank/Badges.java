@@ -73,15 +73,18 @@ public final class Badges {
     static Component simple(RankLooks.Look look, String group, String name, BadgeOptions o) {
         List<TextColor> colors = colors(look, group, o);
         String text = '[' + name + ']';
+        // A look whose legacy code is bold (&l: staff, Immortal, Firecrown) is bold on Java too (owner: "&e&l for owner").
+        boolean bold = look.bedrock() != null && look.bedrock().toLowerCase(Locale.ROOT).contains("&l");
         if (colors.size() == 1) {
-            return Component.text(text, colors.getFirst());
+            Component one = Component.text(text, colors.getFirst());
+            return bold ? one.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD) : one;
         }
         List<TextColor> per = gradient(colors, text.length());
         TextComponent.Builder out = Component.text();
         for (int i = 0; i < text.length(); i++) {
             out.append(Component.text(text.charAt(i), per.get(i)));
         }
-        return out.build();
+        return bold ? out.build().decorate(net.kyori.adventure.text.format.TextDecoration.BOLD) : out.build();
     }
 
     static Component bedrock(RankLooks.Look look, String name) {
