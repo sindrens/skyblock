@@ -10,6 +10,20 @@ import net.skybornmc.skyblock.common.config.Setting;
  */
 public final class LevelConfig extends ModuleConfig {
 
+    /**
+     * Version 2 (owner 2 Nov 2026: "we will not use pillars"): pillar levels give no island level points; block worth
+     * counts twice as much to make up for it. Owner-edited values stay.
+     */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("points.per-pillar-level", ValueChange.of(1, 0), "points.blocks-factor", ValueChange.of(0.5, 1.0)));
+    }
+
     @Override
     public String fileName() {
         return "progression.yml";
@@ -34,7 +48,7 @@ public final class LevelConfig extends ModuleConfig {
     // ------------------------------------------------------------------ source points
 
     @Setting(path = "points.per-pillar-level", desc = "Points per shown pillar level (source 1, uncapped).", min = 0, max = 1000, level = Setting.Level.OWNER)
-    public double perPillarLevel = 1;
+    public double perPillarLevel = 0;
 
     @Setting(path = "points.skills-divisor", desc = "Members' skills points = average total skill level of counted members / this (source 5).", min = 0.01, max = 100_000, level = Setting.Level.OWNER)
     public double skillsDivisor = 10;
@@ -49,7 +63,7 @@ public final class LevelConfig extends ModuleConfig {
     public long bankBase = 100_000;
 
     @Setting(path = "points.blocks-factor", desc = "Block points = blocks-factor x square root(block worth / blocks-unit) (source 8).", min = 0, max = 1000, level = Setting.Level.OWNER)
-    public double blocksFactor = 0.5;
+    public double blocksFactor = 1.0;
 
     @Setting(path = "points.blocks-unit", desc = "Money unit of the block worth square root.", min = 1, max = 1_000_000_000L, level = Setting.Level.OWNER)
     public double blocksUnit = 1000;

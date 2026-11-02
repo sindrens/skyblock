@@ -8,7 +8,7 @@ public final class MilestonesConfig extends ModuleConfig {
 
     @Setting(path = "enabled", desc = "Milestones on: player actions count toward island and personal chains (Complete Developer "
             + "Spec section 7). Off by default until the release (golden rule 10).", level = Setting.Level.OWNER)
-    public boolean enabled = false;
+    public boolean enabled = true;
 
     @Setting(path = "flush-seconds", desc = "How often counted actions are saved (spec 7.11: 10). Also saved on quit, profile "
             + "switch and stop; a crash loses at most this much progress.", min = 2, max = 300)
@@ -44,6 +44,17 @@ public final class MilestonesConfig extends ModuleConfig {
 
     @Setting(path = "actionbar.gap-ms", desc = "Shortest time between two progress lines for one player.", min = 250, max = 60_000)
     public int actionBarGapMs = 1_500;
+
+    /** Version 2 (owner 2 Nov 2026: "please enable milestones"): on, unless the owner switched it off by hand. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("enabled", ValueChange.of(false, true)));
+    }
 
     @Override
     public String fileName() {

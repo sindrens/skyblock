@@ -13,7 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The island level formula (PHASE-5 M5.2): source math, caps and the plan's month-1 example. */
 class LevelMathTest {
 
-    private static final LevelMath.Weights W = LevelMath.Weights.of(new LevelConfig());
+    /** The plan's worked example uses the version 1 weights (1 point per pillar level, blocks factor 0.5). */
+    private static final LevelMath.Weights W = LevelMath.Weights.of(v1());
+
+    private static LevelConfig v1() {
+        LevelConfig c = new LevelConfig();
+        c.perPillarLevel = 1;
+        c.blocksFactor = 0.5;
+        return c;
+    }
 
     @Test
     void planExampleRegularSoloMonthOne() {

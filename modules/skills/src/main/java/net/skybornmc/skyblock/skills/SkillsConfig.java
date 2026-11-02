@@ -14,10 +14,10 @@ public final class SkillsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ curve (ECONOMY_BALANCE §1.2 / §3.4)
 
     @Setting(path = "curve.base", desc = "XP from level 0 to 1. Each next level costs more (see the growth settings).", min = 1, max = 1_000_000, level = Setting.Level.OWNER)
-    public double curveBase = 600;
+    public double curveBase = 300;
 
     @Setting(path = "curve.early-growth", desc = "Cost growth per level up to curve.break-level (1.2 = each level costs 20% more).", min = 1.0, max = 3.0, level = Setting.Level.OWNER)
-    public double curveEarlyGrowth = 1.2;
+    public double curveEarlyGrowth = 1.15;
 
     @Setting(path = "curve.late-growth", desc = "Cost growth per level after curve.break-level (flatter, because late tiers are further apart).", min = 1.0, max = 3.0, level = Setting.Level.OWNER)
     public double curveLateGrowth = 1.13;
@@ -75,6 +75,17 @@ public final class SkillsConfig extends ModuleConfig {
 
     @Setting(path = "storage.season-id", desc = "Season the XP belongs to (skills reset each season). Stays 0 until the season system exists.", min = 0, max = 100_000, restart = true, level = Setting.Level.OWNER)
     public int seasonId = 0;
+
+    /** Version 2 (owner 2 Nov 2026: "Depths requirements are super slow"): a cheaper start (600 to 300) and flatter early levels (1.2 to 1.15); level 35 needs about a sixth of the XP. Owner-edited values stay. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("curve.base", ValueChange.of(600, 300), "curve.early-growth", ValueChange.of(1.2, 1.15)));
+    }
 
     @Override
     public String fileName() {
