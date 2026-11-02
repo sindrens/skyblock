@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/feature_rewards",
+     "type": "minecraft:model"
+    },
+    "when": "feature/rewards"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/shop_fill",
      "type": "minecraft:model"
     },

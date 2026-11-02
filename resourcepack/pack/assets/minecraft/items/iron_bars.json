@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/island_visitors_locked",
+     "type": "minecraft:model"
+    },
+    "when": "island/visitors_locked"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/state_locked",
      "type": "minecraft:model"
     },

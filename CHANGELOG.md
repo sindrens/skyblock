@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Icons v4: chunky cartoon, 64x64 (owner 2 Nov 2026)
+- Every menu icon redrawn by `tools/cartoon/render.py` (thick outline, flat colours, highlight; art is code): the 27 old ones remade (readable $ on money/sell/buy, new shards, crystals, search, fill, bank, depths, auction) and 40 that were plain vanilla items now have their own picture (hub, You, travel, island menus, loading/empty). 67 custom icons; only the 9 unused shop-category keys stay vanilla.
+- Bases with special vanilla models (bed, grass block, compass, shield, chest, filled map, leather chestplate, ender chest) moved to simple items so the pack can draw them; players without the pack see that simple item.
+- `build_icons.py check` accepts 64x64; pack budget 400 KB (zip about 267 KB).
 ### GUI frame layer on (owner 2 Nov 2026: "a full improvement on all the GUIs")
 - `menus.yml gui.font.enabled` true (v2 moves an untouched `false`): Java players with the pack see every menu as the Phoenix panel with the title plaque and soft tiles, plus the logo on the scoreboard and tab. Bedrock and players without the pack keep the plain chest. Switch off in /admin if anything looks wrong.
 ### Achievements fix and new achievements (owner 2 Nov 2026: "it gives me achievements when I'm not doing anything")

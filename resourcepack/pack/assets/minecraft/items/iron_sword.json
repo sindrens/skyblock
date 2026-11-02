@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_staff",
+     "type": "minecraft:model"
+    },
+    "when": "feature/staff"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/iron_sword",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

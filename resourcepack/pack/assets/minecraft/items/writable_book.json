@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_quests",
+     "type": "minecraft:model"
+    },
+    "when": "feature/quests"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_notes",
+     "type": "minecraft:model"
+    },
+    "when": "island/notes"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/writable_book",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

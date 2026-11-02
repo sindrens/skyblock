@@ -58,7 +58,7 @@ MANIFEST = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 # 1.21.5 .. 26.3 (v1 values; re-check the 26.3 number in the Paper changelog before a release).
 FORMAT_MIN, FORMAT_MAX = 55, 97
 DESCRIPTION = 'Phoenix Skyblock icons'
-SIZE_BUDGET = 250 * 1024   # GUI-FONT: the frame layer adds about 20-30 KB (I7 target 200 KB, hard limit 1 MB)
+SIZE_BUDGET = 400 * 1024   # icons v4 (64x64 cartoon, 2 Nov 2026) + frame layer; hard limit 1 MB
 
 KEY_RE = re.compile(r'^[a-z0-9_]+(/[a-z0-9_]+)?$')
 MEANINGS = ('money', 'reward', 'move', 'depths', 'skills', 'people', 'home', 'danger', 'neutral', 'locked',
@@ -492,8 +492,8 @@ def png_problems(path, label):
             w, h, depth, ctype = png.header(f.read())
         except ValueError as e:
             return ['%s: %s' % (rel(path), e)]
-    if w != h or w not in (16, 32) or depth != 8 or ctype != 6:
-        return ['%s: must be a 16x16 or 32x32 8-bit RGBA PNG (got %dx%d, depth %d, colour type %d)' % (rel(path), w, h, depth, ctype)]
+    if w != h or w not in (16, 32, 64) or depth != 8 or ctype != 6:
+        return ['%s: must be a 16x16, 32x32 or 64x64 8-bit RGBA PNG (got %dx%d, depth %d, colour type %d)' % (rel(path), w, h, depth, ctype)]
     return []
 
 

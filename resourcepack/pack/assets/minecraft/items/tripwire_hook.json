@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/travel_crate_yard",
+     "type": "minecraft:model"
+    },
+    "when": "travel/crate_yard"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/tripwire_hook",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

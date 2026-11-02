@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_enchanter",
+     "type": "minecraft:model"
+    },
+    "when": "feature/enchanter"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/enchanting_table",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

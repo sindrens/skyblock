@@ -3,6 +3,14 @@
   "model": "minecraft:item/amethyst_shard",
   "type": "minecraft:model"
  },
+ "anvil": {
+  "model": "minecraft:item/anvil",
+  "type": "minecraft:model"
+ },
+ "armor_stand": {
+  "model": "minecraft:item/armor_stand",
+  "type": "minecraft:model"
+ },
  "arrow": {
   "model": "minecraft:item/arrow",
   "type": "minecraft:model"
@@ -17,6 +25,14 @@
  },
  "book": {
   "model": "minecraft:item/book",
+  "type": "minecraft:model"
+ },
+ "bookshelf": {
+  "model": "minecraft:item/bookshelf",
+  "type": "minecraft:model"
+ },
+ "campfire": {
+  "model": "minecraft:item/campfire",
   "type": "minecraft:model"
  },
  "chest_minecart": {
@@ -958,6 +974,14 @@
   "property": "minecraft:context_dimension",
   "type": "minecraft:select"
  },
+ "cobweb": {
+  "model": "minecraft:item/cobweb",
+  "type": "minecraft:model"
+ },
+ "comparator": {
+  "model": "minecraft:item/comparator",
+  "type": "minecraft:model"
+ },
  "diamond": {
   "model": "minecraft:item/diamond",
   "type": "minecraft:model"
@@ -966,8 +990,20 @@
   "model": "minecraft:item/emerald",
   "type": "minecraft:model"
  },
+ "enchanting_table": {
+  "model": "minecraft:item/enchanting_table",
+  "type": "minecraft:model"
+ },
  "ender_eye": {
   "model": "minecraft:item/ender_eye",
+  "type": "minecraft:model"
+ },
+ "ender_pearl": {
+  "model": "minecraft:item/ender_pearl",
+  "type": "minecraft:model"
+ },
+ "experience_bottle": {
+  "model": "minecraft:item/experience_bottle",
   "type": "minecraft:model"
  },
  "gold_block": {
@@ -1081,8 +1117,24 @@
   "model": "minecraft:item/iron_bars",
   "type": "minecraft:model"
  },
+ "iron_chestplate": {
+  "model": "minecraft:item/iron_chestplate",
+  "type": "minecraft:model"
+ },
+ "iron_door": {
+  "model": "minecraft:item/iron_door",
+  "type": "minecraft:model"
+ },
  "iron_pickaxe": {
   "model": "minecraft:item/iron_pickaxe",
+  "type": "minecraft:model"
+ },
+ "iron_sword": {
+  "model": "minecraft:item/iron_sword",
+  "type": "minecraft:model"
+ },
+ "knowledge_book": {
+  "model": "minecraft:item/knowledge_book",
   "type": "minecraft:model"
  },
  "lime_concrete": {
@@ -1093,12 +1145,32 @@
   "model": "minecraft:item/lime_dye",
   "type": "minecraft:model"
  },
+ "map": {
+  "model": "minecraft:item/map",
+  "type": "minecraft:model"
+ },
  "name_tag": {
   "model": "minecraft:item/name_tag",
   "type": "minecraft:model"
  },
+ "oak_door": {
+  "model": "minecraft:item/oak_door",
+  "type": "minecraft:model"
+ },
+ "oak_fence_gate": {
+  "model": "minecraft:item/oak_fence_gate",
+  "type": "minecraft:model"
+ },
+ "oak_sapling": {
+  "model": "minecraft:item/oak_sapling",
+  "type": "minecraft:model"
+ },
  "oak_sign": {
   "model": "minecraft:item/oak_sign",
+  "type": "minecraft:model"
+ },
+ "orange_dye": {
+  "model": "minecraft:item/orange_dye",
   "type": "minecraft:model"
  },
  "paper": {
@@ -1113,8 +1185,28 @@
   "model": "minecraft:block/red_concrete",
   "type": "minecraft:model"
  },
+ "repeater": {
+  "model": "minecraft:item/repeater",
+  "type": "minecraft:model"
+ },
+ "smithing_table": {
+  "model": "minecraft:item/smithing_table",
+  "type": "minecraft:model"
+ },
  "tnt": {
   "model": "minecraft:block/tnt",
+  "type": "minecraft:model"
+ },
+ "totem_of_undying": {
+  "model": "minecraft:item/totem_of_undying",
+  "type": "minecraft:model"
+ },
+ "tripwire_hook": {
+  "model": "minecraft:item/tripwire_hook",
+  "type": "minecraft:model"
+ },
+ "writable_book": {
+  "model": "minecraft:item/writable_book",
   "type": "minecraft:model"
  }
 }

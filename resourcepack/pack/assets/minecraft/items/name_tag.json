@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/feature_titles",
+     "type": "minecraft:model"
+    },
+    "when": "feature/titles"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/ui_type",
      "type": "minecraft:model"
     },

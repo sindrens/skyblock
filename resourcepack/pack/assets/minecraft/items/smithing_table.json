@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_forge",
+     "type": "minecraft:model"
+    },
+    "when": "feature/forge"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/smithing_table",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_chat_colors",
+     "type": "minecraft:model"
+    },
+    "when": "island/chat_colors"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/orange_dye",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

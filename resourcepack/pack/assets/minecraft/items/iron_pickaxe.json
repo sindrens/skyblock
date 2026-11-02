@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/feature_depths",
+     "type": "minecraft:model"
+    },
+    "when": "feature/depths"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/feature_depths_lit",
      "type": "minecraft:model"
     },

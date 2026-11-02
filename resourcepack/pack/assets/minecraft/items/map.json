@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_visit",
+     "type": "minecraft:model"
+    },
+    "when": "island/visit"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/travel_visit",
+     "type": "minecraft:model"
+    },
+    "when": "travel/visit"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/map",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/feature_travel",
+     "type": "minecraft:model"
+    },
+    "when": "feature/travel"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/nav_search",
      "type": "minecraft:model"
     },

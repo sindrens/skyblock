@@ -3,6 +3,13 @@
   "cases": [
    {
     "model": {
+     "model": "phoenix:item/icon/island_chat_off",
+     "type": "minecraft:model"
+    },
+    "when": "island/chat_off"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/state_off",
      "type": "minecraft:model"
     },
