@@ -145,6 +145,9 @@ crates:
   # is fresh random. A jackpot cosmetic you already own pays its fallback crystals (no re-roll).
   # band: common | mid | rare | jackpot · draw: rewards per band per open · chance: only used inside the jackpot band.
   # PROPOSAL numbers (the balance run sets the value ceiling per month).
+  # Month tables (owner M1/M4): add months: {"2026-12": {rewards: [...same rows with band...]}} to give a month its own
+  # pool; a month without one uses the rows below (staff are warned eclipse.warn-days before, crates-settings.yml).
+  # Keys never expire and open the table of the month they are opened in.
   eclipse:
     rarity: mythic
     icon: vault

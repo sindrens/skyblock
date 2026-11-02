@@ -105,6 +105,25 @@ public final class CratesSettings extends ModuleConfig {
             level = Setting.Level.OWNER)
     public int seasonId = 1;
 
+    // ------------------------------------------------------------------ Eclipse (Complete Developer Spec, owner M1-M5, F6, V5)
+
+    @Setting(path = "eclipse.crate", desc = "Crate id of the Eclipse Crate (monthly tables, teaser, credits purchase).")
+    public String eclipseCrate = "eclipse";
+
+    @Setting(path = "eclipse.store-purchase.enabled", desc = "Owner V5 (\"I am the owner and I flip the flag\"): players buy an "
+            + "Eclipse key with credits in its preview. Bought keys are tradeable (G4). No limit (R4).")
+    public boolean eclipseBuyEnabled = true;
+
+    @Setting(path = "eclipse.store-purchase.price", desc = "Credits per Eclipse key (earned credits are used first).", min = 1, max = 1_000_000)
+    public int eclipseBuyPrice = 400;
+
+    @Setting(path = "eclipse.teaser-day", desc = "From this day of the month players see \"Next month's Eclipse: ???\" (owner M4: the 25th). 0 = off.", min = 0, max = 31)
+    public int eclipseTeaserDay = 25;
+
+    @Setting(path = "eclipse.warn-days", desc = "Staff are warned this many days before a month that has no Eclipse table in "
+            + "crates.yml (eclipse.months.<yyyy-MM>; owner M5). That month uses the base table.", min = 0, max = 31)
+    public int eclipseWarnDays = 7;
+
     @Setting(path = "physical.enabled", desc = "Crate blocks on the crate yard pedestals (build points 'crates', M10.3): "
             + "the crate is placed as a real vanilla block with a hologram above it. Click opens 1 (with the in-world "
             + "animation), sneak-click shows the rewards; no key = the rewards + how to get keys.")

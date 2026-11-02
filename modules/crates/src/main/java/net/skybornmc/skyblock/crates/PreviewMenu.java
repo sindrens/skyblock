@@ -29,6 +29,8 @@ final class PreviewMenu extends Menu {
     static final int SLOT_WITHDRAW_ONE = 37;
     /** M10.4: withdraw a chosen amount (number picker, Bedrock-safe). */
     static final int SLOT_WITHDRAW_AMOUNT = 43;
+    /** Eclipse (owner F6/V5): buy a key with credits. */
+    static final int SLOT_BUY = 41;
     static final int[] REWARD_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
     /** Tiered crates (Eclipse): one full row per band (common 9-17, mid 18-26, rare 27-35), the jackpots in the top row. */
     static final int[] BAND_ROW_START = {9, 18, 27};
@@ -118,6 +120,19 @@ final class PreviewMenu extends Menu {
                 click -> open(click.player(), m.settings.maxPerClick));
         if (m.keyItems().enabled()) {
             withdrawButtons(crate, keys);
+        }
+        if (m.eclipse().buyable(crateId)) {
+            int price = m.settings.eclipseBuyPrice;
+            set(SLOT_BUY, service.item(Material.DIAMOND, viewer, CratesModule.ID, "eclipse.buy", Msg.number("price", price),
+                    Msg.mm("key", m.keyMini(crateId))), click -> openChild(new net.skybornmc.skyblock.common.menu.ConfirmMenu(
+                    v -> service.text(v, CratesModule.ID, "eclipse.buy-crumb"),
+                    service.item(Material.DIAMOND, viewer, CratesModule.ID, "eclipse.buy", Msg.number("price", price), Msg.mm("key", m.keyMini(crateId))),
+                    v -> service.lines(v, CratesModule.ID, "eclipse.buy-details", Msg.number("price", price)),
+                    p -> m.eclipse().buy(p, () -> reopen(p)), p -> { })));
+        }
+        if (crate.id().equals(m.settings.eclipseCrate) && EclipseFeature.teaser(java.time.LocalDate.now(CrateCatalog.clock),
+                m.settings.eclipseTeaserDay)) {
+            set(39, service.item(Material.ENDER_EYE, viewer, CratesModule.ID, "eclipse.teaser-item"));
         }
     }
 

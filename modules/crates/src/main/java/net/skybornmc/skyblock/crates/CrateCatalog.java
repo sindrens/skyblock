@@ -160,8 +160,38 @@ final class CrateCatalog {
 
     private final Map<String, Crate> crates;
 
+    /** crate id → month ("2026-11") → that month's table (Eclipse, owner M1/M4: the rewards change monthly). */
+    private final Map<String, Map<String, Crate>> monthly;
+    /** Clock of the month tables (Europe/Oslo by default; tests set a fixed one). */
+    static volatile java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Oslo"));
+
     private CrateCatalog(Map<String, Crate> crates) {
+        this(crates, Map.of());
+    }
+
+    private CrateCatalog(Map<String, Crate> crates, Map<String, Map<String, Crate>> monthly) {
         this.crates = Collections.unmodifiableMap(crates);
+        this.monthly = Map.copyOf(monthly);
+    }
+
+    /** The month key now, e.g. {@code 2026-11}. */
+    static String month() {
+        return java.time.YearMonth.now(clock).toString();
+    }
+
+    /** The month after this one. */
+    static String nextMonth() {
+        return java.time.YearMonth.now(clock).plusMonths(1).toString();
+    }
+
+    /** True when the crate has its own table for {@code month}. */
+    boolean hasMonth(String crateId, String month) {
+        return monthly.getOrDefault(crateId, Map.of()).containsKey(month);
+    }
+
+    /** True when the crate uses month tables at all ({@code months:} in crates.yml). */
+    boolean monthlyCrate(String crateId) {
+        return monthly.containsKey(crateId);
     }
 
     static CrateCatalog empty() {
@@ -178,8 +208,14 @@ final class CrateCatalog {
         return crates().stream().filter(c -> !c.hidden()).toList();
     }
 
+    /** The crate; a crate with month tables gives this month's table (or its base table when the month has none). */
     Optional<Crate> crate(String id) {
-        return id == null ? Optional.empty() : Optional.ofNullable(crates.get(id.trim().toLowerCase(Locale.ROOT)));
+        if (id == null) {
+            return Optional.empty();
+        }
+        String key = id.trim().toLowerCase(Locale.ROOT);
+        Crate month = monthly.getOrDefault(key, Map.of()).get(month());
+        return Optional.ofNullable(month != null ? month : crates.get(key));
     }
 
     List<String> ids() {
@@ -283,7 +319,60 @@ final class CrateCatalog {
             checked.put(c.id(), new Crate(c.id(), c.rarity(), c.icon(), c.order(), c.pity(), c.hidden(), c.fallback(), fixed,
                     c.bands(), c.draws()));
         }
-        return new CrateCatalog(checked);
+        return new CrateCatalog(checked, months(yaml, root, checked, warn));
+    }
+
+    /**
+     * Month tables: {@code crates.<id>.months.<yyyy-MM>.rewards} (and optionally {@code draw}) replace the crate's rewards in
+     * that month; everything else comes from the crate. Each month is parsed like a crate of its own, next to the other
+     * crates (so keys to them stay valid).
+     */
+    private static Map<String, Map<String, Crate>> months(YamlConfiguration yaml, ConfigurationSection root, Map<String, Crate> base,
+                                                          Consumer<String> warn) {
+        Map<String, Map<String, Crate>> out = new LinkedHashMap<>();
+        for (String rawId : root.getKeys(false)) {
+            String id = rawId.toLowerCase(Locale.ROOT);
+            ConfigurationSection months = root.getConfigurationSection(rawId + ".months");
+            if (months == null || !base.containsKey(id)) {
+                continue;
+            }
+            Map<String, Crate> byMonth = new LinkedHashMap<>();
+            for (String month : months.getKeys(false)) {
+                if (!month.matches("\\d{4}-\\d{2}")) {
+                    warn.accept("crates.yml → crates." + id + ".months." + month + ": the month must look like 2026-11, skipped");
+                    continue;
+                }
+                YamlConfiguration tmp = new YamlConfiguration();
+                for (String other : root.getKeys(false)) {
+                    ConfigurationSection sec = root.getConfigurationSection(other);
+                    if (sec == null) {
+                        continue;
+                    }
+                    for (String k : sec.getKeys(false)) {
+                        if (!k.equals("months")) {
+                            tmp.set(ROOT + "." + other + "." + k, sec.get(k));
+                        }
+                    }
+                }
+                ConfigurationSection m = months.getConfigurationSection(month);
+                tmp.set(ROOT + "." + rawId + ".rewards", m.getMapList("rewards"));
+                if (m.isConfigurationSection("draw")) {
+                    tmp.set(ROOT + "." + rawId + ".draw", m.getConfigurationSection("draw").getValues(false));
+                }
+                String where = "crates.yml → crates." + id + ".months." + month;
+                CrateCatalog parsed = load(tmp, w -> {
+                    if (w.contains("crates." + id + ".") || w.contains("crates." + id + ":")) {
+                        warn.accept(w.replace("crates.yml → crates." + id, where)); // other crates were reported already
+                    }
+                });
+                Crate c = parsed.crates.get(id);
+                if (c != null) {
+                    byMonth.put(month, c);
+                }
+            }
+            out.put(id, Map.copyOf(byMonth));
+        }
+        return out;
     }
 
     private static Optional<Reward> parseReward(Map<?, ?> map, String crateRarity, long crateFallback, String where,

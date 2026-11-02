@@ -59,6 +59,9 @@ public final class TxReason {
     /** Money, crystals and shards from crate opens (PHASE-10 M10.1); a source on the economy dashboard (M10.13). */
     public static final String CRATE_REWARD = "crate_reward";
 
+    /** Credits paid for an Eclipse key (owner F6/V5: the Eclipse credits purchase); a sink. */
+    public static final String CRATE_KEY_PURCHASE = "crate_key_purchase";
+
     /** The credit a player's thanks gives the starter of a global booster (PHASE-10 M10.2, RW2); new earned credits. */
     public static final String BOOSTER_THANKS = "booster_thanks";
 

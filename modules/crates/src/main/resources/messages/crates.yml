@@ -516,3 +516,29 @@ key-items:
     id: "<c:muted>ID {id}"
     action-input: "USE"
     action-text: "to put it on your keys"
+
+# Eclipse Crate around its pool (owner M1-M5, F6, V5).
+eclipse:
+  teaser: "<prefix><bold><grad:mythic>ECLIPSE</grad></bold> <c:text>Next month's Eclipse Crate arrives on the 1st of <c:value><month></c:value>: <c:muted>??? <sym:dot> new rewards"
+  staff-missing: "<prefix><c:warning><sym:cross></c:warning> <c:text>Staff: crates.yml has no Eclipse table for <c:value><month></c:value> (crates.eclipse.months.<month>). That month uses the base table."
+  teaser-item:
+    name: "<bold><grad:mythic>Next month: ???</grad></bold>"
+    lore:
+      - "<c:text>A new Eclipse table arrives on the 1st."
+      - "<c:muted>Keys never expire: they open the table"
+      - "<c:muted>of the month you open them in."
+  buy:
+    name: "<area:money>Buy <key> <c:muted>· <cur:credits><sym:credits> <price></cur:credits>"
+    lore:
+      - "<c:text>One <key> for <cur:credits><sym:credits> <price></cur:credits><c:text>."
+      - "<c:muted>Earned credits are used first."
+      - "<c:muted>Bought keys can be traded."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+  buy-crumb: "Buy an Eclipse key?"
+  buy-details:
+    - "<c:text>Pay <cur:credits><sym:credits> <price></cur:credits> <c:text>for 1 Eclipse key."
+    - "<c:muted>It goes to your keys (tradeable)."
+  bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought 1 Eclipse key for <cur:credits><sym:credits> <price></cur:credits><c:text>. Open it here or trade it."
+  buy-poor: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><sym:credits> <price></cur:credits><c:text>. <click:run_command:'/store'><c:action>/store</c:action></click>"
+  buy-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The purchase failed; nothing was charged. Try again."

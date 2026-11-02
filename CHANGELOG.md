@@ -1,6 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Eclipse Crate: months, teaser, credits, /warp, rods
+- **Month tables** (owner M1/M4): `crates.yml crates.eclipse.months.<yyyy-MM>.rewards` give a month its own tiered pool; without one the base pool is used and staff with `skyblock.crates.admin` are told `eclipse.warn-days` (7) days before (M5). Keys never expire and open the table of the month they are opened in.
+- **Teaser** from the 25th (M4): a join line once per month and a "Next month: ???" tile in the Eclipse preview.
+- **Buy with credits** (F6/V5, on): an Eclipse preview button (confirm screen) buys 1 tradeable key for `eclipse.store-purchase.price` (400) credits, earned first, in one transaction with the key; no limit. Ledger reason `crate_key_purchase`, audit `eclipse_buy`.
+- **`/warp [place]`** (`/warps`): `/warp crates` and every Travel place by name (aliases in `navigation.yml warp.aliases`); no name opens Travel.
+- **Fishing rod textures** per rod tier and the rod skins.
 ### Icons v4: chunky cartoon, 64x64 (owner 2 Nov 2026)
 - Every menu icon redrawn by `tools/cartoon/render.py` (thick outline, flat colours, highlight; art is code): the 27 old ones remade (readable $ on money/sell/buy, new shards, crystals, search, fill, bank, depths, auction) and 40 that were plain vanilla items now have their own picture (hub, You, travel, island menus, loading/empty). 67 custom icons; only the 9 unused shop-category keys stay vanilla.
 - Bases with special vanilla models (bed, grass block, compass, shield, chest, filled map, leather chestplate, ender chest) moved to simple items so the pack can draw them; players without the pack see that simple item.

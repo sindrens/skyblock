@@ -138,11 +138,13 @@ public final class CratesModule implements SkyblockModule, Listener {
         keysService = new CrateKeysService(this);
         fragments = new Fragments(this);
         keyItems = new KeyItems(this);
+        eclipse = new EclipseFeature(this);
         keyItems.enable();
         // Published right away (keys only need the database): the AFK pool hands over its pending keys on its first check.
         core.services().register(ID, CrateKeys.class, keysService);
         registerCommand();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
+        Bukkit.getPluginManager().registerEvents(eclipse, core.plugin());
         Bukkit.getPluginManager().registerEvents(physical, core.plugin());
         Bukkit.getPluginManager().registerEvents(yard, core.plugin());
         registerSetting();
@@ -296,6 +298,12 @@ public final class CratesModule implements SkyblockModule, Listener {
             core.plugin().getLogger().log(Level.SEVERE, "crates.yml in the jar is broken", e);
         }
         return yaml;
+    }
+
+    private EclipseFeature eclipse;
+
+    EclipseFeature eclipse() {
+        return eclipse;
     }
 
     CrateCatalog catalog() {
