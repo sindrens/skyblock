@@ -193,12 +193,14 @@ final class Tracker implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onJoin(PlayerJoinEvent event) {
+        lastActive.remove(event.getPlayer().getUniqueId()); // a join alone is not playing
         Player player = event.getPlayer();
         attach(player, profiles().profileKey(player.getUniqueId()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
+        lastActive.remove(event.getPlayer().getUniqueId());
         detach(event.getPlayer().getUniqueId());
     }
 
@@ -497,14 +499,80 @@ final class Tracker implements Listener {
         add(event.getPlayer().getUniqueId(), Metric.TOOL_BEST_PRESTIGE, tool.prestige());
     }
 
+    /** Last real action per player (move to another block, interact, chat, command, block, hit). */
+    private final Map<UUID, Long> lastActive = new java.util.concurrent.ConcurrentHashMap<>();
+
+    void active(Player player) {
+        lastActive.put(player.getUniqueId(), System.currentTimeMillis());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMove(org.bukkit.event.player.PlayerMoveEvent event) {
+        org.bukkit.Location from = event.getFrom();
+        org.bukkit.Location to = event.getTo();
+        if (from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ()) {
+            active(event.getPlayer());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onCrateOpened(net.skybornmc.skyblock.common.crate.CrateOpenedEvent event) {
+        int n = event.rewards() == null ? 0 : event.rewards().size();
+        if (n > 0) {
+            add(event.player(), Metric.CRATES_OPENED, n);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {
+        active(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        active(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChat(io.papermc.paper.event.player.AsyncChatEvent event) {
+        lastActive.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
+    }
+
+    /** True when the minute counts: recently active and not AFK, in the AFK pool, in staff mode or vanished. */
+    private boolean countsAsActive(Player player, long now) {
+        int window = config().playtimeActiveSeconds;
+        if (window <= 0) {
+            return true;
+        }
+        Long last = lastActive.get(player.getUniqueId());
+        return Tracker.activeMinute(last == null ? 0 : last, now, window, flag(player, "afk"), flag(player, "afk_pool"),
+                player.hasMetadata("vanished") || player.getScoreboardTags().contains("staff_mode"));
+    }
+
+    private boolean flag(Player player, String key) {
+        if (!core.placeholders().has(key)) {
+            return false;
+        }
+        return core.placeholders().text(player, key).map(v -> !v.isBlank() && !v.equals("-") && !v.equalsIgnoreCase("false")).orElse(false);
+    }
+
+    /** Pure: a minute counts when the last action is inside the window and nothing marks the player idle. */
+    static boolean activeMinute(long lastAction, long now, int windowSeconds, boolean afk, boolean pool, boolean staff) {
+        return !afk && !pool && !staff && lastAction > 0 && now - lastAction <= windowSeconds * 1000L;
+    }
+
     private void playtimeTick() {
         if (!config().playtime) {
             return;
         }
+        long now = System.currentTimeMillis();
         for (UUID uuid : List.copyOf(online.keySet())) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player == null || !countsAsActive(player, now)) {
+                continue;
+            }
             add(uuid, Metric.PLAYTIME_MINUTES, 1);
             ProfileProgress p = online.get(uuid);
-            Player player = Bukkit.getPlayer(uuid);
             if (p != null && player != null && !resetting) {
                 islands.minute(player, p.key());
             }

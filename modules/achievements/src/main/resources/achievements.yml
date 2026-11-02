@@ -41,6 +41,7 @@
 #   wardrobe_sets_owned   sets owned                         wardrobe_best_level highest set level
 #   tool_best_level       highest custom tool level          tool_best_prestige  highest tool prestige
 #   balance_peak          most money held at once
+#   crates_opened         crate rewards won (Eclipse: 10 per open)   guide_hand_ins   quests/finds handed in to Kindle
 #
 # island-achievements.<id> (AC3): progress shared by every member of the island (coop players and visitors never count).
 #   Same keys as achievements, without category. team-only: true = only team islands (solo islands don't see it).
@@ -361,6 +362,75 @@ achievements:
     metric: islands_visited
     goals: [5, 25, 100, 500]
     title: {id: explorer, display: "<c:sky_blue>Explorer", rarity: rare}
+
+  # Added 2 Nov 2026 (owner: "more relevant achievements that make sense").
+  kindles_friend:
+    name: "<grad:phoenix>Kindle's Friend</grad>"
+    description: ["<c:text>Hand quests and finds in", "<c:text>to Kindle, your island guide."]
+    icon: blaze_powder
+    category: island
+    metric: guide_hand_ins
+    goals: [1, 25, 100, 500]
+    title: {id: kindles_friend, display: "<grad:phoenix>Kindle's Friend</grad>", rarity: epic}
+  key_turner:
+    name: "<c:flame>Key Turner"
+    description: ["<c:text>Win rewards from crates."]
+    icon: tripwire_hook
+    category: economy
+    metric: crates_opened
+    goals: [1, 50, 500, 2500, 10000]
+    title: {id: key_turner, display: "<c:flame>Key Turner", rarity: epic}
+  first_coins:
+    name: "<c:flame>Pocket Money"
+    description: ["<c:text>Hold money at once."]
+    icon: gold_nugget
+    category: economy
+    metric: balance_peak
+    goals: [10000, 100000]
+  green_fingers:
+    name: "<pillar:farming>Green Fingers"
+    description: ["<c:text>Your first harvests on", "<c:text>your island."]
+    icon: wheat_seeds
+    category: island
+    metric: island_crops_harvested
+    goals: [50]
+  first_tree:
+    name: "<pillar:foraging>Timber!"
+    description: ["<c:text>Chop your first logs on", "<c:text>your island."]
+    icon: oak_sapling
+    category: island
+    metric: island_logs_chopped
+    goals: [32]
+  stone_cold:
+    name: "<pillar:mining>Stone Cold"
+    description: ["<c:text>Mine your first blocks on", "<c:text>your island."]
+    icon: stone_pickaxe
+    category: island
+    metric: island_blocks_mined
+    goals: [100]
+  multi_talent:
+    name: "<c:flame>Multi-Talent"
+    description: ["<c:text>Get every open skill to", "<c:text>level 10 or higher."]
+    icon: amethyst_shard
+    category: skills
+    metric: skill_total
+    goals: [30, 60, 120]
+  trader:
+    name: "<c:flame>Fair Trade"
+    description: ["<c:text>Finish trades with players."]
+    icon: emerald
+    category: economy
+    metric: trades_completed
+    goals: [1, 25]
+  globetrotter:
+    name: "<c:sky_blue>Globetrotter"
+    description: ["<c:text>Visit many islands", "<c:text>(each island once a day)."]
+    icon: filled_map
+    category: social
+    metric: islands_visited
+    goals: [1000]
+    title: {id: globetrotter, display: "<c:sky_blue>Globetrotter", rarity: legendary}
+    hidden: true
 
 # ------------------------------------------------------------------ island achievements (AC3, shared by the island)
 island-achievements:

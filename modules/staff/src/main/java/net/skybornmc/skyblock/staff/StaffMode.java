@@ -85,6 +85,9 @@ final class StaffMode extends StaffFeature implements Listener {
         }
     }
 
+    /** Scoreboard tag while in staff mode (read by other modules, e.g. achievements playtime). */
+    static final String SCOREBOARD_TAG = "staff_mode";
+
     private record Session(byte[] contents, GameMode gameMode, boolean allowFlight, boolean flying, boolean wasVanished,
                            int xpLevel, float xpProgress) {
     }
@@ -179,6 +182,7 @@ final class StaffMode extends StaffFeature implements Listener {
         core.sounds().play(player, "unlock");
         notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-on", Msg.p("staff", player.getName()));
         audit("staff_mode_on", player, null, null, Map.of());
+        player.addScoreboardTag(SCOREBOARD_TAG); // other modules (achievements) see staff mode without a dependency
         // F15: islands turns the protection bypass on for owner/admin (and off again on exit).
         Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, true));
     }
@@ -212,6 +216,7 @@ final class StaffMode extends StaffFeature implements Listener {
             notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-off", Msg.p("staff", player.getName()));
         }
         audit("staff_mode_off", player, null, null, Map.of());
+        player.removeScoreboardTag(SCOREBOARD_TAG);
         Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, false));
     }
 
@@ -563,6 +568,7 @@ final class StaffMode extends StaffFeature implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.removeScoreboardTag(SCOREBOARD_TAG); // a crash in staff mode leaves the tag on the saved player
         purge(player);
         if (!player.hasPermission(StaffPerms.MODE)) {
             return;

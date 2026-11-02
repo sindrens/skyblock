@@ -16,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AchievementRegistryTest {
 
     @Test
-    void bundledFileHas30AchievementsInSixCategories() {
+    void bundledFileHas39AchievementsInSixCategories() {
         AchievementRegistry r = Fixtures.registry();
-        assertEquals(30, r.size());
+        assertEquals(39, r.size(), "30 starters + 9 added 2 Nov 2026");
         assertEquals(List.of("skills", "island", "combat", "economy", "gear", "social"),
                 r.categories().stream().map(Category::id).toList());
         for (Category c : r.categories()) {

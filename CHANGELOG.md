@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Achievements fix and new achievements (owner 2 Nov 2026: "it gives me achievements when I'm not doing anything")
+- **Fix:** playtime achievements (First Steps, Dedicated, Unstoppable) counted every online minute. Now a minute counts only when you moved to another block, interacted, chatted or used a command in the last `tracking.playtime-active-seconds` (90), and were not AFK, in the AFK pool, in staff mode or vanished.
+- Staff mode sets the scoreboard tag `staff_mode` (other modules can see it without depending on staff).
+- **9 new achievements:** Kindle's Friend (hand-ins to Kindle), Key Turner (crate rewards), Pocket Money, Green Fingers, Timber!, Stone Cold (first steps on your island), Multi-Talent, Fair Trade, Globetrotter (secret). New metrics `crates_opened` and `guide_hand_ins`.
 ### Island guide Kindle (owner idea, 2 Nov 2026; docs/planning/ISLAND_GUIDE.md)
 - New module `guide`: one NPC per island next to the island home (Mannequin, name + status line). Click (any button, Bedrock tap) opens his menu: next step, Challenges (task book), Quests, Milestones (ready count), Upgrades, Masteries, Island level, The Depths (your tier), Help. Buttons of modules that are off are left out.
 - Island level-up: online members get "Kindle has something new [Talk]" and his status line shows a star until someone opens him.

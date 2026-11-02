@@ -29,6 +29,10 @@ enum Metric {
     TRADES_COMPLETED("trades_completed", Kind.COUNTER, Unit.COUNT),
     /** Island visits, one per island per day (audit row {@code island/island_visit}). */
     ISLANDS_VISITED("islands_visited", Kind.COUNTER, Unit.COUNT),
+    /** Crate rewards won (one per reward of an open; {@code CrateOpenedEvent}). */
+    CRATES_OPENED("crates_opened", Kind.COUNTER, Unit.COUNT),
+    /** Quests and finds handed in to the island guide Kindle (audit row {@code item/guide_hand_in}). */
+    GUIDE_HAND_INS("guide_hand_ins", Kind.COUNTER, Unit.COUNT),
 
     // ------------------------------------------------------------------ gauges (services)
     SKILL_MINING("skill_mining", Kind.GAUGE, Unit.LEVEL),

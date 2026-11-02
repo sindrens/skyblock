@@ -1,0 +1,10 @@
+-proc:none
+-d
+/tmp/claude-0/-home-claude/6ff31a36-cf43-5096-abe3-e182216770b6/scratchpad/jc
+modules/achievements/src/main/java/net/skybornmc/skyblock/achievements/AchievementsConfig.java
+modules/achievements/src/main/java/net/skybornmc/skyblock/achievements/AuditFeeds.java
+modules/achievements/src/main/java/net/skybornmc/skyblock/achievements/Metric.java
+modules/achievements/src/main/java/net/skybornmc/skyblock/achievements/Tracker.java
+modules/achievements/src/test/java/net/skybornmc/skyblock/achievements/AchievementRegistryTest.java
+modules/staff/src/main/java/net/skybornmc/skyblock/staff/StaffMode.java
+modules/achievements/src/test/java/net/skybornmc/skyblock/achievements/ActivePlaytimeTest.java
