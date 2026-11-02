@@ -328,8 +328,16 @@ final class MemberManager {
             islands.fail(player, "accept.expired");
             return;
         }
-        if (islands.islandOfPlayer(islands.key(player)).isPresent()) {
-            islands.fail(player, "accept.has-island");
+        Optional<Island> current = islands.islandOfPlayer(islands.key(player));
+        if (current.isPresent()) {
+            // Owner 3 Nov 2026: every player starts with an island, so accepting an invite offers to replace it. Only an
+            // island you lead alone can be replaced; with other members on it, hand it over or leave first.
+            Island own = current.get();
+            if (own.roleOrNull(key) == Role.LEADER && own.memberCount() <= 1) {
+                confirmReplace(player, own, pending);
+            } else {
+                islands.fail(player, "accept.has-island");
+            }
             return;
         }
         if (!begin(player)) {
@@ -373,6 +381,40 @@ final class MemberManager {
                 }
             }
         }, main);
+    }
+
+    /**
+     * The "your island will be deleted" screen (asked twice, it can't be undone). Confirm removes the solo island (no
+     * profile reset: money, skills, personal bank and items stay; the island bank goes to the player like a disband)
+     * and then accepts the invite.
+     */
+    private void confirmReplace(Player player, Island own, Invites.Invite pending) {
+        Island target = islands.byId(pending.islandId());
+        String ownName = islands.displayName(own);
+        String targetName = target == null ? "?" : islands.displayName(target);
+        int level = core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                .map(p -> p.islandLevel(own.id())).orElse(0);
+        core.menus().open(player, new ConfirmMenu(
+                viewer -> module.text(viewer, "accept.replace.crumb"),
+                core.menus().item(Material.TNT, player, IslandsModule.ID, "accept.replace.shown", Msg.p("island", ownName),
+                        Msg.p("target", targetName), Msg.number("level", level)),
+                viewer -> module.lines(viewer, "accept.replace.details", Msg.p("island", ownName), Msg.p("target", targetName),
+                        Msg.number("level", level)),
+                viewer -> module.lifecycle().remove(own, IslandStore.REASON_JOIN, Actor.player(viewer), islands.key(viewer))
+                        .whenComplete((result, error) -> {
+                            if (error != null) {
+                                islands.databaseError(viewer, "accept", error);
+                                return;
+                            }
+                            if (result instanceof IslandStore.DisbandResult.Disbanded && viewer.isOnline()) {
+                                msg.send(viewer, "accept.replace.removed", Msg.p("island", ownName));
+                                portalJoins.add(viewer.getUniqueId()); // bring them to the new island once joined
+                                accept(viewer, pending);
+                            } else {
+                                islands.fail(viewer, "error.island-gone");
+                            }
+                        }),
+                viewer -> msg.send(viewer, "accept.replace.cancelled")).twoStep());
     }
 
     private void joined(Player player, MemberStore.AcceptResult.Joined joined) {

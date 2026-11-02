@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TutorialStoreTest {
 
     private static final Logger LOG = Logger.getLogger("tutorial-test");
-    private static final TutorialFlow FLOW = TutorialFlow.parse(new TutorialConfig().steps);
+    private static final TutorialFlow FLOW = TutorialFlow.parse(TutorialConfig.STEPS_V1); // the rules are tested on the long v1 flow
 
     @TempDir
     Path dir;

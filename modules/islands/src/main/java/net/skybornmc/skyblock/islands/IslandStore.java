@@ -62,6 +62,8 @@ public final class IslandStore {
 
     /** {@code islands.deleted_reason}: the leader disbanded it (no creation cooldown: owner answers 121/161/259). */
     static final String REASON_DISBAND = "disband";
+    /** Owner 3 Nov 2026: a solo island removed because its leader accepted an invite to another island (no profile reset). */
+    static final String REASON_JOIN = "join";
     /** Staff removed it ({@code /isadmin delete}). */
     static final String REASON_DELETE = "delete";
     /** Staff reset it ({@code /isadmin reset}): the leader got a new island right away. */

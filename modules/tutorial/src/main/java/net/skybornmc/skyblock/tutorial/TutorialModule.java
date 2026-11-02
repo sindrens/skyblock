@@ -227,11 +227,11 @@ public final class TutorialModule implements SkyblockModule {
         Arg<String> target = Args.offlinePlayer("player");
         Arg<String> step = Args.oneOf("step", () -> engine.flow().steps());
         core.commands().register(CommandSpec.command("tutorial")
-                .description("The tutorial: your progress, take me there, I'm stuck, watch again")
+                .description("Opens Kindle, your island guide (your next step, take me there)")
                 .category("Info")
                 .permission(PERM_USE)
                 .example("tutorial")
-                .executes(ctx -> engine.openMenu(ctx.player()))
+                .executes(ctx -> openKindle(ctx.player()))
                 .sub(CommandSpec.sub("admin")
                         .description("Staff tools for a player's tutorial")
                         .permission(StaffTutorialMenu.PERM_STATUS)
@@ -268,6 +268,19 @@ public final class TutorialModule implements SkyblockModule {
                                 .playerOnly()
                                 .example("tutorial admin stats")
                                 .executes(ctx -> core.menus().open(ctx.player(), new StatsMenu(this))))));
+    }
+
+    /**
+     * Owner 3 Nov 2026: the tutorial has no menu of its own any more; Kindle is the one place for it. {@code /tutorial}
+     * opens Kindle ({@code /is guide}); without the guide module the old step menu opens.
+     */
+    private void openKindle(Player player) {
+        // The guide module's permission is registered only while that module is enabled.
+        if (Bukkit.getPluginManager().getPermission("skyblock.island.guide") != null && player.hasPermission("skyblock.island.guide")) {
+            player.performCommand("is guide");
+        } else {
+            engine.openMenu(player);
+        }
     }
 
     private void status(CommandSender sender, String name) {

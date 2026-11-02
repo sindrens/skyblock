@@ -398,6 +398,14 @@ final class TutorialListener implements Listener {
 
     // ------------------------------------------------------------------ 5 menu, 9 forge
 
+    /** Owner 3 Nov 2026: the forge step is done by forging (the first forge is free during this step, tools.yml). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onForge(net.skybornmc.skyblock.common.quest.GameActionEvent event) {
+        if (net.skybornmc.skyblock.common.quest.GameActionEvent.FORGE.equals(event.action()) && running(event.getPlayer()) != null) {
+            engine().signal(event.getPlayer(), Steps.FORGE);
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMenu(MenuOpenedEvent event) {
         Player player = event.getPlayer();

@@ -130,6 +130,30 @@ class OptionalStepsTest {
     }
 
     @Test
+    void pipNeverStaysInsideABlock() {
+        // A floor at y 100 (solid at y <= 100): a spot inside it rises onto it.
+        PipMotion.Solid floor = (x, y, z) -> y <= 100;
+        double[] buried = {0.5, 100.4, 0.5};
+        assertTrue(PipMotion.lift(buried, floor, 3));
+        assertEquals(101.05, buried[1], 1e-9);
+        double[] free = {0.5, 102.0, 0.5};
+        assertTrue(PipMotion.lift(free, floor, 3));
+        assertEquals(102.0, free[1], 1e-9, "free air stays where it is");
+        // A wall 10 high: no free spot within 3 blocks, the point is left alone.
+        double[] walled = {0.5, 100.2, 0.5};
+        assertFalse(PipMotion.lift(walled, (x, y, z) -> y >= 100 && y <= 110, 3));
+        assertEquals(100.2, walled[1], 1e-9);
+    }
+
+    @Test
+    void pipTurnsSmoothlyTheShortWay() {
+        assertEquals(30f, PipMotion.easeYaw(0f, 90f, 30f), 1e-4);
+        assertEquals(-30f, PipMotion.easeYaw(0f, -170f, 30f), 1e-4);
+        assertEquals(170f, PipMotion.easeYaw(-170f, 170f, 30f) + 360f - 360f, 1e-4, "across 180 the short way: -170 -> 170 is 20 degrees");
+        assertEquals(10f, PipMotion.easeYaw(5f, 10f, 30f), 1e-4);
+    }
+
+    @Test
     void pipMovesInStepsAndJumpsFar() {
         double[] next = PipMotion.step(new double[]{0, 0, 0}, new double[]{10, 0, 0}, 1.5, 16);
         assertEquals(1.5, next[0], 1e-9);

@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### v5 batch 2: the first 10 minutes
+- **Start on your own island**: the first join makes your island and brings you there (no spawn portal walk, `tutorial.yml start.auto-island`). The tutorial starts on the island with 9 steps (arrive, chest, crop, menu, Depths, mine 10 blocks, sell, forge, bank); the portal and help steps are gone (config v6 moves untouched files).
+- **Kindle runs the tutorial**: `/tutorial` opens Kindle; his Next step tile has the step tools (take me there, I'm stuck). Before the Depths step Kindle introduces Pip and sends him along; Pip only comes for the Depths, mine and forge steps (`pip.steps`).
+- **Pip and the trail**: Pip never flies inside blocks (his target and every move rise to free air) and turns smoothly; trail dots never sit inside a block.
+- **Forge in the tutorial**: the forge step is done by forging, and the first forge (tier 2) is free during it (`tools.yml forge.tutorial-free`, once per account).
+- **Starter farm**: every new island gets a 6x7 farm next to it (water row, farmland, wheat, composter, crafting table; `islands.yml creation.farm.*`), placed only into air.
+- **Joining an island**: accepting an invite while you lead an island alone opens a "your island will be deleted" screen (asked twice); confirm deletes it (money, skills, personal bank and items stay) and joins.
 ### v5 batch 1: look and feel (owner 3 Nov 2026, docs/planning/V5_PLAN.md)
 - **Owner icon set**: the owner's new icons (money, shards, crystals, credits, navigation, info, type, confirm, cancel, toggles, locked, undo, buy, sell, sell all, fill, bank, top, Depths, auction) replace the drawn ones; masters in `tools/cartoon/owner/`, variant picks in `render.py OWNER_PICKS`.
 - **Vanilla tools**: Depths tools, island tools and fishing rods show their vanilla look again (skins keep their own pictures). Pack about 430 KB.

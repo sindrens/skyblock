@@ -131,6 +131,9 @@ final class TutorialEngine implements TutorialService, TutorialGate {
                 msg().send(player, "start.staff-offer"); // TQ28: offered, never forced on staff
                 return;
             }
+            if (module.config().autoIsland && startOnIsland(player, p)) {
+                return;
+            }
             start(player);
             return;
         }
@@ -249,6 +252,26 @@ final class TutorialEngine implements TutorialService, TutorialGate {
     public Optional<String> currentStep(UUID player) {
         Progress p = online.get(player);
         return p == null || p.state != State.ACTIVE ? Optional.empty() : Optional.ofNullable(p.step);
+    }
+
+    /**
+     * Owner 3 Nov 2026 ("new players ALWAYS spawn on their own island"): the island is made (or found) and the player is
+     * brought there, then the tutorial starts on it. False when the islands module can't do it now (no islands world,
+     * staff join block...): the caller starts at spawn instead.
+     */
+    private boolean startOnIsland(Player player, Progress p) {
+        var islands = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class).orElse(null);
+        if (islands == null) {
+            return false;
+        }
+        var entry = islands.enterFromPortal(player, firstTime -> {
+            if (player.isOnline() && online.get(player.getUniqueId()) == p && p.state == State.NEW) {
+                start(player);
+                signal(player, Steps.PORTAL); // done by arriving (only counts while an old flow still has the step)
+            }
+        });
+        return entry == net.skybornmc.skyblock.common.island.IslandService.PortalEntry.HOME
+                || entry == net.skybornmc.skyblock.common.island.IslandService.PortalEntry.CREATING;
     }
 
     @Override
@@ -479,7 +502,11 @@ final class TutorialEngine implements TutorialService, TutorialGate {
             int needed = Steps.CROP.equals(step) ? module.config().cropCount : Steps.MINE.equals(step) ? module.config().mineCount : 0;
             msg().title(player, "steps." + step + ".title", Msg.number("needed", needed), Msg.number("count", p.count(step)));
         }
-        if (!module.cameras().running(player.getUniqueId())) {
+        java.util.List<String> pipSteps = module.config().pipSteps;
+        if (Guides.pipStep(pipSteps, step) && !pipSteps.isEmpty() && step.equals(pipSteps.getFirst())) {
+            msg().send(player, "pip.intro"); // owner 3 Nov 2026: Kindle introduces Pip before you meet him
+        }
+        if (!module.cameras().running(player.getUniqueId()) && Guides.pipStep(pipSteps, step)) {
             module.pip().say(player, step);
         }
     }

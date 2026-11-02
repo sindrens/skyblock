@@ -41,6 +41,27 @@ public final class IslandsConfig extends ModuleConfig {
             + "Missing file or no FastAsyncWorldEdit = the built-in placeholder islet.")
     public String schematic = "islands_starter_meadow";
 
+    @Setting(path = "creation.farm.enabled", desc = "Owner 3 Nov 2026: a ready-made farm (water row, farmland, some wheat, a composter and a crafting table) next to every new island. Placed only into air.")
+    public boolean farmEnabled = true;
+
+    @Setting(path = "creation.farm.offset-x", desc = "X of the farm's path column, relative to the island centre (the starter meadow ends at x 10).", min = -64, max = 64)
+    public int farmOffsetX = 11;
+
+    @Setting(path = "creation.farm.offset-z", desc = "Z of the farm's water row, relative to the island centre.", min = -64, max = 64)
+    public int farmOffsetZ = 0;
+
+    @Setting(path = "creation.farm.width", desc = "Farm columns between the path and the rim.", min = 1, max = 16)
+    public int farmWidth = 6;
+
+    @Setting(path = "creation.farm.rows", desc = "Farm rows on each side of the water row.", min = 1, max = 4)
+    public int farmRows = 3;
+
+    @Setting(path = "creation.farm.planted-rows", desc = "Rows next to the water (each side) that start with wheat; the outer rows stay empty for the player.", min = 0, max = 4)
+    public int farmPlantedRows = 2;
+
+    @Setting(path = "creation.farm.crop", desc = "Crop planted on the farm (block id).")
+    public String farmCrop = "wheat";
+
     @Setting(path = "creation.paste-timeout-seconds", desc = "A schematic paste that takes longer than this falls back to the placeholder islet.",
             min = 5, max = 300)
     public int pasteTimeoutSeconds = 30;

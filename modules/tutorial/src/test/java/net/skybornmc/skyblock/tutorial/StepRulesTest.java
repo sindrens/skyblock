@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** TUTORIAL §3/§8: start, step progression, early steps, counters, resume after a flow change, staff tools. */
 class StepRulesTest {
 
-    private static final TutorialFlow FLOW = TutorialFlow.parse(new TutorialConfig().steps);
+    private static final TutorialFlow FLOW = TutorialFlow.parse(TutorialConfig.STEPS_V1); // the rules are tested on the long v1 flow
 
     private static Progress started() {
         Progress p = Progress.fresh(UUID.randomUUID());
@@ -179,9 +179,9 @@ class StepRulesTest {
         assertFalse(StepRules.stuck(p, "portal", 3, skippable));
         assertFalse(StepRules.stuck(p, "portal", 3, skippable));
         assertFalse(StepRules.stuck(p, "portal", 3, skippable), "portal is never skippable");
-        assertFalse(StepRules.stuck(p, "help", 3, skippable));
-        assertFalse(StepRules.stuck(p, "help", 3, skippable));
-        assertTrue(StepRules.stuck(p, "help", 3, skippable));
+        assertFalse(StepRules.stuck(p, "forge", 3, skippable));
+        assertFalse(StepRules.stuck(p, "forge", 3, skippable));
+        assertTrue(StepRules.stuck(p, "forge", 3, skippable));
         assertFalse(skippable.contains("sell"));
         assertFalse(skippable.contains("bank"));
     }

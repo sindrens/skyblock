@@ -164,4 +164,41 @@ final class PipMotion {
         }
         return new double[]{0, 0, 0};
     }
+
+    /** Block test for {@link #lift}: true when the block at x, y, z is solid (Pip may not be inside it). */
+    @FunctionalInterface
+    interface Solid {
+        boolean at(int x, int y, int z);
+    }
+
+    /**
+     * Owner 3 Nov 2026 ("Pip gets stuck in blocks"): moves {@code p} up to the first spot where Pip's body (the block he
+     * is in and the one above his feet, he is about 0.9 high) is free, at most {@code maxRise} blocks. Returns false when
+     * no free spot was found within that height ({@code p} is then unchanged).
+     */
+    static boolean lift(double[] p, Solid solid, int maxRise) {
+        int x = (int) Math.floor(p[0]);
+        int z = (int) Math.floor(p[2]);
+        int y = (int) Math.floor(p[1]);
+        for (int up = 0; up <= maxRise; up++) {
+            int by = y + up;
+            boolean free = !solid.at(x, by, z) && !solid.at(x, (int) Math.floor(p[1] + up + 0.9), z);
+            if (free) {
+                if (up > 0) {
+                    p[1] = by + 0.05; // stand on the block below, just above its top
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Turns from {@code from} toward {@code to} (degrees) by at most {@code maxDelta}, the short way round. */
+    static float easeYaw(float from, float to, float maxDelta) {
+        float diff = ((to - from) % 360f + 540f) % 360f - 180f;
+        if (Math.abs(diff) <= maxDelta) {
+            return to;
+        }
+        return from + Math.signum(diff) * maxDelta;
+    }
 }

@@ -203,6 +203,9 @@ final class Forge {
         if (def.tier() == 1 || baseTool(inv, def.kind(), def.tier()).isEmpty()) {
             return State.NEEDS_TOOL;
         }
+        if (tutorialFree(player, def.tier())) {
+            return State.CRAFTABLE; // the tutorial's free first forge
+        }
         if (skillLevel(player, def.kind()) < def.skillLevel()) {
             return State.NEEDS_SKILL;
         }
@@ -228,6 +231,15 @@ final class Forge {
 
     // ------------------------------------------------------------------ forge an upgrade
 
+    /** True while this player's tutorial is at its forge step and the target is the first forgeable tier (2). */
+    private boolean tutorialFree(Player player, int target) {
+        if (target != 2 || !module.config().tutorialFreeForge) {
+            return false;
+        }
+        return module.core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
+                .flatMap(t -> t.currentStep(player.getUniqueId())).map("forge"::equals).orElse(false);
+    }
+
     void forge(Player player, ToolKind kind, int target) {
         Optional<ToolCatalog.TierDef> found = module.catalog().tier(kind, target);
         if (found.isEmpty() || target < 2) {
@@ -243,6 +255,21 @@ final class Forge {
         Optional<Map.Entry<Integer, ToolData>> base = baseTool(player.getInventory(), kind, target);
         if (base.isEmpty()) {
             fail(player, "forge.needs-tool", Msg.mm("tool", module.items().tierName(kind, target - 1)));
+            return;
+        }
+        if (tutorialFree(player, target)) {
+            // Owner 3 Nov 2026 ("when it wants you to forge it should allow you to do it"): the tutorial's forge step
+            // forges the first tier for free (no skill level, money or materials). The step ends with this forge, so
+            // it can happen once per account.
+            if (!busy.add(player.getUniqueId())) {
+                fail(player, "forge.busy");
+                return;
+            }
+            try {
+                completeForge(player, def, base.get().getValue().id(), "forge:tutorial:" + player.getUniqueId(), true);
+            } finally {
+                busy.remove(player.getUniqueId());
+            }
             return;
         }
         int skill = skillLevel(player, kind);
@@ -278,7 +305,7 @@ final class Forge {
                     refund(playerId, name, def.recipe().money(), key, "offline");
                     return;
                 }
-                completeForge(p, def, toolId, key);
+                completeForge(p, def, toolId, key, false);
             } finally {
                 busy.remove(playerId);
                 payers.remove(key);
@@ -286,15 +313,22 @@ final class Forge {
         }));
     }
 
-    private void completeForge(Player player, ToolCatalog.TierDef def, UUID toolId, String key) {
+    private void completeForge(Player player, ToolCatalog.TierDef def, UUID toolId, String key, boolean free) {
         PlayerInventory inv = player.getInventory();
         int slot = ToolTracker.find(inv, toolId);
         ToolData tool = slot < 0 ? null : ToolItems.read(inv.getItem(slot)).orElse(null);
-        Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
-        if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty() || !takeMaterials(player, def.recipe().materials())) {
-            refund(player.getUniqueId(), player.getName(), def.recipe().money(), key, "items_moved");
-            fail(player, "forge.items-moved");
-            return;
+        if (free) {
+            if (tool == null || tool.tier() != def.tier() - 1) {
+                fail(player, "forge.items-moved");
+                return;
+            }
+        } else {
+            Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
+            if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty() || !takeMaterials(player, def.recipe().materials())) {
+                refund(player.getUniqueId(), player.getName(), def.recipe().money(), key, "items_moved");
+                fail(player, "forge.items-moved");
+                return;
+            }
         }
         ToolData upgraded = ToolProgress.upgrade(tool, def.tier());
         ItemStack stack = module.items().apply(inv.getItem(slot), upgraded);
@@ -307,8 +341,8 @@ final class Forge {
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(player,
                 net.skybornmc.skyblock.common.quest.GameActionEvent.FORGE, 1));
         module.core.audit().log(AuditCategory.ITEM, "tool_forge", Actor.player(player), toolId.toString(), player.getName(),
-                def.recipe().money(), player.getLocation(), Map.of("kind", def.kind().id(), "from_tier", tool.tier(), "to_tier", def.tier(),
-                        "level", upgraded.level(), "materials", def.recipe().materials().toString()));
+                free ? 0 : def.recipe().money(), player.getLocation(), Map.of("kind", def.kind().id(), "from_tier", tool.tier(), "to_tier", def.tier(),
+                        "level", upgraded.level(), "materials", free ? "tutorial (free)" : def.recipe().materials().toString()));
         int season = module.config().seasonId;
         UUID holder = player.getUniqueId();
         String holderName = player.getName();

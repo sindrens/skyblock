@@ -8,17 +8,16 @@
 # <player> = the player's name. One next step only.
 start:
   title:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember><bold>Your island</bold></c:ember>"
     subtitle: "<c:text>Welcome, <c:value><player></c:value>"
     fade-in: 20
     stay: 60
   chat:
     - ""
-    - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
-    - "  <c:text>Your island in the sky is waiting."
+    - "  <c:ember><bold>Kindle</bold></c:ember> <c:muted>»</c:muted> <c:text>Hi <c:value><player></c:value><c:text>, I'm Kindle, your island guide."
+    - "  <c:text>This island is yours. I'll show you around, one step at a time."
     - ""
-    - "  <c:ember><sym:arrow></c:ember> <c:text>Next: follow <c:value>Pip</c:value><c:text> to the <c:value>Island portal</c:value><c:text>."
-    - "  <c:muted>Stuck? /tutorial</c:muted>"
+    - "  <c:muted>Lost? Click me or type <c:value>/is guide</c:value><c:muted>."
     - ""
   staff-offer: "<prefix><c:text>Staff have no tutorial locks. Test the tutorial any time: <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
 
@@ -27,8 +26,8 @@ resume:
     title: "<c:flame><bold>Welcome back</bold>"
     subtitle: "<c:text>Taking you to your step"
     stay: 40
-  sneak-hint: "<c:text>Sneak to stay at spawn"
-  stay: "<prefix><c:text>You stay here. Open <c:value>/tutorial</c:value> and press <c:value>Take me there</c:value> when you're ready."
+  sneak-hint: "<c:text>Sneak to stay here"
+  stay: "<prefix><c:text>You stay here. Open <c:value>/is guide</c:value> and press <c:value>Next step</c:value> when you're ready."
 
 locked:
   step: "<prefix><c:error><sym:cross></c:error> <c:text>Unlocks at tutorial step <c:value><number></c:value> (<step>). <click:run_command:'/tutorial'><hover:show_text:'<c:text>Open the tutorial menu'><c:action>[Tutorial]</c:action></hover></click>"
@@ -73,10 +72,10 @@ steps:
     name: "Starter chest"
     objective: "Open your starter chest"
     target: "Starter Chest"
-    hint: "<c:text>Open the <c:value>starter chest</c:value><c:text> where Pip sits and take the tools"
+    hint: "<c:text>Open the <c:value>starter chest</c:value><c:text> on your island"
     title:
       title: "<c:flame><bold>Open the chest</bold>"
-      subtitle: "<c:text>Take the tools and the guide book"
+      subtitle: "<c:text>Follow the trail to it"
     opened: "<c:text>Take everything. The book explains it all."
     take-tool: "<c:text>Take the <c:value>pickaxe</c:value> from the chest"
     full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Free a slot, then take the <c:value>pickaxe</c:value><c:text>. It stays safe in the chest."
@@ -112,7 +111,7 @@ steps:
   mine:
     name: "Mine"
     objective: "Mine blocks"
-    hint: "<c:text>Break the coal where Pip sits. Drops go to your satchel <c:muted>(<count>/<needed>)"
+    hint: "<c:text>Break the coal Pip shows you. Drops go to your satchel <c:muted>(<count>/<needed>)"
     title:
       title: "<c:flame><bold>Mine some coal</bold>"
       subtitle: "<c:text>Break <needed> blocks. They grow back"
@@ -128,13 +127,13 @@ steps:
     lore: ["<c:text>Open the satchel and press", "<c:value>Sell all</c:value><c:text>."]
   forge:
     name: "Forge"
-    objective: "Visit the Forge"
+    objective: "Forge your pickaxe"
     target: "Forge"
-    hint: "<c:text>Follow Pip to the <c:value>Forge</c:value><c:text> and click the smith. Better tools = more money"
+    hint: "<c:text>Follow Pip to the <c:value>Forge</c:value><c:text>, click the smith and forge your pickaxe. This one is free!"
     title:
-      title: "<c:flame><bold>Visit the Forge</bold>"
-      subtitle: "<c:text>Follow Pip to the smith"
-    lore: ["<c:text>Walk to the Forge NPC and open", "<c:text>the Forge. Tier 2 is your first goal."]
+      title: "<c:flame><bold>Forge a better pickaxe</bold>"
+      subtitle: "<c:text>Your first forge is free"
+    lore: ["<c:text>Open the Forge and forge your", "<c:text>pickaxe to tier 2. It's free now."]
   help:
     name: "Help"
     objective: "Talk to the Depths Guide"
@@ -185,7 +184,7 @@ idle:
     title: "<c:flame><bold>Still there?</bold>"
     subtitle: "<c:text>Next: <step>"
     stay: 60
-  chat: "<prefix><c:text>Still there? Your next step: <c:value><step></c:value><c:text>. Pip is waiting. <c:muted>(/tutorial)"
+  chat: "<prefix><c:text>Still there? Next: <c:value><step></c:value><c:text>. <c:muted>(/is guide)"
 
 # The finish title (tutorial.yml reward.title), added to cosmetics when missing.
 reward:
@@ -194,7 +193,7 @@ reward:
 
 finish:
   title:
-    title: "<grad:phoenix><bold>TUTORIAL COMPLETE</bold></grad>"
+    title: "<c:ember><bold>All done!</bold></c:ember>"
     subtitle: "<c:text>Every feature is unlocked"
     stay: 80
   chat-reward: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial done. You got <money>, <cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>and the title <c:value><title></c:value>."
@@ -466,6 +465,12 @@ cameras:
 # short callout: perch.<step> when he sits on the target, wait while he waits for you, callouts.<step> while he leads,
 # else name-line2. Keep line 2 at most ~24 characters. name and tag are the old one-line name (unused).
 pip:
+  # Owner 3 Nov 2026: Kindle introduces Pip right before the first step Pip comes along for (tutorial.yml pip.steps).
+  intro:
+    - ""
+    - "  <c:ember><bold>Kindle</bold></c:ember> <c:muted>»</c:muted> <c:text>Time to visit the <c:value>Depths</c:value><c:text>! I stay here and look after the island."
+    - "  <c:text>Take <c:flame><bold>Pip</bold></c:flame><c:text> with you, my little parrot. He knows the way down."
+    - ""
   name: "<c:flame>Pip"
   tag: "<c:flame>Pip</c:flame> <c:muted><sym:dot></c:muted> <c:text><line>"
   name-line1: "<c:ember><sym:sparkle></c:ember> <grad:flame><bold>[ Pip ]</bold></grad> <c:ember><sym:sparkle>"

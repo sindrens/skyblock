@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** TUTORIAL §4 locks: parsing the gate lines and the open/locked rules. */
 class GateRulesTest {
 
-    private static final TutorialFlow FLOW = TutorialFlow.parse(new TutorialConfig().steps);
+    private static final TutorialFlow FLOW = TutorialFlow.parse(TutorialConfig.STEPS_V1); // the rules are tested on the long v1 flow
     private static final Map<String, String> GATES = GateRules.parse(new TutorialConfig().gates, FLOW).required();
 
     private static boolean open(String gate, State state, Set<String> done) {

@@ -17,10 +17,16 @@ public final class TutorialConfig extends ModuleConfig {
     public boolean enabled = true;
 
     @Setting(path = "flow.steps", desc = "Core steps in order (TQ1). Known ids: portal, arrive, chest, crop, menu, depths, mine, sell, forge, help, bank. Removing a step skips it; players mid-way continue at their first step not done.", level = Setting.Level.OWNER)
-    public List<String> steps = List.of("portal", "arrive", "chest", "crop", "menu", "depths", "mine", "sell", "forge", "help", "bank");
+    public List<String> steps = List.of("arrive", "chest", "crop", "menu", "depths", "mine", "sell", "forge", "bank");
+
+    /** The default before v6 (the spawn portal start, the help step). */
+    static final List<String> STEPS_V1 = List.of("portal", "arrive", "chest", "crop", "menu", "depths", "mine", "sell", "forge", "help", "bank");
+
+    @Setting(path = "start.auto-island", desc = "Owner 3 Nov 2026: a new player gets their own island on the first join and starts the tutorial there (no spawn portal walk). Off = the old start at spawn.")
+    public boolean autoIsland = true;
 
     @Setting(path = "flow.version", desc = "Raise after changing flow.steps; stored with each player's progress (finished players stay finished).", min = 1, max = 1000)
-    public int flowVersion = 1;
+    public int flowVersion = 2;
 
     @Setting(path = "flow.early-steps-count", desc = "Steps done before they are reached count and are skipped later (TQ21).")
     public boolean earlySteps = true;
@@ -56,13 +62,13 @@ public final class TutorialConfig extends ModuleConfig {
     public String depthsZone = "mine_t01";
 
     @Setting(path = "steps.mine.count", desc = "Mining XP gains in the Depths for the mine step (one per block, TQ29).", min = 1, max = 500)
-    public int mineCount = 15;
+    public int mineCount = 10;
 
     @Setting(path = "steps.sell.sources", desc = "Sale sources that count for the sell step (satchel, hand, all, gui...); empty = any sale.")
     public List<String> sellSources = List.of();
 
-    @Setting(path = "steps.forge.menu-ids", desc = "Menus whose opening completes the Forge step.")
-    public List<String> forgeMenuIds = List.of("forge");
+    @Setting(path = "steps.forge.menu-ids", desc = "Menus whose opening also completes the Forge step (owner 3 Nov 2026: empty, the step is done by forging; the first forge is free during it).")
+    public List<String> forgeMenuIds = List.of();
 
     @Setting(path = "steps.help.npc-roles", desc = "NPC roles whose click completes the help step (TUT-FIX2: the help NPCs only, "
             + "so the Forge click no longer counts); empty = any NPC.")
@@ -78,7 +84,7 @@ public final class TutorialConfig extends ModuleConfig {
     public int stuckSkipAfter = 3;
 
     @Setting(path = "steps.stuck.skippable", desc = "Steps a stuck player may skip (never sell or bank: they open money features).")
-    public List<String> stuckSkippable = List.of("arrive", "depths", "help");
+    public List<String> stuckSkippable = List.of("arrive", "depths", "forge");
 
     // ------------------------------------------------------------------ targets
 
@@ -381,6 +387,9 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "pip.enabled", desc = "Pip, the small red parrot only you can see, leads you during the tutorial and says one short line per step.")
     public boolean pipEnabled = true;
 
+    @Setting(path = "pip.steps", desc = "Steps Pip comes along for (owner 3 Nov 2026: Kindle guides you on the island and sends Pip with you to the Depths). Empty = every step.")
+    public List<String> pipSteps = List.of("depths", "mine", "forge");
+
     @Setting(path = "pip.chat", desc = "Pip's lines also go to chat (off: only his name display shows them, TUT-FIX2 one place per message).")
     public boolean pipChat = false;
 
@@ -512,7 +521,7 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     /** Old camera lines (v1/v2) that v3 replaces while the owner has not edited them. */
@@ -542,7 +551,8 @@ public final class TutorialConfig extends ModuleConfig {
      * camera lines that stay out of the spawn builds and the island, a longer camera start delay. v4 (A3-R1-02): the
      * boss bar moves from red to yellow. v5 (TUT-FIX2, owner 31 Oct "tutorial has not been fixed"): interior portal
      * shot, island and Depths cameras that clear the builds, help step only for help NPCs, Pip off chat and faster,
-     * a quieter trail and target marker. Owner-edited values are kept.
+     * a quieter trail and target marker. v6 (owner 3 Nov 2026): own island first, Kindle guides, Pip only off the
+     * island, no tools in the chest, a shorter flow. Owner-edited values are kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -563,7 +573,13 @@ public final class TutorialConfig extends ModuleConfig {
                         "pip.step", ValueChange.of(1.2, d.pipStep),
                         "guide.trail.spacing", ValueChange.of(2.0, d.trailSpacing),
                         "guide.column.height", ValueChange.of(6, d.columnHeight),
-                        "guide.hologram-height", ValueChange.of(1.6, d.hologramHeight)));
+                        "guide.hologram-height", ValueChange.of(1.6, d.hologramHeight)),
+                // v6 (owner 3 Nov 2026): start on your own island, Kindle guides, Pip only off the island, faster.
+                6, java.util.Map.of(
+                        "flow.steps", ValueChange.of(STEPS_V1, d.steps),
+                        "flow.version", ValueChange.of(1, d.flowVersion),
+                        "steps.mine.count", ValueChange.of(15, d.mineCount),
+                        "steps.forge.menu-ids", ValueChange.of(List.of("forge"), d.forgeMenuIds)));
     }
 
     @Override

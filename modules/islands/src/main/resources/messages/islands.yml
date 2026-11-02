@@ -457,7 +457,21 @@ portal-choice:
 accept:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no island invites."
   none-from: "<prefix><c:error><sym:cross></c:error> <c:text>No invite from <c:value><player></c:value><c:text>'s island."
-  has-island: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an island. Leave it first."
+  has-island: "<prefix><c:error><sym:cross></c:error> <c:text>You're on an island with other members. Leave it first (<c:value>/is leave</c:value><c:text>)."
+  # Owner 3 Nov 2026: accepting an invite while you lead an island alone. <island> yours, <target> the new one, <level>
+  replace:
+    crumb: "Join island"
+    shown:
+      name: "<c:error><bold>Your island will be deleted"
+      lore: ["<c:text>Join <c:value><target></c:value><c:text> instead of", "<c:value><island></c:value> <c:muted>(level <level>)</c:muted>"]
+    details:
+      - "<c:text>Your island <c:value><island></c:value><c:text> and"
+      - "<c:text>everything built on it is deleted."
+      - ""
+      - "<c:text>You keep your money, skills,"
+      - "<c:text>personal bank and items."
+    removed: "<prefix><c:text>Your island <c:value><island></c:value><c:text> was deleted. Joining now..."
+    cancelled: "<prefix><c:text>Nothing changed. You kept your island."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is (or was) on this island. Profiles can't share one."
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."

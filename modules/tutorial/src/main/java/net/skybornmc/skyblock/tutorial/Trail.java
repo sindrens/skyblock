@@ -251,6 +251,11 @@ final class Trail {
                 break;
             }
             r.pointAt(pos, s.tmp);
+            // Owner 3 Nov 2026 ("the trail is weird"): a dot never sits inside a block; on a step up it moves onto the
+            // block, a dot buried deeper (under the floor, inside a wall) is skipped.
+            if (!PipMotion.lift(s.tmp, (bx, by, bz) -> at.getWorld().getBlockAt(bx, by, bz).isSolid(), 1)) {
+                continue;
+            }
             int level = (int) Math.min(LEVELS - 1, ahead / reach * LEVELS);
             player.spawnParticle(Particle.DUST, s.tmp[0], s.tmp[1] + 0.15, s.tmp[2], 1, 0, 0, 0, 0, colours[level]);
             drawn++;

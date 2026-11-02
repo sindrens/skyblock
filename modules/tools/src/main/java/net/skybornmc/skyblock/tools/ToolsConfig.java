@@ -15,6 +15,9 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ levels (ECONOMY_BALANCE §3.5)
 
+    @Setting(path = "forge.tutorial-free", desc = "Owner 3 Nov 2026: during the tutorial's forge step the first tier (tier 2) is forged for free (no skill, money or materials), once per account.")
+    public boolean tutorialFreeForge = true;
+
     @Setting(path = "curve.base", desc = "XP from tool level 1 to 2. Each next level costs curve.growth times more.", min = 1, max = 1_000_000, level = Setting.Level.OWNER)
     public double curveBase = 400;
 

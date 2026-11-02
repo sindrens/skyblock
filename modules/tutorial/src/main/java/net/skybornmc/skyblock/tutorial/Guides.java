@@ -170,7 +170,11 @@ final class Guides {
             View v = e.getValue();
             Optional<Location> target = draw(player, p, v, particles);
             Route route = p.step != null && p.step.equals(v.trail.step) ? v.trail.route : null; // never an old step's way
-            module.pip().guide(player, p.step, perch(player, p, v, target), route, v.trail.cursor);
+            if (pipStep(module.config().pipSteps, p.step)) {
+                module.pip().guide(player, p.step, perch(player, p, v, target), route, v.trail.cursor);
+            } else {
+                module.pip().hide(player); // owner 3 Nov 2026: on the island Kindle guides; Pip comes along off the island
+            }
             module.listener().tick(player, p);
             waitHint(player, p, v, now);
             idle(player, p, now);
@@ -580,5 +584,10 @@ final class Guides {
                 removeHologram(views.remove(id));
             }
         }
+    }
+
+    /** Pure: Pip comes along for this step ({@code pip.steps}; empty = every step). */
+    static boolean pipStep(java.util.List<String> pipSteps, String step) {
+        return step != null && (pipSteps == null || pipSteps.isEmpty() || pipSteps.contains(step));
     }
 }

@@ -40,6 +40,8 @@ final class Pip {
 
     private static final class Companion {
         Parrot parrot;
+        /** Pip's facing (degrees), eased every move (owner 3 Nov 2026: no snapping turns). */
+        float yaw;
         TextDisplay label;
         boolean nameTag;
         final double[] pos = new double[3];
@@ -213,12 +215,22 @@ final class Pip {
         }
         double hop = PipMotion.hop(now - c.hopStart);
         double maxStep = cfg.pipStep * Math.max(1, cfg.pipUpdateTicks) / 5.0;
+        // Owner 3 Nov 2026: never inside a block. The wanted spot goes up to free air first; a step that would end in a
+        // block rises out of it, or Pip stays where he is this update (he never pushes through walls or floors).
+        PipMotion.Solid solid = (bx, by, bz) -> world.getBlockAt(bx, by, bz).isSolid();
+        PipMotion.lift(d, solid, 3);
         if (!c.placed) {
             c.pos[0] = d[0];
             c.pos[1] = d[1];
             c.pos[2] = d[2];
         } else {
+            double ox = c.pos[0], oy = c.pos[1], oz = c.pos[2];
             PipMotion.stepInto(c.pos, d, maxStep, cfg.pipSnap, c.pos);
+            if (!PipMotion.lift(c.pos, solid, 2)) {
+                c.pos[0] = ox;
+                c.pos[1] = oy + Math.min(maxStep, 0.4); // boxed in: rise slowly instead of clipping
+                c.pos[2] = oz;
+            }
         }
         boolean perched = c.mode == PipMotion.Mode.PERCH && PipMotion.perched(c.pos, c.perch);
         // Face the player when perched, waiting or close; else the way he flies.
@@ -231,7 +243,9 @@ final class Pip {
             fz = c.anchor[2] - c.pos[2];
             facePlayer = false;
         }
-        float yaw = facePlayer ? CameraPath.yaw(at.getX() - c.pos[0], at.getZ() - c.pos[2]) : CameraPath.yaw(fx, fz);
+        float wanted = facePlayer ? CameraPath.yaw(at.getX() - c.pos[0], at.getZ() - c.pos[2]) : CameraPath.yaw(fx, fz);
+        float yaw = c.placed ? PipMotion.easeYaw(c.yaw, wanted, 25f * Math.max(1, cfg.pipUpdateTicks)) : wanted;
+        c.yaw = yaw;
         Location loc = new Location(world, c.pos[0], c.pos[1] + hop, c.pos[2], yaw, 0);
         if (c.parrot == null) {
             if (now < c.retryAt) {
