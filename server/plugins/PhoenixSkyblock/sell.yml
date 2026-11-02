@@ -20,7 +20,7 @@
 #    paper, sticks, bone meal, dyes, seeds); those are simply not listed.
 #  - Island items sell for half the Depths item of the same tier (the Depths stay the main money place).
 # Reload: /skyblock reload economy
-config-version: 1
+config-version: 2
 
 categories:
   # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
@@ -135,3 +135,195 @@ custom-items:
     depths_blaze_rod: 575
     depths_wither_ash: 1400
     depths_warlord_sigil: 3675
+  # ECON-SPAWNERS step 8 / ECON-TABLES A: the custom drop of every spawner mob (mobdrop_<mob>). One round price per tier on
+  # purpose (equal income = equal payback): tier 1 $5, 2 $10, 3 $16, 4 $30, premium $80. Placeholders (owner: exact prices
+  # later). Without these the spawner income on the shop tile is 0.
+  spawner-drops:
+    mobdrop_pig: 5
+    mobdrop_cow: 5
+    mobdrop_chicken: 5
+    mobdrop_sheep: 5
+    mobdrop_rabbit: 5
+    mobdrop_zombie: 10
+    mobdrop_skeleton: 10
+    mobdrop_spider: 10
+    mobdrop_cave_spider: 10
+    mobdrop_slime: 10
+    mobdrop_creeper: 16
+    mobdrop_witch: 16
+    mobdrop_drowned: 16
+    mobdrop_husk: 16
+    mobdrop_stray: 16
+    mobdrop_blaze: 30
+    mobdrop_enderman: 30
+    mobdrop_guardian: 30
+    mobdrop_hoglin: 30
+    mobdrop_zombified_piglin: 30
+    mobdrop_iron_golem: 80
+    mobdrop_wither_skeleton: 80
+    mobdrop_evoker: 80
+
+# ECON-SELL-SHOP-AH A2 / ECON-TABLES E: uncraftable blocks and plants (id: price, decimals allowed, at least 0.01).
+# Everything listed above keeps its price. Placeholders for the balance run (owner: exact prices later).
+roots:
+  dirt: 0.5
+  grass_block: 0.5
+  rooted_dirt: 0.5
+  mud: 0.5
+  sand: 0.5
+  red_sand: 0.5
+  gravel: 0.5
+  netherrack: 0.39  # below shop price / 7.5 until ECON Part B auto prices
+  short_grass: 0.5
+  fern: 0.5
+  dead_bush: 0.5
+  hanging_roots: 0.5
+  mangrove_roots: 0.5
+  vine: 0.5
+  glow_lichen: 0.5
+  pointed_dripstone: 0.5
+  oak_leaves: 0.5
+  spruce_leaves: 0.5
+  birch_leaves: 0.5
+  jungle_leaves: 0.5
+  acacia_leaves: 0.5
+  dark_oak_leaves: 0.5
+  mangrove_leaves: 0.5
+  cherry_leaves: 0.5
+  pale_oak_leaves: 0.5
+  azalea_leaves: 0.5
+  flowering_azalea_leaves: 0.5
+  stone: 1.0
+  cobbled_deepslate: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  deepslate: 0.79  # below shop price / 7.5 until ECON Part B auto prices
+  tuff: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  calcite: 0.79  # below shop price / 7.5 until ECON Part B auto prices
+  diorite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  granite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  andesite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  basalt: 0.79  # below shop price / 7.5 until ECON Part B auto prices
+  blackstone: 0.79  # below shop price / 7.5 until ECON Part B auto prices
+  dripstone_block: 1.0
+  snow_block: 0.66  # below shop price / 7.5 until ECON Part B auto prices
+  ice: 1.0
+  soul_sand: 1.0
+  soul_soil: 1.0
+  podzol: 1.0
+  clay: 1.0
+  mycelium: 1.0
+  moss_block: 1.0
+  oak_log: 1.0
+  spruce_log: 1.0
+  birch_log: 1.0
+  jungle_log: 1.0
+  acacia_log: 1.0
+  dark_oak_log: 1.0
+  mangrove_log: 1.0
+  cherry_log: 1.0
+  pale_oak_log: 1.0
+  crimson_stem: 1.0
+  warped_stem: 1.0
+  bamboo_block: 1.0
+  end_stone: 1.32  # below shop price / 7.5 until ECON Part B auto prices
+  magma_block: 1.5
+  warped_wart_block: 2
+  crimson_nylium: 2
+  warped_nylium: 2
+  obsidian: 6
+  crying_obsidian: 8
+  dandelion: 1.0
+  poppy: 1.0
+  blue_orchid: 1.0
+  allium: 1.0
+  azure_bluet: 1.0
+  red_tulip: 1.0
+  orange_tulip: 1.0
+  white_tulip: 1.0
+  pink_tulip: 1.0
+  oxeye_daisy: 1.0
+  cornflower: 1.0
+  lily_of_the_valley: 1.0
+  wither_rose: 1.0
+  sunflower: 1.5
+  lilac: 1.5
+  rose_bush: 1.5
+  peony: 1.5
+  # Plants the shop sells (ECON-TABLES D3): vines and roots are bulk (0.5); the rest at the D3 base.
+  weeping_vines: 0.5
+  twisting_vines: 0.5
+  crimson_roots: 0.5
+  warped_roots: 0.5
+  big_dripleaf: 1.0
+  small_dripleaf: 1.0
+  sea_pickle: 1.0
+  crimson_fungus: 2
+  warped_fungus: 2
+  # Crafted (mud + mangrove roots, 90%): listed at its derived price so the shop's auto price has a base.
+  muddy_mangrove_roots: 0.9
+
+# Prices of crafted and smelted items come from their parts: price = cheapest recipe (sum of the parts / output count)
+# x factor. A recipe with an unpriced part stays unsellable. A listed price above its derived price is lowered (no craft-
+# sell loops). Factors never go above 100. economy.yml sell.derive.* switches it off and sets the depth.
+derive:
+  enabled: true
+  factor:
+    storage: 100
+    shaping: 90
+    decorative: 90
+    dyeing: 90
+    processing: 100
+    other: 90
+  # Never derived and never sellable (* = any characters). bone_meal: owner price S7 would break the shop x7.5 rule.
+  exclude:
+  - "bone_meal"
+  - "*_pickaxe"
+  - "*_axe"
+  - "*_shovel"
+  - "*_hoe"
+  - "*_sword"
+  - "*_helmet"
+  - "*_chestplate"
+  - "*_leggings"
+  - "*_boots"
+  - "bow"
+  - "crossbow"
+  - "trident"
+  - "mace"
+  - "shield"
+  - "fishing_rod"
+  - "flint_and_steel"
+  - "shears"
+  - "brush"
+  - "*shulker_box"
+  - "bundle"
+  - "*_bundle"
+  - "chest"
+  - "trapped_chest"
+  - "barrel"
+  - "ender_chest"
+  - "*_minecart"
+  - "*_boat"
+  - "*_chest_boat"
+  - "*_raft"
+  - "beacon"
+  - "conduit"
+  - "enchanting_table"
+  - "anvil"
+  - "*_bed"
+  - "map"
+  - "filled_map"
+  - "writable_book"
+  - "written_book"
+  - "*_banner_pattern"
+  - "firework_rocket"
+  - "firework_star"
+  - "*_spawn_egg"
+  - "*_horse_armor"
+  - "wolf_armor"
+  - "saddle"
+  - "lead"
+  - "name_tag"
+  - "spyglass"
+  - "compass"
+  - "recovery_compass"
+  - "clock"

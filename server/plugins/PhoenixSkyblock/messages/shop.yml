@@ -10,6 +10,16 @@ staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't shop in st
 switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
 unknown-category: "<prefix><c:error><sym:cross></c:error> <c:text>No shop category <c:value><input></c:value><c:text>. Try: <c:value><categories>"
 
+# ECON-SELL-SHOP-AH B2: /eco shop price|disable|enable (staff).
+eco-shop:
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:value><item></c:value> <c:text>is not in shop.yml. Press Tab for the list."
+  reason: "<prefix><c:error><sym:cross></c:error> <c:text>Add a reason, for example <c:value>/eco shop disable hopper Price exploit</c:value>."
+  price: "<prefix><c:value><item></c:value> <c:muted>(<tab>)</c:muted> <c:text>costs <c:value>$<price></c:value><c:text>, block worth <c:value><worth></c:value><c:text>, /sell pays up to <c:value>$<max-sell></c:value><c:text>. <c:muted><state>"
+  disabled: "<prefix><c:success><sym:check></c:success> <c:value><item></c:value> <c:text>is no longer sold in /shop. <c:muted>(<reason>)"
+  enabled: "<prefix><c:success><sym:check></c:success> <c:value><item></c:value> <c:text>is sold in /shop again. <c:muted>(<reason>)"
+  already-off: "<prefix><c:muted><item> is already switched off by staff."
+  already-on: "<prefix><c:muted><item> is not switched off by staff."
+
 skills:
   mining: "Mining"
   foraging: "Foraging"
