@@ -100,7 +100,9 @@ sudo:
 # /freerank: free lowest rank after 30 min playtime, then pick 1 of 3 tags. Kept forever.
 freerank:
   too-early: "<prefix><c:error><sym:cross></c:error> <c:text>Play <c:value><minutes> min</c:value> <c:text>first. <c:value><time></c:value> <c:text>left."
-  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:ember>Ember</c:ember><c:text>! Pick your tag."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:value>Ashborn</c:value><c:text>! Pick your tag."
+  auto-claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:value>Ashborn</c:value><c:text>. <click:run_command:'/freerank'><hover:show_text:'<c:text>Pick your free tag'><c:action>[Pick your tag]</c:action></hover></click>"
+  need-tutorial: "<prefix><c:error><sym:cross></c:error> <c:text>Finish the tutorial first. <click:run_command:'/tutorial'><c:action>[Tutorial]</c:action></click>"
   tag-picked: "<prefix><c:success><sym:check></c:success> <c:text>Tag <tag> <c:text>is yours. Wear it with <click:run_command:'/tags'><hover:show_text:'<c:text>Open your tags'><c:action>/tags</c:action></hover></click>."
   done: "<prefix><c:error><sym:cross></c:error> <c:text>You already claimed your free rank."
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The free rank is off right now."

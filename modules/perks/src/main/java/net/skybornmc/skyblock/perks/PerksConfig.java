@@ -48,7 +48,7 @@ public final class PerksConfig extends ModuleConfig {
     public List<String> sudoBlocked = List.of("sudo", "op", "deop", "lp", "luckperms", "perm", "perms", "permissions",
             "stop", "restart", "reload", "rl", "pl", "plugins", "skyblock", "sb", "eco", "pay", "trade", "ah", "withdraw");
 
-    @Setting(path = "freerank.enabled", desc = "/freerank: claim the free lowest rank once after enough playtime (owner RW4).")
+    @Setting(path = "freerank.enabled", desc = "/freerank: the free rank Ashborn (given automatically after the tutorial and the playtime) and the one-time tag pick.")
     public boolean freerankEnabled = true;
 
     @Setting(path = "freerank.min-playtime-minutes", desc = "Total playtime needed before /freerank works.", min = 0, max = 10_000)
@@ -57,6 +57,21 @@ public final class PerksConfig extends ModuleConfig {
     @Setting(path = "freerank.group", desc = "LuckPerms group /freerank gives (server/permissions/base.txt creates 'ember'). Kept forever.",
             level = Setting.Level.OWNER)
     public String freerankGroup = "ember";
+
+    @Setting(path = "freerank.auto.enabled", desc = "Ranks V2 (owner EP-Q15): Ashborn is given automatically once the tutorial is "
+            + "complete and the playtime is reached (never removes a rank).")
+    public boolean freerankAutoEnabled = true;
+
+    @Setting(path = "freerank.auto.check-seconds", desc = "Seconds between the automatic Ashborn checks.", min = 5, max = 3_600)
+    public int freerankAutoCheckSeconds = 30;
+
+    @Setting(path = "freerank.auto.batch", desc = "Online players checked per run (at most this many LuckPerms writes per run).",
+            min = 1, max = 100)
+    public int freerankAutoBatch = 5;
+
+    @Setting(path = "freerank.auto.max-attempts", desc = "Tries per session after a LuckPerms failure, then one console warning.",
+            min = 1, max = 100)
+    public int freerankAutoMaxAttempts = 5;
 
     @Setting(path = "freerank.tags", desc = "The 3 tags the player picks 1 from (ids from tags-titles.yml). Kept forever.")
     public List<String> freerankTags = List.of("ember", "spark", "ash");

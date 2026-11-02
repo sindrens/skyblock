@@ -67,6 +67,7 @@ public final class PerksModule implements SkyblockModule {
     private NickService nicks;
     private TrashMenu trash;
     private FreeRankService freeRank;
+    private AshbornAuto ashborn;
     private volatile boolean active;
     private boolean rankHookRegistered;
     private final Map<UUID, Long> lastNickChange = new java.util.concurrent.ConcurrentHashMap<>();
@@ -110,6 +111,8 @@ public final class PerksModule implements SkyblockModule {
         registerCommands();
         freeRank = new FreeRankService(core, config, msg);
         freeRank.register();
+        ashborn = new AshbornAuto(core, config, freeRank);
+        ashborn.start();
     }
 
     @Override
@@ -160,6 +163,10 @@ public final class PerksModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        if (ashborn != null) {
+            ashborn.stop();
+            org.bukkit.event.HandlerList.unregisterAll(ashborn);
+        }
         active = false;
         if (trash != null) {
             trash.closeAll();
