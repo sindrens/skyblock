@@ -73,6 +73,32 @@ public final class PerksConfig extends ModuleConfig {
             min = 1, max = 100)
     public int freerankAutoMaxAttempts = 5;
 
+    @Setting(path = "rank-rewards.enabled", desc = "Ranks V2: /rankrewards (weekly kit per profile, monthly tag per account).")
+    public boolean rankRewardsEnabled = true;
+
+    @Setting(path = "rank-rewards.weekly.enabled", desc = "The weekly rank kit (Monday 00:00 Oslo, per profile, bound items).")
+    public boolean rankWeeklyEnabled = true;
+
+    @Setting(path = "rank-rewards.kits.S", desc = "Kit S (skyblock.rank.kit.size.1): 'item amount' lines. Food and blocks only; "
+            + "tools, weapons, armour, spawners and custom items are refused.")
+    public List<String> rankKitS = List.of("cooked_beef 16", "cobblestone 64");
+
+    @Setting(path = "rank-rewards.kits.M", desc = "Kit M (skyblock.rank.kit.size.2).")
+    public List<String> rankKitM = List.of("cooked_beef 32", "cobblestone 128", "oak_log 32");
+
+    @Setting(path = "rank-rewards.kits.L", desc = "Kit L (skyblock.rank.kit.size.3).")
+    public List<String> rankKitL = List.of("cooked_beef 48", "stone_bricks 128", "oak_log 64");
+
+    @Setting(path = "rank-rewards.kits.XL", desc = "Kit XL (skyblock.rank.kit.size.4).")
+    public List<String> rankKitXL = List.of("golden_carrot 48", "cooked_beef 48", "stone_bricks 256", "oak_log 128");
+
+    @Setting(path = "rank-rewards.monthly.enabled", desc = "The monthly rank tag (per account, skyblock.rank.monthly).")
+    public boolean rankMonthlyEnabled = true;
+
+    @Setting(path = "rank-rewards.monthly.pool", desc = "Tag ids (tags-titles.yml) handed out one per month, the first one the "
+            + "player does not own yet. Empty = the tile says 'Nothing new this month' (owner supplies the list, EP-Q17).")
+    public List<String> rankMonthlyPool = List.of();
+
     @Setting(path = "freerank.tags", desc = "The 3 tags the player picks 1 from (ids from tags-titles.yml). Kept forever.")
     public List<String> freerankTags = List.of("ember", "spark", "ash");
 

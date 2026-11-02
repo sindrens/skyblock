@@ -22,3 +22,4 @@ Nicknames now show a `~` marker (perks.yml `nick.marker`) and reset when the ran
 Combat block (ANS3, owner answer 377): `perks.yml → blocked.worlds` (`warzone`), `blocked.boss-arena` (the Depths publishes `BossArenas` in common), `blocked.combat-seconds` (10; the core combat tag). It applies to everyone, staff too.
 
 Permission definitions: `modules/perks/src/main/resources/permissions/perks.yml`. Rank grants: `server/permissions/perks.txt`.
+| `/rankrewards` | Ranks V2: your rank's weekly kit (per profile, Monday 00:00 Oslo, bound items, inventory then `/box`) and monthly tag (per account, from `perks.yml rank-rewards.monthly.pool`). Also in `/menu` → You for donor ranks | `skyblock.rank.kit` (kit size: `skyblock.rank.kit.size.1-4`; monthly: `skyblock.rank.monthly`) | ✅ |

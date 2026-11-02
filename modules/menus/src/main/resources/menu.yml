@@ -62,6 +62,8 @@ you:
   collection:   {icon: feature/collection,   command: "collection",   service: CollectionLog}
   settings:     {icon: feature/settings,     action: settings}
   rules:        {icon: feature/rules,        command: "rules"}
+  # Ranks V2: donor ranks only (a player without the node never sees it).
+  rank-rewards: {icon: chest,                command: "rankrewards",  permission: "skyblock.rank.kit", show-locked: false}
   store:        {icon: feature/store,        command: "store"}
   # Card C1: your credits, bought and earned (/credit bal). Same base item as the Store (diamond, I9 section 9).
   credits:      {icon: currency/credits,     command: "credit bal",   service: EconomyService}
