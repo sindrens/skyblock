@@ -122,7 +122,9 @@ final class ToolListener implements Listener {
         if (crop && !nested) {
             burst = ThreadLocalRandom.current().nextDouble(100) < m.farming().burstPercent(island);
         }
-        pending.put(block.getLocation(), new Pending(p, rec, island, crop, burst));
+        Location key = block.getLocation();
+        pending.put(key, new Pending(p, rec, island, crop, burst));
+        Bukkit.getScheduler().runTask(m.core().plugin(), () -> pending.remove(key)); // no drop event (nothing dropped): forget it
         if (nested) {
             return;
         }
