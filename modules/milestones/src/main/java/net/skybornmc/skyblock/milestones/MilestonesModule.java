@@ -45,6 +45,9 @@ public final class MilestonesModule implements SkyblockModule {
     private Executor main;
     private volatile MilestoneCatalog catalog;
     private MilestoneEngine engine;
+    private MilestoneClaims claims;
+    static final String PERM_USE = "skyblock.milestones.use";
+    static final String BONUS_SOURCE = "milestones";
 
     public MilestonesModule(Core core) {
         this.core = core;
@@ -68,8 +71,37 @@ public final class MilestonesModule implements SkyblockModule {
         main = new MainThread(core.plugin());
         catalog = loadCatalog();
         engine = new MilestoneEngine(this);
+        claims = new MilestoneClaims(this);
         Bukkit.getPluginManager().registerEvents(engine, core.plugin());
         engine.start();
+        // Spec §9.1: one bonus source "milestones" (highest claimed tier per chain, target match only; caps apply on top).
+        core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class).ifPresent(b -> b.register(BONUS_SOURCE, claims));
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            claims.load(p);
+        }
+        registerCommand();
+    }
+
+    /** {@code /milestones} (owner C2: the only alias is {@code /ms}). No arguments, so nothing to tab-complete. */
+    private void registerCommand() {
+        core.commands().register(net.skybornmc.skyblock.common.command.CommandSpec.command("milestones")
+                .description("Your island and personal milestones: grind an activity, claim perks for it")
+                .category("Progress")
+                .permission(PERM_USE)
+                .aliases("ms")
+                .playerOnly()
+                .example("ms")
+                .executes(ctx -> {
+                    if (!config.enabled) {
+                        throw new net.skybornmc.skyblock.common.command.CommandFailure(ID, "disabled");
+                    }
+                    open(ctx.player());
+                }));
+    }
+
+    void open(org.bukkit.entity.Player player) {
+        claims.load(player);
+        core.menus().open(player, new MilestonesMenu(this, null));
     }
 
     @Override
@@ -81,6 +113,7 @@ public final class MilestonesModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class).ifPresent(b -> b.unregister(BONUS_SOURCE));
         if (engine != null) {
             HandlerList.unregisterAll(engine);
             engine.stop();
@@ -181,6 +214,14 @@ public final class MilestonesModule implements SkyblockModule {
 
     MilestoneCatalog catalog() {
         return catalog;
+    }
+
+    MilestoneEngine engine() {
+        return engine;
+    }
+
+    MilestoneClaims claims() {
+        return claims;
     }
 
     ModuleMessages msg() {

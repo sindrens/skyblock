@@ -113,6 +113,16 @@ final class MilestoneEngine implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+        m.claims().load(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        m.claims().load(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         flushProfile(event.getPlayer());
         waiting.remove(event.getPlayer().getUniqueId());

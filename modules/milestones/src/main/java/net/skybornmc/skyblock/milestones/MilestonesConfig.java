@@ -22,6 +22,10 @@ public final class MilestonesConfig extends ModuleConfig {
             + "Reaper\", spec 7.2).")
     public boolean announceDiscovery = true;
 
+    @Setting(path = "show-next-tiers", desc = "Tiers shown after the current one in a chain; the rest show as ??? (owner HID: "
+            + "current plus the next 2).", min = 0, max = 20)
+    public int showNextTiers = 2;
+
     @Setting(path = "placed.ttl-minutes", desc = "Blocks a player placed don't count when broken for this long (spec 7.3: "
             + "placed blocks never count). Remembered in memory.", min = 1, max = 100_000)
     public int placedTtlMinutes = 1_440;
