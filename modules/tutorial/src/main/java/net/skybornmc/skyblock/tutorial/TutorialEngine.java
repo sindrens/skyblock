@@ -612,6 +612,9 @@ final class TutorialEngine implements TutorialService, TutorialGate {
             }
             StepRules.finished(p, now);
             event(player, p, "finish");
+            if (player.isOnline()) {
+                org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.tutorial.TutorialFinishedEvent(player, paid));
+            }
             audit(player, "tutorial_finish", Map.of("profile", profile.toString(), "paid", paid));
             if (paid) {
                 core.audit().logPlayer(AuditCategory.TUTORIAL, "tutorial_reward", Actor.system("tutorial"), id, player.getName(),
@@ -698,6 +701,12 @@ final class TutorialEngine implements TutorialService, TutorialGate {
         return change(player, p -> StepRules.staffSkip(p, System.currentTimeMillis()), false, "staff_skip").thenApply(changed -> {
             if (changed) {
                 core.audit().logPlayer(AuditCategory.TUTORIAL, "tutorial_staff_skip", actor, player, name, null, null, Map.of());
+                core.scheduler().main("tutorial-skip-event", () -> {
+                    org.bukkit.entity.Player online = org.bukkit.Bukkit.getPlayer(player);
+                    if (online != null) {
+                        org.bukkit.Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.tutorial.TutorialFinishedEvent(online, false));
+                    }
+                });
             }
             return changed;
         });

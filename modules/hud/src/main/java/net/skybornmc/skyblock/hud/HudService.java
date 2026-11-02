@@ -315,8 +315,10 @@ public final class HudService implements Listener {
     private TagResolver values(Player player, Choice choice, Optional<BoardTimers.Timer> timer) {
         var ranks = core.ranks();
         var color = ranks.rankColor(player);
+        var nameColor = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
+                .flatMap(b -> b.nameColor(player)).orElse(color);
         return TagResolver.resolver(
-                Msg.c("name", Component.text(player.getName(), color)),
+                Msg.c("name", Component.text(player.getName(), nameColor)),
                 Msg.c("rank", rankComponent(player, color)),
                 lazy("money", () -> value(player, config.moneyKey, "values.money")),
                 lazy("crystals", () -> value(player, config.crystalsKey, "values.crystals")),

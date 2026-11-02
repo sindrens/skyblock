@@ -785,10 +785,12 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         record Entry(Player player, String group, String display, int weight, net.kyori.adventure.text.format.TextColor color) {
         }
         List<Entry> visible = new ArrayList<>();
+        var badges = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class);
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!hiddenFrom(p, sender)) {
+                // Ranks V2: names in the name colour (white), the group heading keeps the rank word.
                 visible.add(new Entry(p, core.ranks().primaryGroup(p), core.ranks().groupDisplayName(p), core.ranks().weight(p),
-                        core.ranks().rankColor(p)));
+                        badges.flatMap(b -> b.nameColor(p)).orElse(core.ranks().rankColor(p))));
             }
         }
         msg.send(sender, "list.header", Msg.number("online", visible.size()), Msg.number("max", Bukkit.getMaxPlayers()));

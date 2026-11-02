@@ -22,38 +22,38 @@ class BadgesTest {
 
     @Test
     void goldenNameColourPerRank() {
-        assertEquals(TextColor.color(0xB5ABA4), Badges.nameColor(LOOKS, "default", BadgeOptions.PLAIN));
-        assertEquals(TextColor.color(0xFF9A4D), Badges.nameColor(LOOKS, "hatchling", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0x555555), Badges.nameColor(LOOKS, "default", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0xE3BE7A), Badges.nameColor(LOOKS, "hatchling", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0xFF8C1A), Badges.nameColor(LOOKS, "immortal", BadgeOptions.PLAIN));
         assertEquals(TextColor.color(0xFFFF55), Badges.nameColor(LOOKS, "owner", BadgeOptions.PLAIN));
-        assertEquals(TextColor.color(0x6CC4FF), Badges.nameColor(LOOKS, "mod", BadgeOptions.PLAIN));
-        assertEquals(TextColor.color(0x7CEB8A), Badges.nameColor(LOOKS, "helper", BadgeOptions.PLAIN));
-        assertEquals(TextColor.color(0xFF9A3D), Badges.nameColor(LOOKS, "builder", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0x55FFFF), Badges.nameColor(LOOKS, "mod", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0x55FF55), Badges.nameColor(LOOKS, "helper", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0xFFAA00), Badges.nameColor(LOOKS, "builder", BadgeOptions.PLAIN));
     }
 
     @Test
     void unknownGroupGetsTheDefaultLook() {
-        assertEquals(TextColor.color(0xB5ABA4), Badges.nameColor(LOOKS, "no-such-group", BadgeOptions.PLAIN));
+        assertEquals(TextColor.color(0x555555), Badges.nameColor(LOOKS, "no-such-group", BadgeOptions.PLAIN));
         Component c = Badges.render(LOOKS, "something-new", "Something", BadgeOptions.PLAIN);
-        assertEquals("[Something]", plain(c));
-        assertEquals(TextColor.color(0xB5ABA4), c.color());
+        assertEquals("Something", plain(c));
+        assertEquals(TextColor.color(0x555555), c.color());
     }
 
     @Test
     void singleColourIsOneText() {
         Component c = Badges.render(LOOKS, "hatchling", "Hatchling", BadgeOptions.PLAIN);
-        assertEquals("[Hatchling]", plain(c));
-        assertEquals(TextColor.color(0xFF9A4D), c.color());
+        assertEquals("Hatchling", plain(c));
+        assertEquals(TextColor.color(0xE3BE7A), c.color());
         assertNull(c.font());
     }
 
     @Test
     void threeColourGradientColoursEachCharacter() {
         Component c = Badges.render(LOOKS, "immortal", "Imm", BadgeOptions.PLAIN);
-        assertEquals("[Imm]", plain(c));
-        assertEquals(5, c.children().size());
+        assertEquals("Imm", plain(c));
+        assertEquals(3, c.children().size(), "one child per character, no brackets");
         assertEquals(TextColor.color(0xFFE27A), c.children().getFirst().color());
-        assertEquals(TextColor.color(0xFF8C1A), c.children().get(2).color());
+        assertEquals(TextColor.color(0xFF8C1A), c.children().get(1).color());
         assertEquals(TextColor.color(0xFF2D3F), c.children().getLast().color());
     }
 
@@ -65,7 +65,7 @@ class BadgesTest {
         assertEquals(TextColor.color(0xA8DFFF), immortal.children().getFirst().color());
         assertEquals(TextColor.color(0x2B2FA8), immortal.children().getLast().color());
         Component other = Badges.render(LOOKS, "hatchling", "Ab", o);
-        assertEquals(TextColor.color(0xFF9A4D), other.color());
+        assertEquals(TextColor.color(0xE3BE7A), other.color());
     }
 
     @Test
@@ -80,17 +80,17 @@ class BadgesTest {
     @Test
     void bedrockUsesLegacyCodesAndNeverPrivateUse() {
         Component c = Badges.render(LOOKS, "hatchling", "Hatchling", BadgeOptions.BEDROCK);
-        assertEquals("[Hatchling]", plain(c));
-        assertEquals(NamedTextColor.GOLD, c.children().isEmpty() ? c.color() : c.children().getFirst().color());
+        assertEquals("Hatchling", plain(c));
+        assertEquals(NamedTextColor.YELLOW, c.children().isEmpty() ? c.color() : c.children().getFirst().color());
         String owner = plain(Badges.render(LOOKS, "owner", "Owner", BadgeOptions.BEDROCK));
-        assertEquals("[Owner]", owner);
+        assertEquals("Owner", owner);
         assertFalse(PrivateUse.contains(owner));
     }
 
     @Test
     void bedrockSegmentsSplitTheNameAcrossTheCodes() {
         Component c = Badges.render(LOOKS, "immortal", "Immortal", BadgeOptions.BEDROCK);
-        assertEquals("[Immortal]", plain(c));
+        assertEquals("Immortal", plain(c));
         List<TextColor> colours = new java.util.ArrayList<>();
         for (Component part : c.children()) {
             if (part.color() != null && !colours.contains(part.color())) {
@@ -103,18 +103,18 @@ class BadgesTest {
     @Test
     void everyDefaultLookRendersCleanTextInBothForms() {
         for (String g : LOOKS.groups()) {
-            assertEquals("[Test]", plain(Badges.render(LOOKS, g, "Test", BadgeOptions.PLAIN)), g);
-            assertEquals("[Test]", plain(Badges.render(LOOKS, g, "Test", BadgeOptions.BEDROCK)), g);
+            assertEquals("Test", plain(Badges.render(LOOKS, g, "Test", BadgeOptions.PLAIN)), g);
+            assertEquals("Test", plain(Badges.render(LOOKS, g, "Test", BadgeOptions.BEDROCK)), g);
         }
     }
 
     @Test
     void cleanNameStripsPrivateUseAndCodesAndIsNeverBlank() {
-        assertEquals("[Hatchling]", plain(Badges.render(LOOKS, "hatchling", "", BadgeOptions.PLAIN)));
-        assertEquals("[Hatchling]", plain(Badges.render(LOOKS, "hatchling", null, BadgeOptions.PLAIN)));
-        assertEquals("[Hatchling]", plain(Badges.render(LOOKS, "hatchling", "\uE000", BadgeOptions.PLAIN)));
-        assertEquals("[6Hatchling]", plain(Badges.render(LOOKS, "hatchling", "&6Hatchling", BadgeOptions.PLAIN))); // codes can't leak in
-        assertEquals("[Ab]", plain(Badges.render(LOOKS, "default", "A\uE001b", BadgeOptions.PLAIN)));
+        assertEquals("Hatchling", plain(Badges.render(LOOKS, "hatchling", "", BadgeOptions.PLAIN)));
+        assertEquals("Hatchling", plain(Badges.render(LOOKS, "hatchling", null, BadgeOptions.PLAIN)));
+        assertEquals("Hatchling", plain(Badges.render(LOOKS, "hatchling", "\uE000", BadgeOptions.PLAIN)));
+        assertEquals("6Hatchling", plain(Badges.render(LOOKS, "hatchling", "&6Hatchling", BadgeOptions.PLAIN))); // codes can't leak in
+        assertEquals("Ab", plain(Badges.render(LOOKS, "default", "A\uE001b", BadgeOptions.PLAIN)));
     }
 
     @Test

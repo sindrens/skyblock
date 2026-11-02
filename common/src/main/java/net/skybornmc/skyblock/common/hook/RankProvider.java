@@ -74,6 +74,15 @@ public interface RankProvider {
         return CompletableFuture.failedFuture(new IllegalStateException("No rank plugin (LuckPerms) installed"));
     }
 
+    /**
+     * Removes {@code group} as a parent of the player (online or offline). Ranks V2: only the credit shop's revoke uses it;
+     * no automatic rank flow ever removes a group. Completes {@code true} when removed, {@code false} when the player did
+     * not have it.
+     */
+    default CompletableFuture<Boolean> removeGroup(UUID player, String group) {
+        return CompletableFuture.failedFuture(new IllegalStateException("No rank plugin (LuckPerms) installed"));
+    }
+
     /** Unsubscribes event listeners (plugin disable). */
     default void close() {
     }

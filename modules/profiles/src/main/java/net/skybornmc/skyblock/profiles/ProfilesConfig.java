@@ -8,11 +8,11 @@ import java.util.List;
 /** Settings of the profiles module ({@code profiles.yml}). */
 public final class ProfilesConfig extends ModuleConfig {
 
-    @Setting(path = "slots.price-2", desc = "Credits for profile slot 2 (owner PR5: 500; earned credits are spent first). Rank Knight+ gets it free (skyblock.profiles.slots.2). 0 = not for sale.",
+    @Setting(path = "slots.price-2", desc = "Credits for profile slot 2 (owner PR5: 500; earned credits are spent first). Rank Firewing+ gets it free (skyblock.profiles.slots.2). 0 = not for sale.",
             min = 0, max = 1_000_000, level = Setting.Level.OWNER)
     public long slot2Price = 500;
 
-    @Setting(path = "slots.price-3", desc = "Credits for profile slot 3 (owner PR5: 1,500; earned credits are spent first). Rank Warlord+ gets it free (skyblock.profiles.slots.3). 0 = not for sale.",
+    @Setting(path = "slots.price-3", desc = "Credits for profile slot 3 (owner PR5: 1,500; earned credits are spent first). Rank Pyrelord+ gets it free (skyblock.profiles.slots.3). 0 = not for sale.",
             min = 0, max = 1_000_000, level = Setting.Level.OWNER)
     public long slot3Price = 1_500;
 

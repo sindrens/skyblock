@@ -30,3 +30,15 @@ skyblock.auction.slots.15:
 skyblock.auction.slots.20:
   description: 20 auction listings at once
   default: false
+skyblock.auction.slots.9:
+  description: 9 auction listings at once (rank, RANKS-V2)
+  default: false
+skyblock.auction.slots.12:
+  description: 12 auction listings at once (rank, RANKS-V2)
+  default: false
+skyblock.auction.slots.14:
+  description: 14 auction listings at once (rank, RANKS-V2)
+  default: false
+skyblock.auction.slots.16:
+  description: 16 auction listings at once (rank, RANKS-V2)
+  default: false

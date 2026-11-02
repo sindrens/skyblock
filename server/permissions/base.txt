@@ -1,56 +1,61 @@
 # Staff ranks for SkybornMC: groups, weights, colors, prefixes, inheritance, third-party plugins, wildcards, people.
 # Applied first by scripts/apply-permissions.sh after every update/deploy, then every other *.txt here (one per
 # module, alphabetical). One console command per line. Lines starting with # are ignored. Every command is safe to run repeatedly.
-# Donor ranks (7, names to be planned, owner answer 386) are added when the store/ranks phase is built. Give them a
+# Donor ranks and the three won ranks are in ranks.txt (applied after this file, RANKS-V2). Every rank above default has a
 # weight above 0: lockdowns exempt every rank above default (owner answer 460).
 
-# --- Groups and weights (higher = more important) ---
+# --- Groups and weights (higher = more important). Staff 600-999, donors 100-160 (ranks.txt), free 10, default 0. ---
 lp creategroup builder
 lp creategroup helper
 lp creategroup mod
 lp creategroup admin
 lp creategroup owner
 lp group default setweight 0
-lp group builder setweight 5
-lp group helper setweight 10
-lp group mod setweight 20
-lp group admin setweight 30
-lp group owner setweight 100
-# Free lowest rank from /freerank (owner RW4): weight 1, below every staff rank.
+lp group builder setweight 600
+lp group helper setweight 700
+lp group mod setweight 800
+lp group admin setweight 900
+lp group owner setweight 999
+# Free rank Ashborn (group id stays ember, owner EP-Q11/EP-Q15): given automatically after the tutorial and 30 minutes.
 lp creategroup ember
-lp group ember setweight 1
+lp group ember setweight 10
 lp group ember parent add default
-lp group ember setdisplayname Ember
-lp group default setdisplayname Ashborn
-lp group ember meta set color "#E0A070"
+lp group ember setdisplayname Ashborn
+lp group default setdisplayname New
+
+# --- Rank colours (hex) = fallback only: SAME hex as chat.yml ranks.looks ---
+lp group default meta set color "#555555"
+lp group ember meta set color "#AAAAAA"
+lp group builder meta set color "#FFAA00"
+lp group helper meta set color "#55FF55"
+lp group mod meta set color "#55FFFF"
+lp group admin meta set color "#FF5555"
+lp group owner meta set color "#FFFF55"
+
+# --- Display names (the rank word) and prefixes (priority = weight; old priorities are removed first) ---
+lp group builder setdisplayname BUILDER
+lp group helper setdisplayname HELPER
+lp group mod setdisplayname MOD
+lp group admin setdisplayname ADMIN
+lp group owner setdisplayname OWNER
 lp group ember meta removeprefix 1
-lp group ember meta addprefix 1 "&7[&6Ember&7] "
-
-# --- Rank colors (hex) for our chat/tab/nametags; prefixes below stay classic colors for Bedrock and other plugins ---
-# Rank display colours are set in chat.yml ranks.looks; the color meta here is only the fallback for a group missing there.
-lp group default meta set color "#C9C9C9"
-lp group builder meta set color "#FFD23F"
-lp group helper meta set color "#63B8FF"
-lp group mod meta set color "#FF8A1F"
-lp group admin meta set color "#FF3D2E"
-lp group owner meta set color "#C21F2B"
-
-# --- Display names and chat prefixes (Phoenix palette, Bedrock-safe classic colors) ---
-lp group builder setdisplayname Builder
-lp group helper setdisplayname Helper
-lp group mod setdisplayname Moderator
-lp group admin setdisplayname Admin
-lp group owner setdisplayname Owner
+lp group ember meta removeprefix 10
+lp group ember meta addprefix 10 "&7Ashborn &f"
 lp group builder meta removeprefix 5
-lp group builder meta addprefix 5 "&e&lBUILDER &e"
+lp group builder meta removeprefix 600
+lp group builder meta addprefix 600 "&6&lBUILDER &f"
 lp group helper meta removeprefix 10
-lp group helper meta addprefix 10 "&b&lHELPER &b"
+lp group helper meta removeprefix 700
+lp group helper meta addprefix 700 "&a&lHELPER &f"
 lp group mod meta removeprefix 20
-lp group mod meta addprefix 20 "&6&lMOD &6"
+lp group mod meta removeprefix 800
+lp group mod meta addprefix 800 "&b&lMOD &f"
 lp group admin meta removeprefix 30
-lp group admin meta addprefix 30 "&c&lADMIN &c"
+lp group admin meta removeprefix 900
+lp group admin meta addprefix 900 "&c&lADMIN &f"
 lp group owner meta removeprefix 100
-lp group owner meta addprefix 100 "&4&lOWNER &4"
+lp group owner meta removeprefix 999
+lp group owner meta addprefix 999 "&e&lOWNER &f"
 
 # --- Inheritance: helper < mod < admin < owner. Admin can also build. ---
 lp group helper parent add default

@@ -29,31 +29,32 @@ public final class RankLooks {
      * The shipped looks, copied exactly from the retired pack v1 {@code pack-ids.yml badges.ranks} (colour and Bedrock
      * code; the font, shine, family and cap fields only drew the font badge and are gone).
      */
-    /** The shipped looks before 2 Nov 2026 (owner was amber #FFC21A); chat.yml v3 moves an untouched list to {@link #DEFAULTS}. */
+    /** The pack v1 looks shipped before Ranks V2; chat.yml v3 moves an untouched list to {@link #DEFAULTS}. */
     public static final List<String> DEFAULTS_V1 = List.of(
             "default=#B5ABA4|&7", "hatchling=#FF9A4D|&6", "fledgling=#9BE84A|&a", "firewing=#4FB4FF|&9", "flamecrest=#B06BFF|&5",
             "sunfeather=#FFD21A|&e", "pyrelord=#FF3B4A|&c", "immortal=#FFE27A,#FF8C1A,#FF2D3F|&e&l>&6&l>&c&l",
             "torchbearer=#2EE6D0|&3", "flameheart=#FF5FD2|&d", "firecrown=#FFFFFF|&f&l", "owner=#FFC21A|&e&l",
             "admin=#FF6B6B|&c&l", "mod=#6CC4FF|&9&l", "helper=#7CEB8A|&a&l", "builder=#FF9A3D|&6&l");
 
-    /** Owner 2 Nov 2026: the owner badge is plain yellow (&e) and bold, like the Bedrock code. */
+    /** Ranks V2 (build spec RANKS-V2, owner EP-Q10 to EP-Q15): staff in bold caps, Phoenix-life donor ranks, Ashborn grey, New dark grey. */
     public static final List<String> DEFAULTS = List.of(
-            "default=#B5ABA4|&7",
-            "hatchling=#FF9A4D|&6",
-            "fledgling=#9BE84A|&a",
-            "firewing=#4FB4FF|&9",
-            "flamecrest=#B06BFF|&5",
-            "sunfeather=#FFD21A|&e",
-            "pyrelord=#FF3B4A|&c",
+            "default=#555555|&8",
+            "ember=#AAAAAA|&7",
+            "hatchling=#E3BE7A|&e",
+            "fledgling=#C8702A|&6",
+            "firewing=#FF7F9E|&c",
+            "flamecrest=#D63FB0|&d",
+            "sunfeather=#C27BFF|&5",
+            "pyrelord=#2F5BFF|&9",
             "immortal=#FFE27A,#FF8C1A,#FF2D3F|&e&l>&6&l>&c&l",
-            "torchbearer=#2EE6D0|&3",
-            "flameheart=#FF5FD2|&d",
+            "torchbearer=#2A9D8F|&3",
+            "flameheart=#8FB8FF|&b",
             "firecrown=#FFFFFF|&f&l",
             "owner=#FFFF55|&e&l",
-            "admin=#FF6B6B|&c&l",
-            "mod=#6CC4FF|&9&l",
-            "helper=#7CEB8A|&a&l",
-            "builder=#FF9A3D|&6&l");
+            "admin=#FF5555|&c&l",
+            "mod=#55FFFF|&b&l",
+            "helper=#55FF55|&a&l",
+            "builder=#FFAA00|&6&l");
 
     /**
      * One rank look.
@@ -73,10 +74,29 @@ public final class RankLooks {
             return colors.get(colors.size() / 2);
         }
 
+        /** True when every Bedrock part is bold ({@code &l}): staff, Immortal and Firecrown are bold on Java too. */
+        public boolean bold() {
+            return bedrockSegments().stream().allMatch(seg -> seg.toLowerCase(java.util.Locale.ROOT).contains("&l"));
+        }
+
         /** The Bedrock codes, one per equal part of the text. */
         public List<String> bedrockSegments() {
             return List.of(bedrock.split(">", -1));
         }
+    }
+
+    /** The classic colour of a {@code &x} code ({@code &e} = #FFFF55), or null for a non-colour code. */
+    public static String legacyHex(String code) {
+        if (code == null || code.length() < 2) {
+            return null;
+        }
+        return switch (Character.toLowerCase(code.charAt(1))) {
+            case '0' -> "#000000"; case '1' -> "#0000AA"; case '2' -> "#00AA00"; case '3' -> "#00AAAA";
+            case '4' -> "#AA0000"; case '5' -> "#AA00AA"; case '6' -> "#FFAA00"; case '7' -> "#AAAAAA";
+            case '8' -> "#555555"; case '9' -> "#5555FF"; case 'a' -> "#55FF55"; case 'b' -> "#55FFFF";
+            case 'c' -> "#FF5555"; case 'd' -> "#FF55FF"; case 'e' -> "#FFFF55"; case 'f' -> "#FFFFFF";
+            default -> null;
+        };
     }
 
     private final Map<String, Look> looks;

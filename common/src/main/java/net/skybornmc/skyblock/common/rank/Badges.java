@@ -72,9 +72,9 @@ public final class Badges {
 
     static Component simple(RankLooks.Look look, String group, String name, BadgeOptions o) {
         List<TextColor> colors = colors(look, group, o);
-        String text = '[' + name + ']';
-        // A look whose legacy code is bold (&l: staff, Immortal, Firecrown) is bold on Java too (owner: "&e&l for owner").
-        boolean bold = look.bedrock() != null && look.bedrock().toLowerCase(Locale.ROOT).contains("&l");
+        // Ranks V2 (owner EP-Q14): the rank word without brackets; bold looks (&l: staff, Immortal, Firecrown) bold on Java.
+        String text = name;
+        boolean bold = look.bold();
         if (colors.size() == 1) {
             Component one = Component.text(text, colors.getFirst());
             return bold ? one.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD) : one;
@@ -89,7 +89,7 @@ public final class Badges {
 
     static Component bedrock(RankLooks.Look look, String name) {
         List<String> segments = look.bedrockSegments();
-        String text = '[' + name + ']';
+        String text = name;
         StringBuilder legacy = new StringBuilder();
         int m = segments.size();
         for (int k = 0; k < m; k++) {

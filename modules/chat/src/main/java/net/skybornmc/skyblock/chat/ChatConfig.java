@@ -15,8 +15,12 @@ public final class ChatConfig extends ModuleConfig {
     // ---------------------------------------------------------------- formats (MiniMessage + parts)
 
     @Setting(path = "format.chat", desc = "Chat line. Parts: <title> <tag> <rank> <name> <message> (empty parts disappear). "
-            + "Titles go before the name, tags after it: [MOD] Pouched (Phoenix) » hi")
-    public String chatFormat = "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>";
+            + "Titles go before the name, tags after it: MOD Pouched (Phoenix) »» hi (Ranks V2, owner EP-Q14).")
+    public String chatFormat = "<title><rank><name><tag> <gray>»»</gray> <white><message>";
+
+    @Setting(path = "ranks.name-color", desc = "Colour of every player name next to a rank word (chat, tab, nameplate, /list, "
+            + "sidebar). White (owner EP-Q14). Empty = the name takes the rank colour as before.")
+    public String rankNameColor = "#FFFFFF";
 
     @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>. Default (FIXES1, clean): "
             + "MOD Pouched (Phoenix) - rank prefix, name in the rank color, tag; the title stays in chat.")
@@ -43,7 +47,7 @@ public final class ChatConfig extends ModuleConfig {
 
     // ---------------------------------------------------------------- rank badges
 
-    @Setting(path = "ranks.looks", desc = "How each rank looks as [Name] text in chat, tab, nametags, /list and the sidebar. "
+    @Setting(path = "ranks.looks", desc = "How each rank word looks (no brackets) in chat, tab, nametags, /list and the sidebar. A '&l' in the Bedrock part makes the Java word bold too. "
             + "One line per LuckPerms group: group=#RRGGBB|&code. Three colours (#A,#B,#C) draw a gradient (Immortal). "
             + "The Bedrock part is the legacy colour code; '>' splits the name into equal parts (&e&l>&6&l>&c&l). The "
             + "'default' line is the look of every group without a line. Values copied from the retired pack v1 "
@@ -171,8 +175,8 @@ public final class ChatConfig extends ModuleConfig {
     public String header() {
         return """
                 Phoenix Skyblock chat, tab list and nametags.
-                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Ranks show as [Name] (LuckPerms display
-                name) in the colours of ranks.looks; name colors follow the same look. Texts: messages/chat.yml.
+                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Ranks show as a coloured word (OWNER, Hatchling ...)
+                before a white name (ranks.name-color); the word looks come from ranks.looks. Texts: messages/chat.yml.
                 Reload: /skyblock reload chat""";
     }
 
@@ -183,7 +187,8 @@ public final class ChatConfig extends ModuleConfig {
      */
     static final Map<String, String[]> CHANGED_DEFAULTS = Map.of(
             "format.chat", new String[]{"<title><rank><name> <c:muted>»</c:muted> <c:text><message>",
-                    "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>"},
+                    "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>",
+                    "<title><rank><name><tag> <gray>»»</gray> <white><message>"},
             "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>", "<rank><name><tag><afk>"},
             "format.tab-title-part", new String[]{" <value>", "<value> "},
             "format.tag-part", new String[]{"", " <value>"});

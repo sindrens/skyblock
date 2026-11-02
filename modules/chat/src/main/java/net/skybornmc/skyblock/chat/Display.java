@@ -130,10 +130,22 @@ final class Display {
         parsed.clear();
     }
 
-    /** The rank's name color: hex {@code color} meta, else the prefix color, else gray. */
+    /**
+     * The colour of a player's NAME (Ranks V2, owner EP-Q14: white next to the coloured rank word): {@code ranks.name-color};
+     * blank = the rank colour as before (hex {@code color} meta, else the prefix color, else gray).
+     */
     TextColor color(Player player) {
+        TextColor fixed = nameColor(config.get().rankNameColor);
+        if (fixed != null) {
+            return fixed;
+        }
         TextColor color = core.ranks().rankColor(player);
         return color == null ? DEFAULT_NAME : color;
+    }
+
+    /** The configured name colour, or null when blank or not a #RRGGBB hex. */
+    static TextColor nameColor(String raw) {
+        return raw == null || raw.isBlank() ? null : TextColor.fromHexString(raw.strip());
     }
 
     /** Name in the rank color; a nickname (perks module) keeps its own colors on top of the rank color. */

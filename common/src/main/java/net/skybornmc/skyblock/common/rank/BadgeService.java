@@ -34,6 +34,14 @@ public interface BadgeService {
     /** The rank colour of a player: the one colour behind the badge. */
     Optional<TextColor> color(Player player);
 
+    /**
+     * The colour of the player's NAME next to the rank word (chat, tab, nameplate, /list, sidebar): white by default
+     * (Ranks V2, owner EP-Q14), the rank colour when the chat module's {@code ranks.name-color} is blank.
+     */
+    default Optional<TextColor> nameColor(Player player) {
+        return color(player);
+    }
+
     /** Ids of the approved gradients, default first. */
     List<String> gradientIds();
 }

@@ -106,6 +106,12 @@ final class RankBadges implements BadgeService {
     }
 
     @Override
+    public Optional<TextColor> nameColor(Player player) {
+        TextColor fixed = Display.nameColor(config.get().rankNameColor);
+        return fixed != null ? Optional.of(fixed) : color(player);
+    }
+
+    @Override
     public List<String> gradientIds() {
         return List.copyOf(gradients.keySet());
     }
