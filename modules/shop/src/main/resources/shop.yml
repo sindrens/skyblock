@@ -48,7 +48,7 @@
 config-version: 4
 
 categories:
-  # Logs and planks of every tree (a log crafts into 4 planks; an axe strips logs).
+  # Logs, stems and leaves of every tree. Planks are crafted (1 log = 4 planks), so the shop sells logs only.
   wood:
     icon: oak_log
     groups:
@@ -68,7 +68,8 @@ categories:
       crimson_stem: 8
       warped_stem: 8
       bamboo_block: 8
-  # Earth, stone and bricks. Stone breaks into cobblestone, which /sell buys: keep it above 7.5x its sell price.
+  # Earth, sand, stone, deepslate and cave blocks. Stone breaks into cobblestone, which /sell buys: keep it above 7.5x
+  # its sell price. Polished and brick variants are crafted or stonecut.
       oak_leaves: auto
       spruce_leaves: auto
       birch_leaves: auto
@@ -105,7 +106,8 @@ categories:
       granite: 5
       deepslate: 6
       cobbled_deepslate: 5
-  # Nether, End, ocean and ice blocks. The Nether and End are off, so this is the only source.
+  # Nether, End, ocean and ice blocks. The Nether and End are off, so this is the only source. Polished and brick variants
+  # and packed/blue ice are crafted.
       rooted_dirt: auto
       dripstone_block: auto
       pointed_dripstone: auto
@@ -203,7 +205,7 @@ categories:
       tinted_glass: 30
       terracotta: 5
       white_wool: 6
-  # Lights, furniture and a few plants.
+  # Lights, display blocks, grass, ferns and every flower.
   decoration:
     icon: lantern
     groups:
@@ -236,7 +238,8 @@ categories:
       poppy: 8
       cornflower: 10
       sunflower: 15
-  # Workstations, storage, buckets, tools and food.
+  # Advanced workstations, buckets, tools and food. Crafting table, furnace, chest and other simple crafts are made by the
+  # player (ECON-TABLES D1).
       short_grass: auto
       fern: auto
       dead_bush: auto
