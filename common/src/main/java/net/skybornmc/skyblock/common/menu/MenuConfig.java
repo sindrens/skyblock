@@ -63,7 +63,7 @@ public final class MenuConfig extends ModuleConfig {
     @Setting(path = "gui.font.enabled", desc = "Frame layer master switch (GUI-FONT): Java players with the icon pack see menus as "
             + "our panel with a plaque and soft tiles, and the logo on the scoreboard and tab. false = nobody gets any glyph "
             + "(menus, scoreboard, tab); everyone sees the plain chest. Bedrock never sees glyphs.")
-    public boolean fontEnabled = false;
+    public boolean fontEnabled = true;
 
     @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off.")
     public boolean fontPanels = true;
@@ -84,6 +84,17 @@ public final class MenuConfig extends ModuleConfig {
     /** The frame layer switches of this file. */
     public net.skybornmc.skyblock.common.frame.FrameSwitches fontSwitches() {
         return new net.skybornmc.skyblock.common.frame.FrameSwitches(fontEnabled, fontPanels, fontTitles, fontTiles, fontLogo);
+    }
+
+    /** Version 2 (owner 2 Nov 2026: "a full improvement on all the GUIs"): the frame layer is on unless switched off by hand. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("gui.font.enabled", ValueChange.of(false, true)));
     }
 
     @Override

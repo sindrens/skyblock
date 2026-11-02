@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### GUI frame layer on (owner 2 Nov 2026: "a full improvement on all the GUIs")
+- `menus.yml gui.font.enabled` true (v2 moves an untouched `false`): Java players with the pack see every menu as the Phoenix panel with the title plaque and soft tiles, plus the logo on the scoreboard and tab. Bedrock and players without the pack keep the plain chest. Switch off in /admin if anything looks wrong.
 ### Achievements fix and new achievements (owner 2 Nov 2026: "it gives me achievements when I'm not doing anything")
 - **Fix:** playtime achievements (First Steps, Dedicated, Unstoppable) counted every online minute. Now a minute counts only when you moved to another block, interacted, chatted or used a command in the last `tracking.playtime-active-seconds` (90), and were not AFK, in the AFK pool, in staff mode or vanished.
 - Staff mode sets the scoreboard tag `staff_mode` (other modules can see it without depending on staff).
