@@ -45,7 +45,8 @@ import java.util.UUID;
  *   trampling it does nothing.</li>
  *   <li>Looking at a crop within a few blocks shows a small text above it for that player: stage and time to the next.</li>
  * </ul>
- * Melon and pumpkin fruits, sugar cane, cactus and bamboo keep their vanilla growth.
+ * Melon and pumpkin fruits, sugar cane, cactus and bamboo keep their vanilla growth. An asleep island (no island fuel)
+ * grows nothing, as before.
  */
 final class IslandGrowth implements Listener {
 
@@ -135,6 +136,13 @@ final class IslandGrowth implements Listener {
             if (b.getType() != d.crop() || !(b.getBlockData() instanceof Ageable a) || a.getAge() >= a.getMaximumAge()) {
                 continue;
             }
+            if (paused(b)) {
+                // An asleep island (no island fuel, production module) doesn't grow; try again a step later.
+                Due later = new Due(d.world(), d.x(), d.y(), d.z(), d.crop(), now + d.stepMillis(), d.stepMillis());
+                byKey.put(later.key(), later);
+                queue.add(later);
+                continue;
+            }
             a.setAge(a.getAge() + 1);
             b.setBlockData(a, false);
             boolean ripe = a.getAge() >= a.getMaximumAge();
@@ -146,6 +154,11 @@ final class IslandGrowth implements Listener {
             }
         }
         labels();
+    }
+
+    private boolean paused(Block b) {
+        return m.islands().map(i -> i.islandAt(b.getLocation()).map(info -> i.islandProductionPaused(info.id())).orElse(false))
+                .orElse(false);
     }
 
     /** A stage step: a small puff (and the ripe cue on the last one) and a soft, rate-limited sound for players nearby. */
