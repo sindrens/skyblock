@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### Island guide Kindle (owner idea, 2 Nov 2026; docs/planning/ISLAND_GUIDE.md)
+- New module `guide`: one NPC per island next to the island home (Mannequin, name + status line). Click (any button, Bedrock tap) opens his menu: next step, Challenges (task book), Quests, Milestones (ready count), Upgrades, Masteries, Island level, The Depths (your tier), Help. Buttons of modules that are off are left out.
+- Island level-up: online members get "Kindle has something new [Talk]" and his status line shows a star until someone opens him.
+- `/is guide` (anywhere) and `/is guide move` (leader and admins, inside the border). Spots in `guide_spots`; removed with the island.
+- Open for the owner: Kindle's own quest line, tip lines, skin (ISLAND_GUIDE.md GD-1 to GD-4).
 ### Eclipse Crate: tiered pool (Complete Developer Spec F7a, owner V1-V3)
 - One open gives 3 different rewards from each of common, mid and rare (9 of a pool of 27) plus 1 of 5 jackpots; no pity; an owned cosmetic jackpot pays its fallback crystals (no re-roll). Exact odds in the preview (one row per band, jackpots in the top row).
 - `crates.yml`: `band:` per reward and `draw:` per crate (any crate can be tiered). Live servers switch once while the old Eclipse table is untouched (`eclipse-version: 2`); an edited table stays.

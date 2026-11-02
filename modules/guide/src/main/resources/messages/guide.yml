@@ -1,0 +1,105 @@
+# Island guide Kindle (docs/planning/ISLAND_GUIDE.md). MiniMessage + style tags. Reload: /skyblock reload guide
+no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't talk to island guides."
+no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island first: <click:run_command:'/is'><c:action>/is</c:action></click>"
+
+npc:
+  name: "<bold><grad:phoenix>Kindle</grad></bold>"
+  status: "<c:muted>Island guide <sym:dot> click to talk"
+  status-news: "<c:action><sym:star> Something new! <sym:star>"
+  visitor: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>I look after <c:value><island></c:value>. Ask your own island's guide for help!"
+
+news:
+  level-up: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Island level <c:value><level></c:value>! I have something new for you. <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Talk]</c:action></hover></click>"
+
+move:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Kindle now stands here."
+  not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island leader and admins can move Kindle."
+  outside: "<prefix><c:error><sym:cross></c:error> <c:text>Stand inside your island's border to move Kindle there."
+
+menu:
+  crumb-island: "Island"
+  crumb: "Kindle"
+  info:
+    - "<c:text>Kindle is your island guide."
+    - "<c:muted>Everything your island can do,"
+    - "<c:muted>in one place. Find him next to"
+    - "<c:muted>your island home or use /is guide."
+  kindle:
+    name: "<bold><grad:phoenix>Kindle</grad></bold> <c:muted>· your island guide"
+    lore:
+      - "<c:text>Hey <c:value><player></c:value>! Your island is"
+      - "<c:text>level <c:value><level></c:value>. Here is what you can do."
+  kindle-news:
+    name: "<bold><grad:phoenix>Kindle</grad></bold> <c:action><sym:star> Something new"
+    lore:
+      - "<c:text>Your island grew to level <c:value><level></c:value>!"
+      - "<c:text>Check your <c:value>Challenges</c:value> and <c:value>Upgrades</c:value>:"
+      - "<c:text>new ones may be open now."
+  next:
+    name: "<c:action>Next step"
+    lore:
+      - "<c:value><next>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see it in chat"
+  next-none: "Explore /menu"
+  next-chat: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Next: <c:value><next>"
+  challenges:
+    name: "<area:skills>Challenges"
+    lore:
+      - "<c:text>Island tasks: <c:value><done></c:value><c:muted>/<total> done"
+      - "<c:muted>Finishing them opens new tiers,"
+      - "<c:muted>upgrades and Depths tasks."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the book"
+  quests:
+    name: "<area:reward>Quests"
+    lore:
+      - "<c:text>Daily, weekly and island quests."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  milestones:
+    name: "<area:skills>Milestones"
+    lore:
+      - "<c:text>Grind an activity, claim perks"
+      - "<c:text>for it. Island tiers raise your level."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  milestones-ready:
+    name: "<area:reward>Milestones <c:action>(<ready> ready)"
+    lore:
+      - "<c:value><ready></c:value> <c:text>tier(s) ready to claim!"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"
+  upgrades:
+    name: "<area:money>Upgrades"
+    lore:
+      - "<c:text>Bigger island, faster production,"
+      - "<c:text>better Depths. Paid from your island."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  masteries:
+    name: "<area:skills>Masteries"
+    lore:
+      - "<c:text>Long-term island bonuses."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  level:
+    name: "<area:reward>Island level <c:value><level>"
+    lore:
+      - "<c:text>Where your points come from"
+      - "<c:text>and how to raise them."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  depths:
+    name: "<area:depths>The Depths"
+    lore:
+      - "<c:text>Your tier: <c:value><tier>"
+      - "<c:muted>Mine, chop and fight below."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"
+  help:
+    name: "<area:neutral>Help & guides"
+    lore:
+      - "<c:text>Every feature explained."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
