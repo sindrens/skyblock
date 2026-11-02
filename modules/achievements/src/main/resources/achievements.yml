@@ -415,13 +415,6 @@ achievements:
     category: skills
     metric: skill_total
     goals: [30, 60, 120]
-  trader:
-    name: "<c:flame>Fair Trade"
-    description: ["<c:text>Finish trades with players."]
-    icon: emerald
-    category: economy
-    metric: trades_completed
-    goals: [1, 25]
   globetrotter:
     name: "<c:sky_blue>Globetrotter"
     description: ["<c:text>Visit many islands", "<c:text>(each island once a day)."]

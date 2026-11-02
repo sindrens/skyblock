@@ -86,8 +86,9 @@ class OpenPlanTest {
         for (CrateCatalog.Crate crate : Fixtures.bundled().crates()) {
             OpenPlan.Plan p = OpenPlan.build(crate, new CrateMath.KeyUse(40, 24), 0, Fixtures.context(5, k -> false), new Random(11),
                     UUID::randomUUID);
-            assertEquals(64, p.grants().size(), crate.id());
-            assertEquals(64, p.grants().stream().map(OpenPlan.Grant::openId).distinct().count(), "unique open ids");
+            int expected = 64 * (crate.tiered() ? crate.perOpen() : 1); // a tiered crate (Eclipse) draws several rewards per key
+            assertEquals(expected, p.grants().size(), crate.id());
+            assertEquals(expected, p.grants().stream().map(OpenPlan.Grant::openId).distinct().count(), "unique open ids");
             for (OpenPlan.Grant g : p.grants()) {
                 assertTrue(g.amount() >= 0, crate.id() + "." + g.reward().id());
                 assertTrue(g.ref().length() <= 64);

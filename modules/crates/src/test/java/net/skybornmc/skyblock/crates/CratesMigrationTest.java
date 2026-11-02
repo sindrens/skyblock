@@ -37,11 +37,18 @@ class CratesMigrationTest {
         assertTrue(CatalogMigration.needed(old));
         CatalogMigration.Result r = CatalogMigration.migrate(old);
         assertTrue(r.changed());
+        YamlConfiguration bundledYaml = Fixtures.resource("crates.yml");
+        // Same order as CratesModule: the v2 catalog migration, then the Eclipse switch to the tiered pool.
+        assertTrue(EclipseMigration.migrate(old, bundledYaml).changed());
         Map<String, Map<String, Double>> migrated = chances(old);
-        Map<String, Map<String, Double>> bundled = chances(Fixtures.resource("crates.yml"));
+        Map<String, Map<String, Double>> bundled = chances(bundledYaml);
         for (String crate : bundled.keySet()) {
             assertEquals(bundled.get(crate), migrated.get(crate), crate);
-            assertEquals(100, migrated.get(crate).values().stream().mapToDouble(Double::doubleValue).sum(), 1e-9, crate + " adds up to 100");
+            boolean tiered = bundledYaml.getConfigurationSection(CrateCatalog.ROOT + "." + crate).getMapList("rewards").stream()
+                    .anyMatch(row -> row.containsKey("band"));
+            if (!tiered) { // a tiered crate (Eclipse) weighs rewards inside each band, not to 100
+                assertEquals(100, migrated.get(crate).values().stream().mapToDouble(Double::doubleValue).sum(), 1e-9, crate + " adds up to 100");
+            }
         }
         assertFalse(migrated.get("conqueror").containsKey("shards"), "no crate pays shards");
         assertFalse(migrated.get("phoenix").containsKey("spawner_t5"));

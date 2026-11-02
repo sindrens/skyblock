@@ -45,6 +45,10 @@ class IconKeysUsedTest {
                     Matcher m = KEY.matcher(Files.readString(f));
                     while (m.find()) {
                         String key = m.group(1);
+                        // "item/crate_key_" + id: a prefix that the code completes, not a key of its own
+                        if (key.endsWith("_")) {
+                            continue;
+                        }
                         if (groups.contains(key.substring(0, key.indexOf('/'))) && !catalog.has(key)) {
                             missing.add(root.relativize(f) + ": " + key);
                         }
