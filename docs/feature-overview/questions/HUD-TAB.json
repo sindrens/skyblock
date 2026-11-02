@@ -1,0 +1,318 @@
+{
+  "cluster": "HUD-TAB",
+  "title": "Scoreboard, tab, nameplates and tutorial",
+  "questions": [
+    {
+      "id": "HT-Q1",
+      "card": "G7",
+      "title": "Allow a logo-only font?",
+      "context": "You want the server logo on the scoreboard and the tab list like MC Hub. That needs one small custom font with just the logo, which reverses the earlier 'no custom writing' answer. Bedrock and anyone without the pack would see plain text instead.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Yes, logo-only font",
+          "detail": "One font with two logo images (scoreboard title and tab header), used only for Java players who loaded the pack; nothing else uses a font.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Text only, no font",
+          "detail": "The title stays bold phoenix-gradient text, no logo image anywhere; nothing to draw, nothing to test."
+        },
+        {
+          "key": "c",
+          "label": "Logo in the tab only",
+          "detail": "The tab header gets the logo image; the scoreboard title stays plain text."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q2",
+      "card": "G8",
+      "title": "What does 'over every player' mean?",
+      "context": "You wrote 'the top of the scoreboard over every player'. It can mean the tab header above the player list, or something floating above each head.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Header above the list",
+          "detail": "The tab header sits above every name in the player list; the name above heads stays rank word plus name, as decided.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Extra line above heads",
+          "detail": "Each head also shows a second line such as the island level; more work for 300 players and it changes the nameplate decision."
+        },
+        {
+          "key": "c",
+          "label": "Logo above every head",
+          "detail": "A floating logo over each player; one extra entity per player for every viewer, and Bedrock may show a box, so not recommended."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q3",
+      "card": "G7",
+      "title": "Which facts must the board show?",
+      "context": "The board can carry about 8 facts without getting busy: money, crystals, credits, island level, skill level, booster timer, next goal, online players, profile name. Each shows only where it matters.",
+      "options": [
+        {
+          "key": "a",
+          "label": "All of them, by place",
+          "detail": "Every fact above, but only on the places where it is useful, never more than 3 rows per section (table in G7).",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Minimum set",
+          "detail": "Money, crystals, island level and the next goal only; cleanest, but boosters and skill levels are no longer visible."
+        },
+        {
+          "key": "c",
+          "label": "Rich set",
+          "detail": "The full set plus playtime, ping and rank on every board; informative but crowded and above the 10-line limit."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q4",
+      "card": "G7",
+      "title": "Show online players on the board?",
+      "context": "MC Hub shows 'Online Players: 1777'. Earlier we removed the online count to keep the board clean (UX1). The tab header will show the count in any case.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Spawn board only",
+          "detail": "One 'Online: 187' row at spawn, where the board is otherwise empty; other boards stay clean.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "On every board",
+          "detail": "The row on every place, as on MC Hub; costs one row where the board is already full."
+        },
+        {
+          "key": "c",
+          "label": "Tab list only",
+          "detail": "No online row on the scoreboard at all; the count lives in the tab header."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q5",
+      "card": "G7",
+      "title": "Booster timer or island note first?",
+      "context": "Today a section shows only 3 rows, and the island note comes before the booster timer, so a running booster is hidden whenever a note exists. The Depths boards have no timer row at all.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Timer first",
+          "detail": "The booster timer ranks above the note, and all Depths boards get it too; the note drops out while a booster runs.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep as built",
+          "detail": "The note keeps priority and the timer shows only when there is room; Depths boards stay without a timer."
+        },
+        {
+          "key": "c",
+          "label": "Taller island section",
+          "detail": "Allow 4 rows in the island section so both fit; the board grows to 11 lines."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q6",
+      "card": "G7",
+      "title": "What after the tutorial ends?",
+      "context": "'Next:' disappears when the tutorial ends, so the spawn board is almost empty and players have no next goal. Quests and unlocks can supply one goal.",
+      "options": [
+        {
+          "key": "a",
+          "label": "One Next goal always",
+          "detail": "A 'Next:' row shows one goal (open quest, else the next unlock such as 'Mining Lv 5 for Tier 2'), plus the online row at spawn.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Next only in the tutorial",
+          "detail": "As built; spawn shows money and online only after the tutorial."
+        },
+        {
+          "key": "c",
+          "label": "Player chooses",
+          "detail": "A pin button picks which goal the row shows; more menus and more to explain, against 'less is more'."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q7",
+      "card": "G8",
+      "title": "Tab header format",
+      "context": "Your sketch: server name or logo, then ping and address, then the number of active players. That replaces today's SKYBORNMC rule lines and moves the address from the footer up into the header.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Your 3 lines",
+          "detail": "'PHOENIX SKYBLOCK' (logo or text), 'Ping 23 ms · play.skybornmc.net', '187 players online'; footer holds only the season day and the staff line.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Your 3 lines plus network",
+          "detail": "Same, with the SKYBORNMC network line kept on top as built; a taller header."
+        },
+        {
+          "key": "c",
+          "label": "Without ping",
+          "detail": "Name, address and count only; no personal ping, no extra updates."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q8",
+      "card": "G8",
+      "title": "What goes on each tab entry?",
+      "context": "Each entry already shows the rank word in its colour and the name. Latency bars are drawn by the game itself on Java and Bedrock.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Rank word and name",
+          "detail": "'[MOD] Pouched', plus the AFK marker; nothing else, sorted staff, won ranks, donor ranks, Ashborn, then A to Z.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Add island level",
+          "detail": "'[MOD] Pouched Lv 34' in gray; shows progress to everyone but makes every entry longer and updates on each level."
+        },
+        {
+          "key": "c",
+          "label": "Add title or tag",
+          "detail": "Show the chosen title or tag too; fun, but it was removed from the tab on purpose (FIXES1)."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q9",
+      "card": "A3",
+      "title": "How long and rewarding is the tutorial?",
+      "context": "Today it takes about 4 to 7 minutes (the card says 3) and gives nothing until the very end: no level-up, no money. Three paces are possible.",
+      "options": [
+        {
+          "key": "a",
+          "label": "B Rewarding, 10 to 12 min",
+          "detail": "11 steps (Help replaced by a shop purchase), five level-ups inside ten minutes (Mining Lv 1 and 2, Island Lv 1 to 3), money at most steps.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "A Quick, 6 to 8 min",
+          "detail": "Same 11 steps with a popup and money at each step, Mining Lv 1 and Island Lv 1 only."
+        },
+        {
+          "key": "c",
+          "label": "C Full guided, 15 to 20 min",
+          "detail": "14 steps with a tree, a first kill and /skills, Mining Lv 3, Foraging 1, Combat 1, Island Lv 5; most basics, but past 'never annoying'."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q10",
+      "card": "A3",
+      "title": "Pay the reward at every step?",
+      "context": "The $2,500 reward is paid once at the end. Paying it in small amounts at each step shows the Money row moving and ends each step with a title and sound. The total stays the same.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Split over the steps",
+          "detail": "About $100 to $400 per step plus a bigger rest at the finish, total unchanged; crystals and the title stay at the finish.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "All at the finish",
+          "detail": "As built: one reward and one popup at the end."
+        },
+        {
+          "key": "c",
+          "label": "Split money and crystals",
+          "detail": "Spread the 25 crystals over the steps too; more popups and more to track."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q11",
+      "card": "A3",
+      "title": "Give free levels in the tutorial?",
+      "context": "Mining Lv 1 normally takes 600 blocks and Lv 2 about 1,320, so Lv 2 saves around 20 minutes. Island level needs a new 'tutorial bonus' source of 10 points per level.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Mining Lv 2, Island Lv 3",
+          "detail": "Free XP and bonus points at three steps, so the first level-ups arrive in the first ten minutes.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Mining Lv 1 only",
+          "detail": "One free level at the mine step; the island level is untouched, no new source needed."
+        },
+        {
+          "key": "c",
+          "label": "No free levels",
+          "detail": "Money only; the first level-up comes from normal play, after the tutorial."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q12",
+      "card": "A3",
+      "title": "Replace the empty Help step?",
+      "context": "The Forge NPC click already counts as the Help step, so step 10 usually finishes by itself and teaches nothing. The new shop is the main thing a new player should try.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Swap Help for a shop buy",
+          "detail": "Drop Help; add 'Buy one item in /shop' after Sell, teaching the new buy GUI; the step count stays 11.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep all 11 steps",
+          "detail": "Leave the Help step as it is, even though it is usually skipped."
+        },
+        {
+          "key": "c",
+          "label": "Drop Help only",
+          "detail": "10 steps and the tutorial gets a minute shorter; the shop is not taught."
+        }
+      ]
+    },
+    {
+      "id": "HT-Q13",
+      "card": "G7",
+      "title": "Show the profile on the board?",
+      "context": "Money, level and skills are per profile, and a profile is an island, but the board never says which profile you are on. Most players have one profile.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Only with 2+ profiles",
+          "detail": "The island header becomes the island name once you have two or more profiles; single-profile players see no change.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Always",
+          "detail": "'Profile: <name>' row for everybody; costs one row on every island board."
+        },
+        {
+          "key": "c",
+          "label": "Never",
+          "detail": "As built; two-profile players check /profiles to know where they are."
+        }
+      ]
+    }
+  ]
+}

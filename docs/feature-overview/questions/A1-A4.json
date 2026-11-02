@@ -1,0 +1,164 @@
+{
+ "cluster": "A1-A4",
+ "title": "First join and starter items",
+ "questions": [
+  {
+   "id": "A1-Q1",
+   "card": "A1",
+   "title": "When to show 'Welcome back'",
+   "context": "Returning players see a small 'Welcome back, name' text on screen right after joining. If you reconnect often, it can feel like noise.",
+   "options": [
+    {
+     "key": "a",
+     "label": "Only after 6+ hours away",
+     "detail": "The text shows only if you were gone 6 hours or more, so quick reconnects stay quiet.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Every time you join",
+     "detail": "Same as today: the text shows on every single join, even 2 minutes after a crash."
+    },
+    {
+     "key": "c",
+     "label": "Never",
+     "detail": "No welcome-back text. New players still get the full welcome."
+    }
+   ]
+  },
+  {
+   "id": "A1-Q2",
+   "card": "A1",
+   "title": "Where to say 'Be kind, /rules'",
+   "context": "New players get one grey line about chat logging 45 seconds after joining. We want players to see the rules once without adding more chat spam on the first screen.",
+   "options": [
+    {
+     "key": "a",
+     "label": "Add it to the grey line",
+     "detail": "That one line becomes: chat is logged for 30 days, be kind, /rules, plus the Privacy link. No extra line.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Own line in the welcome",
+     "detail": "A short 'Be kind. /rules' line appears together with the welcome, next to 'Next: follow the flames'."
+    },
+    {
+     "key": "c",
+     "label": "No extra line",
+     "detail": "Rules stay one click away in /menu and /help. Nothing added to the first minute."
+    }
+   ]
+  },
+  {
+   "id": "A1-Q3",
+   "card": "A1",
+   "title": "Where the 'hide players' switch lives",
+   "context": "With 300 players at spawn, some people want to hide everyone else to keep the game smooth. You asked for a quick toggle at spawn. The main menu stays clean, so it will not get a button for this.",
+   "options": [
+    {
+     "key": "a",
+     "label": "Toggle in /settings and the You menu",
+     "detail": "One click flips Everyone and Nobody. Nothing new on the main menu, in your hotbar or as a command.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Hotbar item at spawn",
+     "detail": "A dye item in your hotbar, only in the spawn world, flips it with one click. Adds one new item to look after."
+    },
+    {
+     "key": "c",
+     "label": "Skip until spawn lags",
+     "detail": "Build nothing now. We add it only when 300 players at spawn actually cause lag."
+    }
+   ]
+  },
+  {
+   "id": "A4-Q1",
+   "card": "A4",
+   "title": "What a joiner gets in their Starter pack",
+   "context": "When a new player joins a friend's island, they get their own small pack in the inventory, so nobody has to share the chest. The tutorial asks them to plant 3 wheat, so they need seeds.",
+   "options": [
+    {
+     "key": "a",
+     "label": "Tools, food and seeds",
+     "detail": "Missing starter tools, 16 bread, 8 wheat seeds and 8 bone meal. The tutorial's farming step works on any island.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Tools and food only",
+     "detail": "Missing starter tools and 16 bread, as built today. Seeds must come from the friend's island."
+    },
+    {
+     "key": "c",
+     "label": "Almost the whole chest",
+     "detail": "Missing tools, bread, seeds, bone meal, 2 saplings, a crafting table and a chest. Only the lava bucket is left out."
+    }
+   ]
+  },
+  {
+   "id": "A4-Q2",
+   "card": "A4",
+   "title": "Timer on the Forge 'Starter kit' button",
+   "context": "If a starter tool goes missing, the Forge 'Starter kit' button gives back only the tools you lack. Today you can use it once every 24 hours per profile.",
+   "options": [
+    {
+     "key": "a",
+     "label": "No timer",
+     "detail": "Use it any time, only missing tools are given. Staff get an alert if one profile gets more than 20 tools in a day.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Keep the 24 hour timer",
+     "detail": "Same button, but only once a day per profile, as it works today."
+    }
+   ]
+  },
+  {
+   "id": "A4-Q3",
+   "card": "A4",
+   "title": "Chests on Frost Peak and Ash Dunes",
+   "context": "Later there will be three starter islands: Ember Meadow, Frost Peak and Ash Dunes. Should their starter chests differ?",
+   "options": [
+    {
+     "key": "a",
+     "label": "Same kit everywhere",
+     "detail": "Same tools, seeds and food on all three. The island build and the first view give the flavour. Easiest to balance.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "One flavour stack each",
+     "detail": "Same kit plus one small extra stack that fits the theme, for example spruce saplings on Frost Peak."
+    },
+    {
+     "key": "c",
+     "label": "Fully different chests",
+     "detail": "Each island has its own item list and its own guide page. Most work, and each one must be balanced."
+    }
+   ]
+  },
+  {
+   "id": "A4-Q4",
+   "card": "A4",
+   "title": "Starter tool after the first Forge upgrade",
+   "context": "Starter tools cannot be sold, traded or put on the auction house. Today, upgrading one to tier 2 at the Forge turns it into a normal tool that can be sold. That would let new profiles turn free tools into money.",
+   "options": [
+    {
+     "key": "a",
+     "label": "Stays bound forever",
+     "detail": "The tool stays yours for the whole season, however far you upgrade it. Free tools can never become money. Reverses the old plan.",
+     "recommended": true
+    },
+    {
+     "key": "b",
+     "label": "Becomes a normal tool",
+     "detail": "As built: the first tier-up costs money and then the tool can be sold or traded like any other."
+    }
+   ]
+  }
+ ]
+}

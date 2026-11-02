@@ -1,0 +1,438 @@
+{
+  "cluster": "GUI-V3",
+  "title": "GUI look v3 and the FORMAT",
+  "questions": [
+    {
+      "id": "V3-Q1",
+      "card": "I9",
+      "title": "Allow a custom font for menus?",
+      "context": "Last time you said no custom writing. The MC Hub look (panel with a plaque, hidden empty slots, cartoon title letters, logo) is only possible with a custom font, and it only works on Java with our pack. This reverses part of GUI-Q1 and I9.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Yes, minimal: panels, titles, logo",
+          "detail": "The font draws only the panel, the plaque letters, a soft tile behind items and the logo; all other text stays normal (about 30 KB extra).",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Yes, full MC Hub",
+          "detail": "Also cartoon letters in lore, scoreboard lines and icons before each line. Needs far more art, Bedrock sees odd gaps, and text gets harder to read."
+        },
+        {
+          "key": "c",
+          "label": "No, stay vanilla",
+          "detail": "Keep plain chests and plain titles with our icons only. Nothing to draw or test, but the menus will not look like MC Hub."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q2",
+      "card": "I9",
+      "title": "Panel with plaque and hidden empty slots?",
+      "context": "With the font, each menu gets a panel in our style with the title plaque 10 px above it, and empty slots are simply not drawn. The panel cannot be narrower than a chest, because the normal chest is always drawn underneath.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Yes, plaque and hidden empty slots",
+          "detail": "Java players with the pack see the panel and only filled slots. Everyone else sees the same layout on the normal chest.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Panel only, no plaque",
+          "detail": "Same panel and hidden slots, but the title stays inside the panel top. Safer on small windows, less MC Hub."
+        },
+        {
+          "key": "c",
+          "label": "No, keep the normal chest look",
+          "detail": "Empty slots stay drawn on every client."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q3",
+      "card": "I9",
+      "title": "What sits behind each item?",
+      "context": "When empty slots are hidden, items can float on the flat panel or sit on a small tile. The tile is drawn only for slots that hold an item.",
+      "options": [
+        {
+          "key": "a",
+          "label": "A soft tile behind each item",
+          "detail": "Each item gets a light rounded tile, so buttons look clickable and rows stay tidy. The tile set is rebuilt only when a slot fills or empties.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Nothing, items float",
+          "detail": "The cleanest look and the smallest title, but small icons can look lost on a plain panel."
+        },
+        {
+          "key": "c",
+          "label": "Tile only on buttons you can click",
+          "detail": "Info tiles float, action tiles get the tile. More precise, but more rules to learn."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q4",
+      "card": "I9",
+      "title": "How should menu titles be written?",
+      "context": "On the plaque the title is one short noun, up to 16 letters, like SHOP or UPGRADES. The cartoon letters come from the font; a narrator still reads normal words.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Cartoon letters, all caps",
+          "detail": "Titles look like the MC Hub plaque. The parent name is dropped; Back shows where you came from.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Vanilla bold letters on the plaque",
+          "detail": "Plaque and panel stay, but the text is normal Minecraft bold. Less art, less cartoony."
+        },
+        {
+          "key": "c",
+          "label": "Plain title, no plaque text",
+          "detail": "The plaque stays empty and the normal title shows inside the panel top."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q5",
+      "card": "I7",
+      "title": "Is a plain look for Bedrock fine?",
+      "context": "Bedrock cannot show the panel, plaque or cartoon letters; our font does not exist there and glyphs would show as gaps. Bedrock players get the same layout and tiles on the normal chest with a plain title.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Yes, same layout, plain titles",
+          "detail": "Bedrock and Java without the pack get the plain look. A Java \"Plain menus\" switch in settings is added for accessibility.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Yes, and plan Bedrock art later",
+          "detail": "Plain now, and after launch we test Geyser mappings for icons. No promise for panels."
+        },
+        {
+          "key": "c",
+          "label": "No, wait until Bedrock matches",
+          "detail": "Hold the whole look back. This probably means never, because Bedrock cannot draw it."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q6",
+      "card": "I9",
+      "title": "What replaces arrows on Back and pages?",
+      "context": "You do not want arrows or letters on Back, Close and the page buttons. The icon agent will show options in the icon preview; the keys nav/back, nav/prev, nav/next and nav/close stay the same, so swapping the picture never touches the menus.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Pick from the icon preview",
+          "detail": "A door-style Back, page-flip icons with the page number, and a red cartoon cross for Close are the starting set. You choose in the preview and we only change icons.json.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep arrows, but cartoony",
+          "detail": "Same meaning as now, redrawn chunky. Fastest to understand for new players, but still arrows."
+        },
+        {
+          "key": "c",
+          "label": "Keep the vanilla items",
+          "detail": "Plain arrow, paper and barrier on every client. No art needed, but nothing is ours."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q7",
+      "card": "I9",
+      "title": "How should the hotbar menu star look?",
+      "context": "The star in the last hotbar slot is a Nether Star with a repainted icon and a red glint today. You want it to look like a natural vanilla Nether Star.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Plain vanilla Nether Star",
+          "detail": "No custom icon and no extra glint, just the name Menu in gold; it looks the same on Java and Bedrock.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Vanilla star with a small sparkle icon",
+          "detail": "Pack players see our sparkle on the star. Needs one more icon and is not seen on Bedrock."
+        },
+        {
+          "key": "c",
+          "label": "A different item",
+          "detail": "Pick another item for the slot, for example a compass or a clock. Players know the star from other servers, so this is less clear."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q8",
+      "card": "I9",
+      "title": "Where do we show your balance?",
+      "context": "Money, crystals, shards and credits each have a colour, a symbol and an icon. Showing the balance everywhere adds noise.",
+      "options": [
+        {
+          "key": "a",
+          "label": "One wallet tile on spending screens",
+          "detail": "Slot 4 of the shop, upgrades, auction and similar screens shows Your Money with the icon and the full amount. Costs in tooltips are short, like Cost: $12k.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Also in the plaque",
+          "detail": "Pack players see the balance next to the title. Bedrock does not, so the wallet tile is still needed."
+        },
+        {
+          "key": "c",
+          "label": "Only inside cost lines",
+          "detail": "No wallet tile. Less clutter, but you must open another screen to see what you have."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q9",
+      "card": "I9",
+      "title": "Should each area have its own panel colour?",
+      "context": "Names already take their area colour (green money, blue people, violet skills). A tinted panel per area would add more art and more rules.",
+      "options": [
+        {
+          "key": "a",
+          "label": "One panel colour for every menu",
+          "detail": "The same dark-red frame and parchment panel everywhere, with colour only on tile names: least art, easiest to learn.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Tint the frame per area",
+          "detail": "Shop frames green, island frames lime, and so on. Looks richer but needs about 8 more sprites."
+        },
+        {
+          "key": "c",
+          "label": "Each menu has its own look",
+          "detail": "Most variety and most work. Players learn nothing from the colour."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q10",
+      "card": "B8",
+      "title": "How should the island menu look?",
+      "context": "Today the island menu has 15 tiles on 6 rows, with chat in two tiles, Invites twice and a gauge that is only display. B3, B8 and B13 reviews show the same idea: four groups of three on a 4-row panel.",
+      "options": [
+        {
+          "key": "a",
+          "label": "4 rows, 12 tiles in four groups",
+          "detail": "Go (Home, Warps, Visit), Grow (Upgrades, Bank, Stats), People (Members, Permissions, Visitors) and Team (Chat, Notes, Settings). Invites, chat colours and the fuel gauge move into other screens.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep 6 rows, tidy the order",
+          "detail": "Same 15 tiles, regrouped and centred. Fewer moves to learn, but still a lot on screen."
+        },
+        {
+          "key": "c",
+          "label": "3-row hub with sub-menus",
+          "detail": "Six big tiles open sub-menus. Cleanest first screen, one extra click for most things."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q11",
+      "card": "B14",
+      "title": "How should upgrades be shown?",
+      "context": "The upgrade screen has 14 left-aligned tiles, and opening one shows 21 tiles (tasks, 14 levels, Buy). The proposal centres tiles per tab and shows only the next level.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Centred tiles, detail shows next level",
+          "detail": "Tiles centre per tab with level dots, Now and Next, cost and tasks. The detail screen has the tasks, a Buy tile and an All levels tile that opens the list.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep the 14-level detail grid",
+          "detail": "Every level is visible at once. Familiar, but crowded."
+        },
+        {
+          "key": "c",
+          "label": "One page, no detail screen",
+          "detail": "All upgrades and a Buy click on one screen. Fewer clicks, but long tooltips."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q12",
+      "card": "B14",
+      "title": "How should masteries be laid out?",
+      "context": "There are 13 masteries; 5 are hidden until their feature exists. Only Market Contacts has a prerequisite, so a tree with lines would be mostly empty.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Three branch rows with rank dots",
+          "detail": "Power, Loot and luck, and Island perks. Left to right is unlock order, empty rows vanish, Ascension appears at the end when all is maxed.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "A real tree with lines",
+          "detail": "Looks like a skill tree, but needs connector art and has almost no branches to draw."
+        },
+        {
+          "key": "c",
+          "label": "One flat list",
+          "detail": "Simplest to build, same as today, with no grouping."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q13",
+      "card": "B16",
+      "title": "How should /is top look?",
+      "context": "Today it is a wall of 28 equal places with five controls in the tab row. The proposal is a podium for the top three, places 4 to 10 in a row, your own place, and Solo and Team as two buttons.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Podium, places 4 to 10, and you",
+          "detail": "Page 1 shows places 1 to 10 with gold, silver and bronze, page 2 shows 11 to 28, and your own place sits at the bottom.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep the 28-place wall",
+          "detail": "Familiar and dense, but the top three look like everyone else."
+        },
+        {
+          "key": "c",
+          "label": "Top 10 only",
+          "detail": "Smallest and clearest, but the board is shorter than today."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q14",
+      "card": "C5",
+      "title": "How should the shop grid be arranged?",
+      "context": "Farming has 27 items in file order, so seeds, crops, saplings and plants run into each other and rows look uneven. The proposal puts one group on each row, centres every row, and sorts cheap to dear.",
+      "options": [
+        {
+          "key": "a",
+          "label": "One group per row, centred, two pages",
+          "detail": "Farming page 1: seeds, crops, saplings in four tidy rows; page 2: plants. Every other tab follows the same rule, with a group plan in C5.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Keep the fill order, add row gaps",
+          "detail": "Items still run left to right, but a blank slot separates groups. Less change, still uneven."
+        },
+        {
+          "key": "c",
+          "label": "Split Farming into smaller tabs",
+          "detail": "Seeds and crops, trees, plants as separate tabs. Tidy, but the shop gets more tabs."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q15",
+      "card": "C5",
+      "title": "What should a shop tooltip show?",
+      "context": "A shop tile can show buy price, sell price, a price note and two Java hints. More lines mean more reading; fewer hide what the right-click does.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Both prices always, one Java hint",
+          "detail": "Buy and Sell lines, a note only when the price moved, and one muted Java hint line (up to 7 lines; Bedrock sees no hint).",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Both prices and both hints",
+          "detail": "Adds Right-click: sell and Shift-click: buy a stack as two lines. Clearer for Java, longer for everyone."
+        },
+        {
+          "key": "c",
+          "label": "Buy price only",
+          "detail": "Sell price shows on the sell screen. Shortest tooltip, but you must open it to compare."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q16",
+      "card": "I9",
+      "title": "Which FORMAT limits should be hard?",
+      "context": "The FORMAT sets limits so new features stay short: tooltip length, one action line, number of info rows. Tests can enforce them.",
+      "options": [
+        {
+          "key": "a",
+          "label": "6 lines, 36 characters, one action line",
+          "detail": "At most 2 info sections of 3 rows, one yellow click line last, shop tile 7 lines. A test fails the build if a message breaks it.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Same limits, only as advice",
+          "detail": "The limits are written down but nothing checks them. Faster, but they will drift."
+        },
+        {
+          "key": "c",
+          "label": "Looser: 8 lines",
+          "detail": "More room for detail, less scannable."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q17",
+      "card": "I9",
+      "title": "Keep vanilla sounds for menus?",
+      "context": "Menus use the vanilla click, open, page, success and error sounds today, one per kind of event. Custom sounds would need the pack and Bedrock would not hear them.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Vanilla sounds only",
+          "detail": "Same sound for the same event everywhere, on Java and Bedrock. Nothing to record.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "A few custom sounds",
+          "detail": "Soft pop on open and a coin sound on buy for pack players. Bedrock hears the vanilla ones, so the game sounds different per platform."
+        },
+        {
+          "key": "c",
+          "label": "Silent menus",
+          "detail": "No sound on clicks except errors. Quiet, but less feedback."
+        }
+      ]
+    },
+    {
+      "id": "V3-Q18",
+      "card": "G7",
+      "title": "Where should the logo appear?",
+      "context": "A logo glyph can sit in the scoreboard title and the tab header. It is plain gradient text for Bedrock and for players without the pack.",
+      "options": [
+        {
+          "key": "a",
+          "label": "Scoreboard title and tab header only",
+          "detail": "Logo for pack players there, gradient text elsewhere. Lines, boss bar, chat and holograms stay plain.",
+          "recommended": true
+        },
+        {
+          "key": "b",
+          "label": "Scoreboard title only",
+          "detail": "Smallest change. The tab header stays text."
+        },
+        {
+          "key": "c",
+          "label": "Logo plus icons before each line",
+          "detail": "Closest to MC Hub, but needs an icon glyph for each line and widens the board."
+        }
+      ]
+    }
+  ]
+}

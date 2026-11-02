@@ -1,0 +1,13 @@
+# New cards requested by the owner during review (not yet written)
+
+| Proposed id | Name | Asked in | What the owner said | Open questions |
+|---|---|---|---|---|
+| H10 | Rollback | C1-R1-22 | `/rollback` with permissions, per island, per world (spawn, depths ...) and per chunk. Think rollbacks into every feature so they are safe. | Block-only (CoreProtect) or also containers/entities/economy? Time window? Who may use it (helper/mod/admin)? Preview and confirm? Relation to QOL28 `/isadmin rollback` and to `/prollback` (punishment rollback). Storage cost per island/chunk, daily snapshots vs block log. |
+| F12 | Rewards overhaul | C1-R1-23 | Full overhaul of all rewards. | Reviewed as its own pass after C1, B17, C4, C14 and the F cards. |
+| I9 | GUI and symbol redesign | C1-R1-24 | Simple, readable GUI and currency symbols. | Belongs with I7 (resource pack) and G9/G10; the owner draws the art. |
+| C15 | Shop and price overhaul | C1-R1-25 | Redo /shop, prices and rewards when the whole server is planned; no single meta. | Done after the Depths, tools and enchant cards are reviewed. |
+| I10 | Credit shop | C1-R1-04b, C1-R1-30 | In-game shop for credits with categories (Buycraft as reference), custom command and custom resource-pack look, many reasonable items, rank upgrade pricing, purchase history. Opens with `/credit shop`, `/creditshop`, `/store shop`. | Categories, item list and prices (research other large skyblock servers' stores), which items sell progress (Mojang warning, owner accepts some advantage), limits of what credits may never buy, how store ranks and credit ranks interact. |
+| C16 | Credit trail | C1-R1-29 | Staff view of where every credit came from and went. | Lot design (see round 2). |
+| C17 | Credit orders and entitlements | C1-R2-08, C1-R2-09 | One purchase path, one entitlement table, claim, void and redelivery | Part of I10; written into the build spec of C1 |
+| I11 | PvP loadout and PvP area | B17-R1-01 | Keep inventory and no fall damage everywhere; `/pvp` opens a separate PvP loadout (XP upgrades, resets 100% on death); PvP area with armour shop, upgrades and enchants (chance not to lose, speed, regen, protection, unbreaking III ...); envoy and KOTH there; players bring nothing; good GUI. | Is the warzone world the PvP area; does a PvP death drop loot to the killer; where the XP comes from; how it relates to I1, I2, I3, E14 and Mojang (PvP advantage must come from play, not credits: C1-R3-01) |
+| B18 | Island name and unlocks | B17-R1-10 | Islands get a name chosen at a certain island level; more unlocks after progressing. | Which level, how names are filtered, unlock list; belongs to B13/B14 |
