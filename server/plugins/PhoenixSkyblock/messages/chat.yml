@@ -2,18 +2,21 @@
 # MiniMessage + style tags. Player text is never parsed. Reload: /skyblock reload chat
 # Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
-# Hover card on a name in chat. Owner answer 302: only rank, island and playtime (join date, Discord and ping are hidden;
+# Hover card on a name in chat. Owner answer 302: only rank, title, island and playtime (join date, Discord and ping are hidden;
 # <first>, <discord> and <ping> still work if you want them back).
 hover:
   - "<name>"
   - ""
   - "<c:muted>Rank</c:muted> <c:value><rank_name>"
   - "<nick_line>"
+  - "<title_line>"
   - "<c:muted>Island</c:muted> <c:value><island>"
   - "<c:muted>Played</c:muted> <c:value><playtime>"
   - ""
   - "<bold><c:action>» CLICK</c:action></bold> <c:text>to message"
 hover-nick: "<c:muted>Real name</c:muted> <c:value><real_name>"
+# The title line of the hover card (owner 2 Nov 2026: titles show only here, never in the chat line). Empty without one.
+hover-title: "<c:muted>Title</c:muted> <title>"
 
 # Shown before chat lines for players who turned on "Chat timestamps" in /settings.
 timestamp: "<c:muted>[<time>]</c:muted> "
@@ -55,16 +58,24 @@ staffchat:
 # Tab list. Left line in the first letter's color (frost white), right line in the last letter's color (blue "MC"),
 # so the lines continue the SKYBORN gradient. Lines are strikethrough spaces (Bedrock shows blank space).
 tab:
+  # Owner 2 Nov 2026: a richer header and a personal "you" line. <online>, <max>, <season>.
   header:
     - ""
-    - "<c:sky_frost><st>            </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>            </st></c:sky_blue>"
-    - "<bold><grad:phoenix>Phoenix Skyblock</grad></bold>"
+    - "<c:sky_frost><st>          </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>          </st></c:sky_blue>"
+    - "<bold><grad:phoenix>PHOENIX SKYBLOCK</grad></bold>"
+    - "<c:muted>Rise from the ashes</c:muted>"
     - ""
-    - "<c:value><online></c:value> <c:muted>online <sym:dot> <season>"
+    - "<c:success>●</c:success> <c:value><online></c:value><c:muted>/<max> online</c:muted>  <c:muted><sym:dot></c:muted>  <c:ember><season></c:ember>"
     - ""
   footer:
     - ""
+    - "<c:muted>/menu</c:muted> <c:text>everything</c:text>  <c:muted><sym:dot></c:muted>  <c:muted>/help</c:muted> <c:text>guides</c:text>  <c:muted><sym:dot></c:muted>  <c:muted>/store</c:muted> <c:text>ranks</c:text>"
     - "<c:sky_blue>»</c:sky_blue> <grad:skyborn>play.skybornmc.net</grad> <c:sky_blue>«</c:sky_blue>"
+  # Under the footer, for each viewer: <rank> (badge), <name>, <money>, <crystals>, <level> (island level or -), <ping>.
+  footer-you:
+    - ""
+    - "<rank> <c:value><name></c:value>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping>ms</c:value>"
+    - "<cur:money><sym:money><money></cur:money>  <c:muted><sym:dot></c:muted>  <cur:crystals><sym:crystals> <crystals></cur:crystals>  <c:muted><sym:dot></c:muted>  <area:home>Island Lv <level></area:home>"
     - ""
   # Staff only (skyblock.staff.tab), under the footer. <tps> is one of tab.tps.* below.
   footer-staff: "<c:muted>TPS</c:muted> <tps>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping> ms</c:value>"

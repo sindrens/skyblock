@@ -89,4 +89,13 @@ public interface Cosmetics {
     default Component display(Audience viewer, Kind kind, String id) {
         return Component.text(String.valueOf(id));
     }
+
+    /**
+     * The title a player wears, by name, for leaderboard hovers (owner 2 Nov 2026: "in /is top hovering an island shows
+     * titles"). Online players are read from memory; offline ones from a short cache filled in the background, so the
+     * first call may return empty and a later refresh shows it. Empty when they wear none. Main thread.
+     */
+    default Component titleByName(Audience viewer, String name) {
+        return Component.empty();
+    }
 }

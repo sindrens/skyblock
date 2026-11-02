@@ -491,7 +491,15 @@ final class TabService implements Listener {
         }
         long generation = core.messages().generation();
         String headerKey = headerKey(bedrock, visible, Bukkit.getMaxPlayers(), season);
-        String footerKey = footerKey(bedrock, staffKey);
+        // Owner 2 Nov 2026 ("tab looks boring, no user info"): every viewer sees their own rank, money, crystals, island
+        // level and ping under the footer. Only resent when one of them changes (ping in steps of 10 ms).
+        String money = core.placeholders().text(viewer, "balance_formatted").orElse("-");
+        String crystals = core.placeholders().text(viewer, "crystals_formatted").orElse("-");
+        String level = core.placeholders().text(viewer, "island_level").filter(l -> !l.isBlank()).orElse("-");
+        String rankWord = core.ranks().groupDisplayName(viewer);
+        int myPing = Math.max(0, viewer.getPing() / 10 * 10);
+        String youKey = "y|" + rankWord + '|' + money + '|' + crystals + '|' + level + '|' + myPing;
+        String footerKey = footerKey(bedrock, staffKey) + youKey;
         String sent = sentKey(generation, headerKey, footerKey);
         if (sent.equals(sentHeaderFooter.get(viewer.getUniqueId()))) {
             return; // the viewer already shows exactly this: nothing to build, nothing to send
@@ -502,15 +510,21 @@ final class TabService implements Listener {
         Component header = headerCache.get(generation, headerKey, k -> msg.component(viewer, "tab.header",
                 Msg.number("online", visibleCount), Msg.number("max", max), Msg.p("season", seasonText)));
         Component base = headerCache.get(generation, footerKey(bedrock, ""), k -> msg.component(viewer, "tab.footer"));
+        Component rank = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
+                .map(b -> b.badge(viewer, viewer)).orElse(Component.text(rankWord));
+        Component you = msg.component(viewer, "tab.footer-you", Msg.c("rank", rank), Msg.p("money", money),
+                Msg.p("crystals", crystals), Msg.p("level", level), Msg.number("ping", myPing), Msg.p("name", viewer.getName()));
+        base = base.append(Component.newline()).append(you);
         Component footer = base;
         if (!staffKey.isEmpty()) {
             String tier = tpsTier;
             String value = tpsValue;
             int pingValue = ping;
+            Component withYou = base;
             footer = headerCache.get(generation, footerKey, k -> {
                 Component tpsText = msg.component(viewer, "tab.tps." + tier, Msg.p("value", value));
                 TagResolver[] staff = {Msg.number("ping", pingValue), Msg.c("tps", tpsText)};
-                return base.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
+                return withYou.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
             });
         }
         viewer.sendPlayerListHeaderAndFooter(header, footer);

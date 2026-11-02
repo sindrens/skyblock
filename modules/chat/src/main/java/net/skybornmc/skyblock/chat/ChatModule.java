@@ -124,6 +124,9 @@ public final class ChatModule implements SkyblockModule, Listener {
     @Override
     public void enable() {
         loadConfig();
+        // Owner 2 Nov 2026: the hover card shows the title, the tab got a personal "you" line; unedited texts upgrade.
+        core.messages().retire(ID, RetiredChatTexts.all());
+        core.messages().load(ID);
         badges.reload();
         // Rank badges (chat.yml ranks.looks): one service, and one source for the rank color on every surface.
         core.services().register(ID, BadgeService.class, badges);
@@ -708,11 +711,22 @@ public final class ChatModule implements SkyblockModule, Listener {
                 Msg.mm("nick_line", display.hasNick(player) ? msg.has("hover-nick")
                         ? core.messages().raw(ID, "hover-nick").replace("<real_name>", player.getName()) : "" : ""),
                 Msg.p("island", island.isBlank() ? "-" : island),
+                Msg.c("title_line", titleLine(viewer, player)),
                 Msg.p("playtime", data == null ? "-" : Format.duration(Duration.ofMillis(data.playtimeMillis()))),
                 Msg.p("first", data == null ? "-" : DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(data.firstSeen()))),
                 Msg.mm("discord", data != null && data.discordId() != null ? "<c:success><sym:check></c:success>"
                         : "<c:error><sym:cross></c:error>"),
                 Msg.number("ping", player.getPing()));
+    }
+
+    /** The hover line for the player's equipped title ({@code hover-title}), or empty when they wear none. */
+    private Component titleLine(Audience viewer, Player player) {
+        Component title = display.hook(player, "title");
+        if (net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(title).isBlank()
+                || !msg.has("hover-title")) {
+            return Component.empty();
+        }
+        return msg.component(viewer, "hover-title", Msg.c("title", title));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

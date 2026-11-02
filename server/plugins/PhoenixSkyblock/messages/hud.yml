@@ -1,8 +1,8 @@
 # HUD texts. MiniMessage + style tags. Reload: /skyblock reload hud
 #
 # Sidebar layouts: scoreboard.<layout>.title + lines. Board shape (G7-R1-01, docs/UI_STYLE.md §6.1): the title
-#   PHOENIX SKYBLOCK, the "| You" section, one section named after the place, the footer: 10 lines at most counting
-#   the title and the footer (Bedrock shows 15).
+#   ✦ PHOENIX SKYBLOCK ✦, the "| You" section, one section named after the place (spawn also shows your island), the
+#   footer: 15 lines at most counting the title (Bedrock shows 15; owner 2 Nov 2026 asked for fuller boards).
 # Which layout is used where is set in hud.yml -> places (one layout per place):
 #   island        your own island (and the island world outside any island)
 #   island-visit  someone else's island (falls back to "island")
@@ -21,7 +21,7 @@
 #   "if:a,b|" shows it while any of them has a value. The built-in key "board_timer" has a value while a timer runs.
 # Board rules (automatic, hud.yml scoreboard.*):
 #   - a header is a line starting with <bold><c:header>, a row a line starting with <c:bar>; a header takes at most
-#     scoreboard.section-rows rows (3): rows further down a full section are dropped, the first ones win
+#     scoreboard.section-rows rows (4): rows further down a full section are dropped, the first ones win
 #   - a header with no row under it disappears (no "if:" needed on headers)
 #   - "<soft-blank>" is a blank line that only shows while the other lines are at most
 #     scoreboard.blank-under-title-max-lines (8 = boards with 5 rows or fewer); "" is a blank line that always shows
@@ -31,10 +31,11 @@
 scoreboard:
   # Everywhere else: like your own island.
   default:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
@@ -47,10 +48,11 @@ scoreboard:
 
   # Your own island: level and place, progress to the next level, then the newest open note or a timer.
   island:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
@@ -64,7 +66,7 @@ scoreboard:
 
   # Someone else's island: whose island you are on.
   island-visit:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -76,24 +78,30 @@ scoreboard:
       - "if:board_timer| <c:bar>|</c:bar> <timer>"
       - " <c:sky_ice>play.skybornmc.net"
 
-  # Spawn: the tutorial "Next:" line, or the AFK pool line while you stand in the pool.
+  # Spawn (owner 2 Nov 2026: "add more, make it better"): you, your island at a glance, then the server.
   spawn:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
-      - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
+      - "<soft-blank>"
       - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
+      - " <bold><c:header>| Island</c:header></bold>"
+      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
+      - "if:island_level| <c:bar>|</c:bar> <progress:island_level_progress>"
       - " <bold><c:header>| Spawn</c:header></bold>"
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - "if:afk_pool| <c:bar>|</c:bar><ph:afk_line>"   # the AFK line (messages/afk.yml scoreboard.line) has its own leading space
       - "if:board_timer| <c:bar>|</c:bar> <timer>"
+      - " <c:bar>|</c:bar> <c:text>Online:</c:text> <c:value><online>"
+      - " <c:bar>|</c:bar> <c:text>Played:</c:text> <c:value><ph:playtime>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: the zone is the section name; tier, Mining level and progress ("Next:" takes the progress row during the tutorial).
   depths:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -108,7 +116,7 @@ scoreboard:
 
   # Forest wing: foraging instead of mining.
   depths-forest:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -123,7 +131,7 @@ scoreboard:
 
   # Combat wing: combat instead of mining.
   depths-combat:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -138,7 +146,7 @@ scoreboard:
 
   # The Gate (Depths hub): the three skills that unlock the wings.
   depths-gate:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -152,7 +160,7 @@ scoreboard:
 
   # Warzone: placeholder until the warzone is built (kills, bounty and the event timer come with it).
   warzone:
-    title: "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>"
+    title: "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"

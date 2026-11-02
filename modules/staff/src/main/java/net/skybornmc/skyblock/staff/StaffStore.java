@@ -14,7 +14,13 @@ import java.util.concurrent.CompletableFuture;
 final class StaffStore {
 
     /** A saved staff-mode snapshot. */
-    record Snapshot(UUID uuid, byte[] contents, String gameMode, boolean allowFlight, boolean flying, boolean wasVanished) {
+    record Snapshot(UUID uuid, byte[] contents, String gameMode, boolean allowFlight, boolean flying, boolean wasVanished,
+                    int xpLevel, float xpProgress) {
+
+        /** Rows saved before V005 have no XP (0). */
+        Snapshot(UUID uuid, byte[] contents, String gameMode, boolean allowFlight, boolean flying, boolean wasVanished) {
+            this(uuid, contents, gameMode, allowFlight, flying, wasVanished, 0, 0f);
+        }
     }
 
     /** A frozen player (row in {@code staff_frozen}); flight fields are their own state before the freeze. */
@@ -35,16 +41,18 @@ final class StaffStore {
     CompletableFuture<Void> saveSnapshot(Snapshot s) {
         return db.run(c -> {
             Sql.update(c, "DELETE FROM staff_mode WHERE uuid = ?", Sql.toBytes(s.uuid()));
-            Sql.update(c, "INSERT INTO staff_mode (uuid, contents, game_mode, allow_flight, flying, was_vanished, saved_at) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?)", Sql.toBytes(s.uuid()), s.contents(), s.gameMode(), s.allowFlight(),
-                    s.flying(), s.wasVanished(), System.currentTimeMillis());
+            Sql.update(c, "INSERT INTO staff_mode (uuid, contents, game_mode, allow_flight, flying, was_vanished, saved_at, xp_level, "
+                            + "xp_progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", Sql.toBytes(s.uuid()), s.contents(), s.gameMode(),
+                    s.allowFlight(), s.flying(), s.wasVanished(), System.currentTimeMillis(), s.xpLevel(), (double) s.xpProgress());
         });
     }
 
     CompletableFuture<Optional<Snapshot>> snapshot(UUID uuid) {
-        return db.async(c -> Sql.queryOne(c, "SELECT uuid, contents, game_mode, allow_flight, flying, was_vanished FROM staff_mode WHERE uuid = ?",
+        return db.async(c -> Sql.queryOne(c, "SELECT uuid, contents, game_mode, allow_flight, flying, was_vanished, xp_level, xp_progress "
+                        + "FROM staff_mode WHERE uuid = ?",
                 rs -> new Snapshot(Sql.uuid(rs, "uuid"), rs.getBytes("contents"), rs.getString("game_mode"),
-                        rs.getBoolean("allow_flight"), rs.getBoolean("flying"), rs.getBoolean("was_vanished")),
+                        rs.getBoolean("allow_flight"), rs.getBoolean("flying"), rs.getBoolean("was_vanished"),
+                        rs.getInt("xp_level"), (float) rs.getDouble("xp_progress")),
                 Sql.toBytes(uuid)));
     }
 

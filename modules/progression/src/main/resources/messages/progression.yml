@@ -317,6 +317,9 @@ top-menu:
       - "<pillar><c:text>: <c:value>Lv <pillar-level>"
       - "<c:text>Level: <c:value><level>"
       - "<c:text>Leader: <c:value><leader>"
+    # Owner 2 Nov 2026: the leader's title, under the stats (hidden when they wear none). <title>, <leader>.
+    title:
+      - "<c:text>Title: <title>"
     yours:
       - "<c:success><sym:check> Your island"
   empty:

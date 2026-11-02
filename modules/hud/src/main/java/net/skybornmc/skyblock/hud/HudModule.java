@@ -35,7 +35,9 @@ public final class HudModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        core.messages().retire(id(), RetiredHudTexts.all());
         core.messages(id());
+        core.messages().load(id());
         if (timers == null) {
             timers = new BoardTimerRegistry(core.plugin().getLogger()::warning);
         }

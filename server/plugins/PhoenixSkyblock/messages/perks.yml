@@ -100,7 +100,9 @@ sudo:
 # /freerank: free lowest rank after 30 min playtime, then pick 1 of 3 tags. Kept forever.
 freerank:
   too-early: "<prefix><c:error><sym:cross></c:error> <c:text>Play <c:value><minutes> min</c:value> <c:text>first. <c:value><time></c:value> <c:text>left."
-  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:ember>Ember</c:ember><c:text>! Pick your tag."
+  claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:value>Ashborn</c:value><c:text>! Pick your tag."
+  auto-claimed: "<prefix><c:success><sym:check></c:success> <c:text>You're now <c:value>Ashborn</c:value><c:text>. <click:run_command:'/freerank'><hover:show_text:'<c:text>Pick your free tag'><c:action>[Pick your tag]</c:action></hover></click>"
+  need-tutorial: "<prefix><c:error><sym:cross></c:error> <c:text>Finish the tutorial first. <click:run_command:'/tutorial'><c:action>[Tutorial]</c:action></click>"
   tag-picked: "<prefix><c:success><sym:check></c:success> <c:text>Tag <tag> <c:text>is yours. Wear it with <click:run_command:'/tags'><hover:show_text:'<c:text>Open your tags'><c:action>/tags</c:action></hover></click>."
   done: "<prefix><c:error><sym:cross></c:error> <c:text>You already claimed your free rank."
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The free rank is off right now."
@@ -117,3 +119,36 @@ freerank:
   confirm:
     crumb: "Pick this tag?"
     details: ["<c:text>Give you <tag> <c:text>for good.", "<c:warning>You can't change this pick later."]
+
+# Ranks V2: /rankrewards (weekly kit per profile, monthly tag per account).
+rank-rewards:
+  title: "Rank rewards"
+  off: "<prefix><c:error><sym:cross></c:error> <c:text>Rank rewards are off right now."
+  weekly:
+    ready:
+      name: "<area:reward><bold>Weekly Kit"
+      lore: ["<c:text>Food and blocks.", "<c:text>Bound to this profile.", "<c:bar>| </c:bar><c:text>Size: <c:value><size>", "", "<c:success><sym:check> Ready", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+    claimed:
+      name: "<area:reward><bold>Weekly Kit"
+      lore: ["<c:text>Food and blocks.", "<c:text>Bound to this profile.", "<c:bar>| </c:bar><c:text>Next kit: <c:value>Monday", "", "<c:muted><sym:check> Claimed this week"]
+    none:
+      name: "<c:muted>Weekly Kit"
+      lore: ["<c:text>Your rank has no weekly kit.", "<c:muted>Donor ranks get one."]
+  monthly:
+    ready:
+      name: "<area:reward><bold>Monthly Tag"
+      lore: ["<c:text>One new tag every month.", "<c:text>Yours for good.", "", "<c:success><sym:check> Ready", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+    claimed:
+      name: "<area:reward><bold>Monthly Tag"
+      lore: ["<c:text>One new tag every month.", "<c:bar>| </c:bar><c:text>Claimed for <c:value><month>", "", "<c:muted><sym:check> Claimed this month"]
+    nothing:
+      name: "<c:muted>Monthly Tag"
+      lore: ["<c:text>Nothing new this month."]
+  kit-claimed: "<prefix><c:success><sym:check></c:success> <c:text>Weekly kit <c:value><size></c:value> <c:text>claimed. What didn't fit is in <c:action>/box</c:action>."
+  kit-already: "<prefix><c:error><sym:cross></c:error> <c:text>This profile already claimed this week's kit. The next one comes on Monday."
+  kit-none: "<prefix><c:error><sym:cross></c:error> <c:text>Your rank has no weekly kit."
+  kit-box-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your <c:action>/box</c:action> <c:text>is full. Empty it first, nothing was used up."
+  monthly-claimed: "<prefix><c:success><sym:check></c:success> <c:text>New tag for <c:value><month></c:value><c:text>: <tag>"
+  monthly-already: "<prefix><c:error><sym:cross></c:error> <c:text>You already took this month's tag."
+  monthly-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>No new tag for you this month."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was used up, try again."

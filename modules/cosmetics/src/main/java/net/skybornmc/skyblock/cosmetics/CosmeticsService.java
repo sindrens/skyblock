@@ -268,6 +268,42 @@ public final class CosmeticsService implements Cosmetics, Listener {
         return registry.get(kind, id).map(c -> display(viewer, c)).orElseGet(() -> Component.text(String.valueOf(id)));
     }
 
+    /** Offline equipped titles by lower-case name: id (or "" for none) and when it was read. */
+    private record OfflineTitle(String id, long readAt) {
+    }
+
+    private static final long OFFLINE_TITLE_TTL_MS = 5 * 60_000L;
+    private final Map<String, OfflineTitle> offlineTitles = new ConcurrentHashMap<>();
+    private final Set<String> offlineLoading = ConcurrentHashMap.newKeySet();
+
+    @Override
+    public Component titleByName(Audience viewer, String name) {
+        if (name == null || name.isBlank()) {
+            return Component.empty();
+        }
+        org.bukkit.entity.Player online = org.bukkit.Bukkit.getPlayerExact(name);
+        if (online != null) {
+            return equipped(online.getUniqueId(), Kind.TITLE).map(c -> display(viewer, c)).orElse(Component.empty());
+        }
+        String key = name.toLowerCase(java.util.Locale.ROOT);
+        OfflineTitle cached = offlineTitles.get(key);
+        long now = System.currentTimeMillis();
+        if ((cached == null || now - cached.readAt() > OFFLINE_TITLE_TTL_MS) && offlineLoading.add(key)) {
+            if (offlineTitles.size() > 2_000) {
+                offlineTitles.clear(); // bounded: only leaderboard leaders land here
+            }
+            core.players().offline(name).whenComplete((snapshot, error) -> {
+                offlineLoading.remove(key);
+                String id = error != null ? "" : snapshot.map(s -> s.settings().getOrDefault(EQUIPPED_TITLE, "")).orElse("");
+                offlineTitles.put(key, new OfflineTitle(id, System.currentTimeMillis()));
+            });
+        }
+        if (cached == null || cached.id().isEmpty()) {
+            return Component.empty();
+        }
+        return registry.get(Kind.TITLE, cached.id()).map(c -> display(viewer, c)).orElse(Component.empty());
+    }
+
     /** Owned ids of an online player (empty while loading). */
     Set<String> owned(UUID player, Kind kind) {
         Owned o = owned.get(player);

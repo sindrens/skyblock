@@ -15,8 +15,8 @@ public final class ChatConfig extends ModuleConfig {
     // ---------------------------------------------------------------- formats (MiniMessage + parts)
 
     @Setting(path = "format.chat", desc = "Chat line. Parts: <title> <tag> <rank> <name> <message> (empty parts disappear). "
-            + "Titles go before the name, tags after it: MOD Pouched (Phoenix) »» hi (Ranks V2, owner EP-Q14).")
-    public String chatFormat = "<title><rank><name><tag> <gray>»»</gray> <white><message>";
+            + "Tags go after the name: OWNER Pouched PHOENIX »» hi. Titles show in the hover card on the name (owner 2 Nov 2026).")
+    public String chatFormat = "<rank><name><tag> <gray>»»</gray> <white><message>";
 
     @Setting(path = "ranks.name-color", desc = "Colour of every player name next to a rank word (chat, tab, nameplate, /list, "
             + "sidebar). White (owner EP-Q14). Empty = the name takes the rank colour as before.")
@@ -188,7 +188,9 @@ public final class ChatConfig extends ModuleConfig {
     static final Map<String, String[]> CHANGED_DEFAULTS = Map.of(
             "format.chat", new String[]{"<title><rank><name> <c:muted>»</c:muted> <c:text><message>",
                     "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>",
-                    "<title><rank><name><tag> <gray>»»</gray> <white><message>"},
+                    "<title><rank><name><tag> <gray>»»</gray> <white><message>",
+                    // Owner 2 Nov 2026: titles only in the hover card on the name, never in the line itself.
+                    "<rank><name><tag> <gray>»»</gray> <white><message>"},
             "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>", "<rank><name><tag><afk>"},
             "format.tab-title-part", new String[]{" <value>", "<value> "},
             "format.tag-part", new String[]{"", " <value>"});

@@ -1,6 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Chat, tab, scoreboard and staff mode polish (owner, 2 Nov 2026)
+- **Tags:** bold, one capital word after the name (`OWNER Pouched PHOENIX`); `cosmetics.yml tag.format` moves to `<bold><tag></bold>` (unedited value only). Existing tags restyled (unedited displays upgrade on load) and 10 new themed tags (Eclipse, Pyro, Blaze, Cinder, Stormborn, Skyward, Mogul, Abyssal, Harvest, Grinder) copied into live `tags-titles.yml` once.
+- **Titles:** gone from the chat line (`format.chat` default without `<title>`); shown in the hover card on the name (`hover-title`) and on `/is top` island entries (the leader's title, `top-menu.entry.title`). New `Cosmetics#titleByName` (offline leaders read in the background, 5 min cache).
+- **Tab:** new header (online/max, season, tagline) and footer (commands), plus a personal line per viewer: rank badge, name, ping, money, crystals, island level. Only tags in tab (unchanged).
+- **Scoreboard:** new title `✦ PHOENIX SKYBLOCK ✦`; Rank row in You; spawn shows your island level and progress, online count and playtime; `scoreboard.section-rows` 3 → 4 (unedited value only). Unedited live layouts upgrade.
+- **Staff mode (`/s`):** XP is taken on entry and given back on exit (also after a crash: staff V005 adds the XP to the snapshot); no XP is gained while in staff mode.
 ### Milestones: action bar and /rewards (build plan slice 4; behind milestones.enabled: false)
 - Progress in the action bar after a counted harvest or block break (`milestones-settings.yml actionbar.enabled`, `actions` [harvest_crop, break_block], `gap-ms` 1500): chain, tier, bar and `progress/target`; each player can turn it off in `/settings` (Milestones: progress in the action bar).
 - `/rewards` Milestones card (slot 15): ready tiers glow, a click claims the highest ready tier of every chain; `/menu` Rewards and Claim all count `milestones` as a source (new common contract `MilestoneRewards`).

@@ -68,8 +68,30 @@ public final class CosmeticRegistry {
                     + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
             return;
         }
+        YamlConfiguration bundled = bundled();
+        if (bundled != null && TagUpgrades.apply(yaml, bundled)) {
+            try {
+                yaml.save(file);
+            } catch (IOException e) {
+                problem.accept(FILE + ": could not save the upgraded tags: " + e.getMessage());
+            }
+        }
         titles = parse(yaml.getConfigurationSection("titles"), Cosmetics.Kind.TITLE, problem);
         tags = parse(yaml.getConfigurationSection("tags"), Cosmetics.Kind.TAG, problem);
+    }
+
+    /** The tags-titles.yml inside the jar, or null. */
+    private static YamlConfiguration bundled() {
+        try (var in = CosmeticRegistry.class.getClassLoader().getResourceAsStream(FILE)) {
+            if (in == null) {
+                return null;
+            }
+            YamlConfiguration yaml = new YamlConfiguration();
+            yaml.load(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+            return yaml;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static Map<String, Cosmetic> parse(ConfigurationSection section, Cosmetics.Kind kind, Consumer<String> problem) {

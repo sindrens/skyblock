@@ -52,7 +52,7 @@ class SidebarLinesTest {
     }
 
     /**
-     * UX1 + SB + G7-R1-01: every bundled layout parses and fits 10 lines with the title under the board rules (every
+     * UX1 + SB + G7-R1-01: every bundled layout parses and fits 15 lines with the title under the board rules (every
      * condition true), every place layout named in hud.yml's defaults exists, and each layout shows what is relevant
      * for its place.
      */
@@ -73,7 +73,8 @@ class SidebarLinesTest {
                 assertTrue(yaml.isString("scoreboard." + layout + ".title"), file + " " + layout + " title");
                 LayoutLines.Rules rules = new LayoutLines.Rules(defaults.maxLines, defaults.sectionRows, defaults.blankUnderTitleMaxLines);
                 int shown = LayoutLines.parse(String.join("<newline>", lines)).visible(k -> true, rules).size();
-                assertTrue(!lines.isEmpty() && shown <= 9, file + " " + layout + ": " + shown + " lines below the title");
+                // Owner 2 Nov 2026: fuller boards (Rank row, spawn shows your island); Bedrock still shows at most 15 with the title.
+                assertTrue(!lines.isEmpty() && shown <= 14, file + " " + layout + ": " + shown + " lines below the title");
                 for (String line : lines) {
                     assertTrue(!line.startsWith(LayoutLines.IF) || LayoutLines.line(line).condition() != null,
                             file + " " + layout + ": broken if: line " + line);
@@ -88,7 +89,7 @@ class SidebarLinesTest {
             contains(yaml, file, "depths-gate", "<ph:skill_mining_level>", "<ph:skill_foraging_level>", "<ph:skill_combat_level>");
             contains(yaml, file, "island", "<island>", "if:island_next_note|", "<progress:island_level_progress>", "<timer>");
             contains(yaml, file, "island-visit", "<island_here>", "<ph:island_here_owner>");
-            contains(yaml, file, "spawn", "<ph:afk_line>", "<objective>");
+            contains(yaml, file, "spawn", "<ph:afk_line>", "<objective>", "<rank>", "<island>", "<online>");
             contains(yaml, file, "warzone", "<ph:skill_combat_level>");
         }
     }

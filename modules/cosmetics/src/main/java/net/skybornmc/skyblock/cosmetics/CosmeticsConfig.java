@@ -13,12 +13,23 @@ public final class CosmeticsConfig extends ModuleConfig {
     public int tagItemMaxAmount = 16;
 
     @Setting(path = "tag.format", desc = "How an equipped tag looks in chat, tab and menus. <tag> = the tag's own display "
-            + "(its colors). Default: the tag in muted parentheses, e.g. Pouched (Phoenix).")
-    public String tagFormat = "<c:muted>(</c:muted><tag><c:muted>)</c:muted>";
+            + "(its colors). Default: the tag in bold, e.g. OWNER Pouched PHOENIX (owner 2 Nov 2026).")
+    public String tagFormat = "<bold><tag></bold>";
 
     @Setting(path = "tag.strip-brackets", desc = "Remove [ ] around a tag's own display, so older tags written as [Name] "
             + "don't show as ([Name]).")
     public boolean tagStripBrackets = true;
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("tag.format", ValueChange.of(
+                "<c:muted>(</c:muted><tag><c:muted>)</c:muted>", "<bold><tag></bold>")));
+    }
 
     @Override
     public String fileName() {

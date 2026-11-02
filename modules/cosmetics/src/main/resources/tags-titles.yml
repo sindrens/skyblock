@@ -86,44 +86,99 @@ titles:
     secret: false
     season-persistent: true
 
+# Tags (owner 2 Nov 2026): one bold word in capitals after the name, OWNER Pouched PHOENIX. cosmetics.yml -> tag.format
+# adds the bold. Themes: the phoenix and its fire, the SkybornMC sky, and what you do on your island.
 tags:
+  # Fire and the phoenix
   phoenix:
-    display: "<grad:phoenix>Phoenix</grad>"
+    display: "<grad:phoenix>PHOENIX</grad>"
     rarity: legendary
     source: "Legendary crate or the store."
     season-persistent: true
+  inferno:
+    display: "<gradient:#C21F2B:#FF8A1F:#FFD23F>INFERNO</gradient>"
+    rarity: mythic
+    source: "Monthly crate."
+    season-persistent: true
+  eclipse:
+    display: "<gradient:#FFD21A:#FF6A1A:#2B2B2B>ECLIPSE</gradient>"
+    rarity: legendary
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  pyro:
+    display: "<gradient:#FF2D3F:#FF8C1A>PYRO</gradient>"
+    rarity: epic
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  blaze:
+    display: "<grad:flame>BLAZE</grad>"
+    rarity: rare
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  ember:
+    display: "<c:ember>EMBER"
+    rarity: rare
+    source: "Rare crate, or pick it with /freerank."
+    season-persistent: true
+  cinder:
+    display: "<c:brand_bright>CINDER"
+    rarity: uncommon
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  ashes:
+    display: "<c:text>ASHEN"
+    rarity: uncommon
+    source: "Uncommon crate."
+    season-persistent: true
+  spark:
+    display: "<c:flame>SPARK"
+    rarity: common
+    source: "Pick it with /freerank."
+    season-persistent: true
+  ash:
+    display: "<c:parchment>ASH"
+    rarity: common
+    source: "Pick it with /freerank."
+    season-persistent: true
+  # The sky
+  skyborn:
+    display: "<grad:skyborn>SKYBORN</grad>"
+    rarity: epic
+    source: "Epic crate or the store."
+    season-persistent: true
+  stormborn:
+    display: "<gradient:#9FC6E8:#49649E>STORMBORN</gradient>"
+    rarity: epic
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  skyward:
+    display: "<c:sky_ice>SKYWARD"
+    rarity: rare
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  # Your island life
   og:
     display: "<c:flame>OG"
     rarity: epic
     source: "Store."
     season-persistent: true
-  ember:
-    display: "<c:ember>Ember"
-    rarity: rare
-    source: "Rare crate, or pick it with /freerank."
-    season-persistent: true
-  spark:
-    display: "<c:flame>Spark"
-    rarity: common
-    source: "Pick it with /freerank."
-    season-persistent: true
-  ash:
-    display: "<c:parchment>Ash"
-    rarity: common
-    source: "Pick it with /freerank."
-    season-persistent: true
-  skyborn:
-    display: "<grad:skyborn>Skyborn</grad>"
+  mogul:
+    display: "<cur:money>MOGUL"
     rarity: epic
-    source: "Epic crate or the store."
+    source: "Seasonal events and giveaways."
     season-persistent: true
-  ashes:
-    display: "<c:text>Ashes"
+  abyssal:
+    display: "<c:steel>ABYSSAL"
+    rarity: rare
+    source: "Seasonal events and giveaways."
+    season-persistent: true
+  harvest:
+    display: "<pillar:farming>HARVEST"
     rarity: uncommon
-    source: "Uncommon crate."
+    source: "Seasonal events and giveaways."
     season-persistent: true
-  inferno:
-    display: "<gradient:#C21F2B:#FF8A1F:#FFD23F>Inferno</gradient>"
-    rarity: mythic
-    source: "Monthly crate."
+  grinder:
+    display: "<c:muted>GRINDER"
+    rarity: common
+    source: "Seasonal events and giveaways."
     season-persistent: true

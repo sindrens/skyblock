@@ -18,7 +18,7 @@ public final class HudConfig extends ModuleConfig {
     public int maxLines = 15;
 
     @Setting(path = "scoreboard.section-rows", desc = "Most rows under each bold '| Header' section (G7: 3). Later rows of a full section are dropped, first in the layout win.", min = 1, max = 8)
-    public int sectionRows = 3;
+    public int sectionRows = 4;
 
     @Setting(path = "scoreboard.blank-under-title-max-lines", desc = "The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).", min = 0, max = 15)
     public int blankUnderTitleMaxLines = 8;
@@ -88,7 +88,7 @@ public final class HudConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -99,7 +99,9 @@ public final class HudConfig extends ModuleConfig {
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("values.credits", ValueChange.of("gems_formatted", "credits_formatted")));
+        return java.util.Map.of(3, java.util.Map.of("values.credits", ValueChange.of("gems_formatted", "credits_formatted")),
+                // Owner 2 Nov 2026: the You section got a Rank row, so a section holds 4 rows.
+                4, java.util.Map.of("scoreboard.section-rows", ValueChange.of(3, 4)));
     }
 
     @Override

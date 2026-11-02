@@ -14,7 +14,7 @@ scoreboard:
   max-lines: 15
   # Most rows under each bold '| Header' section (G7: 3). Later rows of a full section are dropped, first in the layout win.
   # Allowed: 1 to 8
-  section-rows: 3
+  section-rows: 4
   # The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).
   # Allowed: 0 to 15
   blank-under-title-max-lines: 8
@@ -70,4 +70,4 @@ places:
     - warzone
     # Layout in the warzone.
     layout: warzone
-config-version: 3
+config-version: 4
