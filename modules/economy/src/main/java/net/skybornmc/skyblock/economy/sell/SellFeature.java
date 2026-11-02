@@ -448,6 +448,149 @@ public final class SellFeature implements Listener {
                         .executes(ctx -> sellAll(ctx.player()))));
     }
 
+    // ================================================================== /eco sell (A6, staff)
+
+    public static final String PERM_SELL_VIEW = "skyblock.staff.economy.sell.view";
+    public static final String PERM_SELL_RESET = "skyblock.staff.economy.sell.reset";
+    static final String RECIPES_FILE = "sell-recipes.txt";
+
+    /** {@code /eco sell price|reset|dump-recipes}, added to /eco by the module. */
+    public CommandSpec ecoSellCommand() {
+        net.skybornmc.skyblock.common.command.Arg<String> item = itemArg(false);
+        net.skybornmc.skyblock.common.command.Arg<String> target = itemArg(true);
+        net.skybornmc.skyblock.common.command.Arg<String> reason = net.skybornmc.skyblock.common.command.Arg.greedy("reason",
+                (sender, raw) -> raw.strip(), net.skybornmc.skyblock.common.command.Suggest.of("Price stuck", "Exploit fix", "Testing"));
+        return CommandSpec.sub("sell")
+                .description("Staff: look up or reset live sell prices, or list the recipes behind derived prices")
+                .permission(PERM_SELL_VIEW)
+                .sub(CommandSpec.sub("price")
+                        .description("Show an item's base, live price, trend and category")
+                        .permission(PERM_SELL_VIEW)
+                        .arg(item)
+                        .example("eco sell price wheat")
+                        .executes(ctx -> ecoPrice(ctx.sender(), ctx.get(item))))
+                .sub(CommandSpec.sub("reset")
+                        .description("Put an item's live price (or every item's) back to base")
+                        .permission(PERM_SELL_RESET)
+                        .arg(target).arg(reason)
+                        .example("eco sell reset wheat Price stuck")
+                        .executes(ctx -> ecoReset(ctx.sender(), ctx.get(target), ctx.get(reason))))
+                .sub(CommandSpec.sub("dump-recipes")
+                        .description("Write every recipe the derived prices use to plugins/PhoenixSkyblock/" + RECIPES_FILE)
+                        .permission(PERM_SELL_VIEW)
+                        .example("eco sell dump-recipes")
+                        .executes(ctx -> ecoDumpRecipes(ctx.sender())));
+    }
+
+    /**
+     * An item key from the sell table. Brigadier words can't hold {@code :}, so custom items are typed and suggested as
+     * {@code custom.<id>}; {@code withAll} adds {@code all}.
+     */
+    private net.skybornmc.skyblock.common.command.Arg<String> itemArg(boolean withAll) {
+        java.util.function.Supplier<List<String>> typed = () -> {
+            List<String> keys = new ArrayList<>();
+            if (withAll) {
+                keys.add("all");
+            }
+            for (SellCatalog.Entry e : catalog.all()) {
+                if (!withAll || e.sellable()) {
+                    keys.add(typedKey(e.key()));
+                }
+            }
+            return keys;
+        };
+        return net.skybornmc.skyblock.common.command.Arg.word("item", (sender, raw) -> {
+            String key = keyFromTyped(raw);
+            if (withAll && key.equals("all")) {
+                return key;
+            }
+            if (catalog.get(key).isEmpty()) {
+                throw new CommandFailure(EconomyModule.ID, "eco.sell.unknown", Msg.p("item", raw));
+            }
+            return key;
+        }, net.skybornmc.skyblock.common.command.Suggest.of(typed));
+    }
+
+    /** {@code custom:depths_coal} → {@code custom.depths_coal} (what players can type). */
+    static String typedKey(String key) {
+        return key.startsWith(SellCatalog.CUSTOM_PREFIX) ? "custom." + key.substring(SellCatalog.CUSTOM_PREFIX.length()) : key;
+    }
+
+    /** {@code custom.depths_coal} / {@code minecraft:wheat} / {@code Wheat} → the sell table key. */
+    static String keyFromTyped(String raw) {
+        String k = raw.trim().toLowerCase(Locale.ROOT);
+        if (k.startsWith("custom.")) {
+            return SellCatalog.CUSTOM_PREFIX + k.substring("custom.".length());
+        }
+        return k.startsWith("minecraft:") ? k.substring("minecraft:".length()) : k;
+    }
+
+    private void ecoPrice(org.bukkit.command.CommandSender sender, String key) {
+        if (!ready) {
+            throw new CommandFailure(EconomyModule.ID, "sell.loading");
+        }
+        SellCatalog.Entry e = catalog.get(key).orElseThrow(() -> new CommandFailure(EconomyModule.ID, "eco.sell.unknown",
+                Msg.p("item", key)));
+        SellPrice p = service.price(key).orElse(null);
+        double multiplier = p == null ? book.get(key).multiplier() : p.multiplier();
+        double unit = p == null ? e.base() * multiplier : p.unit();
+        msg.send(sender, "eco.sell.price", Msg.p("item", key), Msg.p("category", e.category()),
+                Msg.c("base", unitPrice(sender, e.base())), Msg.c("unit", unitPrice(sender, unit)),
+                Msg.p("percent", percentText((multiplier - 1.0) * 100.0)),
+                Msg.p("trend", p == null ? "-" : p.trend().name().toLowerCase(Locale.ROOT)),
+                Msg.p("state", !e.sellable() ? "off" : key.equals(service.hotKey()) ? "hot" : "on"),
+                Msg.number("sold", book.get(key).soldTotal()));
+    }
+
+    private void ecoReset(org.bukkit.command.CommandSender sender, String which, String reason) {
+        if (!ready) {
+            throw new CommandFailure(EconomyModule.ID, "sell.loading");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new CommandFailure(EconomyModule.ID, "eco.sell.reason");
+        }
+        List<String> keys = which.equalsIgnoreCase("all") ? catalog.sellableKeys() : List.of(which);
+        if (keys.size() == 1 && catalog.get(keys.get(0)).isEmpty()) {
+            throw new CommandFailure(EconomyModule.ID, "eco.sell.unknown", Msg.p("item", which));
+        }
+        int changed = 0;
+        for (String key : keys) {
+            double before = book.reset(key);
+            if (!Double.isNaN(before) && Math.abs(before - 1.0) > 1e-9) {
+                changed++;
+            }
+        }
+        tipsAt = Long.MIN_VALUE; // Market Tips worked out again
+        msg.send(sender, "eco.sell.reset", Msg.p("item", which.toLowerCase(Locale.ROOT)), Msg.number("count", changed),
+                Msg.p("reason", reason));
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "sell_reset", Actor.of(sender),
+                Map.<String, Object>of("item", which.toLowerCase(Locale.ROOT), "changed", changed, "reason", reason));
+    }
+
+    private void ecoDumpRecipes(org.bukkit.command.CommandSender sender) {
+        List<SellDerive.Recipe> recipes = SellRecipes.fromServer(); // main thread: Bukkit's recipe list
+        SellCatalog cat = catalog;
+        List<String> lines = new ArrayList<>(recipes.size() + 2);
+        lines.add("# output x count | kind | class | price now | inputs (a|b = any of)");
+        for (SellDerive.Recipe r : recipes) {
+            String price = cat.get(r.output()).map(e -> String.valueOf(e.base())).orElse("-");
+            lines.add(r.output() + " x" + r.count() + " | " + r.kind().name().toLowerCase(Locale.ROOT) + " | "
+                    + SellDerive.classOf(r).name().toLowerCase(Locale.ROOT) + " | " + price + " | "
+                    + String.join(", ", r.inputs().stream().map(alts -> String.join("|", alts)).toList()));
+        }
+        File out = new File(core.plugin().getDataFolder(), RECIPES_FILE);
+        core.scheduler().async(() -> {
+            try {
+                java.nio.file.Files.write(out.toPath(), lines, StandardCharsets.UTF_8);
+                core.scheduler().main("sell-dump-done", () -> msg.send(sender, "eco.sell.dumped",
+                        Msg.number("count", recipes.size()), Msg.p("file", RECIPES_FILE)));
+            } catch (IOException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Sell: could not write " + RECIPES_FILE, e);
+                core.scheduler().main("sell-dump-failed", () -> msg.send(sender, "error"));
+            }
+        });
+    }
+
     void open(Player player) {
         checkCanSell(player);
         if (core.menus().openMenu(player) instanceof SellMenu) {
@@ -1040,7 +1183,7 @@ public final class SellFeature implements Listener {
     }
 
     /** A price per item (fractional below $100: {@code $0.85}, {@code $33.50}), in the money color. */
-    Component unitPrice(Player viewer, double unit) {
+    Component unitPrice(net.kyori.adventure.audience.Audience viewer, double unit) {
         String text;
         if (unit >= 100) {
             long whole = (long) Math.floor(unit);

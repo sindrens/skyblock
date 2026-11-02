@@ -50,6 +50,14 @@ skyblock.staff.economy.dashboard:
 skyblock.staff.economy.flagged:
   description: A staff account (owner answer 334). Staff play normally, but their big transfers (pay, trade) are shown to admins as a staff-transfer alert
   default: false
+skyblock.staff.economy.sell.view:
+  description: Look up live sell prices and list the recipes behind derived prices (/eco sell price, /eco sell dump-recipes; ECON-SELL-SHOP-AH A6)
+  default: op
+skyblock.staff.economy.sell.reset:
+  description: Put an item's (or every item's) live sell price back to base (/eco sell reset <item|all> <reason>; always logged as sell_reset)
+  default: op
+  children:
+    skyblock.staff.economy.sell.view: true
 skyblock.staff.economy.anomalies:
   description: Get economy anomaly alerts in chat (fast earning, big or repeated transfers, many notes cashed, sell spikes, balance jumps, inflation) with [Open] and [Punish]
   default: op

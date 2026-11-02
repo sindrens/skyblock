@@ -59,6 +59,13 @@ pay:
   send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
 
 eco:
+  # A6: /eco sell price|reset|dump-recipes (staff).
+  sell:
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:value><item></c:value> <c:text>is not in the sell table. Custom items are typed as <c:value>custom.<id></c:value><c:text>; press Tab for the list."
+    reason: "<prefix><c:error><sym:cross></c:error> <c:text>Add a reason, for example <c:value>/eco sell reset wheat Price stuck</c:value>."
+    price: "<prefix><c:value><item></c:value> <c:muted>(<category>, <state>)</c:muted> <c:text>base </c:text><base> <c:text>now </c:text><unit> <c:muted>(<percent>%, <trend>)</c:muted> <c:text>sold </c:text><c:value><sold>"
+    reset: "<prefix><c:success><sym:check></c:success> <c:text>Live price of <c:value><item></c:value> <c:text>back to base: <c:value><count></c:value> <c:text>item(s) changed. <c:muted>(<reason>)"
+    dumped: "<prefix><c:success><sym:check></c:success> <c:text>Wrote <c:value><count></c:value> <c:text>recipes to <c:value>plugins/PhoenixSkyblock/<file></c:value><c:text>."
   # Card C1 (C1-R1-18): only the owner creates or sets bought credits by hand. <action> = give/set/reset.
   credits-owner-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the owner can <action> bought credits. Use <c:value>credits_earned</c:value> <c:text>for event prizes and compensation."
   credits-skipped: "<prefix><c:muted>Bought credits were left as they are (owner only)."

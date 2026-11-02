@@ -623,6 +623,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .permission(net.skybornmc.skyblock.economy.admin.EconomyWatch.PERM_DASHBOARD)
                 .aliases("economy")
                 .sub(watch.adminCommand())
+                .sub(sell.ecoSellCommand())
                 .sub(CommandSpec.sub("give")
                         .description("Give a player currency")
                         .permission(PERM_ECO)

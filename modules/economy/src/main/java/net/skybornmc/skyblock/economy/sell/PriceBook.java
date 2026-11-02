@@ -105,6 +105,22 @@ public final class PriceBook {
         }
     }
 
+    /**
+     * A6 ({@code /eco sell reset}): the item's multiplier back to 1.0 (base price); impact, volume and totals stay. Returns
+     * the multiplier it had, or NaN when the item has no state.
+     */
+    public double reset(String key) {
+        double[] before = {Double.NaN};
+        states.computeIfPresent(key, (k, st) -> {
+            before[0] = st.multiplier();
+            return st.withMultiplier(1.0);
+        });
+        if (!Double.isNaN(before[0])) {
+            dirty.add(key);
+        }
+        return before[0];
+    }
+
     /** One interval step for every item (recovery toward base, drift up for quiet items). */
     public void step(long now) {
         DynamicSettings s = settings();
