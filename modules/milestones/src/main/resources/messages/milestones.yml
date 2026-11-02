@@ -1,0 +1,14 @@
+# Milestones (Complete Developer Spec section 7). <chain> chain name, <tier> tier number, <count> how many.
+discovered: "<prefix><c:flame><sym:star></c:flame> <c:text>New milestone: <c:value><chain></c:value><c:text>. See <c:action>/ms"
+# One tier became ready (island tiers: every online member; spec 7.4).
+tier-ready:
+  chat: "<prefix><c:success><sym:check></c:success> <c:value><chain></c:value> <c:text>tier <c:value><tier></c:value> <c:text>is ready: <c:action>/ms</c:action> <c:text>to claim."
+  title:
+    title: "<c:flame><bold><chain> <tier>"
+    subtitle: "<c:text>Milestone ready: <c:action>/ms"
+# Several tiers inside notify.batch-seconds.
+tiers-ready:
+  chat: "<prefix><c:success><sym:check></c:success> <c:value><count></c:value> <c:text>milestone tiers are ready: <c:action>/ms</c:action> <c:text>to claim."
+  title:
+    title: "<c:flame><bold><count> milestones"
+    subtitle: "<c:text>Ready to claim: <c:action>/ms"

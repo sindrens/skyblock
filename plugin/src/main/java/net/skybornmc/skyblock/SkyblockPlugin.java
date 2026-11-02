@@ -333,6 +333,9 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // crates (keys), wardrobe (set tokens), enchants (books, scrolls), stacking (spawners), cosmetics (tag), islands
         // (charter sizes) and box (overflow), all optional. Answers the Black Market NPC's click.
         modules.register(new net.skybornmc.skyblock.blackmarket.BlackMarketModule(core));
+        // Milestones (Complete Developer Spec §7-9): counts player actions toward island and personal chains; off until
+        // milestones-settings.yml enabled: true. Needs islands (island chains) and profiles (personal chains).
+        modules.register(new net.skybornmc.skyblock.milestones.MilestonesModule(core));
         // Shard block (ECON-SHARDS): the only source of shards; needs economy, islands and profiles (registered above).
         modules.register(new net.skybornmc.skyblock.shardblock.ShardBlockModule(core));
     }
