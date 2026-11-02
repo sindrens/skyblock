@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "phoenix:item/icon/item_global_booster_sell"
+ }
+}

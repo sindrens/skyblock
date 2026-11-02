@@ -17,6 +17,27 @@
    },
    {
     "model": {
+     "model": "phoenix:item/icon/item_disenchant_scroll",
+     "type": "minecraft:model"
+    },
+    "when": "item/disenchant_scroll"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_money_note",
+     "type": "minecraft:model"
+    },
+    "when": "item/money_note"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_blueprint",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_blueprint"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/nav_next",
      "type": "minecraft:model"
     },

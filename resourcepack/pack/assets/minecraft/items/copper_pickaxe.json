@@ -1,0 +1,41 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_frostbite_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_frostbite_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_phoenix_flame_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_phoenix_flame_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_royal_gold_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_royal_gold_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_pickaxe_copper",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_pickaxe_copper"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/copper_pickaxe",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

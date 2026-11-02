@@ -10,6 +10,13 @@
    },
    {
     "model": {
+     "model": "phoenix:item/icon/item_tag_item",
+     "type": "minecraft:model"
+    },
+    "when": "item/tag_item"
+   },
+   {
+    "model": {
      "model": "phoenix:item/icon/ui_type",
      "type": "minecraft:model"
     },

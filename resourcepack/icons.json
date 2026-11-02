@@ -670,6 +670,919 @@
    "slice": 1,
    "motif": "cartoon v4 (tools/cartoon/render.py)",
    "used": "menus"
+  },
+  {
+   "key": "item/crate_key_ember",
+   "base": "tripwire_hook",
+   "name": "Crate Key Ember",
+   "meaning": "neutral",
+   "file": "item_crate_key_ember",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_cinder",
+   "base": "tripwire_hook",
+   "name": "Crate Key Cinder",
+   "meaning": "neutral",
+   "file": "item_crate_key_cinder",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_blaze",
+   "base": "tripwire_hook",
+   "name": "Crate Key Blaze",
+   "meaning": "neutral",
+   "file": "item_crate_key_blaze",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_inferno",
+   "base": "tripwire_hook",
+   "name": "Crate Key Inferno",
+   "meaning": "neutral",
+   "file": "item_crate_key_inferno",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_phoenix",
+   "base": "tripwire_hook",
+   "name": "Crate Key Phoenix",
+   "meaning": "neutral",
+   "file": "item_crate_key_phoenix",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_eclipse",
+   "base": "tripwire_hook",
+   "name": "Crate Key Eclipse",
+   "meaning": "neutral",
+   "file": "item_crate_key_eclipse",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_conqueror",
+   "base": "tripwire_hook",
+   "name": "Crate Key Conqueror",
+   "meaning": "neutral",
+   "file": "item_crate_key_conqueror",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/shard_block",
+   "base": "infested_stone",
+   "name": "Shard Block",
+   "meaning": "neutral",
+   "file": "item_shard_block",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/fuel_cell",
+   "base": "magma_cream",
+   "name": "Fuel Cell",
+   "meaning": "neutral",
+   "file": "item_fuel_cell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/money_note",
+   "base": "paper",
+   "name": "Money Note",
+   "meaning": "neutral",
+   "file": "item_money_note",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/disenchant_scroll",
+   "base": "paper",
+   "name": "Disenchant Scroll",
+   "meaning": "neutral",
+   "file": "item_disenchant_scroll",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/tag_item",
+   "base": "name_tag",
+   "name": "Tag Item",
+   "meaning": "neutral",
+   "file": "item_tag_item",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/tool_blueprint",
+   "base": "paper",
+   "name": "Tool Blueprint",
+   "meaning": "neutral",
+   "file": "item_tool_blueprint",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_sell",
+   "base": "gold_ingot",
+   "name": "Booster Sell",
+   "meaning": "neutral",
+   "file": "item_booster_sell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_sell",
+   "base": "nether_star",
+   "name": "Global Booster Sell",
+   "meaning": "neutral",
+   "file": "item_global_booster_sell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_skill_xp",
+   "base": "lapis_lazuli",
+   "name": "Booster Skill Xp",
+   "meaning": "neutral",
+   "file": "item_booster_skill_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_skill_xp",
+   "base": "nether_star",
+   "name": "Global Booster Skill Xp",
+   "meaning": "neutral",
+   "file": "item_global_booster_skill_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_tool_xp",
+   "base": "echo_shard",
+   "name": "Booster Tool Xp",
+   "meaning": "neutral",
+   "file": "item_booster_tool_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_tool_xp",
+   "base": "nether_star",
+   "name": "Global Booster Tool Xp",
+   "meaning": "neutral",
+   "file": "item_global_booster_tool_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_crystals",
+   "base": "prismarine_crystals",
+   "name": "Booster Crystals",
+   "meaning": "neutral",
+   "file": "item_booster_crystals",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_crystals",
+   "base": "nether_star",
+   "name": "Global Booster Crystals",
+   "meaning": "neutral",
+   "file": "item_global_booster_crystals",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/tool_pickaxe_coal",
+   "base": "stone_pickaxe",
+   "name": "Tool Pickaxe Coal",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_coal",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_copper",
+   "base": "copper_pickaxe",
+   "name": "Tool Pickaxe Copper",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_copper",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_iron",
+   "base": "iron_pickaxe",
+   "name": "Tool Pickaxe Iron",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_iron",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_gold",
+   "base": "iron_pickaxe",
+   "name": "Tool Pickaxe Gold",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_gold",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "golden_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_redstone",
+   "base": "iron_pickaxe",
+   "name": "Tool Pickaxe Redstone",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_redstone",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_lapis",
+   "base": "iron_pickaxe",
+   "name": "Tool Pickaxe Lapis",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_lapis",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_diamond",
+   "base": "diamond_pickaxe",
+   "name": "Tool Pickaxe Diamond",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_diamond",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_emerald",
+   "base": "diamond_pickaxe",
+   "name": "Tool Pickaxe Emerald",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_emerald",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_amethyst",
+   "base": "diamond_pickaxe",
+   "name": "Tool Pickaxe Amethyst",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_amethyst",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_quartz",
+   "base": "diamond_pickaxe",
+   "name": "Tool Pickaxe Quartz",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_quartz",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_netherite",
+   "base": "netherite_pickaxe",
+   "name": "Tool Pickaxe Netherite",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_netherite",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_pickaxe_voidstone",
+   "base": "netherite_pickaxe",
+   "name": "Tool Pickaxe Voidstone",
+   "meaning": "neutral",
+   "file": "item_tool_pickaxe_voidstone",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_oak",
+   "base": "wooden_axe",
+   "name": "Tool Axe Oak",
+   "meaning": "neutral",
+   "file": "item_tool_axe_oak",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_birch",
+   "base": "stone_axe",
+   "name": "Tool Axe Birch",
+   "meaning": "neutral",
+   "file": "item_tool_axe_birch",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_spruce",
+   "base": "copper_axe",
+   "name": "Tool Axe Spruce",
+   "meaning": "neutral",
+   "file": "item_tool_axe_spruce",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_jungle",
+   "base": "iron_axe",
+   "name": "Tool Axe Jungle",
+   "meaning": "neutral",
+   "file": "item_tool_axe_jungle",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_acacia",
+   "base": "iron_axe",
+   "name": "Tool Axe Acacia",
+   "meaning": "neutral",
+   "file": "item_tool_axe_acacia",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_dark_oak",
+   "base": "iron_axe",
+   "name": "Tool Axe Dark Oak",
+   "meaning": "neutral",
+   "file": "item_tool_axe_dark_oak",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_mangrove",
+   "base": "diamond_axe",
+   "name": "Tool Axe Mangrove",
+   "meaning": "neutral",
+   "file": "item_tool_axe_mangrove",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_cherry",
+   "base": "diamond_axe",
+   "name": "Tool Axe Cherry",
+   "meaning": "neutral",
+   "file": "item_tool_axe_cherry",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_pale_oak",
+   "base": "diamond_axe",
+   "name": "Tool Axe Pale Oak",
+   "meaning": "neutral",
+   "file": "item_tool_axe_pale_oak",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_crimson",
+   "base": "netherite_axe",
+   "name": "Tool Axe Crimson",
+   "meaning": "neutral",
+   "file": "item_tool_axe_crimson",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_axe_warped",
+   "base": "netherite_axe",
+   "name": "Tool Axe Warped",
+   "meaning": "neutral",
+   "file": "item_tool_axe_warped",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_grave",
+   "base": "stone_sword",
+   "name": "Tool Sword Grave",
+   "meaning": "neutral",
+   "file": "item_tool_sword_grave",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_bone",
+   "base": "copper_sword",
+   "name": "Tool Sword Bone",
+   "meaning": "neutral",
+   "file": "item_tool_sword_bone",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_venom",
+   "base": "iron_sword",
+   "name": "Tool Sword Venom",
+   "meaning": "neutral",
+   "file": "item_tool_sword_venom",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_slime",
+   "base": "iron_sword",
+   "name": "Tool Sword Slime",
+   "meaning": "neutral",
+   "file": "item_tool_sword_slime",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_tide",
+   "base": "iron_sword",
+   "name": "Tool Sword Tide",
+   "meaning": "neutral",
+   "file": "item_tool_sword_tide",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_hex",
+   "base": "diamond_sword",
+   "name": "Tool Sword Hex",
+   "meaning": "neutral",
+   "file": "item_tool_sword_hex",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_raider",
+   "base": "diamond_sword",
+   "name": "Tool Sword Raider",
+   "meaning": "neutral",
+   "file": "item_tool_sword_raider",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_blaze",
+   "base": "diamond_sword",
+   "name": "Tool Sword Blaze",
+   "meaning": "neutral",
+   "file": "item_tool_sword_blaze",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_wither",
+   "base": "netherite_sword",
+   "name": "Tool Sword Wither",
+   "meaning": "neutral",
+   "file": "item_tool_sword_wither",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_sword_warlord",
+   "base": "netherite_sword",
+   "name": "Tool Sword Warlord",
+   "meaning": "neutral",
+   "file": "item_tool_sword_warlord",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_basic",
+   "base": "stone_hoe",
+   "name": "Tool Hoe Basic",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_basic",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_copper",
+   "base": "copper_hoe",
+   "name": "Tool Hoe Copper",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_copper",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_iron",
+   "base": "iron_hoe",
+   "name": "Tool Hoe Iron",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_iron",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_gold",
+   "base": "iron_hoe",
+   "name": "Tool Hoe Gold",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_gold",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "golden_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_diamond",
+   "base": "diamond_hoe",
+   "name": "Tool Hoe Diamond",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_diamond",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_netherite",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Netherite",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_netherite",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_sunscorch",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Sunscorch",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_sunscorch",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_briarthorn",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Briarthorn",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_briarthorn",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_netherbloom",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Netherbloom",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_netherbloom",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_torchbloom",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Torchbloom",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_torchbloom",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_hoe_verdant",
+   "base": "netherite_hoe",
+   "name": "Tool Hoe Verdant",
+   "meaning": "neutral",
+   "file": "item_tool_hoe_verdant",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Frostbite Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_axe",
+   "base": "wooden_axe",
+   "name": "Skin Frostbite Axe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_sword",
+   "base": "stone_sword",
+   "name": "Skin Frostbite Sword",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Frostbite Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Phoenix Flame Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_axe",
+   "base": "wooden_axe",
+   "name": "Skin Phoenix Flame Axe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_sword",
+   "base": "stone_sword",
+   "name": "Skin Phoenix Flame Sword",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Phoenix Flame Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Royal Gold Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_axe",
+   "base": "wooden_axe",
+   "name": "Skin Royal Gold Axe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_sword",
+   "base": "stone_sword",
+   "name": "Skin Royal Gold Sword",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Royal Gold Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
   }
  ],
  "vanilla": {

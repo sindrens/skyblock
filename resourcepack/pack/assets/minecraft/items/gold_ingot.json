@@ -7,6 +7,13 @@
      "type": "minecraft:model"
     },
     "when": "currency/money"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_booster_sell",
+     "type": "minecraft:model"
+    },
+    "when": "item/booster_sell"
    }
   ],
   "fallback": {

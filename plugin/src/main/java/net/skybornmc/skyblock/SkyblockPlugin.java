@@ -135,6 +135,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         configs.load(itemsConfig);                                                                    // M0.7
         messages.load("items");
         ItemRegistry items = new ItemRegistry(messages);
+        items.textures(key -> { var c = menus.icons().catalog(); return c != null && c.isCustom(key); }); // icons v4: item textures
         DupeDetector dupes = new DupeDetector(this, itemsConfig, messages.of("items"));
 
         ServiceRegistry services = new ServiceRegistry(getLogger());                                  // M0.9

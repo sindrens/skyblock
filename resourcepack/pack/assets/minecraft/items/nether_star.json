@@ -1,0 +1,41 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_global_booster_crystals",
+     "type": "minecraft:model"
+    },
+    "when": "item/global_booster_crystals"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_global_booster_sell",
+     "type": "minecraft:model"
+    },
+    "when": "item/global_booster_sell"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_global_booster_skill_xp",
+     "type": "minecraft:model"
+    },
+    "when": "item/global_booster_skill_xp"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_global_booster_tool_xp",
+     "type": "minecraft:model"
+    },
+    "when": "item/global_booster_tool_xp"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/nether_star",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_fuel_cell",
+     "type": "minecraft:model"
+    },
+    "when": "item/fuel_cell"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/magma_cream",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

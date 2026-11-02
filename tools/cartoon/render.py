@@ -290,9 +290,9 @@ def scroll(p, cx, cy, paper=rgb('f4e2b6')):
 ICONS = {}
 
 
-def icon(key, base=None, name=None, meaning=None):
+def icon(key, base=None, name=None, meaning=None, bases=None, parent=None):
     def wrap(fn):
-        ICONS[key] = dict(fn=fn, base=base, name=name, meaning=meaning)
+        ICONS[key] = dict(fn=fn, base=base, name=name, meaning=meaning, bases=bases, parent=parent)
         return fn
     return wrap
 
@@ -844,6 +844,172 @@ def _(p):
         p.d.line([(x, 60), (x, 210)], fill=rgb('c9ced8'), width=12)
     p.arc_stroke(128, 140, 30, 180, 360, 14, rgb('e6e8ee'))
     p.rrect((90, 136, 166, 204), 12, GOLD, w=10)
+
+
+# ------------------------------------------------------------------------------------------------- custom items
+# Item textures (owner 2 Nov 2026: "crate keys per crate, custom pickaxe, skins, fuel cells, shard blocks, everything
+# custom"). Key item/<id> (or a variant), base = the item's vanilla material.
+
+def key_item(p, metal, gem_c):
+    p.circle(84, 84, 58, metal)
+    p.circle(84, 84, 24, (0, 0, 0, 0), outline=False)
+    p.d.ellipse((62, 62, 106, 106), fill=OL)
+    p.d.ellipse((70, 70, 98, 98), fill=(0, 0, 0, 0))
+    p.line([(120, 120), (214, 214)], 34, metal)
+    p.line([(170, 170), (200, 140)], 26, metal)
+    p.line([(196, 196), (226, 166)], 26, metal)
+    p.shine((42, 36, 92, 62), 140)
+    p.circle(84, 40, 18, gem_c, w=8)
+
+
+CRATE_KEYS = {
+    'ember': ('c9733a', 'ff9a3d'), 'cinder': ('8b8f9c', 'ef5a3c'), 'blaze': ('f7a02e', 'fff06a'),
+    'inferno': ('d8303a', 'ff8a1f'), 'phoenix': ('f5c542', 'ff2d3f'), 'eclipse': ('4a2a7a', 'f5c542'),
+    'conqueror': ('6f86b8', 'd8303a'),
+}
+for _crate, (_metal, _gem) in CRATE_KEYS.items():
+    def _make(metal=_metal, gemc=_gem):
+        return lambda p: key_item(p, rgb(metal), rgb(gemc))
+    icon('item/crate_key_' + _crate, base='tripwire_hook')(_make())
+
+
+@icon('item/shard_block', base='infested_stone')
+def _(p):
+    p.poly([(128, 40), (224, 88), (224, 192), (128, 240), (32, 192), (32, 88)], rgb('7a7f8e'))
+    p.d.polygon([(128, 54), (210, 94), (128, 134), (46, 94)], fill=rgb('9aa0ae'))
+    p.d.polygon([(128, 140), (210, 98), (210, 186), (128, 228)], fill=rgb('5f6474'))
+    for (x, top, w) in ((96, 34, 20), (140, 14, 26), (178, 44, 18)):
+        p.poly([(x - w, 120), (x - w, top + 30), (x, top), (x + w, top + 30), (x + w, 120)], PINK, w=10)
+        p.d.line([(x - w * 0.4, top + 34), (x - w * 0.4, 112)], fill=shade(PINK, 1.5), width=6)
+
+
+@icon('item/fuel_cell', base='magma_cream')
+def _(p):
+    p.rrect((64, 52, 192, 234), 30, rgb('4d5160'))
+    p.rrect((84, 74, 172, 214), 20, ORANGE, w=10)
+    p.rrect((100, 26, 156, 58), 8, rgb('9aa0ae'))
+    p.poly([(128, 92), (156, 140), (150, 182), (128, 196), (106, 182), (100, 140)], YELLOW, w=9)
+    p.shine((92, 82, 118, 140), 120)
+
+
+@icon('item/money_note', base='paper')
+def _(p):
+    p.rrect((18, 62, 238, 194), 14, rgb('6fd26a'))
+    p.d.rounded_rectangle((38, 80, 218, 176), 10, outline=shade(rgb('6fd26a'), 0.7), width=6)
+    p.circle(128, 128, 40, rgb('a8ec92'), w=9)
+    p.text(128, 128, '$', 74, stroke=9)
+    p.shine((34, 70, 110, 90), 110)
+
+
+@icon('item/disenchant_scroll', base='paper')
+def _(p):
+    scroll(p, 128, 128, rgb('e9d8ff'))
+    p.star(128, 128, 36, PURPLE, w=9)
+    p.line([(96, 160), (160, 96)], 10, WHITE, outline=False)
+
+
+@icon('item/tag_item', base='name_tag')
+def _(p):
+    p.poly([(30, 92), (202, 92), (234, 128), (202, 164), (30, 164)], GOLD)
+    p.circle(200, 128, 10, OL, outline=False)
+    p.star(110, 128, 26, WHITE, w=8)
+    p.sparkle(60, 60, 22)
+
+
+@icon('item/tool_blueprint', base='paper')
+def _(p):
+    p.rrect((26, 40, 230, 216), 12, rgb('3d7fd8'))
+    for x in range(54, 220, 36):
+        p.d.line([(x, 52), (x, 204)], fill=rgb('6aa0ea'), width=3)
+    for y in range(70, 210, 36):
+        p.d.line([(38, y), (218, y)], fill=rgb('6aa0ea'), width=3)
+    p.arc_stroke(150, 150, 70, 200, 340, 14, WHITE, outline=False)
+    p.line([(84, 184), (150, 110)], 12, WHITE, outline=False)
+
+
+BOOSTER_COLORS = {'sell': 'f5c542', 'skill_xp': '7bdc4c', 'tool_xp': '3fd6ff', 'crystals': 'b98bff'}
+BOOSTER_BASES = {'sell': 'gold_ingot', 'skill_xp': 'lapis_lazuli', 'tool_xp': 'echo_shard', 'crystals': 'prismarine_crystals'}
+
+
+def booster(p, color, global_=False):
+    p.rrect((104, 22, 152, 58), 8, rgb('b8834f'))
+    p.circle(128, 150, 82, rgb(color))
+    p.d.pieslice((60, 82, 196, 218), 20, 160, fill=shade(rgb(color), 0.82))
+    p.shine((76, 92, 122, 124), 130)
+    arrow_up(p, 128, 150, 42, WHITE)
+    if global_:
+        p.star(200, 54, 30, YELLOW, w=9)
+
+
+for _t, _c in BOOSTER_COLORS.items():
+    def _mk(c=_c, glob=False):
+        return lambda p: booster(p, c, glob)
+    icon('item/booster_' + _t, base=BOOSTER_BASES[_t])(_mk())
+    icon('item/global_booster_' + _t, base='nether_star')(_mk(glob=True))
+
+
+# Depths tools: one picture per tier (head colour per tier), held like vanilla tools.
+def tool(p, kind, head, handle=rgb('b7793f'), glow=None):
+    if glow:
+        p.circle(128, 128, 112, glow, outline=False)
+    if kind == 'pickaxe':
+        p.line([(40, 216), (176, 80)], 26, handle)
+        p.arc_stroke(40, 216, 190, -76, -14, 40, head)
+        p.arc_stroke(40, 216, 190, -68, -42, 10, shade(head, 1.45), outline=False)
+    elif kind == 'axe':
+        p.line([(42, 214), (176, 80)], 26, handle)
+        p.poly([(124, 54), (184, 36), (226, 92), (198, 150), (150, 118)], head)
+        p.d.polygon([(150, 68), (182, 56), (210, 94), (192, 126)], fill=shade(head, 1.3))
+    elif kind == 'sword':
+        p.line([(48, 208), (88, 168)], 26, handle)
+        p.line([(56, 150), (106, 200)], 24, rgb('f5c542'))
+        p.poly([(86, 158), (204, 40), (226, 30), (216, 52), (98, 170)], head)
+        p.d.line([(104, 150), (208, 46)], fill=shade(head, 1.45), width=8)
+    elif kind == 'hoe':
+        p.line([(42, 214), (176, 80)], 26, handle)
+        p.poly([(150, 70), (210, 40), (230, 62), (176, 100)], head)
+        p.poly([(196, 48), (232, 64), (226, 116), (204, 104)], head)
+
+
+TOOL_TIERS = {
+    'pickaxe': [('coal', '3c3c44', 'stone_pickaxe'), ('copper', 'd9824b', 'copper_pickaxe'), ('iron', 'd8dde6', 'iron_pickaxe'),
+                ('gold', 'f5c542', 'iron_pickaxe,golden_pickaxe'), ('redstone', 'e0302f', 'iron_pickaxe'), ('lapis', '2f5fd0', 'iron_pickaxe'),
+                ('diamond', '4fe3e0', 'diamond_pickaxe'), ('emerald', '3ccf6a', 'diamond_pickaxe'), ('amethyst', 'a35cf0', 'diamond_pickaxe'),
+                ('quartz', 'efe7dc', 'diamond_pickaxe'), ('netherite', '5a4a52', 'netherite_pickaxe'), ('voidstone', '3a1a66', 'netherite_pickaxe')],
+    'axe': [('oak', 'b8834f', 'wooden_axe'), ('birch', '9aa0ae', 'stone_axe'), ('spruce', 'd9824b', 'copper_axe'), ('jungle', 'd8dde6', 'iron_axe'),
+            ('acacia', 'e0884a', 'iron_axe'), ('dark_oak', '6a4a32', 'iron_axe'), ('mangrove', 'b0403a', 'diamond_axe'),
+            ('cherry', 'f2a7c0', 'diamond_axe'), ('pale_oak', 'e6e0d6', 'diamond_axe'), ('crimson', 'b02e5a', 'netherite_axe'),
+            ('warped', '2ea89a', 'netherite_axe')],
+    'sword': [('grave', '7f8a7a', 'stone_sword'), ('bone', 'f1ecd8', 'copper_sword'), ('venom', '6ac24a', 'iron_sword'),
+              ('slime', '7fdc6a', 'iron_sword'), ('tide', '3fb6d6', 'iron_sword'), ('hex', 'a35cf0', 'diamond_sword'),
+              ('raider', '8a6a52', 'diamond_sword'), ('blaze', 'ff9a2e', 'diamond_sword'), ('wither', '2e2a30', 'netherite_sword'),
+              ('warlord', 'c9302f', 'netherite_sword')],
+    'hoe': [('basic', '9aa0ae', 'stone_hoe'), ('copper', 'd9824b', 'copper_hoe'), ('iron', 'd8dde6', 'iron_hoe'),
+            ('gold', 'f5c542', 'iron_hoe,golden_hoe'), ('diamond', '4fe3e0', 'diamond_hoe'), ('netherite', '5a4a52', 'netherite_hoe'),
+            ('sunscorch', 'ff8a2e', 'netherite_hoe'), ('briarthorn', '4a8a3a', 'netherite_hoe'), ('netherbloom', 'c9305a', 'netherite_hoe'),
+            ('torchbloom', 'ffd24a', 'netherite_hoe'), ('verdant', '3ccf6a', 'netherite_hoe')],
+}
+GLOWING = {'voidstone': (160, 90, 255, 70), 'warlord': (255, 80, 60, 60), 'verdant': (90, 255, 120, 60), 'warped': (60, 230, 200, 60)}
+for _kind, _tiers in TOOL_TIERS.items():
+    for _id, _col, _bases in _tiers:
+        _b = _bases.split(',')
+        def _mt(kind=_kind, col=_col, tid=_id):
+            return lambda p: tool(p, kind, rgb(col), glow=GLOWING.get(tid))
+        icon('item/tool_%s_%s' % (_kind, _id), base=_b[0], bases=_b[1:], parent='minecraft:item/handheld')(_mt())
+
+# Tool skins (/tool → Skins): one picture per skin and kind, on every base that kind can have.
+SKINS = {'frostbite': ('9fe6ff', 'e8f8ff', (150, 230, 255, 70)), 'phoenix_flame': ('ff5a2e', 'ffd24a', (255, 140, 40, 80)),
+         'royal_gold': ('f5c542', '7a3fd0', None)}
+for _skin, (_head, _handle, _glow) in SKINS.items():
+    for _kind, _tiers in TOOL_TIERS.items():
+        _all = []
+        for _id, _col, _bases in _tiers:
+            for b in _bases.split(','):
+                if b not in _all:
+                    _all.append(b)
+        def _ms(kind=_kind, head=_head, handle=_handle, glow=_glow):
+            return lambda p: tool(p, kind, rgb(head), rgb(handle), glow)
+        icon('item/skin_%s_%s' % (_skin, _kind), base=_all[0], bases=_all[1:], parent='minecraft:item/handheld')(_ms())
 
 
 # ------------------------------------------------------------------------------------------------- output

@@ -1,0 +1,41 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_frostbite_hoe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_frostbite_hoe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_phoenix_flame_hoe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_phoenix_flame_hoe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_royal_gold_hoe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_royal_gold_hoe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_hoe_copper",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_hoe_copper"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/copper_hoe",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

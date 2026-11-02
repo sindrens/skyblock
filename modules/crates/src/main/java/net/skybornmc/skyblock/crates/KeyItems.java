@@ -179,6 +179,7 @@ final class KeyItems implements Listener {
             pdc.set(CRATE, PersistentDataType.STRING, crate);
             pdc.set(WITHDRAWN_BY, PersistentDataType.STRING, withdrawnBy);
         });
+        m.core.items().texture(key, "item/crate_key_" + crate); // one picture per crate (owner 2 Nov 2026)
         return key;
     }
 

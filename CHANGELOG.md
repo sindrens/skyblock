@@ -4,7 +4,9 @@
 ### Icons v4: chunky cartoon, 64x64 (owner 2 Nov 2026)
 - Every menu icon redrawn by `tools/cartoon/render.py` (thick outline, flat colours, highlight; art is code): the 27 old ones remade (readable $ on money/sell/buy, new shards, crystals, search, fill, bank, depths, auction) and 40 that were plain vanilla items now have their own picture (hub, You, travel, island menus, loading/empty). 67 custom icons; only the 9 unused shop-category keys stay vanilla.
 - Bases with special vanilla models (bed, grass block, compass, shield, chest, filled map, leather chestplate, ender chest) moved to simple items so the pack can draw them; players without the pack see that simple item.
-- `build_icons.py check` accepts 64x64; pack budget 400 KB (zip about 267 KB).
+- `build_icons.py check` accepts 64x64; pack budget 700 KB (zip about 513 KB).
+- **Custom item textures** (77): a crate key picture per crate (Ember, Cinder, Blaze, Inferno, Phoenix, Eclipse, Conqueror), shard block, fuel cell, money note, disenchant scroll, tag item, tool blueprint, the 8 booster items, every Depths tool tier (pickaxe 12, axe 11, sword 10, hoe 11; held like vanilla tools) and the three tool skins for each tool kind. `ItemRegistry#texture/retexture` set the pack key (`custom_model_data` string `item/<id>` or a variant); items made earlier get it the next time they are rendered. Catalogue entries may list extra `bases` (one picture on several items) and a model `parent`.
+- **Vanilla+ sounds**: soft bundle sounds for opening and closing menus, a bell for notices, quieter clicks.
 ### GUI frame layer on (owner 2 Nov 2026: "a full improvement on all the GUIs")
 - `menus.yml gui.font.enabled` true (v2 moves an untouched `false`): Java players with the pack see every menu as the Phoenix panel with the title plaque and soft tiles, plus the logo on the scoreboard and tab. Bedrock and players without the pack keep the plain chest. Switch off in /admin if anything looks wrong.
 ### Achievements fix and new achievements (owner 2 Nov 2026: "it gives me achievements when I'm not doing anything")

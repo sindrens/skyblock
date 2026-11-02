@@ -982,8 +982,44 @@
   "model": "minecraft:item/comparator",
   "type": "minecraft:model"
  },
+ "copper_axe": {
+  "model": "minecraft:item/copper_axe",
+  "type": "minecraft:model"
+ },
+ "copper_hoe": {
+  "model": "minecraft:item/copper_hoe",
+  "type": "minecraft:model"
+ },
+ "copper_pickaxe": {
+  "model": "minecraft:item/copper_pickaxe",
+  "type": "minecraft:model"
+ },
+ "copper_sword": {
+  "model": "minecraft:item/copper_sword",
+  "type": "minecraft:model"
+ },
  "diamond": {
   "model": "minecraft:item/diamond",
+  "type": "minecraft:model"
+ },
+ "diamond_axe": {
+  "model": "minecraft:item/diamond_axe",
+  "type": "minecraft:model"
+ },
+ "diamond_hoe": {
+  "model": "minecraft:item/diamond_hoe",
+  "type": "minecraft:model"
+ },
+ "diamond_pickaxe": {
+  "model": "minecraft:item/diamond_pickaxe",
+  "type": "minecraft:model"
+ },
+ "diamond_sword": {
+  "model": "minecraft:item/diamond_sword",
+  "type": "minecraft:model"
+ },
+ "echo_shard": {
+  "model": "minecraft:item/echo_shard",
   "type": "minecraft:model"
  },
  "emerald": {
@@ -1105,12 +1141,28 @@
   "property": "minecraft:trim_material",
   "type": "minecraft:select"
  },
+ "golden_hoe": {
+  "model": "minecraft:item/golden_hoe",
+  "type": "minecraft:model"
+ },
+ "golden_pickaxe": {
+  "model": "minecraft:item/golden_pickaxe",
+  "type": "minecraft:model"
+ },
  "gray_dye": {
   "model": "minecraft:item/gray_dye",
   "type": "minecraft:model"
  },
  "hopper": {
   "model": "minecraft:item/hopper",
+  "type": "minecraft:model"
+ },
+ "infested_stone": {
+  "model": "minecraft:item/infested_stone",
+  "type": "minecraft:model"
+ },
+ "iron_axe": {
+  "model": "minecraft:item/iron_axe",
   "type": "minecraft:model"
  },
  "iron_bars": {
@@ -1125,6 +1177,10 @@
   "model": "minecraft:item/iron_door",
   "type": "minecraft:model"
  },
+ "iron_hoe": {
+  "model": "minecraft:item/iron_hoe",
+  "type": "minecraft:model"
+ },
  "iron_pickaxe": {
   "model": "minecraft:item/iron_pickaxe",
   "type": "minecraft:model"
@@ -1137,6 +1193,10 @@
   "model": "minecraft:item/knowledge_book",
   "type": "minecraft:model"
  },
+ "lapis_lazuli": {
+  "model": "minecraft:item/lapis_lazuli",
+  "type": "minecraft:model"
+ },
  "lime_concrete": {
   "model": "minecraft:block/lime_concrete",
   "type": "minecraft:model"
@@ -1145,12 +1205,36 @@
   "model": "minecraft:item/lime_dye",
   "type": "minecraft:model"
  },
+ "magma_cream": {
+  "model": "minecraft:item/magma_cream",
+  "type": "minecraft:model"
+ },
  "map": {
   "model": "minecraft:item/map",
   "type": "minecraft:model"
  },
  "name_tag": {
   "model": "minecraft:item/name_tag",
+  "type": "minecraft:model"
+ },
+ "nether_star": {
+  "model": "minecraft:item/nether_star",
+  "type": "minecraft:model"
+ },
+ "netherite_axe": {
+  "model": "minecraft:item/netherite_axe",
+  "type": "minecraft:model"
+ },
+ "netherite_hoe": {
+  "model": "minecraft:item/netherite_hoe",
+  "type": "minecraft:model"
+ },
+ "netherite_pickaxe": {
+  "model": "minecraft:item/netherite_pickaxe",
+  "type": "minecraft:model"
+ },
+ "netherite_sword": {
+  "model": "minecraft:item/netherite_sword",
   "type": "minecraft:model"
  },
  "oak_door": {
@@ -1177,6 +1261,10 @@
   "model": "minecraft:item/paper",
   "type": "minecraft:model"
  },
+ "prismarine_crystals": {
+  "model": "minecraft:item/prismarine_crystals",
+  "type": "minecraft:model"
+ },
  "prismarine_shard": {
   "model": "minecraft:item/prismarine_shard",
   "type": "minecraft:model"
@@ -1193,6 +1281,22 @@
   "model": "minecraft:item/smithing_table",
   "type": "minecraft:model"
  },
+ "stone_axe": {
+  "model": "minecraft:item/stone_axe",
+  "type": "minecraft:model"
+ },
+ "stone_hoe": {
+  "model": "minecraft:item/stone_hoe",
+  "type": "minecraft:model"
+ },
+ "stone_pickaxe": {
+  "model": "minecraft:item/stone_pickaxe",
+  "type": "minecraft:model"
+ },
+ "stone_sword": {
+  "model": "minecraft:item/stone_sword",
+  "type": "minecraft:model"
+ },
  "tnt": {
   "model": "minecraft:block/tnt",
   "type": "minecraft:model"
@@ -1203,6 +1307,10 @@
  },
  "tripwire_hook": {
   "model": "minecraft:item/tripwire_hook",
+  "type": "minecraft:model"
+ },
+ "wooden_axe": {
+  "model": "minecraft:item/wooden_axe",
   "type": "minecraft:model"
  },
  "writable_book": {

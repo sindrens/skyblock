@@ -14,6 +14,55 @@
      "type": "minecraft:model"
     },
     "when": "feature/depths_lit"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_frostbite_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_frostbite_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_phoenix_flame_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_phoenix_flame_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_royal_gold_pickaxe",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_royal_gold_pickaxe"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_pickaxe_gold",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_pickaxe_gold"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_pickaxe_iron",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_pickaxe_iron"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_pickaxe_lapis",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_pickaxe_lapis"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tool_pickaxe_redstone",
+     "type": "minecraft:model"
+    },
+    "when": "item/tool_pickaxe_redstone"
    }
   ],
   "fallback": {

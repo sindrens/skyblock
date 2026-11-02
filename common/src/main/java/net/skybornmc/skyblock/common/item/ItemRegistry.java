@@ -67,6 +67,42 @@ public final class ItemRegistry {
      * @param data   extra PDC data written before the lore is rendered (e.g. a note's amount); may be null
      * @throws IllegalArgumentException for an unknown id
      */
+    /** Keys the resource pack has a picture for (icons.json custom keys); set by the plugin once the pack catalogue is loaded. */
+    private volatile java.util.function.Predicate<String> textured = key -> false;
+
+    /** Icons v4 / custom items: which {@code item/...} keys have a texture in the pack. */
+    public void textures(java.util.function.Predicate<String> hasTexture) {
+        this.textured = hasTexture == null ? key -> false : hasTexture;
+    }
+
+    /**
+     * Gives a stack the pack texture {@code key} ({@code custom_model_data} string), when the pack has one. Players without
+     * the pack see the plain base item. Used for every custom item ({@code item/<id>}) and by modules with variants
+     * (crate keys per crate: {@code item/crate_key_<crate>}, tool tiers).
+     */
+    public void texture(ItemStack stack, String key) {
+        if (stack == null || key == null || !textured.test(key)) {
+            return;
+        }
+        stack.editMeta(meta -> {
+            org.bukkit.inventory.meta.components.CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
+            cmd.setStrings(java.util.List.of(key));
+            meta.setCustomModelDataComponent(cmd);
+        });
+    }
+
+    /** Like {@link #texture} but first removes an older texture (a tool that changed tier or skin). */
+    public void retexture(ItemStack stack, String key) {
+        if (stack == null) {
+            return;
+        }
+        stack.editMeta(meta -> {
+            org.bukkit.inventory.meta.components.CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
+            cmd.setStrings(key != null && textured.test(key) ? java.util.List.of(key) : java.util.List.of());
+            meta.setCustomModelDataComponent(cmd);
+        });
+    }
+
     public ItemStack create(String id, int amount, String source, java.util.function.Consumer<PersistentDataContainer> data) {
         ItemDefinition def = definitions.get(id);
         if (def == null) {
@@ -93,6 +129,7 @@ public final class ItemRegistry {
         if (def.itemModel() != null) {
             stack.setData(DataComponentTypes.ITEM_MODEL, def.itemModel());
         }
+        texture(stack, "item/" + def.id());
         stack.setData(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().addHiddenComponents(
                 DataComponentTypes.ATTRIBUTE_MODIFIERS, DataComponentTypes.ENCHANTMENTS, DataComponentTypes.STORED_ENCHANTMENTS,
                 DataComponentTypes.POTION_CONTENTS, DataComponentTypes.UNBREAKABLE, DataComponentTypes.DYED_COLOR,
@@ -119,6 +156,11 @@ public final class ItemRegistry {
             return false;
         }
         ItemDefinition def = found.get();
+        // Icons v4: items made before their texture existed get it the next time they are rendered (never replaces a
+        // variant such as a crate key's own picture).
+        if (stack.hasItemMeta() ? stack.getItemMeta().getCustomModelDataComponent().getStrings().isEmpty() : true) {
+            texture(stack, "item/" + def.id());
+        }
         LoreBuilder lore = new LoreBuilder(this::label)
                 .subtitle(def.subtitle())
                 .description(def.description());

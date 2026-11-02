@@ -223,6 +223,10 @@ final class ToolItems {
         } else {
             out.resetData(DataComponentTypes.ITEM_MODEL);
         }
+        // Icons v4: our own picture per tier, or per skin (owner 2 Nov 2026); players without the pack see the vanilla tool.
+        String texture = data.skin() != null ? "item/skin_" + data.skin() + "_" + data.kind().id()
+                : tier.map(t -> "item/tool_" + data.kind().id() + "_" + t.id()).orElse(null);
+        module.core.items().retexture(out, texture);
         applyAttributes(out, data, tier.orElse(null));
         module.core.items().render(out);
         return out;

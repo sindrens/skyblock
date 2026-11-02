@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_shard_block",
+     "type": "minecraft:model"
+    },
+    "when": "item/shard_block"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/infested_stone",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

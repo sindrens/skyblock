@@ -58,7 +58,7 @@ MANIFEST = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 # 1.21.5 .. 26.3 (v1 values; re-check the 26.3 number in the Paper changelog before a release).
 FORMAT_MIN, FORMAT_MAX = 55, 97
 DESCRIPTION = 'Phoenix Skyblock icons'
-SIZE_BUDGET = 400 * 1024   # icons v4 (64x64 cartoon, 2 Nov 2026) + frame layer; hard limit 1 MB
+SIZE_BUDGET = 700 * 1024   # icons v4 + item textures (64x64 cartoon, 2 Nov 2026) + frame layer; hard limit 1 MB
 
 KEY_RE = re.compile(r'^[a-z0-9_]+(/[a-z0-9_]+)?$')
 MEANINGS = ('money', 'reward', 'move', 'depths', 'skills', 'people', 'home', 'danger', 'neutral', 'locked',
@@ -328,7 +328,8 @@ def mcmeta():
 
 
 def model(icon):
-    return {'parent': 'minecraft:item/generated', 'textures': {'layer0': 'phoenix:item/icon/%s' % icon['file']}}
+    # Tools are held like vanilla tools (item/handheld); everything else like a flat item.
+    return {'parent': icon.get('parent', 'minecraft:item/generated'), 'textures': {'layer0': 'phoenix:item/icon/%s' % icon['file']}}
 
 
 def item_definition(base, icons, fallback):
@@ -338,10 +339,19 @@ def item_definition(base, icons, fallback):
                       'cases': cases, 'fallback': fallback[base]}}
 
 
+def bases_of(icon):
+    """Every base item a picture sits on: 'base', plus 'bases' for item textures shared by several items (tool tiers)."""
+    out = [icon['base']]
+    for b in icon.get('bases', []):
+        if b not in out:
+            out.append(b)
+    return out
+
+
 def generated(icons, fallback):
     """{absolute path: bytes} of every file `pack` owns (only icons with a custom picture)."""
     icons = active(icons)
-    unknown = sorted({i['base'] for i in icons} - set(fallback))
+    unknown = sorted({b for i in icons for b in bases_of(i)} - set(fallback))
     if unknown:
         sys.exit('base items missing from vanilla-fallback.json: %s (run fetch-vanilla)' % ', '.join(unknown))
     files = {os.path.join(PACK, 'pack.mcmeta'): j(mcmeta()).encode('utf-8')}
@@ -351,7 +361,8 @@ def generated(icons, fallback):
         files[os.path.join(MODELS, icon['file'] + '.json')] = j(model(icon)).encode('utf-8')
     by_base = {}
     for icon in icons:
-        by_base.setdefault(icon['base'], []).append(icon)
+        for b in bases_of(icon):
+            by_base.setdefault(b, []).append(icon)
     for base, group in by_base.items():
         files[os.path.join(ITEMS, base + '.json')] = j(item_definition(base, group, fallback)).encode('utf-8')
     return files
