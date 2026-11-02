@@ -51,6 +51,9 @@ final class IslandHomeStore {
      * {@code allowed} named homes (the island's rows are locked first, so two members can't both take the last slot).
      */
     static Saved save(Connection c, UUID islandId, String name, Island.Home home, UUID by, int allowed, long now) throws SQLException {
+        // Lock the island row first: FOR UPDATE on the homes alone locks nothing while an island has no home yet, so two
+        // members saving at the same moment could both take the last slot (IslandHomesTest).
+        Sql.queryOne(c, "SELECT 1 FROM islands WHERE id = ? FOR UPDATE", rs -> Boolean.TRUE, islandId);
         List<String> names = Sql.query(c, "SELECT home_name FROM island_homes WHERE island_id = ? FOR UPDATE",
                 rs -> rs.getString(1), islandId);
         if (names.contains(name)) {

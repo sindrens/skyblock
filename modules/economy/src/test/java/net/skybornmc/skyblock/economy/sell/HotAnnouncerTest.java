@@ -44,18 +44,18 @@ class HotAnnouncerTest {
 
     @Test
     void announcedOncePerDay() {
-        assertTrue(db.blocking(c -> HotAnnouncer.claimDay(c, 20_000, "coal", 1)));
-        assertFalse(db.blocking(c -> HotAnnouncer.claimDay(c, 20_000, "coal", 2)), "a restart must not announce again");
-        assertTrue(db.blocking(c -> HotAnnouncer.claimDay(c, 20_001, "wheat", 3)), "the next day announces");
+        assertTrue(db.<Boolean>blocking(c -> HotAnnouncer.claimDay(c, 20_000, "coal", 1)));
+        assertFalse(db.<Boolean>blocking(c -> HotAnnouncer.claimDay(c, 20_000, "coal", 2)), "a restart must not announce again");
+        assertTrue(db.<Boolean>blocking(c -> HotAnnouncer.claimDay(c, 20_001, "wheat", 3)), "the next day announces");
     }
 
     @Test
     void joinLineOncePerDay() {
         UUID p = UUID.randomUUID();
-        assertTrue(db.blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)));
-        assertFalse(db.blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)));
-        assertTrue(db.blocking(c -> HotAnnouncer.firstToday(c, p, 20_001)));
-        assertFalse(db.blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)), "an older day never shows again");
-        assertTrue(db.blocking(c -> HotAnnouncer.firstToday(c, UUID.randomUUID(), 20_001)));
+        assertTrue(db.<Boolean>blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)));
+        assertFalse(db.<Boolean>blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)));
+        assertTrue(db.<Boolean>blocking(c -> HotAnnouncer.firstToday(c, p, 20_001)));
+        assertFalse(db.<Boolean>blocking(c -> HotAnnouncer.firstToday(c, p, 20_000)), "an older day never shows again");
+        assertTrue(db.<Boolean>blocking(c -> HotAnnouncer.firstToday(c, UUID.randomUUID(), 20_001)));
     }
 }

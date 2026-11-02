@@ -83,7 +83,7 @@ class ShardBlockStoreTest {
         ShardBlockStore.Row row = store.get(id).join().orElseThrow();
         assertEquals(2, row.breaks());
         assertEquals(3, row.shardsPaid());
-        assertEquals(3L, store.dailyUsed(profile, 20_000).join());
+        assertEquals(3L, (long) store.dailyUsed(profile, 20_000).join());
     }
 
     @Test
@@ -106,7 +106,7 @@ class ShardBlockStoreTest {
             }
             assertTrue(paid <= 10, "paid " + paid);
         assertTrue(paid >= 1, "at least one break paid");
-            assertEquals((long) paid, store.dailyUsed(profile, 20_000).join(), "counter = shards paid");
+            assertEquals((long) paid, (long) store.dailyUsed(profile, 20_000).join(), "counter = shards paid");
         } finally {
             pool.shutdownNow();
         }
@@ -117,7 +117,7 @@ class ShardBlockStoreTest {
         for (int i = 0; i < 5; i++) {
             assertTrue(collect(place(i), 0, 2_000, 30, 0));
         }
-        assertEquals(150L, store.dailyUsed(profile, 20_000).join());
+        assertEquals(150L, (long) store.dailyUsed(profile, 20_000).join());
     }
 
     @Test
@@ -133,8 +133,8 @@ class ShardBlockStoreTest {
     @Test
     void upgradesMoveOneLevelOnce() {
         long id = place(0);
-        assertTrue(db.blockingTransaction(c -> ShardBlockStore.upgradeGuard(c, id, ShardRules.Kind.DOUBLE, 0, 2_000)));
-        assertFalse(db.blockingTransaction(c -> ShardBlockStore.upgradeGuard(c, id, ShardRules.Kind.DOUBLE, 0, 2_000)),
+        assertTrue(db.<Boolean>blockingTransaction(c -> ShardBlockStore.upgradeGuard(c, id, ShardRules.Kind.DOUBLE, 0, 2_000)));
+        assertFalse(db.<Boolean>blockingTransaction(c -> ShardBlockStore.upgradeGuard(c, id, ShardRules.Kind.DOUBLE, 0, 2_000)),
                 "two buyers of the same level pay once");
         assertEquals(1, store.get(id).join().orElseThrow().doubleLevel());
     }
