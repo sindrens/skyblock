@@ -1583,6 +1583,171 @@
     "netherite_hoe"
    ],
    "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/tool_rod_basic",
+   "base": "fishing_rod",
+   "name": "Tool Rod Basic",
+   "meaning": "neutral",
+   "file": "item_tool_rod_basic",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_reed",
+   "base": "fishing_rod",
+   "name": "Tool Rod Reed",
+   "meaning": "neutral",
+   "file": "item_tool_rod_reed",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_willow",
+   "base": "fishing_rod",
+   "name": "Tool Rod Willow",
+   "meaning": "neutral",
+   "file": "item_tool_rod_willow",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_copper",
+   "base": "fishing_rod",
+   "name": "Tool Rod Copper",
+   "meaning": "neutral",
+   "file": "item_tool_rod_copper",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_iron",
+   "base": "fishing_rod",
+   "name": "Tool Rod Iron",
+   "meaning": "neutral",
+   "file": "item_tool_rod_iron",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_gold",
+   "base": "fishing_rod",
+   "name": "Tool Rod Gold",
+   "meaning": "neutral",
+   "file": "item_tool_rod_gold",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_coral",
+   "base": "fishing_rod",
+   "name": "Tool Rod Coral",
+   "meaning": "neutral",
+   "file": "item_tool_rod_coral",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_diamond",
+   "base": "fishing_rod",
+   "name": "Tool Rod Diamond",
+   "meaning": "neutral",
+   "file": "item_tool_rod_diamond",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_emerald",
+   "base": "fishing_rod",
+   "name": "Tool Rod Emerald",
+   "meaning": "neutral",
+   "file": "item_tool_rod_emerald",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_stormcall",
+   "base": "fishing_rod",
+   "name": "Tool Rod Stormcall",
+   "meaning": "neutral",
+   "file": "item_tool_rod_stormcall",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_netherite",
+   "base": "fishing_rod",
+   "name": "Tool Rod Netherite",
+   "meaning": "neutral",
+   "file": "item_tool_rod_netherite",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/tool_rod_abyssal",
+   "base": "fishing_rod",
+   "name": "Tool Rod Abyssal",
+   "meaning": "neutral",
+   "file": "item_tool_rod_abyssal",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/skin_frostbite_rod",
+   "base": "fishing_rod",
+   "name": "Skin Frostbite Rod",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/skin_phoenix_flame_rod",
+   "base": "fishing_rod",
+   "name": "Skin Phoenix Flame Rod",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/skin_royal_gold_rod",
+   "base": "fishing_rod",
+   "name": "Skin Royal Gold Rod",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
   }
  ],
  "vanilla": {

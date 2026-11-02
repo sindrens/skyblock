@@ -997,6 +997,34 @@ for _kind, _tiers in TOOL_TIERS.items():
             return lambda p: tool(p, kind, rgb(col), glow=GLOWING.get(tid))
         icon('item/tool_%s_%s' % (_kind, _id), base=_b[0], bases=_b[1:], parent='minecraft:item/handheld')(_mt())
 
+# Fishing rods (owner 2 Nov 2026): one picture per rod tier; held like the vanilla rod.
+ROD_TIERS = [('basic', 'b7793f', 'e0302f'), ('reed', 'c9b26a', 'f7c62f'), ('willow', '7a9a4a', 'f2e3c6'), ('copper', 'd9824b', '3fb6d6'),
+             ('iron', 'd8dde6', 'e0302f'), ('gold', 'f5c542', 'ffffff'), ('coral', 'ff7f8f', 'ffd24a'), ('diamond', '4fe3e0', 'ffffff'),
+             ('emerald', '3ccf6a', 'f5c542'), ('stormcall', '6f86b8', 'fff06a'), ('netherite', '5a4a52', 'ff8a2e'), ('abyssal', '3a1a66', '3fd6ff')]
+
+
+def rod(p, stick, bob):
+    p.line([(40, 220), (120, 120), (200, 36)], 20, stick)
+    p.d.line([(200, 36), (206, 140)], fill=OL, width=7)
+    p.circle(206, 172, 34, bob, w=11)
+    p.d.pieslice((178, 144, 234, 200), 0, 180, fill=WHITE)
+    p.d.arc((176, 142, 236, 202), 0, 360, fill=OL, width=10)
+    p.d.line([(176, 172), (236, 172)], fill=OL, width=8)
+
+
+for _id, _stick, _bob in ROD_TIERS:
+    def _mr(stick=_stick, bob=_bob):
+        return lambda p: rod(p, rgb(stick), rgb(bob))
+    icon('item/tool_rod_' + _id, base='fishing_rod', parent='minecraft:item/handheld_rod')(_mr())
+
+
+for _skin, (_head, _handle, _glow) in {'frostbite': ('9fe6ff', 'e8f8ff', None), 'phoenix_flame': ('ff5a2e', 'ffd24a', None),
+                                         'royal_gold': ('f5c542', '7a3fd0', None)}.items():
+    def _msr(stick=_head, bob=_handle):
+        return lambda p: rod(p, rgb(stick), rgb(bob))
+    icon('item/skin_%s_rod' % _skin, base='fishing_rod', parent='minecraft:item/handheld_rod')(_msr())
+
+
 # Tool skins (/tool → Skins): one picture per skin and kind, on every base that kind can have.
 SKINS = {'frostbite': ('9fe6ff', 'e8f8ff', (150, 230, 255, 70)), 'phoenix_flame': ('ff5a2e', 'ffd24a', (255, 140, 40, 80)),
          'royal_gold': ('f5c542', '7a3fd0', None)}

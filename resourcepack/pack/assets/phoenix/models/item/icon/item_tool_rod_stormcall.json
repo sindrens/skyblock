@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/handheld_rod",
+ "textures": {
+  "layer0": "phoenix:item/icon/item_tool_rod_stormcall"
+ }
+}

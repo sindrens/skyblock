@@ -1042,6 +1042,18 @@
   "model": "minecraft:item/experience_bottle",
   "type": "minecraft:model"
  },
+ "fishing_rod": {
+  "on_false": {
+   "model": "minecraft:item/fishing_rod",
+   "type": "minecraft:model"
+  },
+  "on_true": {
+   "model": "minecraft:item/fishing_rod_cast",
+   "type": "minecraft:model"
+  },
+  "property": "minecraft:fishing_rod/cast",
+  "type": "minecraft:condition"
+ },
  "gold_block": {
   "model": "minecraft:block/gold_block",
   "type": "minecraft:model"
