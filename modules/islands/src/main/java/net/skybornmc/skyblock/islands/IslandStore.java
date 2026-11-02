@@ -66,7 +66,7 @@ public final class IslandStore {
     static final String REASON_DELETE = "delete";
     /** Staff reset it ({@code /isadmin reset}): the leader got a new island right away. */
     static final String REASON_RESET = "reset";
-    private static final int MAX_ATTEMPTS = 5;
+    private static final int MAX_ATTEMPTS = 20;
 
     private final Database db;
 
@@ -341,7 +341,7 @@ public final class IslandStore {
             try {
                 return inTransaction(c, () -> createOnce(c, owner, seasonId, sizeChunks, world, now));
             } catch (SQLException e) {
-                if (!isConstraintViolation(e)) {
+                if (!isConstraintViolation(e) && !isLockConflict(e)) {
                     throw e;
                 }
                 last = e;
@@ -352,6 +352,13 @@ public final class IslandStore {
             }
         }
         throw last;
+    }
+
+    /** A lock timeout or deadlock victim (MariaDB 1205/1213, SQLState 40001, H2 HYT00/40001): safe to try again. */
+    static boolean isLockConflict(SQLException e) {
+        String state = e.getSQLState();
+        return e.getErrorCode() == 1205 || e.getErrorCode() == 1213
+                || (state != null && (state.startsWith("40") || state.equals("HYT00")));
     }
 
     private static CreateResult createOnce(Connection c, UUID owner, int seasonId, int sizeChunks, String world, long now)
