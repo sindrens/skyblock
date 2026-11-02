@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### v5 batch 3: tools
+- **Tools follow the world**: island tools only in the island world, Depths tools only in the Depths (`islandtools.yml only-on-island`, `tools.yml world-tools.*`); elsewhere they are put away and come back in the same slot. Depths tools wait in a new `tool_stash` table (dupe-safe: a tool already carried is never given twice). Entering the Depths without Depths tools gives the starter kit. Staff can keep them with `skyblock.tools.world-bypass`. The Forge works in the Depths (the spawn smith points there).
+- **No tools in the starter chest** (tutorial config v7).
+- **Shared island tools**: tier and upgrades belong to the island; an upgrade by one member changes every member's copy at once and new members get the island's levels (new tables `island_tool_levels`, `island_tool_tasks`; an island starts from the highest levels its members had).
+- **Shards for island tools**: upgrades cost shards plus an island task for that tool (mine ores and stone, chop logs, harvest crops, kill mobs; `tasks.per-level`), tiers cost shards and money (stone is cheap). Island tools find shards while grinding (`shards.chance-*`), and every tool has a new **Shard Finder** upgrade. Paid in one batch every 3 s.
+- **Bonuses only where they belong**: extra drops, Smelter, shards and task progress only on the tool's own blocks (`relevant.*`) and never on blocks a player placed.
+- **Shift + right-click in the air** opens that tool's own menu (island and Depths tools); on a block the tool works as usual.
 ### v5 batch 2: the first 10 minutes
 - **Start on your own island**: the first join makes your island and brings you there (no spawn portal walk, `tutorial.yml start.auto-island`). The tutorial starts on the island with 9 steps (arrive, chest, crop, menu, Depths, mine 10 blocks, sell, forge, bank); the portal and help steps are gone (config v6 moves untouched files).
 - **Kindle runs the tutorial**: `/tutorial` opens Kindle; his Next step tile has the step tools (take me there, I'm stuck). Before the Depths step Kindle introduces Pip and sends him along; Pip only comes for the Depths, mine and forge steps (`pip.steps`).

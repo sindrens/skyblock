@@ -79,7 +79,7 @@ steps:
     opened: "<c:text>Take everything. The book explains it all."
     take-tool: "<c:text>Take the <c:value>pickaxe</c:value> from the chest"
     full: "<prefix><c:error><sym:cross></c:error> <c:text>Your inventory is full. Free a slot, then take the <c:value>pickaxe</c:value><c:text>. It stays safe in the chest."
-    lore: ["<c:text>Tools, seeds, food and the", "<c:text>Phoenix Field Guide."]
+    lore: ["<c:text>Seeds, food and the", "<c:text>Field Guide."]
   crop:
     name: "First crop"
     objective: "Plant 3 wheat seeds"

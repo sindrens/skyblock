@@ -63,7 +63,8 @@ final class ToolsListener implements Listener {
         if (!module.config().shiftRightClick || event.getHand() != EquipmentSlot.HAND || !event.getPlayer().isSneaking()) {
             return;
         }
-        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        // Owner 3 Nov 2026: sneak + right-click in the AIR opens the menu; on a block the tool works as usual.
+        if (event.getAction() != Action.RIGHT_CLICK_AIR) {
             return;
         }
         Player player = event.getPlayer();

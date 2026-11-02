@@ -46,7 +46,7 @@ public final class TutorialConfig extends ModuleConfig {
     public int arriveSeconds = 6;
 
     @Setting(path = "steps.chest.need-tool", desc = "The chest step is done when the starter chest was opened and this tool kind is in the inventory (pickaxe, axe, hoe, sword, rod; empty = opening is enough).")
-    public String chestTool = "pickaxe";
+    public String chestTool = "";
 
     @Setting(path = "steps.crop.count", desc = "Crops to plant on your island for the first-crop step.", min = 1, max = 64)
     public int cropCount = 3;
@@ -270,7 +270,7 @@ public final class TutorialConfig extends ModuleConfig {
     public boolean starterChest = true;
 
     @Setting(path = "starter-chest.kit", desc = "Put the Forge starter kit (5 tools) in the chest; it counts as the profile's first starter kit claim (TQ15).", level = Setting.Level.OWNER)
-    public boolean chestKit = true;
+    public boolean chestKit = false; // owner 3 Nov 2026: no tools in the chest; island tools come on their own, Depths tools in the Depths
 
     @Setting(path = "starter-chest.kit-slots", desc = "Chest slots of the starter tools, in kit order (pickaxe, axe, hoe, sword, rod).")
     public List<String> kitSlots = List.of("10", "11", "12", "13", "14");
@@ -521,7 +521,7 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     /** Old camera lines (v1/v2) that v3 replaces while the owner has not edited them. */
@@ -579,7 +579,11 @@ public final class TutorialConfig extends ModuleConfig {
                         "flow.steps", ValueChange.of(STEPS_V1, d.steps),
                         "flow.version", ValueChange.of(1, d.flowVersion),
                         "steps.mine.count", ValueChange.of(15, d.mineCount),
-                        "steps.forge.menu-ids", ValueChange.of(List.of("forge"), d.forgeMenuIds)));
+                        "steps.forge.menu-ids", ValueChange.of(List.of("forge"), d.forgeMenuIds)),
+                // v7 (owner 3 Nov 2026): no tools in the starter chest (tools follow the world, tools.yml world-tools).
+                7, java.util.Map.of(
+                        "starter-chest.kit", ValueChange.of(true, d.chestKit),
+                        "steps.chest.need-tool", ValueChange.of("pickaxe", d.chestTool)));
     }
 
     @Override

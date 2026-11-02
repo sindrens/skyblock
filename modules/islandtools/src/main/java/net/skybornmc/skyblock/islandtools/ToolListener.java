@@ -49,8 +49,12 @@ import java.util.concurrent.ThreadLocalRandom;
 final class ToolListener implements Listener {
 
     /** A break by an island tool, waiting for its drops. */
-    private record Pending(Player player, ToolStore.Rec rec, UUID island, boolean crop, boolean burst) {
+    private record Pending(Player player, ToolStore.Rec rec, UUID island, boolean crop, boolean burst, boolean natural) {
     }
+
+    /** Blocks players placed in the island world (owner 3 Nov 2026: no bonus for breaking your own blocks). */
+    private final net.skybornmc.skyblock.common.world.PlacedBlocks placed;
+    private int placeCount;
 
     private static final Map<Material, Material> SMELT = Map.of(
             Material.RAW_IRON, Material.IRON_INGOT, Material.RAW_GOLD, Material.GOLD_INGOT, Material.RAW_COPPER, Material.COPPER_INGOT,
@@ -64,6 +68,7 @@ final class ToolListener implements Listener {
 
     ToolListener(IslandToolsModule m) {
         this.m = m;
+        this.placed = new net.skybornmc.skyblock.common.world.PlacedBlocks(m.config().placedHours * 3_600_000L, 200_000);
     }
 
     private void warn(Player p, String key) {
@@ -123,7 +128,9 @@ final class ToolListener implements Listener {
             burst = ThreadLocalRandom.current().nextDouble(100) < m.farming().burstPercent(island);
         }
         Location key = block.getLocation();
-        pending.put(key, new Pending(p, rec, island, crop, burst));
+        boolean natural = !placed.isPlaced(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ(), System.currentTimeMillis());
+        placed.forget(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
+        pending.put(key, new Pending(p, rec, island, crop, burst, natural));
         Bukkit.getScheduler().runTask(m.core().plugin(), () -> pending.remove(key)); // no drop event (nothing dropped): forget it
         if (nested) {
             return;
@@ -185,6 +192,14 @@ final class ToolListener implements Listener {
         }
         Player p = pd.player();
         ToolStore.Rec rec = pd.rec();
+        // Owner 3 Nov 2026: bonuses only on the tool's own blocks and never on blocks a player placed.
+        if (!pd.crop() && (!pd.natural() || !relevant(rec.kind(), event.getBlockState().getType().getKey().getKey()))) {
+            if (m.effectLevel(rec, Upgrades.Effect.MAGNET) > 0) {
+                magnetOnly(p, event);
+            }
+            return;
+        }
+        m.action(p, rec); // owner 3 Nov 2026: counts for the island's task and may find a shard
         int smelt = rec.kind() == Kind.PICKAXE ? m.effectLevel(rec, Upgrades.Effect.SMELT) : 0;
         boolean magnet = m.effectLevel(rec, Upgrades.Effect.MAGNET) > 0;
         double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,
@@ -231,7 +246,61 @@ final class ToolListener implements Listener {
         }
     }
 
+    /** The tool's own blocks ({@code islandtools.yml relevant.<kind>}). */
+    private boolean relevant(Kind kind, String blockId) {
+        var c = m.config();
+        return switch (kind) {
+            case PICKAXE -> Relevant.matches(c.relevantPickaxe, blockId);
+            case AXE -> Relevant.matches(c.relevantAxe, blockId);
+            case HOE -> Relevant.matches(c.relevantHoe, blockId);
+            default -> false;
+        };
+    }
+
+    /** No bonus, but Magnet still pulls the plain drops in. */
+    private void magnetOnly(Player p, BlockDropItemEvent event) {
+        for (Iterator<Item> it = event.getItems().iterator(); it.hasNext(); ) {
+            Item entity = it.next();
+            Map<Integer, ItemStack> left = p.getInventory().addItem(entity.getItemStack());
+            if (left.isEmpty()) {
+                it.remove();
+            } else {
+                entity.setItemStack(left.values().iterator().next());
+            }
+        }
+    }
+
+    /** Remembers player-placed blocks in the island world (crops and saplings grow, so they are not remembered). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlace(org.bukkit.event.block.BlockPlaceEvent event) {
+        Block b = event.getBlockPlaced();
+        if (!onIslandWorld(event.getPlayer()) || org.bukkit.Tag.CROPS.isTagged(b.getType()) || org.bukkit.Tag.SAPLINGS.isTagged(b.getType())) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        placed.placed(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), now);
+        if (++placeCount % 2000 == 0) {
+            placed.prune(now);
+        }
+    }
+
     // ------------------------------------------------------------------ combat
+
+    /** A mob killed with the island sword on an island: task progress and a shard roll (players never count). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onKill(org.bukkit.event.entity.EntityDeathEvent event) {
+        if (event.getEntity() instanceof Player || !(event.getEntity().getKiller() instanceof Player p) || !onIslandWorld(p)) {
+            return;
+        }
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        if (ToolItems.kindOf(hand) != Kind.SWORD || !m.valid(p, hand)) {
+            return;
+        }
+        ToolStore.Rec rec = m.rec(p, Kind.SWORD);
+        if (rec != null) {
+            m.action(p, rec);
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
@@ -250,17 +319,18 @@ final class ToolListener implements Listener {
         }
     }
 
-    /** Using a stale copy (or outside an island) for anything else does nothing. */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    /** Sneak + right-click in the air: that tool's menu. Not ignoreCancelled: Bukkit fires air clicks as cancelled. */
+    @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND || !ToolItems.isTool(event.getItem())) {
             return;
         }
         Player p = event.getPlayer();
-        if (p.isSneaking() && (event.getAction().isRightClick())) {
+        // Owner 3 Nov 2026: sneak + right-click in the AIR opens the tool's menu; on a block the tool works as usual.
+        if (p.isSneaking() && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR) {
             event.setCancelled(true);
             if (m.loaded(p) && m.config().enabled) {
-                m.core().menus().open(p, new ToolsMenu(m));
+                m.core().menus().open(p, new ToolMenu(m, ToolItems.kindOf(event.getItem())));
             }
         }
     }

@@ -28,7 +28,7 @@ class ToolRulesTest {
         Upgrades u = Upgrades.parse(new IslandToolsConfig().upgrades, problems::add);
         assertEquals(List.of(), problems);
         for (Kind k : Kind.values()) {
-            assertEquals(7, u.of(k).size(), "D4: 7 upgrades for " + k);
+            assertEquals(8, u.of(k).size(), "D4 + owner 3 Nov 2026 Shard Finder: 8 upgrades for " + k);
         }
         assertTrue(u.get(Kind.HOE, "row").isPresent());
         assertTrue(u.get(Kind.HOE, "storage").isPresent());
@@ -87,5 +87,37 @@ class ToolRulesTest {
         assertFalse(ToolRules.needsConfirm(10_000, 0));
         assertEquals(2, ToolRules.roll(2.3, 0.5));
         assertEquals(3, ToolRules.roll(2.3, 0.2));
+    }
+
+    @Test
+    void sharedLevelsOnlyGoUp() {
+        ToolStore.Levels island = new ToolStore.Levels(2, Upgrades.encode(Map.of("fortune", 1, "haste", 2)));
+        ToolStore.Levels mine = new ToolStore.Levels(1, Upgrades.encode(Map.of("fortune", 3)));
+        ToolStore.Levels merged = ToolStore.max(island, mine);
+        assertEquals(2, merged.tier(), "the higher tier");
+        assertEquals(3, Upgrades.decode(merged.upgrades()).get("fortune"), "the higher level");
+        assertEquals(2, Upgrades.decode(merged.upgrades()).get("haste"), "levels only one side has stay");
+        assertEquals(mine, ToolStore.max(null, mine));
+    }
+
+    @Test
+    void relevantBlocksUseWildcards() {
+        IslandToolsConfig c = new IslandToolsConfig();
+        assertTrue(Relevant.matches(c.relevantPickaxe, "iron_ore"));
+        assertTrue(Relevant.matches(c.relevantPickaxe, "minecraft:deepslate_diamond_ore"));
+        assertTrue(Relevant.matches(c.relevantPickaxe, "cobblestone"));
+        assertFalse(Relevant.matches(c.relevantPickaxe, "dirt"), "the pickaxe gets no bonus on dirt");
+        assertFalse(Relevant.matches(c.relevantPickaxe, "furnace"));
+        assertTrue(Relevant.matches(c.relevantAxe, "oak_log"));
+        assertTrue(Relevant.matches(c.relevantAxe, "crimson_stem"));
+        assertFalse(Relevant.matches(c.relevantAxe, "oak_planks"), "crafted blocks never count");
+    }
+
+    @Test
+    void shardPricesAreSmall() {
+        Upgrades.Def d = new Upgrades.Def(Kind.PICKAXE, "x", Upgrades.Effect.SHARDS, "", 5, 25, 2.2);
+        assertEquals(25, d.cost(0));
+        assertEquals(55, d.cost(1));
+        assertEquals(120, d.cost(2), "100 and up round to 10");
     }
 }

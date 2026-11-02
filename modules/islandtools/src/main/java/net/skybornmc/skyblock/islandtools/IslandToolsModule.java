@@ -61,6 +61,14 @@ public final class IslandToolsModule implements SkyblockModule {
     /** Online profile → its tools. */
     private final Map<UUID, Map<Kind, ToolStore.Rec>> records = new ConcurrentHashMap<>();
     private final Set<UUID> busy = ConcurrentHashMap.newKeySet();
+    /** Owner 3 Nov 2026: shared levels per island and kind (loaded with a member). */
+    private final Map<UUID, Map<Kind, ToolStore.Levels>> islandLevels = new ConcurrentHashMap<>();
+    /** Task progress per island and kind (database value + what this server counted since). */
+    private final Map<UUID, Map<Kind, Long>> taskProgress = new ConcurrentHashMap<>();
+    /** Task progress not written yet. */
+    private final Map<UUID, Map<Kind, Long>> taskDelta = new ConcurrentHashMap<>();
+    /** Shards found and not paid yet, per profile. */
+    private final Map<UUID, Long> pendingShards = new ConcurrentHashMap<>();
 
     public IslandToolsModule(Core core) {
         this.core = core;
@@ -96,6 +104,9 @@ public final class IslandToolsModule implements SkyblockModule {
         tasks.add(core.scheduler().repeat("islandtools:haste", 40L, 40L, listener::hasteTick));
         tasks.add(core.scheduler().repeat("islandtools:regrow", 20L, 10L, farming::tick));
         tasks.add(core.scheduler().repeat("islandtools:storage", 200L, 200L, storage::flushAll));
+        tasks.add(core.scheduler().repeat("islandtools:tasks", 200L, 200L, this::flushTasks));
+        long shardTicks = Math.max(1, config.shardPayoutSeconds) * 20L;
+        tasks.add(core.scheduler().repeat("islandtools:shards", shardTicks, shardTicks, this::payShards));
         registerCommands();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
@@ -258,6 +269,7 @@ public final class IslandToolsModule implements SkyblockModule {
                 records.put(profile, recs);
                 storage.load(profile);
                 placeForWorld(p);
+                share(p, profile);
                 return;
             }
             store.createMissing(fresh).whenComplete((v, e2) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
@@ -276,6 +288,7 @@ public final class IslandToolsModule implements SkyblockModule {
                     give.add(items.create(r));
                 }
                 giveAll(p, give);
+                share(p, profile);
                 msg.send(p, "starter.given");
                 core.audit().logPlayer(AuditCategory.ITEM, "island_tools_starter", Actor.SYSTEM, p.getUniqueId(), p.getName(), null,
                         p.getLocation(), Map.of("profile", profile.toString()));
@@ -297,6 +310,9 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     boolean putAwayWorld(Player p) {
+        if (config.onlyOnIsland) {
+            return !islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(true);
+        }
         return config.putAwayWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
     }
 
@@ -368,10 +384,166 @@ public final class IslandToolsModule implements SkyblockModule {
         }
     }
 
-    // ------------------------------------------------------------------ purchases (T7 crystals only, T8 confirm)
+    // ------------------------------------------------------------------ shared levels (owner 3 Nov 2026)
+
+    /** The island of a profile, or null (no island: the tools are the profile's own). */
+    UUID islandOf(UUID profile) {
+        return islands().flatMap(i -> i.islandOfProfile(profile)).map(IslandService.IslandInfo::id).orElse(null);
+    }
+
+    /**
+     * Loads the island's shared levels (raising them with this member's own, never down) and puts them on the member's
+     * tools; their carried copies are re-rendered. Main thread in, main thread out.
+     */
+    void share(Player p, UUID profile) {
+        UUID island = islandOf(profile);
+        Map<Kind, ToolStore.Rec> own = records.get(profile);
+        if (island == null || own == null) {
+            return;
+        }
+        store.mergeIsland(island, new EnumMap<>(own)).whenComplete((merged, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Island tools: could not load the shared levels of island " + island, error);
+                return;
+            }
+            Map<Kind, ToolStore.Levels> levels = new EnumMap<>(Kind.class);
+            Map<Kind, Long> progress = new EnumMap<>(Kind.class);
+            merged.forEach((kind, v) -> {
+                levels.put(kind, (ToolStore.Levels) v[0]);
+                long unsaved = taskDelta.getOrDefault(island, Map.of()).getOrDefault(kind, 0L);
+                progress.put(kind, (Long) v[1] + unsaved);
+            });
+            islandLevels.put(island, levels);
+            taskProgress.put(island, progress);
+            if (p.isOnline()) {
+                apply(p, profile, levels);
+            }
+        }));
+    }
+
+    /** Puts island levels on one member's records and refreshes their carried copies. */
+    private void apply(Player p, UUID profile, Map<Kind, ToolStore.Levels> levels) {
+        Map<Kind, ToolStore.Rec> map = records.get(profile);
+        if (map == null) {
+            return;
+        }
+        levels.forEach((kind, lv) -> {
+            ToolStore.Rec r = map.get(kind);
+            if (r != null && (r.tier() != lv.tier() || !r.upgrades().equals(lv.upgrades()))) {
+                ToolStore.Rec next = r.with(lv.tier(), lv.upgrades());
+                map.put(kind, next);
+                refreshItem(p, next);
+            }
+        });
+    }
+
+    /** After a shared purchase: every online member's tool changes at once. */
+    private void applyToIsland(UUID island, Kind kind, ToolStore.Levels after) {
+        islandLevels.computeIfAbsent(island, k -> new EnumMap<>(Kind.class)).put(kind, after);
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            UUID prof = profile(other);
+            if (island.equals(islandOf(prof))) {
+                apply(other, prof, Map.of(kind, after));
+            }
+        }
+    }
+
+    /** Task target for buying level {@code level + 1} of an upgrade ({@code tasks.per-level}, the last repeats). */
+    long taskTarget(int level) {
+        java.util.List<Integer> list = config.taskPerLevel;
+        return list.isEmpty() ? 0 : list.get(Math.min(Math.max(0, level), list.size() - 1));
+    }
+
+    /** The island's task progress for a tool kind (0 without an island). */
+    long taskProgress(Player p, Kind kind) {
+        UUID island = islandOf(profile(p));
+        return island == null ? 0 : taskProgress.getOrDefault(island, Map.of()).getOrDefault(kind, 0L);
+    }
+
+    /**
+     * One relevant action with an island tool (a natural ore or stone mined, a log chopped, a ripe crop harvested, a mob
+     * killed): counts for the island's task and rolls for a shard (base chance + Shard Finder).
+     */
+    void action(Player p, ToolStore.Rec rec) {
+        UUID profile = profile(p);
+        UUID island = islandOf(profile);
+        if (island != null) {
+            taskProgress.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(rec.kind(), 1L, Long::sum);
+            taskDelta.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(rec.kind(), 1L, Long::sum);
+        }
+        double chance = switch (rec.kind()) {
+            case PICKAXE -> config.shardPickaxe;
+            case AXE -> config.shardAxe;
+            case HOE -> config.shardHoe;
+            case SWORD -> config.shardSword;
+        } + effectLevel(rec, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel;
+        if (java.util.concurrent.ThreadLocalRandom.current().nextDouble(100) < chance) {
+            pendingShards.merge(profile, 1L, Long::sum);
+        }
+    }
+
+    private void flushTasks() {
+        if (taskDelta.isEmpty()) {
+            return;
+        }
+        Map<UUID, Map<Kind, Long>> batch = new java.util.HashMap<>();
+        for (UUID island : new java.util.ArrayList<>(taskDelta.keySet())) {
+            Map<Kind, Long> d = taskDelta.remove(island);
+            if (d != null && !d.isEmpty()) {
+                batch.put(island, new EnumMap<>(d));
+            }
+        }
+        if (batch.isEmpty()) {
+            return;
+        }
+        store.addTasks(batch).whenComplete((v, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Island tools: task progress not saved (kept for the next try)", e);
+                batch.forEach((island, d) -> d.forEach((k, n) ->
+                        taskDelta.computeIfAbsent(island, x -> new ConcurrentHashMap<>()).merge(k, n, Long::sum)));
+            }
+        });
+    }
+
+    /** Pays the found shards in one ledger row per profile ("+2 shards" on the action bar). */
+    private void payShards() {
+        EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
+        if (economy == null || pendingShards.isEmpty()) {
+            return;
+        }
+        for (UUID profile : new java.util.ArrayList<>(pendingShards.keySet())) {
+            Long n = pendingShards.remove(profile);
+            if (n == null || n <= 0) {
+                continue;
+            }
+            UUID batch = UUID.randomUUID();
+            Transaction tx = Transaction.deposit(AccountRef.player(profile), Currency.SHARDS, n,
+                            net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_SHARD)
+                    .actor(Actor.SYSTEM).reference("island_tool_shard:" + batch).idempotencyKey("island_tool_shard:" + batch);
+            economy.executeBatch(List.of(tx), c -> true).whenComplete((result, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                if (error != null || result == null || !result.ok()) {
+                    pendingShards.merge(profile, n, Long::sum); // paid next time
+                    return;
+                }
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (profile.equals(profile(p))) {
+                        msg.actionBar(p, "shards.found", Msg.number("amount", n));
+                        core.sounds().play(p, "shard");
+                    }
+                }
+            }));
+        }
+    }
+
+    // ------------------------------------------------------------------ purchases (owner 3 Nov 2026: shards + task, tiers also money)
 
     /** What a purchase is: a tier-up (upgrade null) or one upgrade level. */
-    record Purchase(Kind kind, String upgrade, long cost, ToolStore.Rec before, ToolStore.Rec after) {
+    record Purchase(Kind kind, String upgrade, long cost, ToolStore.Rec before, ToolStore.Rec after, long money, long task, UUID island) {
+
+        /** True when the island's task for this upgrade is done (tiers have no task). */
+        boolean taskDone(long progress) {
+            return task <= 0 || progress >= task;
+        }
     }
 
     /** The next tier-up, or null at netherite. */
@@ -380,7 +552,9 @@ public final class IslandToolsModule implements SkyblockModule {
         if (r == null || r.tier() >= ToolRules.TIERS.size() - 1 || r.tier() >= config.tierCosts.size()) {
             return null;
         }
-        return new Purchase(kind, null, config.tierCosts.get(r.tier()), r, r.with(r.tier() + 1, r.upgrades()));
+        long money = r.tier() < config.tierMoney.size() ? config.tierMoney.get(r.tier()) : 0;
+        return new Purchase(kind, null, config.tierCosts.get(r.tier()), r, r.with(r.tier() + 1, r.upgrades()), money, 0,
+                islandOf(profile(p)));
     }
 
     /** The next level of an upgrade, or null at max. */
@@ -396,7 +570,8 @@ public final class IslandToolsModule implements SkyblockModule {
         }
         Map<String, Integer> next = new java.util.LinkedHashMap<>(r.levels());
         next.put(id, lv + 1);
-        return new Purchase(kind, id, def.cost(lv), r, r.with(r.tier(), Upgrades.encode(next)));
+        UUID island = islandOf(profile(p));
+        return new Purchase(kind, id, def.cost(lv), r, r.with(r.tier(), Upgrades.encode(next)), 0, island == null ? 0 : taskTarget(lv), island);
     }
 
     /** One crystal payment and the row change in one transaction (the row must still be as shown). */
@@ -406,11 +581,30 @@ public final class IslandToolsModule implements SkyblockModule {
             return;
         }
         UUID profile = profile(p);
+        if (!purchase.taskDone(taskProgress(p, purchase.kind()))) {
+            busy.remove(p.getUniqueId());
+            msg.send(p, "buy.task", Msg.number("progress", taskProgress(p, purchase.kind())), Msg.number("task", purchase.task()),
+                    Msg.p("action", raw("task." + purchase.kind().id())));
+            core.sounds().play(p, "error");
+            return;
+        }
         UUID batch = UUID.randomUUID();
-        Transaction tx = Transaction.withdraw(AccountRef.player(profile), Currency.CRYSTALS, purchase.cost(), net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_UPGRADE)
-                .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch)
-                .detail("kind", purchase.kind().id()).detail("upgrade", purchase.upgrade() == null ? "tier" : purchase.upgrade());
-        economy.executeBatch(List.of(tx), c -> ToolStore.change(c, purchase.before(), purchase.after()))
+        List<Transaction> txs = new java.util.ArrayList<>();
+        if (purchase.cost() > 0) {
+            txs.add(Transaction.withdraw(AccountRef.player(profile), Currency.SHARDS, purchase.cost(), net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_UPGRADE)
+                    .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch)
+                    .detail("kind", purchase.kind().id()).detail("upgrade", purchase.upgrade() == null ? "tier" : purchase.upgrade()));
+        }
+        if (purchase.money() > 0) {
+            txs.add(Transaction.withdraw(AccountRef.player(profile), Currency.MONEY, purchase.money(), net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_UPGRADE)
+                    .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch + ":money")
+                    .detail("kind", purchase.kind().id()).detail("upgrade", "tier"));
+        }
+        UUID island = purchase.island();
+        ToolStore.Levels levelsBefore = new ToolStore.Levels(purchase.before().tier(), purchase.before().upgrades());
+        ToolStore.Levels levelsAfter = new ToolStore.Levels(purchase.after().tier(), purchase.after().upgrades());
+        economy.executeBatch(txs, c -> island == null ? ToolStore.change(c, purchase.before(), purchase.after())
+                        : ToolStore.changeIsland(c, island, purchase.kind(), levelsBefore, levelsAfter, purchase.task()))
                 .whenComplete((BatchResult result, Throwable error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
                     busy.remove(p.getUniqueId());
                     if (error != null || result == null || !result.ok()) {
@@ -423,6 +617,22 @@ public final class IslandToolsModule implements SkyblockModule {
                             map.put(purchase.kind(), purchase.after());
                         }
                         refreshItem(p, purchase.after());
+                        if (island != null) {
+                            Map<Kind, Long> prog = taskProgress.get(island);
+                            if (prog != null && purchase.task() > 0) {
+                                prog.merge(purchase.kind(), -purchase.task(), Long::sum);
+                            }
+                            applyToIsland(island, purchase.kind(), levelsAfter);
+                            String what0 = purchase.upgrade() == null ? raw("tier." + ToolRules.TIERS.get(purchase.after().tier()))
+                                    : raw("upgrade." + purchase.upgrade() + ".name") + " " + purchase.after().level(purchase.upgrade());
+                            for (Player other : Bukkit.getOnlinePlayers()) {
+                                if (other != p && island.equals(islandOf(profile(other)))) {
+                                    msg.send(other, "buy.island", Msg.p("player", p.getName()), Msg.p("what", what0),
+                                            Msg.p("tool", raw("item.name." + purchase.kind().id())));
+                                    core.sounds().play(other, "unlock");
+                                }
+                            }
+                        }
                         String what = purchase.upgrade() == null ? raw("tier." + ToolRules.TIERS.get(purchase.after().tier()))
                                 : raw("upgrade." + purchase.upgrade() + ".name") + " " + purchase.after().level(purchase.upgrade());
                         msg.send(p, "buy.done", Msg.p("what", what), Msg.p("tool", raw("item.name." + purchase.kind().id())),

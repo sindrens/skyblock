@@ -65,6 +65,7 @@ public final class ToolsModule implements SkyblockModule {
     private ToolItems items;
     private ToolTracker tracker;
     private Forge forge;
+    private WorldTools worldTools;
     private BlueprintDrops drops;
     private ToolsListener listener;
     private DepthsHooks depthsHooks;
@@ -99,6 +100,8 @@ public final class ToolsModule implements SkyblockModule {
         harvester.apply();
         Bukkit.getPluginManager().registerEvents(harvester, core.plugin());
         registerDepthsHooks();
+        worldTools = new WorldTools(this);
+        worldTools.start();
         registerCommands();
         scheduleSave();
     }
@@ -123,6 +126,10 @@ public final class ToolsModule implements SkyblockModule {
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
+        }
+        if (worldTools != null) {
+            worldTools.stop();
+            worldTools = null;
         }
         if (harvester != null) {
             HandlerList.unregisterAll(harvester);
@@ -414,8 +421,18 @@ public final class ToolsModule implements SkyblockModule {
         core.commands().register(CommandSpec.command("forge")
                 .description("The Forge: upgrade your tools, craft blueprints, claim the starter kit").category("Tools")
                 .permission(PERM_FORGE).playerOnly().optional(forgeType).example("forge pickaxe")
-                .executes(ctx -> core.menus().open(ctx.player(), new ForgeMenu(this,
-                        forgeKind(ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(ctx.player()))))));
+                .executes(ctx -> {
+                    Player p = ctx.player();
+                    // Owner 3 Nov 2026: Depths tools are only carried in the Depths, so the Forge works there.
+                    if (config.worldToolsEnabled && !p.hasPermission("skyblock.tools.world-bypass")
+                            && !WorldTools.depthsWorld(config.worldToolsDepthsWorlds, p.getWorld().getName())) {
+                        msg.send(p, "world-tools.forge-in-depths");
+                        core.sounds().play(p, "error");
+                        return;
+                    }
+                    core.menus().open(p, new ForgeMenu(this,
+                            forgeKind(ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(p))));
+                }));
 
         Arg<Player> givePlayer = Args.onlinePlayer("player");
         Arg<String> giveTool = Args.oneOf("tool", this::kindIds);

@@ -43,8 +43,12 @@ hoe:
   storage-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your hoe storage is full. Empty it in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
 
 buy:
-  done: "<prefix><c:success><sym:check></c:success> <c:text><tool>: <c:value><what></c:value> <c:muted>(<cur:crystals><sym:crystals> <cost></cur:crystals>)"
-  poor: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:crystals><sym:crystals> <cost></cur:crystals><c:text>."
+  done: "<prefix><c:success><sym:check></c:success> <c:text><tool>: <c:value><what></c:value><c:text>. Everyone on your island has it now."
+  poor: "<prefix><c:error><sym:cross></c:error> <c:text>Not enough shards or money. Find shards by grinding with your island tools."
+  # Owner 3 Nov 2026: the island's task for this tool is not done yet. <progress> <task> <action>
+  task: "<prefix><c:error><sym:cross></c:error> <c:text>First <action>: <c:value><progress></c:value><c:muted>/<task></c:muted><c:text>. Anyone on your island counts."
+  # To the other members. <player> <what> <tool>
+  island: "<prefix><c:value><player></c:value> <c:text>upgraded the island <c:value><tool></c:value><c:text>: <c:value><what></c:value><c:text>. Your copy has it too."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work (nothing was paid). Try again."
 
 copy:
@@ -57,12 +61,12 @@ menu:
   crumb-island: "Island"
   crumb: "Tools"
   info:
-    - "<c:text>Your island tools. They work on"
-    - "<c:text>islands and wait for you while you"
-    - "<c:text>are in the Depths."
+    - "<c:text>Your island's tools. Upgrades are"
+    - "<c:text>shared: everyone on your island"
+    - "<c:text>gets them. Paid with shards."
   tool-info:
     - "<c:text>Tier and upgrades of this tool."
-    - "<c:muted>Paid with island crystals."
+    - "<c:muted>Shared by your island, paid with shards."
   tool-lore:
     - "<c:text>Tier: <c:value><tier>"
     - "<c:text>Upgrades: <c:value><done></c:value><c:muted>/<max>"
@@ -84,7 +88,7 @@ menu:
       - "<c:text><from> <c:muted>→</c:muted> <c:value><to>"
       - "<c:muted>Faster, stronger, more durable."
       - ""
-      - "<c:text>Price: <cur:crystals><sym:crystals> <cost>"
+      - "<c:text>Price: <cur:shards><sym:shards> <cost></cur:shards> <c:muted>+</c:muted> <cur:money><money>"
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
   tier-max:
     name: "<c:success><sym:check> Top tier"
@@ -102,13 +106,19 @@ menu:
   level-line: "<dots> <c:muted><level>/<max>"
   effect-line: "<c:text>Now: <c:value><now></c:value> <c:muted>→</c:muted> <c:text>next: <c:value><next>"
   upgrade-buy:
-    - "<c:text>Price: <cur:crystals><sym:crystals> <cost>"
+    - "<c:text>Price: <cur:shards><sym:shards> <cost>"
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+  # <action> <have> <task> <bar>
+  task:
+    - "<c:text>Island task: <action>"
+    - "<bar> <c:muted><have>/<task>"
+  task-done:
+    - "<c:success><sym:check></c:success> <c:text>Island task done"
   upgrade-max:
     - "<c:success><sym:check> Maxed"
   confirm-crumb: "Buy this upgrade?"
   confirm-details:
-    - "<c:text>Pay <cur:crystals><sym:crystals> <cost></cur:crystals><c:text>?"
+    - "<c:text>Pay <cur:shards><sym:shards> <cost></cur:shards><c:text>?"
 
 upgrade:
   efficiency: {name: "Efficiency", icon: sugar, lore: ["<c:muted>Breaks blocks faster."]}
@@ -123,6 +133,7 @@ upgrade:
   row: {name: "Row", icon: wheat, lore: ["<c:muted>Harvests a whole row of ripe", "<c:muted>crops at once."]}
   storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the hoe storage."]}
   looting: {name: "Looting", icon: rotten_flesh, lore: ["<c:muted>More mob drops."]}
+  shard_finder: {name: "Shard Finder", icon: prismarine_shard, lore: ["<c:muted>A better chance to find shards", "<c:muted>while you grind."]}
   sweeping: {name: "Sweeping Edge", icon: iron_sword, lore: ["<c:muted>Stronger sweep attacks."]}
   fire_aspect: {name: "Fire Aspect", icon: blaze_powder, lore: ["<c:muted>Sets mobs on fire."]}
   knockback: {name: "Knockback", icon: piston, lore: ["<c:muted>Pushes mobs back."]}
@@ -156,3 +167,14 @@ storage:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
   nothing: "<prefix><c:muted>Nothing in the storage can be sold."
   sell-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale did not go through; everything is still stored."
+
+# Owner 3 Nov 2026: what counts for each tool's island task (<action> in buy.task and menu.task)
+task:
+  pickaxe: "mine ores and stone"
+  axe: "chop logs"
+  hoe: "harvest ripe crops"
+  sword: "kill mobs"
+
+# Found while grinding with island tools (action bar). <amount>
+shards:
+  found: "<cur:shards>+<amount> <sym:shards> shards"

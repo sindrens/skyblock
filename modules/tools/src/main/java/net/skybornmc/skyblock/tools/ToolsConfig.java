@@ -113,6 +113,15 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ starter kit, forge, menu
 
+    @Setting(path = "world-tools.enabled", desc = "Owner 3 Nov 2026: Depths tools exist only in the Depths. Outside it they are put away (same slots) and come back when you enter the Depths.")
+    public boolean worldToolsEnabled = true;
+
+    @Setting(path = "world-tools.depths-worlds", desc = "Worlds where Depths tools are carried (everywhere else they are put away).")
+    public List<String> worldToolsDepthsWorlds = List.of("depths");
+
+    @Setting(path = "world-tools.auto-starter", desc = "A player who enters the Depths without any Depths tool gets the starter kit automatically (with the starter-kit cooldown).")
+    public boolean worldToolsAutoStarter = true;
+
     @Setting(path = "starter-kit.cooldown-hours", desc = "Hours between two starter kit claims (owner: 24). Only missing pieces are given.", min = 0, max = 720)
     public int starterCooldownHours = 24;
 

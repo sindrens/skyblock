@@ -17,7 +17,7 @@ final class Upgrades {
 
     /** What an upgrade does. ENCHANT uses {@code arg} = the vanilla enchantment id. */
     enum Effect {
-        ENCHANT, HASTE, MAGNET, SMELT, DROPS, TIMBER, EXPERIENCE, LIFESTEAL, ROW, STORAGE;
+        ENCHANT, HASTE, MAGNET, SMELT, DROPS, TIMBER, EXPERIENCE, LIFESTEAL, ROW, STORAGE, SHARDS;
 
         static Optional<Effect> of(String s) {
             try {
@@ -31,10 +31,10 @@ final class Upgrades {
     /** One upgrade of one tool. */
     record Def(Kind kind, String id, Effect effect, String arg, int max, long baseCost, double growth) {
 
-        /** Crystals for going from {@code level} to {@code level + 1} (rounded to 10). */
+        /** Shards for going from {@code level} to {@code level + 1} (whole shards under 100, else rounded to 10). */
         long cost(int level) {
             double c = baseCost * Math.pow(growth, Math.max(0, level));
-            return Math.max(10, Math.round(c / 10.0) * 10);
+            return c < 100 ? Math.max(1, Math.round(c)) : Math.round(c / 10.0) * 10;
         }
     }
 

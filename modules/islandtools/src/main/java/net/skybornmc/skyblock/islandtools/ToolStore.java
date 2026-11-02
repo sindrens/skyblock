@@ -102,6 +102,95 @@ final class ToolStore {
         });
     }
 
+    // ------------------------------------------------------------------ shared island levels (owner 3 Nov 2026)
+
+    /** An island's tier and upgrades of one tool kind. */
+    record Levels(int tier, String upgrades) {
+    }
+
+    /**
+     * Pure: the higher of two level sets (the tier and every upgrade level, never down). {@code a} may be null.
+     */
+    static Levels max(Levels a, Levels b) {
+        if (a == null) {
+            return b;
+        }
+        Map<String, Integer> out = new java.util.TreeMap<>(Upgrades.decode(a.upgrades()));
+        Upgrades.decode(b.upgrades()).forEach((k, v) -> out.merge(k, v, Math::max));
+        return new Levels(Math.max(a.tier(), b.tier()), Upgrades.encode(out));
+    }
+
+    /**
+     * Merges this profile's own tools into the island's shared levels (inserts missing rows, raises lower ones) and
+     * returns the island's levels and task progress per kind. One transaction.
+     */
+    CompletableFuture<Map<Kind, Object[]>> mergeIsland(UUID island, Map<Kind, Rec> own) {
+        return db.transaction(c -> {
+            Map<Kind, Object[]> out = new EnumMap<>(Kind.class);
+            long now = System.currentTimeMillis();
+            for (Kind kind : Kind.values()) {
+                Rec r = own.get(kind);
+                java.util.Optional<Levels> stored = Sql.queryOne(c, "SELECT tier, upgrades FROM island_tool_levels WHERE island_id = ? "
+                        + "AND kind = ? FOR UPDATE", rs -> new Levels(rs.getInt(1), rs.getString(2)), Sql.toBytes(island), kind.id());
+                Levels mine = r == null ? null : new Levels(r.tier(), r.upgrades());
+                Levels merged = stored.orElse(null);
+                if (mine != null) {
+                    merged = max(merged, mine);
+                }
+                if (merged == null) {
+                    continue;
+                }
+                if (stored.isEmpty()) {
+                    Sql.update(c, "INSERT INTO island_tool_levels (island_id, kind, tier, upgrades, updated_at) VALUES (?, ?, ?, ?, ?)",
+                            Sql.toBytes(island), kind.id(), merged.tier(), merged.upgrades(), now);
+                } else if (!merged.equals(stored.get())) {
+                    Sql.update(c, "UPDATE island_tool_levels SET tier = ?, upgrades = ?, updated_at = ? WHERE island_id = ? AND kind = ?",
+                            merged.tier(), merged.upgrades(), now, Sql.toBytes(island), kind.id());
+                }
+                long progress = Sql.queryOne(c, "SELECT progress FROM island_tool_tasks WHERE island_id = ? AND kind = ?",
+                        rs -> rs.getLong(1), Sql.toBytes(island), kind.id()).orElse(0L);
+                out.put(kind, new Object[]{merged, progress});
+            }
+            return out;
+        });
+    }
+
+    /**
+     * Guard of a shared purchase: the island's levels are still {@code before} (else another member was faster) and the
+     * task has at least {@code task} progress, which is used up. Changes the island row to {@code after}.
+     */
+    static boolean changeIsland(Connection c, UUID island, Kind kind, Levels before, Levels after, long task) throws SQLException {
+        if (Sql.update(c, "UPDATE island_tool_levels SET tier = ?, upgrades = ?, updated_at = ? WHERE island_id = ? AND kind = ? "
+                        + "AND tier = ? AND upgrades = ?", after.tier(), after.upgrades(), System.currentTimeMillis(), Sql.toBytes(island),
+                kind.id(), before.tier(), before.upgrades()) != 1) {
+            return false;
+        }
+        if (task <= 0) {
+            return true;
+        }
+        return Sql.update(c, "UPDATE island_tool_tasks SET progress = progress - ? WHERE island_id = ? AND kind = ? AND progress >= ?",
+                task, Sql.toBytes(island), kind.id(), task) == 1;
+    }
+
+    /** Adds task progress (write-behind of the in-memory counters). */
+    CompletableFuture<Void> addTasks(Map<UUID, Map<Kind, Long>> deltas) {
+        return db.transaction(c -> {
+            for (Map.Entry<UUID, Map<Kind, Long>> island : deltas.entrySet()) {
+                for (Map.Entry<Kind, Long> e : island.getValue().entrySet()) {
+                    if (e.getValue() <= 0) {
+                        continue;
+                    }
+                    if (Sql.update(c, "UPDATE island_tool_tasks SET progress = progress + ? WHERE island_id = ? AND kind = ?",
+                            e.getValue(), Sql.toBytes(island.getKey()), e.getKey().id()) == 0) {
+                        Sql.update(c, "INSERT INTO island_tool_tasks (island_id, kind, progress) VALUES (?, ?, ?)",
+                                Sql.toBytes(island.getKey()), e.getKey().id(), e.getValue());
+                    }
+                }
+            }
+            return null;
+        });
+    }
+
     // ------------------------------------------------------------------ hoe storage
 
     CompletableFuture<Map<String, Long>> storage(UUID profile) {

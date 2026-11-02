@@ -14,4 +14,6 @@ teleport: "minecraft:entity.enderman.teleport 0.4 1.35"
 money: "minecraft:block.amethyst_block.chime 0.8 1.5"
 notify: "minecraft:block.note_block.bell 0.5 1.5"
 enchant: "minecraft:block.enchantment_table.use 0.7 1.0"
+# Owner 3 Nov 2026: shards found with an island tool (quiet, high)
+shard: "minecraft:block.amethyst_cluster.hit 0.4 1.8"
 

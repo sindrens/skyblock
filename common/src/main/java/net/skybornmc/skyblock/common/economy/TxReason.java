@@ -62,6 +62,9 @@ public final class TxReason {
     /** Crystals paid for an island tool tier-up or upgrade (Complete Developer Spec T7); a sink. */
     public static final String ISLAND_TOOL_UPGRADE = "island_tool_upgrade";
 
+    /** Owner 3 Nov 2026: shards found while grinding with an island tool (and its Shard Finder upgrade); batched. */
+    public static final String ISLAND_TOOL_SHARD = "island_tool_shard";
+
     /** Credits paid for an Eclipse key (owner F6/V5: the Eclipse credits purchase); a sink. */
     public static final String CRATE_KEY_PURCHASE = "crate_key_purchase";
 
@@ -90,7 +93,8 @@ public final class TxReason {
     public static final String BLACK_MARKET_REFUND = "black_market_refund";
 
     /**
-     * ECON-SHARDS: a shard paid for breaking a shard block. The ONLY shard income in the game (owner 1 Nov 2026:
+     * ECON-SHARDS: a shard paid for breaking a shard block. Owner 3 Nov 2026: island tools also find shards
+     * ({@link #ISLAND_TOOL_SHARD}); before that this was the ONLY shard income (owner 1 Nov 2026:
      * "shards only from blocks, no other rewards"); every other shard deposit is staff ({@code admin_*}) or a refund.
      */
     public static final String SHARD_BLOCK = "shard_block";

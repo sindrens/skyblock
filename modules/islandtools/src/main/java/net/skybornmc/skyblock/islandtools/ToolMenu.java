@@ -71,7 +71,8 @@ final class ToolMenu extends Menu {
             Material next = Material.matchMaterial(ToolRules.material(kind, r.tier() + 1));
             set(SLOT_TIER, service.item(next == null ? Material.ANVIL : next, viewer, IslandToolsModule.ID, "menu.tier-next",
                     Msg.p("from", m.raw("tier." + ToolRules.TIERS.get(r.tier()))),
-                    Msg.p("to", m.raw("tier." + ToolRules.TIERS.get(r.tier() + 1))), Msg.p("cost", Format.number(tier.cost()))),
+                    Msg.p("to", m.raw("tier." + ToolRules.TIERS.get(r.tier() + 1))), Msg.p("cost", Format.number(tier.cost())),
+                    Msg.p("money", Format.money(tier.money()))),
                     click -> purchase(click.player(), tier));
         }
         set(SLOT_COPY, service.item(Material.NAME_TAG, viewer, IslandToolsModule.ID, "menu.copy"), click -> {
@@ -101,11 +102,28 @@ final class ToolMenu extends Menu {
         lore.add(m.msg().component(viewer, "menu.level-line", Msg.mm("dots", dots.toString()), Msg.number("level", lv), Msg.number("max", d.max())));
         lore.add(m.msg().component(viewer, "menu.effect-line", Msg.p("now", effectText(d, lv)), Msg.p("next", max ? "-" : effectText(d, lv + 1))));
         lore.add(Component.empty());
-        lore.addAll(max ? service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-max")
-                : service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-buy", Msg.p("cost", Format.number(d.cost(lv)))));
+        if (max) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-max"));
+        } else {
+            // Owner 3 Nov 2026: shards + the island's task for this tool.
+            long task = m.islandOf(m.profile(viewer)) == null ? 0 : m.taskTarget(lv);
+            long have = Math.min(task, m.taskProgress(viewer, kind));
+            if (task > 0) {
+                lore.addAll(service.lines(viewer, IslandToolsModule.ID, have >= task ? "menu.task-done" : "menu.task",
+                        Msg.p("action", m.raw("task." + kind.id())), Msg.p("have", Format.number(have)), Msg.p("task", Format.number(task)),
+                        Msg.mm("bar", bar(have, task))));
+            }
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-buy", Msg.p("cost", Format.number(d.cost(lv)))));
+        }
         Material icon = Material.matchMaterial(m.raw("upgrade." + d.id() + ".icon"));
         return service.item(new ItemStack(icon == null || !icon.isItem() ? Material.ENCHANTED_BOOK : icon),
                 m.msg().component(viewer, "menu.upgrade-name", Msg.p("name", m.raw("upgrade." + d.id() + ".name"))), lore);
+    }
+
+    /** 10 dots (Bedrock-safe), filled up to have/task; MiniMessage. */
+    static String bar(long have, long task) {
+        int filled = task <= 0 ? 10 : (int) Math.min(10, have * 10 / task);
+        return "<c:flame>" + "●".repeat(filled) + "</c:flame><c:locked>" + "●".repeat(10 - filled) + "</c:locked>";
     }
 
     /** What a level does, in plain words (Bedrock-safe: everything in the lore). */
@@ -122,6 +140,7 @@ final class ToolMenu extends Menu {
             case LIFESTEAL -> Format.number(Math.round(lv * c.lifestealPerLevel)) + "%";
             case ROW -> ToolRules.row(lv, c.rowLengths) + " crops";
             case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storageFactor)) + " items";
+            case SHARDS -> "+" + Format.number(lv * c.shardFinderPerLevel) + "% shards";
         };
     }
 

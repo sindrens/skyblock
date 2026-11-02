@@ -11,19 +11,79 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "enabled", desc = "Island tools on (owner D2/D12: every profile gets the wooden island set on first join).")
     public boolean enabled = true;
 
-    @Setting(path = "tier-costs", desc = "Crystals for each tier-up, wood→stone, stone→iron, iron→gold, gold→diamond, diamond→netherite (T3, T7).")
-    public List<Integer> tierCosts = List.of(500, 2500, 8000, 25000, 75000);
+    @Setting(path = "tier-costs", desc = "Shards for each tier-up, wood→stone, stone→iron, iron→gold, gold→diamond, diamond→netherite (owner 3 Nov 2026: island tools are paid with shards; plus tier-money).")
+    public List<Integer> tierCosts = List.of(5, 150, 500, 1500, 4000);
+
+    @Setting(path = "tier-money", desc = "Money for each tier-up (same order as tier-costs). The first one is cheap so stone comes fast.")
+    public List<Integer> tierMoney = List.of(100, 5000, 25000, 100000, 400000);
+
+    /** The v1 default (crystals). */
+    static final List<Integer> TIER_COSTS_V1 = List.of(500, 2500, 8000, 25000, 75000);
+
+    @Setting(path = "tasks.per-level", desc = "Owner 3 Nov 2026: island actions with that tool needed for each upgrade level (level 1, 2, 3 ...; the last one repeats). Pickaxe: ores and stone mined, axe: logs chopped, hoe: ripe crops harvested, sword: mobs killed. Any member counts; used up by the upgrade.")
+    public List<Integer> taskPerLevel = List.of(50, 200, 600, 1500, 4000);
+
+    @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 shard per relevant block mined with the island pickaxe.", min = 0, max = 100)
+    public double shardPickaxe = 2;
+
+    @Setting(path = "shards.chance-axe", desc = "Percent chance of 1 shard per log chopped with the island axe.", min = 0, max = 100)
+    public double shardAxe = 2;
+
+    @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 shard per ripe crop harvested with the island hoe.", min = 0, max = 100)
+    public double shardHoe = 1;
+
+    @Setting(path = "shards.chance-sword", desc = "Percent chance of 1 shard per mob killed with the island sword.", min = 0, max = 100)
+    public double shardSword = 4;
+
+    @Setting(path = "shards.finder-per-level", desc = "Extra shard chance (percent points) per level of the Shard Finder upgrade.", min = 0, max = 20)
+    public double shardFinderPerLevel = 0.5;
+
+    @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
+    public int shardPayoutSeconds = 3;
 
     @Setting(path = "confirm-above", desc = "T8: a confirm screen for an upgrade or tier-up costing at least this many crystals (0 = never).", min = 0, max = 100_000_000)
     public long confirmAbove = 5000;
 
+    @Setting(path = "relevant.pickaxe", desc = "Owner 3 Nov 2026: blocks where the island pickaxe's extra drops, Smelter and shards work (block ids, * wildcard at the start or end). Blocks a player placed never count.")
+    public List<String> relevantPickaxe = List.of("*_ore", "stone", "cobblestone", "deepslate", "cobbled_deepslate", "andesite",
+            "diorite", "granite", "tuff", "calcite", "netherrack", "basalt", "blackstone", "end_stone", "obsidian", "ancient_debris",
+            "amethyst_cluster", "raw_*_block");
+
+    @Setting(path = "relevant.axe", desc = "Blocks where the island axe's extra drops and shards work.")
+    public List<String> relevantAxe = List.of("*_log", "*_wood", "*_stem", "*_hyphae", "mangrove_roots", "bamboo_block", "*_mushroom_block");
+
+    @Setting(path = "relevant.hoe", desc = "Blocks where the island hoe's extra drops and shards work (ripe crops only, always).")
+    public List<String> relevantHoe = List.of("wheat", "carrots", "potatoes", "beetroots", "nether_wart", "cocoa", "melon", "pumpkin",
+            "sweet_berry_bush", "sugar_cane", "cactus", "bamboo");
+
+    @Setting(path = "placed.memory-hours", desc = "How long a block a player placed is remembered (so breaking it gives no bonus).", min = 1, max = 168)
+    public int placedHours = 12;
+
+    @Setting(path = "only-on-island", desc = "Owner 3 Nov 2026: island tools exist only in the island world; in every other world (spawn, the Depths, events) they are put away and come back in the same slot on the island. Off = only the put-away-worlds below.")
+    public boolean onlyOnIsland = true;
+
     @Setting(path = "put-away-worlds", desc = "T1/D1: worlds where island tools are put away (and given back on the island in the same slot).")
     public List<String> putAwayWorlds = List.of("depths");
 
-    @Setting(path = "upgrades", desc = "D4: 7 upgrades per tool, 'kind:id:effect:max:base-cost:growth'. Effects: enchant=<id>, haste, magnet, "
-            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe). Cost of level n+1 = base x growth^n.")
+    @Setting(path = "upgrades", desc = "Upgrades per tool, 'kind:id:effect:max:base-cost:growth' (owner 3 Nov 2026: costs are shards). Effects: enchant=<id>, haste, magnet, "
+            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe), shards (Shard Finder). Cost of level n+1 = base x growth^n.")
     public List<String> upgrades = List.of(
-            "pickaxe:efficiency:enchant=efficiency:5:150:2.2", "pickaxe:fortune:enchant=fortune:3:400:2.8", "pickaxe:haste:haste:2:600:3",
+            "pickaxe:efficiency:enchant=efficiency:5:10:2", "pickaxe:fortune:enchant=fortune:3:25:2.5", "pickaxe:haste:haste:2:40:3",
+            "pickaxe:magnet:magnet:1:60:1", "pickaxe:smelter:smelt:5:15:2", "pickaxe:extra_drops:drops:5:20:2.2",
+            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2",
+            "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
+            "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
+            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2",
+            "hoe:row:row:4:20:3", "hoe:storage:storage:5:15:2.5", "hoe:fortune:enchant=fortune:3:25:2.5",
+            "hoe:extra_drops:drops:5:20:2.2", "hoe:magnet:magnet:1:60:1", "hoe:efficiency:enchant=efficiency:3:10:2",
+            "hoe:haste:haste:2:40:3", "hoe:shard_finder:shards:5:25:2.2",
+            "sword:sharpness:enchant=sharpness:5:15:2.2", "sword:looting:enchant=looting:3:25:2.5",
+            "sword:sweeping:enchant=sweeping_edge:3:20:2.4", "sword:fire_aspect:enchant=fire_aspect:2:30:2.8",
+            "sword:knockback:enchant=knockback:2:10:2.5", "sword:extra_drops:drops:5:20:2.2", "sword:lifesteal:lifesteal:3:40:2.5",
+            "sword:shard_finder:shards:5:25:2.2");
+
+    /** The v1 default (crystal prices, no Shard Finder). */
+    static final List<String> UPGRADES_V1 = List.of("pickaxe:efficiency:enchant=efficiency:5:150:2.2", "pickaxe:fortune:enchant=fortune:3:400:2.8", "pickaxe:haste:haste:2:600:3",
             "pickaxe:magnet:magnet:1:900:1", "pickaxe:smelter:smelt:5:250:2", "pickaxe:extra_drops:drops:5:300:2.2",
             "pickaxe:experience:experience:5:200:2",
             "axe:efficiency:enchant=efficiency:5:150:2.2", "axe:extra_drops:drops:5:300:2.2", "axe:timber:timber:5:400:2.3",
@@ -92,6 +152,19 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Setting(path = "cue.far-blocks", desc = "T13: players this close see a subtle cue (one particle).", min = 1, max = 128)
     public double cueFar = 16;
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        IslandToolsConfig d = new IslandToolsConfig();
+        return java.util.Map.of(2, java.util.Map.of("tier-costs", ValueChange.of(TIER_COSTS_V1, d.tierCosts),
+                "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)));
+    }
 
     @Override
     public String fileName() {

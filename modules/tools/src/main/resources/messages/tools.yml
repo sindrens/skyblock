@@ -382,6 +382,12 @@ forge:
     details: ["<c:text>Upgrades <tool> <c:text>(Lv <level>)", "<c:text>to <to>", "<c:text>Keeps level, perks and stats", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]
 
 # Starter kit (Quartermaster). <count> <hours> <time>
+# Owner 3 Nov 2026: Depths tools only in the Depths (action bar). <count>
+world-tools:
+  put-away: "<c:muted>Your Depths tools wait for you in the Depths (<count>)"
+  given-back: "<c:text>Your Depths tools are back (<c:value><count></c:value>)"
+  forge-in-depths: "<prefix><c:text>Your Depths tools are in the Depths, so forging happens there: the smith stands at the Depths gate. <click:run_command:'/warp depths'><hover:show_text:'<c:text>Go to the Depths'><c:action>[Go to the Depths]</c:action></hover></click>"
+
 starter:
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><count></c:value> starter tool(s). Claim missing ones again in <hours> h."
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You can claim the starter kit again in <c:value><time></c:value>."
