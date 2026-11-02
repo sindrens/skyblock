@@ -35,8 +35,10 @@ final class ShopCatalogMigration {
     static final int V2 = 2;
     /** MENUS-V3: tab order 5 + 4, {@code groups:}, the item lists of the bundled file. */
     static final int V3 = 3;
+    /** ECON-SELL-SHOP-AH B1: the shop lists of ECON-TABLES D (remove 53, add 46 with {@code price: auto}). */
+    static final int V4 = 4;
     /** The current version (what a fresh install writes). */
-    static final int VERSION = V3;
+    static final int VERSION = V4;
 
     /** Old category → new tab, for items the owner added himself. */
     static final Map<String, String> TAB_OF_OLD_CATEGORY = Map.of(
@@ -170,7 +172,21 @@ final class ShopCatalogMigration {
      * @return the migrated file, or empty when {@code live} is already version 3 or newer
      */
     static Optional<Result> migrateV3(YamlConfiguration live, YamlConfiguration bundledV3, YamlConfiguration v2Defaults) {
-        if (version(live) >= V3) {
+        return migrateTo(live, bundledV3, v2Defaults, V3, "Shop v3");
+    }
+
+    /**
+     * v3 &rarr; v4 (ECON-SELL-SHOP-AH B1): the same data-driven move as {@link #migrateV3}, against the frozen v3 defaults:
+     * default items the bundled file drops (planks, furnace, chest ...) go to {@code worth-only} at their live price, the
+     * new {@code price: auto} items are added, owner prices and owner items stay.
+     */
+    static Optional<Result> migrateV4(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v3Defaults) {
+        return migrateTo(live, bundled, v3Defaults, V4, "Shop v4");
+    }
+
+    private static Optional<Result> migrateTo(YamlConfiguration live, YamlConfiguration bundledV3, YamlConfiguration v2Defaults,
+                                              int target, String label) {
+        if (version(live) >= target) {
             return Optional.empty();
         }
         YamlConfiguration out = new YamlConfiguration();
@@ -225,15 +241,17 @@ final class ShopCatalogMigration {
                     Object bundledPrice = priceValue(bundledRaw);
                     boolean designChanged = oldPrice > 0 && !Long.valueOf(oldPrice).equals(bundledPrice);
                     Object price;
-                    if (livePrice < 1) {
+                    if (ShopCatalog.isAuto(priceValue(liveEntry.raw()))) {
+                        price = ShopCatalog.AUTO; // the owner's (or an earlier default's) auto price stays auto
+                    } else if (livePrice < 1) {
                         price = bundledPrice;
                         changes.add(id + ": live entry had no valid price, using " + priceText(bundledRaw));
                     } else if (designChanged && livePrice == oldPrice) {
                         price = bundledPrice;
-                        changes.add(id + ": price $" + oldPrice + " -> " + priceText(bundledRaw) + " (Shop v3)");
+                        changes.add(id + ": price $" + oldPrice + " -> " + priceText(bundledRaw) + " (" + label + ")");
                     } else if (designChanged) {
                         price = livePrice;
-                        changes.add(id + ": kept your price $" + livePrice + " (Shop v3 default would be " + priceText(bundledRaw) + ")");
+                        changes.add(id + ": kept your price $" + livePrice + " (" + label + " default would be " + priceText(bundledRaw) + ")");
                     } else {
                         price = livePrice;
                         if (!Long.valueOf(livePrice).equals(bundledPrice)) {
@@ -248,7 +266,7 @@ final class ShopCatalogMigration {
             }
         }
         for (String id : liveSpawners.keySet()) {
-            changes.add("removed spawner " + id + " (not sold in Shop v3)");
+            changes.add("removed spawner " + id + " (not sold in " + label + ")");
         }
         // Live worth-only first (owner edits win over the bundled values), then the items that leave the shop now.
         ConfigurationSection liveWorth = live.getConfigurationSection(ShopCatalog.WORTH_ONLY);
@@ -288,7 +306,7 @@ final class ShopCatalogMigration {
         if (kept > 0) {
             changes.add("kept " + kept + " other price(s) you had changed");
         }
-        out.set("config-version", V3);
+        out.set("config-version", target);
         return Optional.of(new Result(out, changes));
     }
 

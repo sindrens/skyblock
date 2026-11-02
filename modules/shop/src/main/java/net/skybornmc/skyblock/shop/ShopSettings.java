@@ -73,6 +73,17 @@ public final class ShopSettings extends ModuleConfig {
             + "endless money if a price is too low.", level = Setting.Level.OWNER)
     public boolean checkSellPrices = true;
 
+    @Setting(path = "buy.price-multiplier", desc = "ECON-SELL-SHOP-AH B1: every shop price (owner prices and spawners too) "
+            + "x this, kept to 2 significant figures. Move it together with economy.yml sell.price-multiplier, or items whose "
+            + "price falls under 7.5x their sell price stop being sold. Block worth (island level) does not change.",
+            min = 0.1, max = 10.0, level = Setting.Level.OWNER)
+    public double priceMultiplier = 1.0;
+
+    @Setting(path = "shop.auto-markup", desc = "ECON-SELL-SHOP-AH B1: an item with 'price: auto' in shop.yml costs this many "
+            + "times its sell.yml base price, rounded up (10: always above the 7.5x rule).", min = 7.6, max = 100,
+            level = Setting.Level.OWNER)
+    public double autoMarkup = 10.0;
+
     @Override
     public int version() {
         return 2;

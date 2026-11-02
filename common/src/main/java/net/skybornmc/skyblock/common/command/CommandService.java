@@ -93,6 +93,28 @@ public final class CommandService {
         }
     }
 
+    /**
+     * Adds {@code sub} under a command another module registered ({@code /eco shop} from the shop module under the economy
+     * module's {@code /eco}). Call it in {@code enable()}, after the owner module enabled (module dependencies): the command
+     * tree is built when the server registers commands, after every module enabled. A sub-command of the same name is
+     * replaced. False (and a warning) when the parent is not registered.
+     */
+    public boolean extend(String parent, CommandSpec sub) {
+        CommandSpec owner = specs.get(parent);
+        if (owner == null) {
+            plugin.getLogger().warning("Command '/" + parent + " " + sub.name() + "' not added: /" + parent + " is not registered");
+            return false;
+        }
+        try {
+            sub.validate(parent + " " + sub.name());
+        } catch (IllegalStateException e) {
+            plugin.getLogger().severe("Command not registered: " + e.getMessage());
+            return false;
+        }
+        owner.replaceSub(sub);
+        return true;
+    }
+
     /** Re-reads {@code commands.yml} (cooldowns apply now, aliases after a restart) and the framework messages. */
     public List<String> reload() {
         messages.load(MESSAGES);

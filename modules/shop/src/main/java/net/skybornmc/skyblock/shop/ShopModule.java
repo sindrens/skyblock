@@ -98,6 +98,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String V1_DEFAULTS = "migrations/shop-v1.yml";
     /** The frozen Shop v2 defaults: target of the v1 migration, baseline of the v3 one (MENUS-V3 6.3). */
     static final String V2_DEFAULTS = "migrations/shop-v2.yml";
+    /** The frozen Shop v3 defaults: baseline of the v4 migration (ECON-SELL-SHOP-AH B1 shop lists). */
+    static final String V3_DEFAULTS = "migrations/shop-v3.yml";
     /** /settings toggle ids (F14). */
     static final String SETTING_UNDO = "shop-undo";
     static final String SETTING_BIG_BUY = "shop-big-buy";
@@ -106,6 +108,9 @@ public final class ShopModule implements SkyblockModule, Listener {
     final ModuleMessages msg;
     final ShopSettings settings = new ShopSettings();
     private volatile ShopCatalog catalog = ShopCatalog.empty();
+    /** B2: shop.yml as loaded, before staff switched items off ({@link #catalog} = this minus {@link #overrides}). */
+    private volatile ShopCatalog fileCatalog = ShopCatalog.empty();
+    private ShopOverrides overrides;
     private ShopStore store;
     private ShopEngine engine;
     private Executor main;
@@ -144,8 +149,17 @@ public final class ShopModule implements SkyblockModule, Listener {
         main = new MainThread(core.plugin());
         store = new ShopStore(core.database());
         engine = new ShopEngine(this::economy, System::currentTimeMillis, () -> 0);
-        catalog = loadCatalog();
+        overrides = new ShopOverrides(core.database());
+        fileCatalog = loadCatalog();
+        catalog = fileCatalog;
         warnUndercuts();
+        overrides.load().whenCompleteAsync((ok, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Shop: could not load staff switch-offs (/eco shop disable)", Database.cause(e));
+            } else {
+                applyOverrides();
+            }
+        }, main);
         // PHASE-5 M5.2: block worth of the island level reads shop prices (any thread; the catalog is volatile).
         core.services().register(ID, net.skybornmc.skyblock.common.shop.ShopPrices.class, itemId -> {
             if (itemId == null) {
@@ -158,6 +172,7 @@ public final class ShopModule implements SkyblockModule, Listener {
             return catalog.worth(id);
         });
         registerCommand();
+        core.commands().extend("eco", ecoShopCommand());
         registerSettings();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         store.recover(System.currentTimeMillis()).whenComplete((stuck, e) -> {
@@ -183,7 +198,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     public void reload() {
         core.configs().load(settings);
         core.messages().load(ID);
-        catalog = loadCatalog();
+        fileCatalog = loadCatalog();
+        applyOverrides();
         warnUndercuts();
     }
 
@@ -249,7 +265,7 @@ public final class ShopModule implements SkyblockModule, Listener {
             }
         } catch (IOException | InvalidConfigurationException e) {
             warn.accept("shop.yml is not valid YAML, using the bundled prices. " + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
-            return ShopCatalog.load(bundled, material, spawner, warn);
+            return ShopCatalog.load(bundled, material, spawner, pricing(), warn);
         }
         try {
             if (!file.exists()) {
@@ -267,10 +283,17 @@ public final class ShopModule implements SkyblockModule, Listener {
                     yaml = migrated.get().yaml();
                     writeMigration(file, yaml, migrated.get().changes(), ShopCatalogMigration.V2);
                 }
-                Optional<ShopCatalogMigration.Result> v3 = ShopCatalogMigration.migrateV3(yaml, bundled, v2Defaults);
+                YamlConfiguration v3Defaults = bundled(V3_DEFAULTS);
+                // v2 -> v3 targets the frozen v3 file; v3 -> v4 then moves it to the bundled file.
+                Optional<ShopCatalogMigration.Result> v3 = ShopCatalogMigration.migrateV3(yaml, v3Defaults, v2Defaults);
                 if (v3.isPresent()) {
                     yaml = v3.get().yaml();
                     writeMigration(file, yaml, v3.get().changes(), ShopCatalogMigration.V3);
+                }
+                Optional<ShopCatalogMigration.Result> v4 = ShopCatalogMigration.migrateV4(yaml, bundled, v3Defaults);
+                if (v4.isPresent()) {
+                    yaml = v4.get().yaml();
+                    writeMigration(file, yaml, v4.get().changes(), ShopCatalogMigration.V4);
                 }
                 if (addMissing(yaml, bundled)) {
                     yaml.save(file);
@@ -279,7 +302,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write shop.yml", e);
         }
-        ShopCatalog loaded = ShopCatalog.load(yaml, material, spawner, warn);
+        ShopCatalog loaded = ShopCatalog.load(yaml, material, spawner, pricing(), warn);
         core.plugin().getLogger().info("Shop: " + loaded.categories().size() + " tabs, " + loaded.size() + " item(s).");
         return loaded;
     }
@@ -372,6 +395,16 @@ public final class ShopModule implements SkyblockModule, Listener {
      * ECON-SPAWNERS step 12: a mob the shop may list as a spawner: sold for money (not premium, not legacy) and its tier at
      * most {@code spawners.max-tier}. Anything else in shop.yml is skipped by the catalog loader with a console line.
      */
+    /**
+     * B1: {@code price: auto} from the sell base ({@code SellService}, economy is enabled first) x {@code shop.auto-markup},
+     * every price x {@code buy.price-multiplier}. Without the economy module {@code auto} items are skipped.
+     */
+    private ShopCatalog.Pricing pricing() {
+        Optional<SellService> sell = core.services().optional(SellService.class);
+        return new ShopCatalog.Pricing(id -> sell.flatMap(s -> s.price(id)).map(p -> p.base()).orElse(Double.NaN),
+                settings.autoMarkup, settings.priceMultiplier);
+    }
+
     private boolean isSpawnerType(String type) {
         return stacking().map(st -> st.spawnerSellable(type)
                 && st.spawnerTier(type).orElse(0) >= 1 && st.spawnerTier(type).orElse(0) <= settings.spawnerMaxTier).orElse(false);
@@ -448,6 +481,89 @@ public final class ShopModule implements SkyblockModule, Listener {
     }
 
     // ================================================================== command
+
+    // ================================================================== /eco shop (B2, staff)
+
+    static final String PERM_SHOP_VIEW = "skyblock.staff.economy.shop.view";
+    static final String PERM_SHOP_TOGGLE = "skyblock.staff.economy.shop.toggle";
+
+    private void applyOverrides() {
+        catalog = overrides == null ? fileCatalog : fileCatalog.withDisabled(overrides.disabled());
+    }
+
+    private CommandSpec ecoShopCommand() {
+        Arg<ShopCatalog.Item> item = Arg.word("item", (sender, raw) -> {
+            String id = raw.trim().toLowerCase(Locale.ROOT);
+            if (id.startsWith("minecraft:")) {
+                id = id.substring("minecraft:".length());
+            }
+            return fileCatalog.item(id).orElseThrow(() -> new CommandFailure(ID, "eco-shop.unknown", Msg.p("item", raw)));
+        }, Suggest.of(() -> fileCatalog.items().stream().map(ShopCatalog.Item::id).toList()));
+        Arg<String> reason = Arg.greedy("reason", (sender, raw) -> raw.strip(), Suggest.of("Price exploit", "Broken item", "Fixed"));
+        return CommandSpec.sub("shop")
+                .description("Staff: look up a shop item, or switch one off and on without editing shop.yml")
+                .permission(PERM_SHOP_VIEW)
+                .sub(CommandSpec.sub("price")
+                        .description("Show a shop item's tab, price, block worth, state and the most /sell pays for it")
+                        .permission(PERM_SHOP_VIEW)
+                        .arg(item)
+                        .example("eco shop price oak_log")
+                        .executes(ctx -> ecoShopPrice(ctx.sender(), ctx.get(item))))
+                .sub(CommandSpec.sub("disable")
+                        .description("Stop selling one shop item (hidden from /shop, kept in shop.yml)")
+                        .permission(PERM_SHOP_TOGGLE)
+                        .arg(item).arg(reason)
+                        .example("eco shop disable hopper Price exploit")
+                        .executes(ctx -> ecoShopToggle(ctx.sender(), ctx.get(item), false, ctx.get(reason))))
+                .sub(CommandSpec.sub("enable")
+                        .description("Sell a switched-off shop item again")
+                        .permission(PERM_SHOP_TOGGLE)
+                        .arg(item).arg(reason)
+                        .example("eco shop enable hopper Fixed")
+                        .executes(ctx -> ecoShopToggle(ctx.sender(), ctx.get(item), true, ctx.get(reason))));
+    }
+
+    private void ecoShopPrice(CommandSender sender, ShopCatalog.Item fileItem) {
+        ShopCatalog.Item item = catalog.item(fileItem.id()).orElse(fileItem);
+        ShopOverrides.Off off = overrides.get(item.id());
+        String state = off != null ? "off by staff: " + off.reason() : !item.enabled() ? "off in shop.yml"
+                : !priceSafe(item) ? "hidden: /sell pays more" : "on sale";
+        double max = item.spawner() ? 0 : ShopMath.maxSellValue(item.id(), item.contains(), this::maxSell);
+        msg.send(sender, "eco-shop.price", Msg.p("item", item.id()), Msg.p("tab", item.category()),
+                Msg.number("price", item.price()), Msg.p("worth", worthText(item.id())),
+                Msg.p("max-sell", max > 0 ? String.valueOf((long) Math.ceil(max)) : "-"), Msg.p("state", state));
+    }
+
+    private String worthText(String id) {
+        OptionalLong worth = catalog.worth(id);
+        return worth.isPresent() ? "$" + worth.getAsLong() : "-";
+    }
+
+    private void ecoShopToggle(CommandSender sender, ShopCatalog.Item item, boolean enable, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new CommandFailure(ID, "eco-shop.reason");
+        }
+        boolean isOff = overrides.get(item.id()) != null;
+        if (enable == !isOff) {
+            msg.send(sender, enable ? "eco-shop.already-on" : "eco-shop.already-off", Msg.p("item", item.id()));
+            return;
+        }
+        String actor = sender instanceof Player p ? p.getUniqueId().toString() : "console";
+        overrides.set(item.id(), enable, reason, actor, System.currentTimeMillis()).whenCompleteAsync((ok, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Shop: could not save the switch of " + item.id(), Database.cause(e));
+                msg.send(sender, "error");
+                return;
+            }
+            applyOverrides();
+            msg.send(sender, enable ? "eco-shop.enabled" : "eco-shop.disabled", Msg.p("item", item.id()), Msg.p("reason", reason));
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("item", item.id());
+            details.put("enabled", enable);
+            details.put("reason", reason);
+            core.audit().log(AuditCategory.ECONOMY, "shop_item_toggle", Actor.of(sender), details);
+        }, main);
+    }
 
     private void registerCommand() {
         Arg<ShopCatalog.Category> category = Arg.word("category", (sender, raw) -> tabOf(raw)

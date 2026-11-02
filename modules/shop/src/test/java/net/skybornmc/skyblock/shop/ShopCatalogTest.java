@@ -49,13 +49,35 @@ class ShopCatalogTest {
         return resource(ShopModule.V2_DEFAULTS);
     }
 
+    static YamlConfiguration v3() throws Exception {
+        return resource(ShopModule.V3_DEFAULTS);
+    }
+
+    /** B1: {@code price: auto} from the real sell.yml (economy module, multiplier 1), markup 10, buy multiplier 1. */
+    static ShopCatalog.Pricing pricing() {
+        try {
+            net.skybornmc.skyblock.economy.sell.SellCatalog sell = BuySellInvariantTest.sellCatalog();
+            return new ShopCatalog.Pricing(id -> sell.get(id).map(e -> e.base()).orElse(Double.NaN), 10, 1.0);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** A catalog of {@code yaml} that must load without problems. */
+    static ShopCatalog catalogOf(YamlConfiguration yaml) {
+        List<String> problems = new ArrayList<>();
+        ShopCatalog c = load(yaml, problems);
+        assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
+        return c;
+    }
+
     /** A file in the Shop v2 shape (v2 spawner types). */
     static ShopCatalog loadV2(YamlConfiguration yaml, List<String> problems) {
         return ShopCatalog.load(yaml, ShopCatalogTest::realItem, V2_SPAWNER_TYPES::contains, problems::add);
     }
 
     static ShopCatalog load(YamlConfiguration yaml, List<String> problems) {
-        return ShopCatalog.load(yaml, ShopCatalogTest::realItem, SPAWNER_TYPES::contains, problems::add);
+        return ShopCatalog.load(yaml, ShopCatalogTest::realItem, SPAWNER_TYPES::contains, pricing(), problems::add);
     }
 
     static ShopCatalog catalog() throws Exception {
@@ -91,12 +113,12 @@ class ShopCatalogTest {
     }
 
     @Test
-    void about253ItemsWithTheDesignCounts() throws Exception {
+    void the255ItemsOfEconTablesD4() throws Exception {
         ShopCatalog c = catalog();
-        // ECON-SPAWNERS: the Spawners tab holds 20 mobs (tiers 1 to 4); ECON shop lists (Part B) change the rest later.
+        // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
         // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
-        assertEquals(262, c.size());
-        int[] expected = {24, 28, 28, 53, 28, 26, 27, 28, 20};
+        assertEquals(255, c.size());
+        int[] expected = {23, 20, 25, 52, 38, 17, 40, 20, 20};
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -111,7 +133,7 @@ class ShopCatalogTest {
         assertEquals(150, c.item("fishing_rod").orElseThrow().price());
         assertEquals(60, c.item("shears").orElseThrow().price());
         assertEquals(15, c.item("bread").orElseThrow().price());
-        assertEquals(15, c.item("baked_potato").orElseThrow().price());
+        assertEquals(15, c.worth("baked_potato").orElseThrow(), "removed in Shop v4: its price is block worth only");
         assertEquals(4, c.item("dirt").orElseThrow().price(), "unchanged prices stay");
         assertEquals(1, c.item("stone").orElseThrow().contains().get("cobblestone"));
     }
@@ -120,7 +142,7 @@ class ShopCatalogTest {
     void cleanerCatalogLeavesOutWhatS3AndS6Remove() throws Exception {
         ShopCatalog c = catalog();
         for (String gone : List.of("ender_chest", "redstone_block", "stripped_oak_log", "red_dye", "red_wool", "red_carpet",
-                "loom", "lectern", "smithing_table", "cartography_table", "fletching_table", "blue_orchid", "sea_pickle")) {
+                "loom", "lectern", "smithing_table", "cartography_table", "fletching_table")) {
             assertTrue(c.item(gone).isEmpty(), gone + " is not sold");
         }
         assertTrue(c.item("white_wool").isPresent(), "white wool stays (Colors)");
@@ -148,7 +170,7 @@ class ShopCatalogTest {
     @Test
     void spawnersAreSkippedWithoutTheStackingModule() throws Exception {
         List<String> problems = new ArrayList<>();
-        ShopCatalog c = ShopCatalog.load(bundled(), ShopCatalogTest::realItem, problems::add);
+        ShopCatalog c = ShopCatalog.load(bundled(), ShopCatalogTest::realItem, type -> false, pricing(), problems::add);
         assertTrue(c.category("spawners").orElseThrow().items().isEmpty());
         assertEquals(20, problems.size(), () -> String.join("\n", problems));
         assertTrue(c.category("spawners").orElseThrow().groups().isEmpty(), "skipped spawners leave their groups silently");
@@ -159,8 +181,9 @@ class ShopCatalogTest {
         String text = Files.readString(Path.of(ShopCatalogTest.class.getClassLoader().getResource("shop.yml").toURI()));
         assertTrue(text.contains("THE OWNER APPROVES THESE PRICES BEFORE LAUNCH"));
         assertEquals(ShopCatalogMigration.VERSION, bundled().getInt("config-version"));
-        assertEquals(3, ShopCatalogMigration.VERSION);
+        assertEquals(4, ShopCatalogMigration.VERSION);
         assertEquals(2, v2().getInt("config-version"), "the frozen v2 file stays version 2");
+        assertEquals(3, v3().getInt("config-version"), "the frozen v3 file stays version 3");
     }
 
     @Test

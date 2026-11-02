@@ -1,10 +1,12 @@
 # Builder shop (`modules/shop`)
 
-Buy building blocks, decoration, redstone, seeds, basics and tier 1-2 spawners for money, and sell back what the sell table buys (PHASE-3 M3.5, **Shop v2** GUI-3, **GUI-P3**: category menu, buy GUI and sell GUI, I9 section 12; design `docs/design/SHOP_DESIGN.md`). Every sale uses the `/sell` rules (`SellService`: dynamic price, Hot Item, sell bonus and cap, one ledger transaction, items back or to `/box` on failure); the shop never prices a sale itself. Items and prices: `shop.yml` (**draft: the owner approves the prices before launch**); settings: `shop-settings.yml`; texts: `messages/shop.yml`. Reload: `/skyblock reload shop`.
+Buy building blocks, decoration, redstone, seeds, basics and tier 1-2 spawners for money, and sell back what the sell table buys (PHASE-3 M3.5, **Shop v2** GUI-3, **GUI-P3**: category menu, buy GUI and sell GUI, I9 section 12; design `docs/design/SHOP_DESIGN.md`). Every sale uses the `/sell` rules (`SellService`: dynamic price, Hot Item, sell bonus and cap, one ledger transaction, items back or to `/box` on failure); the shop never prices a sale itself. Items and prices: `shop.yml` (**draft: the owner approves the prices before launch**; Shop v4 = the ECON-TABLES D lists, 255 items, `price: auto` = `shop.auto-markup` x sell base, every price x `buy.price-multiplier`); settings: `shop-settings.yml`; texts: `messages/shop.yml`. Reload: `/skyblock reload shop`.
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/shop [category]` | Without a category: the **category menu**. With one (`wood`, `stone-earth`, `special`, `colors`, `decoration`, `essentials`, `farming`, `redstone`, `spawners`, tab-completed) that category's item grid, with Back to the category menu; the old names (`utility`, `glass-colors`, `building-blocks`, `stone-bricks`) still find their category. Also in `/menu` (Shop) and `/help shop` | `skyblock.shop.use` (everyone) | ✅ |
+| `/eco shop price <item>` | Staff: a shop item's tab, price, block worth, state (on sale, off in shop.yml, off by staff with the reason, hidden because /sell pays more) and the most /sell pays for it. Item ids tab-completed | `skyblock.staff.economy.shop.view` | ✅ |
+| `/eco shop disable <item> <reason>` / `/eco shop enable <item> <reason>` | Staff: switch one item off (hidden from `/shop`, price and block worth kept) or on again without editing `shop.yml`; stored in `shop_overrides` (shop V003), survives restarts and reloads. Audit `shop_item_toggle` | `skyblock.staff.economy.shop.toggle` | ✅ |
 
 ## Pages (vanilla chest menus, work on Bedrock)
 ```

@@ -4,3 +4,11 @@
 skyblock.shop.use:
   description: Buy from the builder shop (/shop [category])
   default: true
+skyblock.staff.economy.shop.view:
+  description: Look up a shop item's price, block worth, state and the most /sell pays for it (/eco shop price; ECON-SELL-SHOP-AH B2)
+  default: op
+skyblock.staff.economy.shop.toggle:
+  description: Switch a shop item off or on without editing shop.yml (/eco shop disable|enable <item> <reason>; logged as shop_item_toggle)
+  default: op
+  children:
+    skyblock.staff.economy.shop.view: true

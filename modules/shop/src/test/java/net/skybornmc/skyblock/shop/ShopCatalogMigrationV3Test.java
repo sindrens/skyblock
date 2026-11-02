@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** MENUS-V3 6.3: the data-driven v2 → v3 migration of the live shop.yml. */
+/** MENUS-V3 6.3: the data-driven v2 → v3 migration of the live shop.yml (target: the frozen migrations/shop-v3.yml). */
 class ShopCatalogMigrationV3Test {
 
     private static YamlConfiguration copy(YamlConfiguration yaml) throws Exception {
@@ -29,11 +29,11 @@ class ShopCatalogMigrationV3Test {
 
     @Test
     void untouchedV2FileBecomesTheBundledV3() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(ShopCatalogTest.v2(), ShopCatalogTest.bundled(),
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(ShopCatalogTest.v2(), ShopCatalogTest.v3(),
                 ShopCatalogTest.v2()).orElseThrow();
         assertEquals(3, r.yaml().getInt("config-version"));
         ShopCatalog migrated = load(r.yaml());
-        ShopCatalog expected = ShopCatalogTest.catalog();
+        ShopCatalog expected = ShopCatalogTest.catalogOf(ShopCatalogTest.v3());
         assertEquals(expected.items(), migrated.items(), "same tabs, items, order and prices as a fresh install");
         assertEquals(expected.categories(), migrated.categories(), "groups too");
         assertEquals(expected.worthOnly(), migrated.worthOnly());
@@ -49,7 +49,7 @@ class ShopCatalogMigrationV3Test {
 
     @Test
     void droppedItemsAreParkedAndNewItemsAddedVerbatim() throws Exception {
-        YamlConfiguration v3 = copy(ShopCatalogTest.bundled());
+        YamlConfiguration v3 = copy(ShopCatalogTest.v3());
         v3.set("categories.wood.items.oak_planks", null);                          // ECON removes it
         v3.set("categories.stone-earth.items.rooted_dirt", Map.of("price", "auto")); // ECON adds it back from worth-only
         v3.set("categories.stone-earth.items.dripstone_block", "auto");
@@ -79,7 +79,7 @@ class ShopCatalogMigrationV3Test {
         live.set("categories.decoration.items.jukebox", 900);                       // the owner's own item
         live.set("categories.wood.icon", "spruce_log");                             // the owner's own tab icon
         live.set("worth-only.ender_chest", 5_000);                                  // owner-edited worth
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(live, ShopCatalogTest.bundled(), ShopCatalogTest.v2())
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(live, ShopCatalogTest.v3(), ShopCatalogTest.v2())
                 .orElseThrow();
         ShopCatalog c = load(r.yaml());
         assertEquals(999, c.item("hopper").orElseThrow().price());
@@ -98,7 +98,7 @@ class ShopCatalogMigrationV3Test {
 
     @Test
     void aChangedDefaultMovesOnlyWhenUntouched() throws Exception {
-        YamlConfiguration v3 = copy(ShopCatalogTest.bundled());
+        YamlConfiguration v3 = copy(ShopCatalogTest.v3());
         v3.set("categories.stone-earth.items.dirt", 5);
         v3.set("categories.stone-earth.items.sand", 6);
         YamlConfiguration live = ShopCatalogTest.v2();
@@ -112,12 +112,12 @@ class ShopCatalogMigrationV3Test {
 
     @Test
     void theSecondRunDoesNothing() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(ShopCatalogTest.v2(), ShopCatalogTest.bundled(),
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV3(ShopCatalogTest.v2(), ShopCatalogTest.v3(),
                 ShopCatalogTest.v2()).orElseThrow();
-        assertTrue(ShopCatalogMigration.migrateV3(copy(r.yaml()), ShopCatalogTest.bundled(), ShopCatalogTest.v2()).isEmpty());
-        assertTrue(ShopCatalogMigration.migrateV3(ShopCatalogTest.bundled(), ShopCatalogTest.bundled(), ShopCatalogTest.v2())
+        assertTrue(ShopCatalogMigration.migrateV3(copy(r.yaml()), ShopCatalogTest.v3(), ShopCatalogTest.v2()).isEmpty());
+        assertTrue(ShopCatalogMigration.migrateV3(ShopCatalogTest.v3(), ShopCatalogTest.v3(), ShopCatalogTest.v2())
                 .isEmpty(), "a fresh v3 file is left alone");
-        assertFalse(ShopModule.addMissing(copy(r.yaml()), ShopCatalogTest.bundled()), "nothing left to add");
+        assertFalse(ShopModule.addMissing(copy(r.yaml()), ShopCatalogTest.v3()), "nothing left to add");
     }
 
     @Test
@@ -125,12 +125,12 @@ class ShopCatalogMigrationV3Test {
         YamlConfiguration live = ShopCatalogTest.v1();
         live.set("categories.redstone.items.hopper", 999);
         ShopCatalogMigration.Result v2 = ShopCatalogMigration.migrate(live, ShopCatalogTest.v2(), ShopCatalogTest.v1()).orElseThrow();
-        ShopCatalogMigration.Result v3 = ShopCatalogMigration.migrateV3(v2.yaml(), ShopCatalogTest.bundled(), ShopCatalogTest.v2())
+        ShopCatalogMigration.Result v3 = ShopCatalogMigration.migrateV3(v2.yaml(), ShopCatalogTest.v3(), ShopCatalogTest.v2())
                 .orElseThrow();
         ShopCatalog c = load(v3.yaml());
         assertEquals(3, v3.yaml().getInt("config-version"));
         assertEquals(999, c.item("hopper").orElseThrow().price());
-        assertEquals(ShopCatalogTest.catalog().size(), c.size());
+        assertEquals(ShopCatalogTest.catalogOf(ShopCatalogTest.v3()).size(), c.size());
         assertEquals(1_500, c.worth("ender_chest").orElseThrow());
     }
 }

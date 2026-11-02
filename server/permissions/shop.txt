@@ -1,4 +1,6 @@
 # LuckPerms grants for the shop module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/shop/src/main/resources/permissions/shop.yml. One console command per line; # = comment.
-# The only node (skyblock.shop.use, /shop) defaults to true, so no grants are needed. Prices: shop.yml (no staff commands;
-# reload with /skyblock reload shop).
+# skyblock.shop.use (/shop) defaults to true. Prices: shop.yml (reload with /skyblock reload shop).
+# ECON-SELL-SHOP-AH B2: /eco shop price for moderators and up; /eco shop disable|enable (logged) for admins and up.
+lp group mod permission set skyblock.staff.economy.shop.view true
+lp group admin permission set skyblock.staff.economy.shop.toggle true

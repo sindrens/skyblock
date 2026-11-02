@@ -248,6 +248,18 @@ roots:
   lilac: 1.5
   rose_bush: 1.5
   peony: 1.5
+  # Plants the shop sells (ECON-TABLES D3): vines and roots are bulk (0.5); the rest at the D3 base.
+  weeping_vines: 0.5
+  twisting_vines: 0.5
+  crimson_roots: 0.5
+  warped_roots: 0.5
+  big_dripleaf: 1.0
+  small_dripleaf: 1.0
+  sea_pickle: 1.0
+  crimson_fungus: 2
+  warped_fungus: 2
+  # Crafted (mud + mangrove roots, 90%): listed at its derived price so the shop's auto price has a base.
+  muddy_mangrove_roots: 0.9
 
 # Prices of crafted and smelted items come from their parts: price = cheapest recipe (sum of the parts / output count)
 # x factor. A recipe with an unpriced part stays unsellable. A listed price above its derived price is lowered (no craft-

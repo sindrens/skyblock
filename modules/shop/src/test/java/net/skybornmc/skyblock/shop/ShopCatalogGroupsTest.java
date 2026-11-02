@@ -2,7 +2,6 @@ package net.skybornmc.skyblock.shop;
 
 import net.skybornmc.skyblock.common.menu.Centered;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -110,7 +109,6 @@ class ShopCatalogGroupsTest {
     // ------------------------------------------------------------------ counts of the ECON result (ECON-TABLES D)
 
     @Test
-    @Disabled("needs ECON Part B")
     void econResultCounts() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog();
         assertEquals(255, c.size());
@@ -121,7 +119,6 @@ class ShopCatalogGroupsTest {
     }
 
     @Test
-    @Disabled("needs ECON Part B")
     void econResultPageCounts() throws Exception {
         int[] expected = {2, 1, 2, 3, 2, 1, 2, 1, 1};
         List<ShopCatalog.Category> tabs = ShopCatalogTest.catalog().categories();
