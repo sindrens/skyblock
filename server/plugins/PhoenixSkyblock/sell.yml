@@ -135,3 +135,30 @@ custom-items:
     depths_blaze_rod: 575
     depths_wither_ash: 1400
     depths_warlord_sigil: 3675
+  # ECON-SPAWNERS step 8 / ECON-TABLES A: the custom drop of every spawner mob (mobdrop_<mob>). One round price per tier on
+  # purpose (equal income = equal payback): tier 1 $5, 2 $10, 3 $16, 4 $30, premium $80. Placeholders (owner: exact prices
+  # later). Without these the spawner income on the shop tile is 0.
+  spawner-drops:
+    mobdrop_pig: 5
+    mobdrop_cow: 5
+    mobdrop_chicken: 5
+    mobdrop_sheep: 5
+    mobdrop_rabbit: 5
+    mobdrop_zombie: 10
+    mobdrop_skeleton: 10
+    mobdrop_spider: 10
+    mobdrop_cave_spider: 10
+    mobdrop_slime: 10
+    mobdrop_creeper: 16
+    mobdrop_witch: 16
+    mobdrop_drowned: 16
+    mobdrop_husk: 16
+    mobdrop_stray: 16
+    mobdrop_blaze: 30
+    mobdrop_enderman: 30
+    mobdrop_guardian: 30
+    mobdrop_hoglin: 30
+    mobdrop_zombified_piglin: 30
+    mobdrop_iron_golem: 80
+    mobdrop_wither_skeleton: 80
+    mobdrop_evoker: 80
