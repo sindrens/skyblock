@@ -3,6 +3,7 @@ no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't talk to
 no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island first: <click:run_command:'/is'><c:action>/is</c:action></click>"
 
 npc:
+  title: "<c:ember><sym:sparkle></c:ember> <c:parchment>Island Guide</c:parchment> <c:ember><sym:sparkle></c:ember>"
   name: "<bold><grad:phoenix>Kindle</grad></bold>"
   status: "<c:muted>Island guide <sym:dot> click to talk"
   status-news: "<c:action><sym:star> Something new! <sym:star>"
@@ -35,6 +36,36 @@ menu:
       - "<c:text>Your island grew to level <c:value><level></c:value>!"
       - "<c:text>Check your <c:value>Challenges</c:value> and <c:value>Upgrades</c:value>:"
       - "<c:text>new ones may be open now."
+  kindle-quests:
+    name: "<area:reward>Kindle's quests"
+    lore:
+      - "<c:text>Bring Kindle what he asks for"
+      - "<c:text>and get more than selling pays."
+      - "<c:muted>He has new errands now and then."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"
+  kindle-quests-story:
+    name: "<area:reward>Kindle's quests <c:action><sym:star>"
+    lore:
+      - "<c:text>Kindle asks: <c:value><ask>"
+      - "<c:muted>Plus a few errands that change"
+      - "<c:muted>now and then."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"
+  finds:
+    name: "<area:money>Kindle's finds"
+    lore:
+      - "<c:text>Useful things Kindle found."
+      - "<c:text>He trades them for your crops,"
+      - "<c:text>ores and mob drops, never money."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
+  book:
+    name: "<area:neutral>Guide book"
+    lore:
+      - "<c:text>How to play, in short pages."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"
   next:
     name: "<c:action>Next step"
     lore:
@@ -103,3 +134,150 @@ menu:
       - "<c:text>Every feature explained."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+
+talk:
+  story-ready: "<grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Oh! You have everything for my quest. <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Hand it in]</c:action></hover></click>"
+  story-ask: "<grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Could you bring me <c:value><amount> <item></c:value>? I'll make it worth it! <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Talk]</c:action></hover></click>"
+  new-quests: "<grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>I have new quests and finds for you! <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Talk]</c:action></hover></click>"
+
+tasks:
+  crumb-quests: "Quests"
+  crumb-trades: "Finds"
+  info-quests:
+    - "<c:text>Kindle's story quest is shared"
+    - "<c:text>by your island: anyone can hand in."
+    - "<c:muted>Errands are your own and change"
+    - "<c:muted>now and then."
+  info-trades:
+    - "<c:text>Things Kindle found. Each one"
+    - "<c:text>once, until he finds new ones."
+  story-info:
+    name: "<bold><grad:phoenix>Kindle's story</grad></bold>"
+    lore:
+      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:muted>Each one opens the next. Some wait"
+      - "<c:muted>for a higher island level."
+  trades-info:
+    name: "<bold><grad:phoenix>Kindle's finds</grad></bold>"
+    lore:
+      - "<c:text>Paid with items you gather."
+      - "<c:muted>He finds new things now and then."
+  loading:
+    name: "<c:muted>Loading..."
+    lore: []
+  story-all-done:
+    name: "<c:success>Story done!"
+    lore:
+      - "<c:text>Kindle has nothing more to ask."
+      - "<c:muted>His errands and finds keep coming."
+  none:
+    name: "<c:muted>Nothing right now"
+    lore:
+      - "<c:muted>Grow your island: Kindle offers"
+      - "<c:muted>more as it levels up."
+  story-name: "<area:reward><sym:star> <amount> <item> <c:muted>→ <c:value><reward>"
+  errand-name: "<area:reward><amount> <item> <c:muted>→ <c:value><reward>"
+  trade-name: "<area:money><reward> <c:muted>for <c:value><amount> <item>"
+  ask-header:
+    - "<c:muted>Kindle asks for:"
+  price-header:
+    - "<c:muted>Price:"
+  reward-header:
+    - ""
+    - "<c:muted>You get:"
+  cost-ok: " <c:success><sym:check></c:success> <c:text><amount> <item> <c:muted>(<have>)"
+  cost-missing: " <c:error><sym:cross></c:error> <c:text><amount> <item> <c:muted>(you have <have>)"
+  reward-money: " <cur:money><sym:money><amount></cur:money>"
+  reward-crystals: " <cur:crystals><sym:crystals> <amount></cur:crystals>"
+  reward-item: " <c:value><amount>x <item>"
+  reward-key: " <c:value><amount>x <crate> Key"
+  state-ready:
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
+  state-buy:
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to trade"
+  state-missing:
+    - "<c:muted>Gather the rest, then come back."
+  state-done:
+    - "<c:success><sym:check> Done</c:success> <c:muted>· new ones come later"
+  handed-in: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Thank you! Here: <c:value><reward></c:value> and more."
+  bought: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Deal! <c:value><reward></c:value> is yours."
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>You don't carry enough yet (plain items only, not named ones)."
+  already: "<prefix><c:muted>That one is done already."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Your island needs level <c:value><level></c:value> first."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong; your items are back. Try again."
+
+# The guide book (Kindle's menu → Guide book). One key per page (book.page-1, -2 ...), up to 50. Keep pages short:
+# a book page fits about 14 short lines.
+book:
+  title: "Kindle's Guide"
+  author: "Kindle"
+  page-1:
+    - "<bold><grad:phoenix>Welcome!</grad></bold>"
+    - ""
+    - "<black>I'm Kindle, your island guide."
+    - ""
+    - "<black>Your island starts small. Grow"
+    - "<black>it, earn money, go down into"
+    - "<black>the Depths and rise like a"
+    - "<black>phoenix!"
+    - ""
+    - "<dark_gray>Turn the page for the basics."
+  page-2:
+    - "<bold><dark_red>Money</dark_red></bold>"
+    - ""
+    - "<black>Farm, mine and fight, then"
+    - "<black>/sell what you gather."
+    - ""
+    - "<black>/shop sells blocks, seeds"
+    - "<black>and spawners."
+    - ""
+    - "<black>Bring me things for a better"
+    - "<black>price than selling!"
+  page-3:
+    - "<bold><dark_red>Island level</dark_red></bold>"
+    - ""
+    - "<black>Your level grows from island"
+    - "<black>milestones (/ms), blocks you"
+    - "<black>place, skills, the Depths and"
+    - "<black>your island bank."
+    - ""
+    - "<black>/is level shows where your"
+    - "<black>points come from."
+  page-4:
+    - "<bold><dark_red>Upgrades</dark_red></bold>"
+    - ""
+    - "<black>/is upgrade: a bigger island,"
+    - "<black>faster farms and spawners,"
+    - "<black>better Depths."
+    - ""
+    - "<black>Masteries are long-term"
+    - "<black>bonuses for your whole island."
+  page-5:
+    - "<bold><dark_red>The Depths</dark_red></bold>"
+    - ""
+    - "<black>Below spawn lie the Depths:"
+    - "<black>ores, forests and monsters."
+    - ""
+    - "<black>Level Mining, Foraging and"
+    - "<black>Combat to open deeper tiers."
+    - ""
+    - "<black>/dungeon takes you there."
+  page-6:
+    - "<bold><dark_red>Milestones</dark_red></bold>"
+    - ""
+    - "<black>Grind one thing (wheat, coal,"
+    - "<black>zombies...) and claim perks"
+    - "<black>that make it even better."
+    - ""
+    - "<black>Island tiers are shared and"
+    - "<black>raise your island level."
+  page-7:
+    - "<bold><dark_red>Rewards</dark_red></bold>"
+    - ""
+    - "<black>/daily every day, crates with"
+    - "<black>keys, quests and my errands."
+    - ""
+    - "<black>/menu has everything in one"
+    - "<black>place. Have fun!"
+    - ""
+    - "<dark_gray>- Kindle"

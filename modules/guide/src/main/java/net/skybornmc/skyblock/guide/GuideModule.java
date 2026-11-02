@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.guide;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
+import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.command.CommandFailure;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.db.Migrations;
@@ -47,6 +48,9 @@ public final class GuideModule implements SkyblockModule, Listener {
     private ModuleMessages msg;
     private GuideStore store;
     private GuideNpcs npcs;
+    private GuideQuests quests;
+    /** player → rotation in which Kindle last spoke to them. */
+    private final Map<UUID, Long> spokeIn = new ConcurrentHashMap<>();
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     private final Map<UUID, Long> lastClick = new ConcurrentHashMap<>();
 
@@ -71,6 +75,8 @@ public final class GuideModule implements SkyblockModule, Listener {
         msg = core.messages(ID);
         store = new GuideStore(core.database());
         npcs = new GuideNpcs(this);
+        quests = new GuideQuests(this);
+        quests.catalog(loadCatalog());
         store.all().whenComplete((spots, error) -> {
             if (error != null) {
                 core.plugin().getLogger().log(Level.WARNING, "Guide: could not read moved guide spots (they stand at the home)", error);
@@ -83,6 +89,11 @@ public final class GuideModule implements SkyblockModule, Listener {
         long check = 20L * config.checkSeconds;
         tasks.add(core.scheduler().repeat("guide:sweep", 40L, check, npcs::sweep));
         tasks.add(core.scheduler().repeat("guide:look", 20L, 10L, npcs::look));
+        tasks.add(core.scheduler().repeat("guide:talk", 60L, 40L, this::talkNearby));
+        tasks.add(core.scheduler().repeat("guide:prune", 72_000L, 72_000L, () -> {
+            quests.prune();
+            store.purge(System.currentTimeMillis() - 30L * 24 * 3_600_000L);
+        }));
         core.commands().extend("is", guideCommand());
     }
 
@@ -90,6 +101,7 @@ public final class GuideModule implements SkyblockModule, Listener {
     public void reload() {
         core.configs().load(config);
         core.messages().load(ID);
+        quests.catalog(loadCatalog());
         npcs.despawnAll(); // respawned with the new look on the next sweep
     }
 
@@ -116,6 +128,93 @@ public final class GuideModule implements SkyblockModule, Listener {
 
     ModuleMessages msg() {
         return msg;
+    }
+
+    GuideStore store() {
+        return store;
+    }
+
+    GuideQuests quests() {
+        return quests;
+    }
+
+    /** guide-quests.yml from the data folder (copied from the jar on first start; new sections are never merged in). */
+    private GuideCatalog loadCatalog() {
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), GuideCatalog.FILE);
+        if (!file.exists()) {
+            core.plugin().saveResource(GuideCatalog.FILE, false);
+        }
+        org.bukkit.configuration.file.YamlConfiguration yaml = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file);
+        java.util.function.Predicate<String> item = id -> {
+            org.bukkit.Material mat = org.bukkit.Material.matchMaterial(id);
+            return mat != null && mat.isItem() && !mat.isAir();
+        };
+        java.util.function.Predicate<String> crate = id -> core.services().optional(net.skybornmc.skyblock.common.crate.CrateKeys.class)
+                .map(k -> k.exists(id)).orElse(true);
+        GuideCatalog c = GuideCatalog.load(yaml, item, crate, w -> core.plugin().getLogger().warning(w));
+        core.plugin().getLogger().info("Guide: " + c.all(GuideCatalog.Kind.STORY).size() + " story quests, "
+                + c.all(GuideCatalog.Kind.ERRAND).size() + " errands, " + c.all(GuideCatalog.Kind.TRADE).size() + " finds.");
+        return c;
+    }
+
+    /**
+     * Owner GD-2: Kindle speaks to a member who comes close, once per rotation: "you have everything for my quest",
+     * "could you bring me ...", or "I have new quests for you" (never a timer).
+     */
+    private void talkNearby() {
+        if (!config.enabled || config.talkRadius <= 0) {
+            return;
+        }
+        IslandService islands = islands().orElse(null);
+        if (islands == null) {
+            return;
+        }
+        long period = quests.period();
+        double r2 = config.talkRadius * config.talkRadius;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!islands.isIslandWorld(p.getWorld())) {
+                continue;
+            }
+            Long last = spokeIn.get(p.getUniqueId());
+            if (last != null && last == period) {
+                continue;
+            }
+            Optional<IslandService.IslandInfo> here = islands.islandAt(p.getLocation());
+            if (here.isEmpty() || !islands.isMember(here.get().id(), p.getUniqueId())) {
+                continue;
+            }
+            UUID island = here.get().id();
+            Optional<Location> spot = npcs.spot(island);
+            if (spot.isEmpty() || spot.get().getWorld() != p.getWorld() || spot.get().distanceSquared(p.getLocation()) > r2) {
+                continue;
+            }
+            GuideCatalog.Entry story = quests.currentStory(island, null);
+            if (!quests.storyLoaded(island)) {
+                continue; // loading: speak on the next pass
+            }
+            spokeIn.put(p.getUniqueId(), period);
+            if (story != null && story.level() <= quests.islandLevel(island) && quests.has(p, story)) {
+                msg.send(p, "talk.story-ready");
+            } else if (story != null && story.level() <= quests.islandLevel(island)) {
+                Map.Entry<String, Integer> first = story.cost().entrySet().iterator().next();
+                msg.send(p, "talk.story-ask", Msg.number("amount", first.getValue()), Msg.p("item", GuideTasksMenu.pretty(first.getKey())));
+            } else {
+                msg.send(p, "talk.new-quests");
+            }
+            core.sounds().play(p, "notify");
+        }
+    }
+
+    /** The guide book (owner GD-2): how to play, in a written book (Java and Bedrock). */
+    void openBook(Player p) {
+        List<Component> pages = new ArrayList<>();
+        for (int i = 1; i <= 50 && msg.has("book.page-" + i); i++) {
+            pages.add(msg.component(p, "book.page-" + i));
+        }
+        if (pages.isEmpty()) {
+            return;
+        }
+        p.openBook(net.kyori.adventure.inventory.Book.book(msg.component(p, "book.title"), msg.component(p, "book.author"), pages));
     }
 
     Optional<IslandService> islands() {
@@ -219,8 +318,14 @@ public final class GuideModule implements SkyblockModule, Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        lastClick.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onRemoved(IslandRemovedEvent event) {
         npcs.forget(event.islandId());
+        quests.forget(event.islandId());
         store.delete(event.islandId());
     }
 

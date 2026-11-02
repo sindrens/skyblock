@@ -5,7 +5,7 @@
 - New module `guide`: one NPC per island next to the island home (Mannequin, name + status line). Click (any button, Bedrock tap) opens his menu: next step, Challenges (task book), Quests, Milestones (ready count), Upgrades, Masteries, Island level, The Depths (your tier), Help. Buttons of modules that are off are left out.
 - Island level-up: online members get "Kindle has something new [Talk]" and his status line shows a star until someone opens him.
 - `/is guide` (anywhere) and `/is guide move` (leader and admins, inside the border). Spots in `guide_spots`; removed with the island.
-- Open for the owner: Kindle's own quest line, tip lines, skin (ISLAND_GUIDE.md GD-1 to GD-4).
+- Kindle v2 (owner answers): his own **story quests** (deliver items, shared per island, harder each step, level-gated), **errands** (2 per player, new every 3 h) and **finds** (3 item-for-item trades per rotation), all in `guide-quests.yml`; dupe-safe hand-in (items first, one transaction with a unique row, ledger payout, refund on failure). He speaks to members who come close (once per rotation), has an "Island Guide" title line and a guide book.
 ### Eclipse Crate: tiered pool (Complete Developer Spec F7a, owner V1-V3)
 - One open gives 3 different rewards from each of common, mid and rare (9 of a pool of 27) plus 1 of 5 jackpots; no pity; an owned cosmetic jackpot pays its fallback crystals (no re-roll). Exact odds in the preview (one row per band, jackpots in the top row).
 - `crates.yml`: `band:` per reward and `draw:` per crate (any crate can be tiered). Live servers switch once while the old Eclipse table is untouched (`eclipse-version: 2`); an edited table stays.

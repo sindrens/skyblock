@@ -43,6 +43,35 @@ final class GuideStore {
     }
 
     CompletableFuture<Void> delete(UUID island) {
-        return db.run(c -> Sql.update(c, "DELETE FROM guide_spots WHERE island_id = ?", Sql.toBytes(island)));
+        return db.run(c -> {
+            Sql.update(c, "DELETE FROM guide_spots WHERE island_id = ?", Sql.toBytes(island));
+            Sql.update(c, "DELETE FROM guide_done WHERE scope_id = ? AND period = ?", Sql.toBytes(island), STORY);
+        });
+    }
+
+    static final String STORY = "story";
+
+    /** Done entries of a scope in one period ({@code story} or a rotation number). */
+    CompletableFuture<java.util.Set<String>> done(UUID scope, GuideCatalog.Kind kind, String period) {
+        return db.async(c -> new java.util.HashSet<>(Sql.query(c, "SELECT entry_id FROM guide_done WHERE scope_id = ? AND kind = ? AND period = ?",
+                rs -> rs.getString(1), Sql.toBytes(scope), kind.id(), period)));
+    }
+
+    /** Guard SQL: records a hand-in; false when it was recorded already (another click, another member). */
+    static boolean record(java.sql.Connection c, UUID scope, GuideCatalog.Kind kind, String period, String entry, UUID by, long now)
+            throws java.sql.SQLException {
+        boolean exists = Sql.queryOne(c, "SELECT 1 FROM guide_done WHERE scope_id = ? AND kind = ? AND period = ? AND entry_id = ?",
+                rs -> 1, Sql.toBytes(scope), kind.id(), period, entry).isPresent();
+        if (exists) {
+            return false;
+        }
+        Sql.update(c, "INSERT INTO guide_done (scope_id, kind, period, entry_id, done_by, done_at) VALUES (?, ?, ?, ?, ?, ?)",
+                Sql.toBytes(scope), kind.id(), period, entry, Sql.toBytes(by), now);
+        return true;
+    }
+
+    /** Old rotations are only history: rows older than {@code before} (not story) are deleted. */
+    CompletableFuture<Void> purge(long before) {
+        return db.run(c -> Sql.update(c, "DELETE FROM guide_done WHERE period <> ? AND done_at < ?", STORY, before));
     }
 }

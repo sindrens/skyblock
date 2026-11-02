@@ -39,6 +39,18 @@ public final class GuideConfig extends ModuleConfig {
     @Setting(path = "announce-level-ups", desc = "On an island level-up, online members get \"Kindle has something new\" and his status line shows a star.")
     public boolean announceLevelUps = true;
 
+    @Setting(path = "errands.hours", desc = "Kindle's errands and finds change this often (owner: every 3 hours, never shown as a timer).", min = 1, max = 48)
+    public int errandHours = 3;
+
+    @Setting(path = "errands.count", desc = "Errands each player gets per rotation.", min = 0, max = 7)
+    public int errandCount = 2;
+
+    @Setting(path = "trades.count", desc = "Kindle's finds (item trades) each player gets per rotation.", min = 0, max = 7)
+    public int tradeCount = 3;
+
+    @Setting(path = "talk.radius", desc = "Kindle says a line when a member comes this close (once per rotation per player).", min = 0, max = 16)
+    public double talkRadius = 5;
+
     @Override
     public String fileName() {
         return "guide.yml";

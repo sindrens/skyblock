@@ -34,3 +34,15 @@ v1 (built now, `guide.yml enabled: true`):
 - GD-2 **Talking lines**: Kindle says one tip line when a member walks near him (once per session)?
 - GD-3 **Skin**: a phoenix-themed skin name for `guide.yml skin`.
 - GD-4 Should Kindle's ★ also light for ready milestones / quests (per player, so only in the menu, not above his head)?
+
+## v2 (owner answers 2 Nov 2026, built)
+- **Kindle's story** (`guide-quests.yml story`): one delivery quest at a time, shared by the island ("bring me 30
+  wheat"), each harder than the last, some waiting for an island level; rewards pay about 2-3x the sell value plus
+  crystals and now and then a key.
+- **Errands**: 2 per player, fresh every 3 hours (never shown as a timer). **Finds**: 3 item trades per player per
+  rotation ("useful things Kindle found", paid with crops, ores and mob drops, never money), filtered by island level.
+- Hand-in is dupe-safe: plain items are taken first, one DB transaction records it (primary key) and pays through the
+  ledger, items go back on any failure.
+- Kindle speaks when a member comes within 5 blocks, once per rotation ("you have everything for my quest", "could you
+  bring me...", "I have new quests and finds"). Title line "Island Guide" above his name. Guide book in his menu.
+- Skin: owner asked for "something cute"; `guide.yml skin` takes a player name (set it in /admin).

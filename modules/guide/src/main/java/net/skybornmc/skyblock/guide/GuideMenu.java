@@ -17,9 +17,10 @@ import java.util.UUID;
  * is left out (no dead buttons). One click each (Bedrock-safe).
  * <pre>
  *  . . . . K . . . .      4 Kindle (greeting, news)
- *  . . N . C . Q . .      11 next step, 13 challenges, 15 quests
- *  . . M . U . S . .      20 milestones, 22 upgrades, 24 masteries
- *  . . L . D . H . .      29 island level, 31 the Depths, 33 help
+ *  . . N . Q . F . .      11 next step, 13 Kindle's quests, 15 Kindle's finds
+ *  . . C . D . M . .      20 challenges, 22 daily quests, 24 milestones
+ *  . . U . S . L . .      29 upgrades, 31 masteries, 33 island level
+ *  . . D . B . H . .      38 the Depths, 40 guide book, 42 help
  *  nav bar
  * </pre>
  */
@@ -27,14 +28,17 @@ final class GuideMenu extends Menu {
 
     static final int SLOT_KINDLE = 4;
     static final int SLOT_NEXT = 11;
-    static final int SLOT_CHALLENGES = 13;
-    static final int SLOT_QUESTS = 15;
-    static final int SLOT_MILESTONES = 20;
-    static final int SLOT_UPGRADES = 22;
-    static final int SLOT_MASTERIES = 24;
-    static final int SLOT_LEVEL = 29;
-    static final int SLOT_DEPTHS = 31;
-    static final int SLOT_HELP = 33;
+    static final int SLOT_KINDLE_QUESTS = 13;
+    static final int SLOT_FINDS = 15;
+    static final int SLOT_CHALLENGES = 20;
+    static final int SLOT_QUESTS = 22;
+    static final int SLOT_MILESTONES = 24;
+    static final int SLOT_UPGRADES = 29;
+    static final int SLOT_MASTERIES = 31;
+    static final int SLOT_LEVEL = 33;
+    static final int SLOT_DEPTHS = 38;
+    static final int SLOT_BOOK = 40;
+    static final int SLOT_HELP = 42;
 
     private final GuideModule m;
     private final UUID island;
@@ -48,7 +52,7 @@ final class GuideMenu extends Menu {
 
     @Override
     public int rows() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -81,6 +85,17 @@ final class GuideMenu extends Menu {
                 Msg.p("next", ph("objective", m.core().messages().raw(GuideModule.ID, "menu.next-none")))), click -> {
             click.player().closeInventory();
             m.msg().send(click.player(), "menu.next-chat", Msg.p("next", ph("objective", "")));
+        });
+        GuideCatalog.Entry story = m.quests().currentStory(island, () -> { if (isOpen()) refresh(); });
+        set(SLOT_KINDLE_QUESTS, service.item(Material.WHEAT, viewer, GuideModule.ID, story != null ? "menu.kindle-quests-story" : "menu.kindle-quests",
+                Msg.p("ask", story == null ? "" : story.cost().values().iterator().next() + " "
+                        + GuideTasksMenu.pretty(story.cost().keySet().iterator().next()))),
+                click -> openChild(new GuideTasksMenu(m, island, false)));
+        set(SLOT_FINDS, service.item(Material.BUNDLE, viewer, GuideModule.ID, "menu.finds"),
+                click -> openChild(new GuideTasksMenu(m, island, true)));
+        set(SLOT_BOOK, service.item(Material.WRITTEN_BOOK, viewer, GuideModule.ID, "menu.book"), click -> {
+            click.player().closeInventory();
+            m.openBook(click.player());
         });
         Optional<TaskService> tasks = m.core().services().optional(TaskService.class);
         tasks.ifPresent(t -> set(SLOT_CHALLENGES, service.item(Material.WRITABLE_BOOK, viewer, GuideModule.ID, "menu.challenges",

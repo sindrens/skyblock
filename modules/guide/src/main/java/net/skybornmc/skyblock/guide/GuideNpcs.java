@@ -223,7 +223,8 @@ final class GuideNpcs implements Listener {
         }
         boolean star = news.contains(island);
         p.news = star;
-        Component text = m.msg().component(net.kyori.adventure.audience.Audience.empty(), "npc.name").append(Component.newline())
+        Component text = m.msg().component(net.kyori.adventure.audience.Audience.empty(), "npc.title").append(Component.newline())
+                .append(m.msg().component(net.kyori.adventure.audience.Audience.empty(), "npc.name")).append(Component.newline())
                 .append(m.msg().component(net.kyori.adventure.audience.Audience.empty(), star ? "npc.status-news" : "npc.status"));
         p.label.text(text);
     }
