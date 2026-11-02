@@ -252,6 +252,8 @@ travel:
   action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
   fallback-name: "<c:flame><bold><name>"
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That place is not there right now. Try again later."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>There is no place called <c:value><name></c:value> here. <click:run_command:'/warp'><c:action>/warp</c:action></click> <c:text>lists them all."
+  locked-warp: "<prefix><c:error><sym:cross></c:error> <c:text>You can't go there yet."
   empty:
     name: "<c:muted>No places yet"
     lore: ["<c:text>Places appear here once", "<c:text>they are built."]

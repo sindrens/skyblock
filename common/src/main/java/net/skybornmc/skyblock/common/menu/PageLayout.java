@@ -27,9 +27,14 @@ public interface PageLayout<T> {
 
     /** Today's behaviour: 28 entries per page on {@link PagedMenu#CONTENT_SLOTS}, left to right. */
     static <T> PageLayout<T> grid() {
+        return grid(PagedMenu.CONTENT_SLOTS.length);
+    }
+
+    /** The grid with only its first {@code perPage} slots (whole rows of 7; a compact {@link PagedMenu}). */
+    static <T> PageLayout<T> grid(int perPage) {
+        int per = Math.max(1, Math.min(PagedMenu.CONTENT_SLOTS.length, perPage));
         return entries -> {
             List<Page<T>> out = new ArrayList<>();
-            int per = PagedMenu.CONTENT_SLOTS.length;
             for (int from = 0; from < entries.size(); from += per) {
                 List<T> chunk = entries.subList(from, Math.min(entries.size(), from + per));
                 out.add(new Page<>(chunk, Arrays.copyOf(PagedMenu.CONTENT_SLOTS, chunk.size())));

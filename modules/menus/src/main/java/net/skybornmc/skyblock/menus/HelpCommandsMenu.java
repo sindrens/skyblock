@@ -19,6 +19,12 @@ import java.util.List;
  */
 final class HelpCommandsMenu extends PagedMenu<HelpEntry> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final Nav nav;
     private final List<String> categories;
     private final Component crumb;

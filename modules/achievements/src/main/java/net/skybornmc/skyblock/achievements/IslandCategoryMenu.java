@@ -21,6 +21,12 @@ import java.util.UUID;
  */
 final class IslandCategoryMenu extends PagedMenu<IslandAchievementDef> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final AchievementsModule module;
     private final UUID islandId;
     private final boolean team;

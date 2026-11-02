@@ -20,6 +20,12 @@ import java.util.UUID;
  */
 final class SkinsMenu extends PagedMenu<ToolCatalog.SkinDef> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     static final int SLOT_REMOVE = 4;
 
     private final ToolsModule module;

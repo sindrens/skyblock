@@ -1,0 +1,158 @@
+# Island tools (Complete Developer Spec D1-D12, T1-T13). MiniMessage + style tags. Reload: /skyblock reload islandtools
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools are switched off right now."
+loading: "<prefix><c:muted>Your island tools are loading, try again in a moment."
+
+tier:
+  wood: "Wooden"
+  stone: "Stone"
+  iron: "Iron"
+  gold: "Golden"
+  diamond: "Diamond"
+  netherite: "Netherite"
+
+item:
+  name:
+    pickaxe: "Island Pickaxe"
+    axe: "Island Axe"
+    hoe: "Island Hoe"
+    sword: "Island Sword"
+  description:
+    pickaxe: "Your island's pickaxe. Upgrade it in /is tools."
+    axe: "Your island's axe. Upgrade it in /is tools."
+    hoe: "Harvests whole rows into its storage; crops regrow."
+    sword: "Your island's sword. Upgrade it in /is tools."
+  tiered-name: "<c:value>{tier} {tool}"
+  upgrade-line: "<c:text>{name} <c:value>{level}<c:muted>/{max}"
+  only-island: "<c:muted>Works on islands only."
+  action-input: "Sneak + click"
+  action: "upgrades"
+
+effect:
+  magnet: "Drops into your bag"
+
+starter:
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Your island tools are in your bag: pickaxe, axe, hoe and sword. Upgrade them in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
+
+tool:
+  old-copy: "<prefix><c:error><sym:cross></c:error> <c:text>That is an old copy of your island tool. Your real one is in <c:action>/is tools</c:action><c:text>."
+  only-island: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools only work on islands. Use your Depths tools down there."
+  no-drop: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools can't be dropped."
+
+hoe:
+  burst: "<bold><grad:flame>GROWTH BURST!</grad></bold> <c:text>The whole row is ripe again."
+  storage-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your hoe storage is full. Empty it in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
+
+buy:
+  done: "<prefix><c:success><sym:check></c:success> <c:text><tool>: <c:value><what></c:value> <c:muted>(<cur:crystals><sym:crystals> <cost></cur:crystals>)"
+  poor: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:crystals><sym:crystals> <cost></cur:crystals><c:text>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work (nothing was paid). Try again."
+
+copy:
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Here is a new <c:value><tool></c:value><c:text>. Older copies no longer work."
+
+admin:
+  reset: "<prefix><c:success><sym:check></c:success> <c:text>The island tools of <c:value><player></c:value> are back to the wooden set."
+
+menu:
+  crumb-island: "Island"
+  crumb: "Tools"
+  info:
+    - "<c:text>Your island tools. They work on"
+    - "<c:text>islands and wait for you while you"
+    - "<c:text>are in the Depths."
+  tool-info:
+    - "<c:text>Tier and upgrades of this tool."
+    - "<c:muted>Paid with island crystals."
+  tool-lore:
+    - "<c:text>Tier: <c:value><tier>"
+    - "<c:text>Upgrades: <c:value><done></c:value><c:muted>/<max>"
+  tool-stored:
+    - "<c:muted>Put away while you are in the Depths."
+  click-open:
+    - ""
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
+  storage:
+    name: "<area:reward>Hoe storage"
+    lore:
+      - "<c:text>Stored: <c:value><used></c:value><c:muted>/<cap>"
+      - "<c:muted>Crops your hoe harvests land here."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  tier-next:
+    name: "<area:skills>Next tier: <c:value><to>"
+    lore:
+      - "<c:text><from> <c:muted>→</c:muted> <c:value><to>"
+      - "<c:muted>Faster, stronger, more durable."
+      - ""
+      - "<c:text>Price: <cur:crystals><sym:crystals> <cost>"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to upgrade"
+  tier-max:
+    name: "<c:success><sym:check> Top tier"
+    lore:
+      - "<c:muted>Netherite: the best there is."
+  copy:
+    name: "<area:neutral>New copy"
+    lore:
+      - "<c:text>Lost or misplaced your tool?"
+      - "<c:muted>Get a fresh copy; older ones stop"
+      - "<c:muted>working."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>for a new copy"
+  upgrade-name: "<area:skills><name>"
+  level-line: "<dots> <c:muted><level>/<max>"
+  effect-line: "<c:text>Now: <c:value><now></c:value> <c:muted>→</c:muted> <c:text>next: <c:value><next>"
+  upgrade-buy:
+    - "<c:text>Price: <cur:crystals><sym:crystals> <cost>"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+  upgrade-max:
+    - "<c:success><sym:check> Maxed"
+  confirm-crumb: "Buy this upgrade?"
+  confirm-details:
+    - "<c:text>Pay <cur:crystals><sym:crystals> <cost></cur:crystals><c:text>?"
+
+upgrade:
+  efficiency: {name: "Efficiency", icon: sugar, lore: ["<c:muted>Breaks blocks faster."]}
+  fortune: {name: "Fortune", icon: lapis_lazuli, lore: ["<c:muted>More ores and crops per block."]}
+  haste: {name: "Haste", icon: golden_pickaxe, lore: ["<c:muted>Haste while you hold it."]}
+  magnet: {name: "Magnet", icon: lodestone, lore: ["<c:muted>Drops fly straight into your bag."]}
+  smelter: {name: "Smelter", icon: furnace, lore: ["<c:muted>Chance to smelt ores and stone", "<c:muted>as you mine."]}
+  extra_drops: {name: "Extra Drops", icon: chest, lore: ["<c:muted>Chance for more of what you", "<c:muted>break or kill."]}
+  experience: {name: "Wisdom", icon: experience_bottle, lore: ["<c:muted>More XP from blocks."]}
+  timber: {name: "Timber", icon: oak_log, lore: ["<c:muted>Logs above fall with the one", "<c:muted>you chop."]}
+  sharpness: {name: "Sharpness", icon: iron_sword, lore: ["<c:muted>More damage."]}
+  row: {name: "Row", icon: wheat, lore: ["<c:muted>Harvests a whole row of ripe", "<c:muted>crops at once."]}
+  storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the hoe storage."]}
+  looting: {name: "Looting", icon: rotten_flesh, lore: ["<c:muted>More mob drops."]}
+  sweeping: {name: "Sweeping Edge", icon: iron_sword, lore: ["<c:muted>Stronger sweep attacks."]}
+  fire_aspect: {name: "Fire Aspect", icon: blaze_powder, lore: ["<c:muted>Sets mobs on fire."]}
+  knockback: {name: "Knockback", icon: piston, lore: ["<c:muted>Pushes mobs back."]}
+  lifesteal: {name: "Lifesteal", icon: red_dye, lore: ["<c:muted>Heals you for part of the damage."]}
+
+storage:
+  crumb: "Hoe storage"
+  info:
+    - "<c:text>Crops your island hoe harvested."
+    - "<c:muted>Take a stack or sell everything."
+  head:
+    name: "<area:reward>Hoe storage"
+    lore:
+      - "<c:text>Stored: <c:value><used></c:value><c:muted>/<cap>"
+      - "<c:muted>More room: the Storage upgrade."
+  empty:
+    name: "<c:muted>Empty"
+    lore:
+      - "<c:muted>Harvest ripe crops with your hoe."
+  item-name: "<c:value><item>"
+  item-lore:
+    - "<c:text>Stored: <c:value><amount>"
+    - ""
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take a stack"
+  sell:
+    name: "<area:money>Sell all"
+    lore:
+      - "<c:text>Sells everything here at /sell"
+      - "<c:text>prices (your sell bonus counts)."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
+  nothing: "<prefix><c:muted>Nothing in the storage can be sold."
+  sell-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale did not go through; everything is still stored."

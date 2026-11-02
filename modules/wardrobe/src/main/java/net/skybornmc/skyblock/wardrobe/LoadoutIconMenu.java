@@ -16,6 +16,12 @@ import java.util.UUID;
 /** Pick a preset's icon: its own tools and sets first, then the icons in {@code loadout.icons}. Click-only. */
 final class LoadoutIconMenu extends PagedMenu<Material> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final WardrobeModule module;
     private final UUID loadoutId;
 

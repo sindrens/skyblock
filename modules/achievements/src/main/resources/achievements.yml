@@ -5,7 +5,7 @@
 # New achievements from an update are added to this file automatically: turn one off with "enabled: false" instead of
 # deleting it. Every key inside 'categories' and 'achievements' is one entry (no other settings belong in this file).
 #
-# categories.<id>:   name, icon (item id), slot (inner slot of the 6-row menu: 10-12, 14-16, 19-25, 28-34, 37-43;
+# categories.<id>:   name, icon (item id), slot (inner slot: 10-12, 14-16, 19-25, 28-34, or 37-43 which makes the menu 6 rows;
 #                    13 is the summary), description, boost (what the category's boost points give, see below)
 #
 # Boost points (AC2): every finished tier gives points (achievements-settings.yml -> points.*, default 1/2/3/5/8).

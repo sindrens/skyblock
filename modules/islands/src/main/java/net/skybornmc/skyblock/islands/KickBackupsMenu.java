@@ -20,6 +20,12 @@ import java.util.List;
  */
 final class KickBackupsMenu extends PagedMenu<KickBackupStore.Backup> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final IslandsModule module;
     private final KickBackups backups;
     private final String playerName;

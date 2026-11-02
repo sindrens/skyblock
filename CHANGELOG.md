@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Milestone leaderboards and menu sizes
+- **Milestone Top** (F13a/G6): `/milestones` → Milestone Top shows the 10 islands and the 10 players (best profile) with the most completed milestone tiers (1 tier = 1 point); yours glows. Leaderboard sources `milestones island` / `milestones personal` added to `npcs.yml` (they show once a build has leaderboard points `milestones_island` / `milestones_personal`).
+- **Smaller menus**: short lists (help, achievement categories, task tiers, invites, skins, enchant pickers, wardrobe pickers, icon pickers, backups) shrink to the rows they need (3-6); /achievements is 5 rows.
 ### Island tools (Complete Developer Spec D1-D12, T1-T13; new module `islandtools`)
 - Wooden island pickaxe, axe, hoe and sword for every profile on first join (bound). `/is tools`: tiers wood → netherite and 7 crystal upgrades per tool (efficiency, fortune, haste, magnet, smelter, extra drops, wisdom; timber, sharpness; row, storage; looting, sweeping, fire aspect, knockback, lifesteal), confirm above 5,000 crystals, a new copy when lost.
 - Only on islands; put away in the Depths and given back in the same slot; kept on death; can't be dropped.

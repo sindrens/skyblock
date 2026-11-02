@@ -57,6 +57,9 @@ menu:
     personal:
       name: "<c:value><bold>Personal Milestones"
       lore: ["<c:text>Only yours, on this profile:", "<c:text>Depths ores and dungeon mobs.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    top:
+      name: "<c:value><bold>Milestone Top"
+      lore: ["<c:text>Islands and players with the", "<c:text>most completed tiers.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"]
   island:
     title: "Island Milestones"
     empty:
@@ -103,3 +106,34 @@ menu:
     hidden:
       name: "<c:locked>Tier <tier>"
       lore: ["<c:locked>???"]
+
+# ------------------------------------------------------------------ F13a milestone leaderboard (/milestones → Milestone Top)
+top:
+  crumb: "Top"
+  info: ["<c:text>Every completed milestone tier", "<c:text>is one point. Your own island", "<c:text>or you glow."]
+  tab:
+    island:
+      name: "<c:value><bold>Island Milestones"
+      lore: ["<c:text>Tiers completed by each island."]
+    personal:
+      name: "<c:value><bold>Personal Milestones"
+      lore: ["<c:text>Tiers completed by each player", "<c:text>(their best profile)."]
+  empty:
+    name: "<c:muted>Nobody yet"
+    lore: ["<c:text>Complete a milestone tier", "<c:text>to be the first on this board."]
+  unknown-island: "Unnamed island"
+  unknown-player: "Unknown"
+  # <place> <name> <points>
+  entry:
+    first:
+      name: "<bold><c:top1>#1</c:top1></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    second:
+      name: "<bold><c:top2>#2</c:top2></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    third:
+      name: "<bold><c:top3>#3</c:top3></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    other:
+      name: "<c:muted>#<place> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]

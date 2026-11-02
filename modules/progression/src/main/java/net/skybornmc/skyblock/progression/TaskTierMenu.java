@@ -16,6 +16,12 @@ import java.util.UUID;
  */
 final class TaskTierMenu extends PagedMenu<TaskDef> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final TaskMenus menus;
     private final UUID islandId;
     private final int tier;

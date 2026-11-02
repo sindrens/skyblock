@@ -19,6 +19,12 @@ import java.util.Optional;
  */
 final class CombineMenu extends PagedMenu<CombineMenu.Group> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     /** All books of one enchant at one level. */
     record Group(String enchant, int level, List<EnchantOps.HeldBook> books) {
     }

@@ -328,4 +328,17 @@ class MenuFrameworkTest {
         assertEquals(2, MenuTitles.first(crumbs, 2, 2, 3, 16));
         assertEquals(0, MenuTitles.first(List.of(), 2, 2, 3, 40));
     }
+
+    @Test
+    void compactListsFitTheirEntries() {
+        assertEquals(3, PagedMenu.fitRows(0));
+        assertEquals(3, PagedMenu.fitRows(7));
+        assertEquals(4, PagedMenu.fitRows(8));
+        assertEquals(6, PagedMenu.fitRows(28));
+        assertEquals(6, PagedMenu.fitRows(29));
+        var pages = PageLayout.<Integer>grid(7).pages(java.util.List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        assertEquals(2, pages.size());
+        assertEquals(16, pages.get(0).slots()[6]);
+        assertEquals(10, pages.get(1).slots()[0]);
+    }
 }

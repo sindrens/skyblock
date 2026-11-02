@@ -19,6 +19,12 @@ import java.util.UUID;
  */
 final class BookPickMenu extends PagedMenu<EnchantOps.HeldBook> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final EnchantsModule module;
     private final UUID toolId;
     private final int slot;

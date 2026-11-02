@@ -31,6 +31,8 @@ public abstract class PagedMenu<T> extends Menu {
     public static final int SLOT_EMPTY = 22;
 
     private int page;
+    /** Rows chosen on the first build of a {@link #compact()} menu (0 = not chosen yet); kept while this menu lives. */
+    private int fittedRows;
 
     /** All entries (called on every build and for the title; keep it cheap or cache). */
     protected abstract List<T> entries();
@@ -58,14 +60,45 @@ public abstract class PagedMenu<T> extends Menu {
         return "empty";
     }
 
+    /**
+     * Menu layout pass (owner 2 Nov 2026: "smaller GUIs, no empty slots"): true = the window shrinks to the rows its
+     * entries need (3 to 6; a list that needs more than one page stays at 6). Only for menus whose extra buttons are all
+     * in the top row (slots 0-8): the bottom row moves up. The size is chosen once, on the first build, so the window
+     * never resizes while open; a list that grows later pages on the smaller grid.
+     */
+    protected boolean compact() {
+        return false;
+    }
+
     @Override
     public final int rows() {
-        return 6;
+        if (!compact()) {
+            return 6;
+        }
+        if (fittedRows == 0) {
+            fittedRows = fitRows(entries().size());
+        }
+        return fittedRows;
+    }
+
+    /** Pure: rows for {@code entries} on the 7-wide grid plus the top and bottom row, at least 3, at most 6. */
+    public static int fitRows(int entries) {
+        if (entries > CONTENT_SLOTS.length) {
+            return 6;
+        }
+        int contentRows = Math.max(1, (entries + 6) / 7);
+        return Math.max(3, contentRows + 2);
+    }
+
+    /** The layout in use: a compact menu pages on its smaller grid, others use {@link #pageLayout()}. */
+    private PageLayout<T> layout() {
+        int rows = rows();
+        return rows >= 6 ? pageLayout() : PageLayout.grid((rows - 2) * 7);
     }
 
     @Override
     public final Component title() {
-        int total = pageLayout().pages(entries()).size();
+        int total = layout().pages(entries()).size();
         page = Math.max(0, Math.min(page, total - 1));
         Component suffix = total > 1
                 ? service.text(viewer, "title.page", Msg.p("page", page + 1), Msg.p("pages", total))
@@ -77,10 +110,12 @@ public abstract class PagedMenu<T> extends Menu {
     protected final void build() {
         navBar();
         decorate();
-        MenuButton atPrevious = button(SLOT_PREVIOUS); // a clickable item here came from decorate()
+        int previousSlot = MenuLayout.previous(rows());
+        int nextSlot = MenuLayout.next(rows());
+        MenuButton atPrevious = button(previousSlot); // a clickable item here came from decorate()
         boolean customPrevious = atPrevious != null && atPrevious.clickable();
         List<T> list = entries();
-        List<PageLayout.Page<T>> pages = pageLayout().pages(list);
+        List<PageLayout.Page<T>> pages = layout().pages(list);
         int total = Math.max(1, pages.size());
         page = Math.max(0, Math.min(page, total - 1));
         if (!pages.isEmpty()) {
@@ -90,17 +125,17 @@ public abstract class PagedMenu<T> extends Menu {
             }
         }
         if (list.isEmpty()) {
-            set(SLOT_EMPTY, service.emptyItem(viewer, messageModule(), emptyKey()));
+            set(MenuLayout.empty(rows()), service.emptyItem(viewer, messageModule(), emptyKey()));
         }
         int shown = page + 1;
         if (page > 0) {
             if (customPrevious) {
-                service.warnStandardSlot(this, SLOT_PREVIOUS);
+                service.warnStandardSlot(this, previousSlot);
             }
-            set(SLOT_PREVIOUS, service.pageItem(viewer, false, shown - 1, total), click -> turn(-1));
+            set(previousSlot, service.pageItem(viewer, false, shown - 1, total), click -> turn(-1));
         }
         if (page < total - 1) {
-            set(SLOT_NEXT, service.pageItem(viewer, true, shown + 1, total), click -> turn(1));
+            set(nextSlot, service.pageItem(viewer, true, shown + 1, total), click -> turn(1));
         }
     }
 
