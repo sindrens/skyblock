@@ -39,7 +39,7 @@ public final class SaleCalculator {
      * The highest price one item can reach: base x ceiling (when dynamic prices are on) x the Hot Item factor x
      * (1 + cap / 100). Shops price above this so buying and selling back can never make money.
      */
-    public static double maxUnit(long base, DynamicSettings s, double capPercent) {
+    public static double maxUnit(double base, DynamicSettings s, double capPercent) {
         double ceiling = s.enabled() ? Math.max(1.0, s.ceiling()) : 1.0;
         return base * ceiling * s.hotFactor() * (1.0 + Math.max(0.0, capPercent) / 100.0);
     }

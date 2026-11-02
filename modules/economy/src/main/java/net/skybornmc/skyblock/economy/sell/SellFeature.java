@@ -276,7 +276,7 @@ public final class SellFeature implements Listener {
             }
         } catch (IOException | InvalidConfigurationException e) {
             warn.accept("sell.yml is not valid YAML, using the bundled prices. " + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
-            return SellCatalog.load(bundled, material, warn);
+            return withDerived(bundled, SellCatalog.load(bundled, material, config.sellPriceMultiplier, warn), warn);
         }
         try {
             if (!file.exists()) {
@@ -293,12 +293,57 @@ public final class SellFeature implements Listener {
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write sell.yml", e);
         }
-        return SellCatalog.load(yaml, material, warn);
+        return withDerived(yaml, SellCatalog.load(yaml, material, config.sellPriceMultiplier, warn), warn);
+    }
+
+    /**
+     * ECON-SELL-SHOP-AH A2: adds the prices derived from the server's recipes (main thread: the recipe list is read from
+     * Bukkit once per load, under 50 ms). Off with {@code sell.derive.enabled: false} or {@code derive.enabled: false}.
+     */
+    private SellCatalog withDerived(YamlConfiguration yaml, SellCatalog listed, java.util.function.Consumer<String> warn) {
+        if (!config.sellDeriveEnabled || !yaml.getBoolean("derive.enabled", true)) {
+            return listed;
+        }
+        try {
+            java.util.Map<String, Double> priced = new java.util.HashMap<>();
+            for (SellCatalog.Entry e : listed.all()) {
+                if (e.sellable() && !e.key().startsWith("custom:")) {
+                    priced.put(e.key(), e.base());
+                }
+            }
+            java.util.Map<SellDerive.Cls, Double> factors = new java.util.EnumMap<>(SellDerive.Cls.class);
+            for (SellDerive.Cls c : SellDerive.Cls.values()) {
+                factors.put(c, yaml.getDouble("derive.factor." + c.name().toLowerCase(java.util.Locale.ROOT), c == SellDerive.Cls.STORAGE
+                        || c == SellDerive.Cls.PROCESSING ? 100.0 : 90.0));
+            }
+            java.util.Map<String, Double> derived = SellDerive.derive(priced, SellRecipes.fromServer(), factors,
+                    yaml.getStringList("derive.exclude"), config.sellDeriveMaxDepth, warn);
+            core.plugin().getLogger().info("sell.yml: " + derived.size() + " prices derived from recipes");
+            return listed.withDerived(derived);
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().log(Level.WARNING, "sell.yml: derived prices failed; only listed items sell", e);
+            return listed;
+        }
     }
 
     /** Adds bundled entries the file does not have yet; true if something was added. */
     static boolean addMissing(YamlConfiguration yaml, YamlConfiguration bundled) {
         boolean changed = false;
+        // A2: roots (flat id: price) are added one by one; the derive section once, as a whole, when the file has none.
+        var roots = bundled.getConfigurationSection(SellCatalog.ROOTS_ROOT);
+        if (roots != null) {
+            for (String id : roots.getKeys(false)) {
+                String path = SellCatalog.ROOTS_ROOT + "." + id;
+                if (!yaml.contains(path) && !listedElsewhere(yaml, SellCatalog.VANILLA_ROOT, id)) {
+                    yaml.set(path, roots.get(id));
+                    changed = true;
+                }
+            }
+        }
+        if (!yaml.contains("derive") && bundled.isConfigurationSection("derive")) {
+            yaml.set("derive", bundled.getConfigurationSection("derive"));
+            changed = true;
+        }
         for (String root : List.of(SellCatalog.VANILLA_ROOT, SellCatalog.CUSTOM_ROOT)) {
             var section = bundled.getConfigurationSection(root);
             if (section == null) {

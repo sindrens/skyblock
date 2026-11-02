@@ -336,6 +336,47 @@ public final class EconomyConfig extends ModuleConfig {
             max = 3_600, restart = true)
     public int sellSaveSeconds = 300;
 
+    // ------------------------------------------------------------------ ECON-SELL-SHOP-AH part A (A7)
+
+    @Setting(path = "sell.price-multiplier", desc = "Multiplies every price in sell.yml (listed, custom, roots and derived). Keep "
+            + "shop-settings.yml buy.price-multiplier equal, or payback and the shop invariant change.", min = 0.01, max = 1000,
+            level = Setting.Level.OWNER)
+    public double sellPriceMultiplier = 1.0;
+
+    @Setting(path = "sell.derive.enabled", desc = "Every block sellable: prices of crafted and smelted items come from their "
+            + "parts (sell.yml derive.*: factors, exclude list). Off = only listed items and roots sell.", level = Setting.Level.OWNER)
+    public boolean sellDeriveEnabled = true;
+
+    @Setting(path = "sell.derive.max-depth", desc = "Rounds of the derived-price pass (ECON-TABLES E: 6; deeper recipes stay unsellable).",
+            min = 1, max = 20)
+    public int sellDeriveMaxDepth = 6;
+
+    @Setting(path = "sell.hot-item.min-base", desc = "The Hot Item is only picked from items worth at least this (keeps dirt out).",
+            min = 0, max = 1_000_000)
+    public double hotMinBase = 5.0;
+
+    @Setting(path = "sell.hot-item.announce", desc = "Tell everyone online once per day (00:00 Oslo) which item is hot.")
+    public boolean hotAnnounce = true;
+
+    @Setting(path = "sell.hot-item.join-line", desc = "One line on join (once per day per account) with today's Hot Item.")
+    public boolean hotJoinLine = true;
+
+    @Setting(path = "sell.menu.market-tips", desc = "Market Tips button in the sell chest (the items furthest above base right now).")
+    public boolean marketTipsButton = true;
+
+    @Setting(path = "sell.market-tips.min-base", desc = "Market Tips only list items worth at least this.", min = 0, max = 1_000_000)
+    public double marketTipsMinBase = 5.0;
+
+    @Setting(path = "sell.market-tips.min-percent", desc = "Market Tips only list items at least this many percent above base.",
+            min = 0, max = 1_000)
+    public double marketTipsMinPercent = 5.0;
+
+    @Setting(path = "sell.market-tips.size", desc = "Most Market Tips shown.", min = 1, max = 7)
+    public int marketTipsSize = 5;
+
+    @Setting(path = "sell.market-tips.refresh-seconds", desc = "How often Market Tips are worked out again (from memory).", min = 5, max = 3_600)
+    public int marketTipsRefreshSeconds = 60;
+
     @Setting(path = "sell.hot-item.enabled", desc = "A daily Hot Item sells for more (changes the price, not the sell bonus).",
             level = Setting.Level.OWNER)
     public boolean sellHotEnabled = true;

@@ -30,7 +30,7 @@ public final class SellCatalog {
      * @param key      {@code coal} or {@code custom:depths_coal}
      * @param sellable false = priced but switched off ({@code sellable: false})
      */
-    public record Entry(String key, String category, long base, boolean sellable) {
+    public record Entry(String key, String category, double base, boolean sellable) {
 
         public boolean custom() {
             return key.startsWith(CUSTOM_PREFIX);
@@ -87,7 +87,16 @@ public final class SellCatalog {
      * @param problems      one line per problem ("sell.yml → categories.ores.coal: ...")
      */
     public static SellCatalog load(ConfigurationSection file, Predicate<String> validMaterial, Consumer<String> problems) {
+        return load(file, validMaterial, 1.0, problems);
+    }
+
+    /**
+     * ECON-SELL-SHOP-AH A1: every listed price (categories, custom items, roots) is multiplied by {@code multiplier}
+     * ({@code economy.yml sell.price-multiplier}) and kept to two decimals. Prices may be decimals (at least 0.01).
+     */
+    public static SellCatalog load(ConfigurationSection file, Predicate<String> validMaterial, double multiplier, Consumer<String> problems) {
         Map<String, Entry> out = new LinkedHashMap<>();
+        double knob = multiplier > 0 && Double.isFinite(multiplier) ? multiplier : 1.0;
         if (file == null) {
             problems.accept("sell.yml: missing; nothing can be sold");
             return new SellCatalog(out);
@@ -96,17 +105,32 @@ public final class SellCatalog {
         if (vanilla == null) {
             problems.accept("sell.yml: section '" + VANILLA_ROOT + "' is missing");
         } else {
-            read(vanilla, VANILLA_ROOT, false, validMaterial, out, problems);
+            read(vanilla, VANILLA_ROOT, false, validMaterial, knob, out, problems);
         }
         ConfigurationSection custom = file.getConfigurationSection(CUSTOM_ROOT);
         if (custom != null) {
-            read(custom, CUSTOM_ROOT, true, validMaterial, out, problems);
+            read(custom, CUSTOM_ROOT, true, validMaterial, knob, out, problems);
+        }
+        // A2: roots (uncraftable blocks and plants, id: price), category "blocks"; a listed item keeps its listed price.
+        ConfigurationSection roots = file.getConfigurationSection(ROOTS_ROOT);
+        if (roots != null) {
+            for (String id : roots.getKeys(false)) {
+                String at = "sell.yml → " + ROOTS_ROOT + "." + id;
+                double price = number(roots.get(id));
+                if (!ID.matcher(id).matches() || !validMaterial.test(id)) {
+                    problems.accept(at + ": not a vanilla item id (skipped)");
+                } else if (!(price >= 0.01)) {
+                    problems.accept(at + ": price must be at least 0.01 (skipped)");
+                } else if (!out.containsKey(id)) {
+                    out.put(id, new Entry(id, ROOTS_CATEGORY, round2(price * knob), true));
+                }
+            }
         }
         return new SellCatalog(out);
     }
 
     private static void read(ConfigurationSection root, String rootName, boolean custom, Predicate<String> validMaterial,
-                             Map<String, Entry> out, Consumer<String> problems) {
+                             double knob, Map<String, Entry> out, Consumer<String> problems) {
         for (String category : root.getKeys(false)) {
             String where = "sell.yml → " + rootName + "." + category;
             ConfigurationSection items = root.getConfigurationSection(category);
@@ -128,25 +152,23 @@ public final class SellCatalog {
                     problems.accept(at + ": '" + id + "' is not a vanilla item id (custom items go under " + CUSTOM_ROOT + ") (skipped)");
                     continue;
                 }
-                long price;
+                double price;
                 boolean sellable = true;
                 if (items.isConfigurationSection(id)) {
                     ConfigurationSection s = items.getConfigurationSection(id);
-                    price = s.isInt("price") || s.isLong("price") ? s.getLong("price") : -1;
+                    price = number(s.get("price"));
                     sellable = s.getBoolean("sellable", true);
                 } else if (items.get(id) instanceof Map<?, ?> map) {
-                    Object raw = map.get("price");
-                    price = raw instanceof Integer || raw instanceof Long ? ((Number) raw).longValue() : -1;
+                    price = number(map.get("price"));
                     sellable = !(map.get("sellable") instanceof Boolean b) || b;
-                } else if (items.isInt(id) || items.isLong(id)) {
-                    price = items.getLong(id);
                 } else {
-                    price = -1;
+                    price = number(items.get(id));
                 }
-                if (price < 1) {
-                    problems.accept(at + ": price must be a whole number of at least 1 (skipped)");
+                if (!(price >= 0.01)) {
+                    problems.accept(at + ": price must be a number of at least 0.01 (skipped)");
                     continue;
                 }
+                price = round2(price * knob);
                 String key = custom ? customKey(id) : id;
                 if (out.containsKey(key)) {
                     problems.accept(at + ": listed twice (first one kept: " + out.get(key).category() + ")");
@@ -155,5 +177,47 @@ public final class SellCatalog {
                 out.put(key, new Entry(key, category, price, sellable));
             }
         }
+    }
+
+    /** A2: the section of uncraftable blocks and plants. */
+    public static final String ROOTS_ROOT = "roots";
+    /** A2: category of roots and derived prices. */
+    public static final String ROOTS_CATEGORY = "blocks";
+
+    /** A number from YAML (int, long, double or a numeric string), NaN otherwise. */
+    static double number(Object raw) {
+        if (raw instanceof Number n) {
+            return n.doubleValue();
+        }
+        if (raw instanceof String str) {
+            try {
+                return Double.parseDouble(str.trim().replace("_", ""));
+            } catch (NumberFormatException e) {
+                return Double.NaN;
+            }
+        }
+        return Double.NaN;
+    }
+
+    /** Two decimals (half up), at least 0.01. */
+    static double round2(double v) {
+        return Math.max(0.01, Math.round(v * 100.0) / 100.0);
+    }
+
+    /**
+     * A2: this catalog plus derived prices (category {@link #ROOTS_CATEGORY}); a derived price for a listed item replaces
+     * it only when lower (the listed entry keeps its category and sellable flag).
+     */
+    public SellCatalog withDerived(Map<String, Double> derived) {
+        Map<String, Entry> out = new LinkedHashMap<>(entries);
+        derived.forEach((key, price) -> {
+            Entry now = out.get(key);
+            if (now == null) {
+                out.put(key, new Entry(key, ROOTS_CATEGORY, price, true));
+            } else if (price < now.base()) {
+                out.put(key, new Entry(key, now.category(), price, now.sellable()));
+            }
+        });
+        return new SellCatalog(out);
     }
 }
