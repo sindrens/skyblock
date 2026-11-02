@@ -1,1 +1,1 @@
-cd ~/Development/skyblock-wt-tutfix && pbpaste > docs/planning/COMPLETE_DEVELOPER_SPEC.md && wc -c docs/planning/COMPLETE_DEVELOPER_SPEC.md && git add docs/planning/COMPLETE_DEVELOPER_SPEC.md && git commit -qm "docs: full developer spec" && git push -q origin docs/full-spec && echo OK
+cd ~/Development/skyblock-wt-tutfix && pbpaste > docs/planning/COMPLETE_DEVELOPER_SPEC.md && wc -c docs/planning/COMPLETE_DEVELOPER_SPEC.md && git commit -qam "docs: full developer spec" && git push -q origin docs/full-spec && echo OK
