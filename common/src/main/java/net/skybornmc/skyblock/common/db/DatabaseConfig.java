@@ -66,5 +66,5 @@ public final class DatabaseConfig extends ModuleConfig {
     }
 
     /** H2 in MySQL mode so the same SQL runs on MariaDB and H2. */
-    public static final String H2_OPTIONS = ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;NON_KEYWORDS=VALUE,KEY";
+    public static final String H2_OPTIONS = ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;NON_KEYWORDS=VALUE,KEY,DAY";
 }
