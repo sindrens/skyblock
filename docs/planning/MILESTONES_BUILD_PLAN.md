@@ -33,7 +33,7 @@ owner pasted was cut after §9.3, so §10-29 (Eclipse, island tools, farming, bu
 | `depths/combat/CombatZones.reward` | extra drops (fallback), crystals | mob type | **done** |
 | `depths/drops/DepthsDrops` | extra drops (fallback), crystals, rare finds | block type | **done** |
 | `enchants/StackEnchants.bonus` (stacked kills) | extra drops | mob type | **done** |
-| `tools/ToolTracker.gain` | tool XP | no block in `gain(...)` | **open**: needs the block passed into `gain` |
+| `tools/ToolTracker.gain` | tool XP | block / crop type (island blocks, Depths resources, hoe harvests) | **done** (2 Nov) |
 | `production/Farming` growth tick | crop growth | computed per island, not per crop | **open**: needs a per-crop growth value |
 | `economy/sell/SellServiceImpl` | sell | one bonus for the whole sale | **open**: needs a per-item bonus in the sale calculator |
 | Island block drops | extra drops | with the tools module, drops use **tool fortune only** (`ToolService.dropMultiplier`): no player bonus source applies, also not masteries or boosters | **owner decision**: should player bonuses (milestones, masteries, boosters) add to island and Depths drops on top of tool fortune? |

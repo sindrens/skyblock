@@ -49,7 +49,7 @@ final class DepthsHooks implements Listener, ToolsListener.Depths {
         if (needed != null) {
             ToolItems.read(event.getTool()).filter(d -> d.kind() == needed).ifPresent(d ->
                     module.tracker().gain(player, module.config().tierXp(tier),
-                            needed == ToolKind.AXE ? ToolData.STAT_LOGS : ToolData.STAT_BLOCKS));
+                            needed == ToolKind.AXE ? ToolData.STAT_LOGS : ToolData.STAT_BLOCKS, 1, 0, event.getBlockType().name()));
         }
         module.drops().roll(player, zone.aspect().id(), tier, event.getLocation());
     }
