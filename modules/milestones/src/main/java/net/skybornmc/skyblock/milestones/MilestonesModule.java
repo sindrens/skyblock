@@ -42,6 +42,7 @@ public final class MilestonesModule implements SkyblockModule {
     private final Core core;
     private final MilestonesConfig config = new MilestonesConfig();
     private ModuleMessages msg;
+    private ProgressBar bar;
     private Executor main;
     private volatile MilestoneCatalog catalog;
     private MilestoneEngine engine;
@@ -70,16 +71,28 @@ public final class MilestonesModule implements SkyblockModule {
         msg = core.messages(ID);
         main = new MainThread(core.plugin());
         catalog = loadCatalog();
+        bar = new ProgressBar(this);
         engine = new MilestoneEngine(this);
         claims = new MilestoneClaims(this);
         Bukkit.getPluginManager().registerEvents(engine, core.plugin());
         engine.start();
         // Spec §9.1: one bonus source "milestones" (highest claimed tier per chain, target match only; caps apply on top).
         core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class).ifPresent(b -> b.register(BONUS_SOURCE, claims));
+        // Slice 4: /rewards shows a Milestones card and counts ready tiers as one source.
+        core.services().register(ID, net.skybornmc.skyblock.common.milestones.MilestoneRewards.class, claims);
         for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
             claims.load(p);
         }
         registerCommand();
+        // Slice 4: the action bar progress can be turned off per player (default on).
+        core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).ifPresent(s -> s.register(
+                new net.skybornmc.skyblock.common.settings.SettingToggle(ID, ProgressBar.SETTING,
+                        net.skybornmc.skyblock.common.settings.SettingCategory.GAMEPLAY, org.bukkit.Material.EXPERIENCE_BOTTLE, true, null,
+                        ID, "settings." + ProgressBar.SETTING, false)));
+    }
+
+    ProgressBar bar() {
+        return bar;
     }
 
     /** {@code /milestones} (owner C2: the only alias is {@code /ms}). No arguments, so nothing to tab-complete. */
@@ -118,6 +131,10 @@ public final class MilestonesModule implements SkyblockModule {
             HandlerList.unregisterAll(engine);
             engine.stop();
         }
+        if (bar != null) {
+            bar.clear();
+        }
+        core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
     }
 
     // ------------------------------------------------------------------ catalog

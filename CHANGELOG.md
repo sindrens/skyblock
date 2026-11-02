@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Milestones: action bar and /rewards (build plan slice 4; behind milestones.enabled: false)
+- Progress in the action bar after a counted harvest or block break (`milestones-settings.yml actionbar.enabled`, `actions` [harvest_crop, break_block], `gap-ms` 1500): chain, tier, bar and `progress/target`; each player can turn it off in `/settings` (Milestones: progress in the action bar).
+- `/rewards` Milestones card (slot 15): ready tiers glow, a click claims the highest ready tier of every chain; `/menu` Rewards and Claim all count `milestones` as a source (new common contract `MilestoneRewards`).
 ### Milestones (Complete Developer Spec §7-9; behind `milestones-settings.yml enabled: false`)
 - **Counting:** ripe harvests, broken blocks (placed blocks never count) and kills by a player, in survival/adventure, outside the AFK pool; island chains only for members at their own island, personal chains in the Depths. Saved every `flush-seconds` (10), on quit, profile switch and stop. "New milestone" line on discovery; tier-ready notices batched over `notify.batch-seconds` (30).
 - **`/milestones` (`/ms`):** Island and Personal lists, tier tiles (`✔ ★ ▶ ???`), contribution %, claim ready tiers (island once per island; lower tiers marked). **Perks** through the bonus source `milestones`: highest claimed tier per chain, only for the chain's own block or mob (`BonusContext.target`), island and personal add up, family caps on top.

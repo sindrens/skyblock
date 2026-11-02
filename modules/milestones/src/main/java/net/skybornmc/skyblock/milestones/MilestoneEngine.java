@@ -126,6 +126,7 @@ final class MilestoneEngine implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         flushProfile(event.getPlayer());
         waiting.remove(event.getPlayer().getUniqueId());
+        m.bar().quit(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -169,6 +170,9 @@ final class MilestoneEngine implements Listener {
         Optional<IslandService> islands = m.islands();
         UUID islandHere = depths ? null : islands.flatMap(i -> i.islandAt(at)).map(IslandService.IslandInfo::id).orElse(null);
         UUID ownIsland = islands.flatMap(i -> i.islandOf(p.getUniqueId())).map(IslandService.IslandInfo::id).orElse(null);
+        ProgressBuffer.Scope shownScope = null;
+        UUID shownId = null;
+        MilestoneModel.Chain shown = null;
         for (MilestoneModel.Chain chain : chains) {
             boolean worldOk = switch (chain.world()) {
                 case DEPTHS -> depths;
@@ -182,11 +186,24 @@ final class MilestoneEngine implements Listener {
                 // Only members count, at the island where it happened (visitors and coop players never count).
                 if (islandHere != null && islandHere.equals(ownIsland)) {
                     buffer.add(ProgressBuffer.Scope.ISLAND, islandHere, chain.id(), profile, amount);
+                    if (shown == null) {
+                        shownScope = ProgressBuffer.Scope.ISLAND;
+                        shownId = islandHere;
+                        shown = chain;
+                    }
                 }
             } else if (islandHere == null) {
                 // Personal: Depths and other non-island actions (an island-world action counts only in island chains).
                 buffer.add(ProgressBuffer.Scope.PROFILE, profile, chain.id(), profile, amount);
+                if (shown == null) {
+                    shownScope = ProgressBuffer.Scope.PROFILE;
+                    shownId = profile;
+                    shown = chain;
+                }
             }
+        }
+        if (shown != null && m.bar().shows(action)) {
+            m.bar().show(p, shownScope, shownId, shown);
         }
     }
 
@@ -209,6 +226,7 @@ final class MilestoneEngine implements Listener {
                 buffer.putBack(batch);
                 return;
             }
+            m.bar().saved(batch);
             result.discovered().forEach(this::discovered);
             result.completed().forEach(this::completed);
         }, m.main());
@@ -248,6 +266,7 @@ final class MilestoneEngine implements Listener {
 
     /** Spec 7.4: notices inside the batch window merge into one title and one chat line. */
     private void completed(MilestoneStore.Completed c) {
+        m.claims().completedTier(c.scopeId(), c.chainId(), c.tier());
         Bukkit.getPluginManager().callEvent(new MilestoneTierCompletedEvent(c.scope() == ProgressBuffer.Scope.ISLAND, c.scopeId(),
                 c.chainId(), c.tier()));
         for (Player p : receivers(c.scope(), c.scopeId())) {

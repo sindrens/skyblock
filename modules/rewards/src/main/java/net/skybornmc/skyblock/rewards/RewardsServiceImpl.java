@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.rewards;
 
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.milestones.MilestoneRewards;
 import net.skybornmc.skyblock.common.pass.PassRewards;
 import net.skybornmc.skyblock.common.rewards.RewardsService;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -52,6 +53,9 @@ final class RewardsServiceImpl implements RewardsService {
         if (PassRewards.of(m.core.services()).map(p -> p.claimable(player) > 0).orElse(false)) {
             out.add(PassRewards.SOURCE);
         }
+        if (MilestoneRewards.of(m.core.services()).map(ms -> ms.ready(player) > 0).orElse(false)) {
+            out.add(MilestoneRewards.SOURCE);
+        }
         return out;
     }
 
@@ -74,12 +78,26 @@ final class RewardsServiceImpl implements RewardsService {
             }
         }
         Optional<PassRewards> pass = PassRewards.of(m.core.services());
-        if (!ready.contains(PassRewards.SOURCE) || pass.isEmpty()) {
-            return withPeriodic;
-        }
-        // Pass tiers are claimed in the pass module's own transaction, which also writes its own chat lines.
-        return withPeriodic.thenComposeAsync(summary -> pass.get().claimAll(player, true).thenApply(tiers -> withPass(summary, tiers,
+        CompletableFuture<ClaimSummary> withPassTiers = !ready.contains(PassRewards.SOURCE) || pass.isEmpty() ? withPeriodic
+                // Pass tiers are claimed in the pass module's own transaction, which also writes its own chat lines.
+                : withPeriodic.thenComposeAsync(summary -> pass.get().claimAll(player, true).thenApply(tiers -> withPass(summary, tiers,
                 () -> m.msg.component(player, "claim-all.pass", Msg.number("count", tiers)))), m.main());
+        Optional<MilestoneRewards> milestones = MilestoneRewards.of(m.core.services());
+        if (!ready.contains(MilestoneRewards.SOURCE) || milestones.isEmpty()) {
+            return withPassTiers;
+        }
+        // Milestone tiers: one claim per chain in the milestones module; the summary line says how many.
+        return withPassTiers.thenComposeAsync(summary -> milestones.get().claimAll(player, false).thenApply(n -> withExtraOrFailed(
+                summary, n, MilestoneRewards.SOURCE, () -> m.msg.component(player, "claim-all.milestones", Msg.number("count", n)))),
+                m.main());
+    }
+
+    /** Like {@link #withPass} for any count-based source (milestones). */
+    static ClaimSummary withExtraOrFailed(ClaimSummary before, int count, String source, Supplier<Component> line) {
+        if (count < 0) {
+            return before.outcome() == Outcome.NOTHING_READY ? ClaimSummary.failed() : before;
+        }
+        return withExtra(before, count, source, line);
     }
 
     /**

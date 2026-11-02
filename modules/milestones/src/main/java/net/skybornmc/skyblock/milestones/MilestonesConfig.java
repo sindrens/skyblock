@@ -34,6 +34,17 @@ public final class MilestonesConfig extends ModuleConfig {
             min = 1_000, max = 5_000_000)
     public int placedMaxPerWorld = 200_000;
 
+    @Setting(path = "actionbar.enabled", desc = "Progress in the action bar after a counted action (chain, total, next target). "
+            + "Players can turn it off in /settings.")
+    public boolean actionBarEnabled = true;
+
+    @Setting(path = "actionbar.actions", desc = "Which counted actions show progress: harvest_crop, break_block, kill_mob "
+            + "(build plan: crops and ores on, mobs off).")
+    public java.util.List<String> actionBarActions = java.util.List.of("harvest_crop", "break_block");
+
+    @Setting(path = "actionbar.gap-ms", desc = "Shortest time between two progress lines for one player.", min = 250, max = 60_000)
+    public int actionBarGapMs = 1_500;
+
     @Override
     public String fileName() {
         return "milestones-settings.yml";

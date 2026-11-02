@@ -102,4 +102,14 @@ class ClaimAllTest {
                 "a failed pass claim is not 'nothing ready' (that would open /daily over the error)");
         assertEquals(daily, RewardsServiceImpl.withPass(daily, -1, () -> Component.text("x")), "the daily claim still counts");
     }
+
+    @Test
+    void milestoneTiersJoinTheSummary() {
+        String ms = net.skybornmc.skyblock.common.milestones.MilestoneRewards.SOURCE;
+        RewardsService.ClaimSummary nothing = RewardsService.ClaimSummary.nothingReady();
+        assertEquals(nothing, RewardsServiceImpl.withExtraOrFailed(nothing, 0, ms, () -> Component.text("x")));
+        RewardsService.ClaimSummary two = RewardsServiceImpl.withExtraOrFailed(nothing, 2, ms, () -> Component.text("ms"));
+        assertEquals(List.of(ms), two.claimed());
+        assertEquals(RewardsService.Outcome.FAILED, RewardsServiceImpl.withExtraOrFailed(nothing, -1, ms, () -> Component.text("x")).outcome());
+    }
 }
