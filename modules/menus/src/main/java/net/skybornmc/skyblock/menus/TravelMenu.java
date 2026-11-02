@@ -19,9 +19,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * {@code /menu → Travel} (G9 v3, I9 v2; replaces the UX3 warps menu): 3 rows, the places of {@code menu.yml → travel}
- * centred on row 1 in file order ({@code Centered}: 7 places = slots 10-16; fewer re-centre, hidden ones leave no hole),
- * 18 Back (to the hub), 22 Close. One click teleports through the core {@link TeleportService}
+ * {@code /menu → Travel} (G9 v3, I9 v2; replaces the UX3 warps menu): 4 rows (owner 3 Nov 2026: one free row so it is
+ * not cramped), the places of {@code menu.yml → travel} centred on row 1 in file order ({@code Centered}: 7 places =
+ * slots 10-16; fewer re-centre, hidden ones leave no hole), row 2 free, 27 Back (to the hub), 31 Close. One click teleports through the core {@link TeleportService}
  * (warmup, cooldown, guards such as locked Depths tiers, combat block) or runs the place's command (My Island =
  * {@code is home}, Visit Islands = the {@code is visit} browser, which gets Back to this menu). Places that do not exist
  * here (build not applied, world not loaded, command missing) are hidden, so the menu only shows places that work.
@@ -37,7 +37,7 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     public int rows() {
-        return 3;
+        return 4;
     }
 
     @Override

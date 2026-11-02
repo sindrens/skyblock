@@ -4,7 +4,7 @@
   "type": "minecraft:model"
  },
  "anvil": {
-  "model": "minecraft:item/anvil",
+  "model": "minecraft:block/anvil",
   "type": "minecraft:model"
  },
  "armor_stand": {
@@ -28,7 +28,7 @@
   "type": "minecraft:model"
  },
  "bookshelf": {
-  "model": "minecraft:item/bookshelf",
+  "model": "minecraft:block/bookshelf",
   "type": "minecraft:model"
  },
  "campfire": {
@@ -1027,7 +1027,7 @@
   "type": "minecraft:model"
  },
  "enchanting_table": {
-  "model": "minecraft:item/enchanting_table",
+  "model": "minecraft:block/enchanting_table",
   "type": "minecraft:model"
  },
  "ender_eye": {
@@ -1178,7 +1178,7 @@
   "type": "minecraft:model"
  },
  "infested_stone": {
-  "model": "minecraft:item/infested_stone",
+  "model": "minecraft:block/infested_stone",
   "type": "minecraft:model"
  },
  "iron_axe": {
@@ -1262,7 +1262,7 @@
   "type": "minecraft:model"
  },
  "oak_fence_gate": {
-  "model": "minecraft:item/oak_fence_gate",
+  "model": "minecraft:block/oak_fence_gate",
   "type": "minecraft:model"
  },
  "oak_sapling": {
@@ -1298,7 +1298,7 @@
   "type": "minecraft:model"
  },
  "smithing_table": {
-  "model": "minecraft:item/smithing_table",
+  "model": "minecraft:block/smithing_table",
   "type": "minecraft:model"
  },
  "stone_axe": {

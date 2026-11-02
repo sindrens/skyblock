@@ -5,15 +5,12 @@ import net.skybornmc.skyblock.common.menu.Menu;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /** {@code /help}: the category screen. Categories of features that aren't built yet are shown locked. */
 final class HelpMenu extends Menu {
 
     /** Inner slots used for categories without an explicit slot in help.yml, in this order. */
-    private static final int[] AUTO_SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 38, 39, 40, 41, 42};
 
     private final Nav nav;
 
@@ -21,9 +18,29 @@ final class HelpMenu extends Menu {
         this.nav = nav;
     }
 
+    /**
+     * Owner 3 Nov 2026 ("compact, symmetrical"): only open categories, in help.yml order, centred in even rows
+     * ({@link net.skybornmc.skyblock.common.menu.Centered#split}: 10 = 5 + 5), and only as many rows as they need.
+     * The {@code slot} of a category is no longer used. Coming-soon categories are hidden.
+     */
+    private List<HelpBook.Category> shown() {
+        List<HelpBook.Category> out = new ArrayList<>();
+        for (HelpBook.Category c : nav.help.categories()) {
+            if (c.status() != HelpBook.Status.COMING_SOON) {
+                out.add(c);
+            }
+        }
+        return out.size() > 28 ? out.subList(0, 28) : out;
+    }
+
+    /** Pure: rows per line of tiles for {@code n} categories (at most 4 lines of 7). */
+    static int[] lines(int n) {
+        return net.skybornmc.skyblock.common.menu.Centered.split(Math.min(28, Math.max(0, n)));
+    }
+
     @Override
     public int rows() {
-        return 6;
+        return Math.max(3, lines(shown().size()).length + 2);
     }
 
     @Override
@@ -49,26 +66,10 @@ final class HelpMenu extends Menu {
     @Override
     protected void build() {
         navBar();
-        Set<Integer> used = new HashSet<>();
-        List<HelpBook.Category> pending = new ArrayList<>();
-        for (HelpBook.Category category : nav.help.categories()) {
-            if (category.slot() >= 10 && category.slot() <= 43 && category.slot() % 9 != 0 && category.slot() % 9 != 8
-                    && used.add(category.slot())) {
-                place(category.slot(), category);
-            } else {
-                pending.add(category);
-            }
-        }
-        int next = 0;
-        for (HelpBook.Category category : pending) {
-            while (next < AUTO_SLOTS.length && used.contains(AUTO_SLOTS[next])) {
-                next++;
-            }
-            if (next >= AUTO_SLOTS.length) {
-                break;
-            }
-            used.add(AUTO_SLOTS[next]);
-            place(AUTO_SLOTS[next++], category);
+        List<HelpBook.Category> list = shown();
+        int[] slots = net.skybornmc.skyblock.common.menu.Centered.grid(lines(list.size()));
+        for (int i = 0; i < list.size() && i < slots.length; i++) {
+            place(slots[i], list.get(i));
         }
     }
 

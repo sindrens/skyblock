@@ -1064,7 +1064,29 @@ def file_of(key):
     return key.replace('/', '_')
 
 
+# Owner art (3 Nov 2026): the owner's own icon set, 128x128 masters in tools/cartoon/owner/<group>__<name>.png, cut from
+# the sheets he sent. Where he drew several looks (a/b/c), OWNER_PICKS says which one is used; change a pick and re-run.
+OWNER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'owner')
+OWNER_PICKS = {
+    'nav/back': 'nav__back_c', 'nav/prev': 'nav__prev_c', 'nav/next': 'nav__next_c', 'nav/close': 'nav__close_b',
+    'state/confirm': 'state__confirm_c', 'state/cancel': 'state__cancel_c',
+    'shop/buy': 'shop__buy_a', 'shop/sell': 'shop__sell_a', 'shop/sell_all': 'shop__sell_all_a',
+}
+
+
+def owner_art(key):
+    """The owner's picture for an icon key (64x64), or None when he has not drawn one."""
+    name = OWNER_PICKS.get(key, key.replace('/', '__'))
+    path = os.path.join(OWNER, name + '.png')
+    if not os.path.exists(path):
+        return None
+    return Image.open(path).convert('RGBA').resize((64, 64), Image.LANCZOS)
+
+
 def render(key):
+    art = owner_art(key)
+    if art is not None:
+        return art
     p = Pen()
     ICONS[key]['fn'](p)
     return p.done()
@@ -1093,8 +1115,13 @@ def main(argv):
         only = set(argv[argv.index('--only') + 1].split(','))
     os.makedirs(OUT, exist_ok=True)
     images = {}
+    import json
+    with open(os.path.join(ROOT, 'resourcepack', 'icons.json'), encoding='utf-8') as f:
+        catalog = {i['key'] for i in json.load(f)['icons']}
     for key in ICONS:
         if only and key not in only:
+            continue
+        if key not in catalog:  # drawn once but taken out of the pack (owner 3 Nov 2026: tools and rods look vanilla)
             continue
         images[key] = render(key)
         if '--sheet-only' not in argv:

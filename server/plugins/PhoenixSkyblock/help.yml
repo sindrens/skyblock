@@ -1,5 +1,6 @@
 # /help content: categories » topics » pages. MiniMessage + style tags (style.yml), Bedrock-safe symbols only.
-# Category: icon, status (active | coming-soon), slot (inner slot of the 6-row menu), name, lore, topics, all-commands.
+# Category: icon, status (active | coming-soon: hidden), name, lore, topics, all-commands. Open categories are centred
+#           in file order (owner 3 Nov 2026); "slot" is no longer used.
 # Topic: icon, name, summary (2-3 lines), pages (3-6 short pages: title + lines), take-me-there (command run by the
 #        "Take me there" button, without /), commands (command categories listed under "Commands"), aliases (other
 #        ids for /help <id>; menus open these with their "?" button).
@@ -563,7 +564,7 @@ topics:
 
   rules:
     icon: lectern
-    aliases: [rule, appeal, appeals, punishments]
+    aliases: [rule, punishments]
     name: "<c:flame>Server rules"
     summary: ["<c:text>The short version, and where", "<c:text>to read the full rules."]
     take-me-there: "rules"
@@ -580,12 +581,10 @@ topics:
         lines:
           - "<c:text>Read them all with <c:value>/rules</c:value>."
           - "<c:text>Not knowing a rule is never an excuse."
-      - title: "<c:value>Punished? Your options"
+      - title: "<c:value>Punished?"
         lines:
           - "<c:text>See your mute, warnings and history"
           - "<c:text>with <c:value>/mypunishments</c:value>."
-          - "<c:text>Think it was a mistake? Send an"
-          - "<c:text>appeal with <c:value>/appeal</c:value>."
 
   chat:
     icon: oak_sign

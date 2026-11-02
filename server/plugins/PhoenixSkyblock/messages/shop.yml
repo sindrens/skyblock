@@ -107,9 +107,9 @@ category:
 # Grid tile tooltips (GUI-P3, I9 section 12, MENUS-V3 6.4). LoreBuilder labels: {price}, {pct} are filled in. Java viewers
 # get one muted hint; Bedrock viewers none.
 tooltip:
-  buy: "<bold><c:buy>| Buy Price: </c:buy><c:value>{price}</c:value></bold><c:muted> each</c:muted>"
-  sell: "<bold><c:sell>| Sell Price: </c:sell><c:value>{price}</c:value></bold><c:muted> each</c:muted>"
-  not-sellable: "<bold><c:sell>| Sell Price: </c:sell><c:error>Not sellable</c:error></bold>"
+  buy: "<gray>Buy: <green>{price}</green> <dark_gray>each"
+  sell: "<gray>Sell: <gold>{price}</gold> <dark_gray>each"
+  not-sellable: "<gray>Sell: <red>can't be sold"
   falling: "<c:warning>Falling: -{pct}%</c:warning> <c:muted>from base price</c:muted>"
   rising: "<c:success>Rising: +{pct}%</c:success> <c:muted>from base price</c:muted>"
   hot: "<c:success>Hot item today: +{pct}%</c:success>"
@@ -121,7 +121,7 @@ tooltip:
   action: "to buy"
 
 entry:
-  name: "<c:value><bold><item>"
+  name: "<white><item>"
   locked: "<c:error><sym:cross> Locked"
   requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
   # ECON-SPAWNERS step 13: a spawner tier unlocks per island by kills. <needed> <have> <what>
@@ -170,7 +170,7 @@ buy:
     name: "<area:money><bold>Sell"
     lore: ["<c:text>Sell this item instead.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   item:
-    name: "<c:value><bold><item>"
+    name: "<white><item>"
     room:
       - ""
       - "<c:text>Room for: <c:value><fits>"

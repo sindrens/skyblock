@@ -62,19 +62,19 @@ tab:
   header:
     - ""
     - "<c:sky_frost><st>          </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>          </st></c:sky_blue>"
-    - "<bold><grad:phoenix>PHOENIX SKYBLOCK</grad></bold>"
+    - "<c:ember><bold>PHOENIX SKYBLOCK</bold></c:ember>"
     - "<c:muted>Rise from the ashes</c:muted>"
     - ""
     - "<c:success>●</c:success> <c:value><online></c:value><c:muted>/<max> online</c:muted>  <c:muted><sym:dot></c:muted>  <c:ember><season></c:ember>"
     - ""
   footer:
     - ""
-    - "<c:muted>/menu</c:muted> <c:text>everything</c:text>  <c:muted><sym:dot></c:muted>  <c:muted>/help</c:muted> <c:text>guides</c:text>  <c:muted><sym:dot></c:muted>  <c:muted>/store</c:muted> <c:text>ranks</c:text>"
+    - "<c:text>Need help? <c:value>/help</c:value>"
     - "<c:sky_blue>»</c:sky_blue> <grad:skyborn>play.skybornmc.net</grad> <c:sky_blue>«</c:sky_blue>"
   # Under the footer, for each viewer: <rank> (badge), <name>, <money>, <crystals>, <level> (island level or -), <ping>.
+  # Owner 3 Nov 2026: no name/ping row here (the player list already shows both).
   footer-you:
     - ""
-    - "<rank> <c:value><name></c:value>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping>ms</c:value>"
     - "<cur:money><sym:money><money></cur:money>  <c:muted><sym:dot></c:muted>  <cur:crystals><sym:crystals> <crystals></cur:crystals>  <c:muted><sym:dot></c:muted>  <area:home>Island Lv <level></area:home>"
     - ""
   # Staff only (skyblock.staff.tab), under the footer. <tps> is one of tab.tps.* below.

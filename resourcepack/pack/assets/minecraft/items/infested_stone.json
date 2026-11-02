@@ -10,7 +10,7 @@
    }
   ],
   "fallback": {
-   "model": "minecraft:item/infested_stone",
+   "model": "minecraft:block/infested_stone",
    "type": "minecraft:model"
   },
   "index": 0,

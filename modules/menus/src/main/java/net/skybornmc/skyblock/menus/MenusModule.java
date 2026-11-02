@@ -61,6 +61,7 @@ public final class MenusModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        HelpCommandsMenu.hidden(config.helpHidden);
         core.messages().retire(Nav.TEXTS, RetiredTexts.all());
         core.messages().load(Nav.TEXTS);
         loadFiles();
@@ -130,6 +131,7 @@ public final class MenusModule implements SkyblockModule {
     @Override
     public void reload() {
         core.configs().load(config);
+        HelpCommandsMenu.hidden(config.helpHidden);
         core.messages().load(Nav.TEXTS);
         loadFiles();
         installSoundFilters();

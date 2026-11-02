@@ -23,6 +23,9 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "scoreboard.blank-under-title-max-lines", desc = "The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).", min = 0, max = 15)
     public int blankUnderTitleMaxLines = 8;
 
+    @Setting(path = "scoreboard.section-gaps", desc = "A blank line between sections and above the footer (owner 3 Nov 2026). Dropped first when the board is full.")
+    public boolean sectionGaps = true;
+
     @Setting(path = "scoreboard.progress-length", desc = "Dots in the progress line (<progress:key>).", min = 5, max = 20)
     public int progressLength = 10;
 

@@ -10,7 +10,7 @@
    }
   ],
   "fallback": {
-   "model": "minecraft:item/anvil",
+   "model": "minecraft:block/anvil",
    "type": "minecraft:model"
   },
   "index": 0,

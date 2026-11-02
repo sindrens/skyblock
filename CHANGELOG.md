@@ -1,6 +1,17 @@
 # Changelog
 
 ## [Unreleased]
+### v5 batch 1: look and feel (owner 3 Nov 2026, docs/planning/V5_PLAN.md)
+- **Owner icon set**: the owner's new icons (money, shards, crystals, credits, navigation, info, type, confirm, cancel, toggles, locked, undo, buy, sell, sell all, fill, bank, top, Depths, auction) replace the drawn ones; masters in `tools/cartoon/owner/`, variant picks in `render.py OWNER_PICKS`.
+- **Vanilla tools**: Depths tools, island tools and fishing rods show their vanilla look again (skins keep their own pictures). Pack about 430 KB.
+- **Missing pictures fixed**: anvil, bookshelf, enchanting table, smithing table (the /help Gear tile), infested stone and fence gate showed no picture with the pack.
+- **Messages**: every feature has its own short label instead of the PHOENIX title (`style.yml prefixes`). Chat shows one `»`.
+- **Tab**: the footer only says "Need help? /help"; no name/ping row under it.
+- **Scoreboard**: title "SKYBORN SKYBLOCK" in two plain colours; a blank line between sections and above the footer (dropped first when the board is full, `hud.yml scoreboard.section-gaps`).
+- **/shop**: plain vanilla look (no frame), white names, green buy and gold sell prices; items fill full rows of 7 (only the last row is centred, no zigzag), 3 rows per page with a free row above the bottom bar.
+- **/travel**: one more row so the places have room.
+- **Skills**: Foraging shows an axe and Farming a hoe.
+- **/help**: open categories only, centred in even rows and only as tall as needed; topics in 5 rows; short lists everywhere centre their last row; /appeal is no longer listed (`menu.yml help.hidden-commands`).
 ### Milestone leaderboards and menu sizes
 - **Milestone Top** (F13a/G6): `/milestones` → Milestone Top shows the 10 islands and the 10 players (best profile) with the most completed milestone tiers (1 tier = 1 point); yours glows. Leaderboard sources `milestones island` / `milestones personal` added to `npcs.yml` (they show once a build has leaderboard points `milestones_island` / `milestones_personal`).
 - **Smaller menus**: short lists (help, achievement categories, task tiers, invites, skins, enchant pickers, wardrobe pickers, icon pickers, backups) shrink to the rows they need (3-6); /achievements is 5 rows.

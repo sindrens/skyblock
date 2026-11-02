@@ -292,7 +292,7 @@ public final class HudService implements Listener {
         TagResolver values = values(player, choice, timer);
         String title = core.messages().raw(MODULE, "scoreboard." + layout + ".title");
         sidebar.title(title == null ? Component.empty() : core.messages().parse(player, title, values));
-        LayoutLines.Rules boardRules = new LayoutLines.Rules(config.maxLines, config.sectionRows, config.blankUnderTitleMaxLines);
+        LayoutLines.Rules boardRules = new LayoutLines.Rules(config.maxLines, config.sectionRows, config.blankUnderTitleMaxLines, config.sectionGaps);
         List<LayoutLines.Line> visible = parsed.visible(key -> LayoutLines.TIMER_KEY.equals(key) ? timer.isPresent()
                 : LayoutLines.present(core.placeholders().text(player, key).orElse(null)), boardRules);
         List<Component> lines = new ArrayList<>(visible.size());

@@ -7,15 +7,16 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * The grouped item grid of a shop tab (MENUS-V3 6.2, owner V3-Q14 a "one group per row, centred, cautious and
- * simple"): every group starts on a new row; a group longer than 7 is split evenly ({@link Centered#split}: 16 = 6 + 5 +
- * 5); a group longer than 28 is cut into pieces of 28; a page holds whole groups up to 4 rows and a group that does not
- * fit the rows left starts the next page. No captions, no gap rows, no label tiles. Pure.
+ * The item grid of a shop tab. Owner 3 Nov 2026 ("no zigzag, clean, more space"): the tab's items in group order fill
+ * full rows of 7 left to right; only the very last row of a page is centred. A page has {@link #ROWS} rows (screen rows
+ * 1-3), so row 4 stays empty as breathing room above the bottom bar. Pure.
  */
 final class ShopGrid {
 
-    /** Most items of one page (7 x 4). */
-    static final int PAGE = Centered.GRID_WIDTH * Centered.GRID_ROWS;
+    /** Item rows per page (screen rows 1-3 of a 6-row menu). */
+    static final int ROWS = 3;
+    /** Most items of one page (7 x 3). */
+    static final int PAGE = Centered.GRID_WIDTH * ROWS;
 
     /** One page: the items, their slots (same order) and the rows used. */
     record Page(List<ShopCatalog.Item> items, int[] slots, int rows) {
@@ -30,48 +31,36 @@ final class ShopGrid {
 
     /**
      * @param groups        the tab's groups in display order ({@link ShopCatalog.Category#displayGroups()})
-     * @param enabledLookup the item of an id when it is shown now (enabled, sold), else null (it leaves its group)
+     * @param enabledLookup the item of an id when it is shown now (enabled, sold), else null (it is left out)
      */
     static List<Page> pages(List<ShopCatalog.Group> groups, Function<String, ShopCatalog.Item> enabledLookup) {
-        List<List<ShopCatalog.Item>> pieces = new ArrayList<>();
+        List<ShopCatalog.Item> shown = new ArrayList<>();
         for (ShopCatalog.Group group : groups) {
-            List<ShopCatalog.Item> shown = new ArrayList<>();
             for (String id : group.items()) {
                 ShopCatalog.Item item = enabledLookup.apply(id);
                 if (item != null) {
                     shown.add(item);
                 }
             }
-            for (int from = 0; from < shown.size(); from += PAGE) {
-                pieces.add(shown.subList(from, Math.min(shown.size(), from + PAGE)));
-            }
         }
         List<Page> out = new ArrayList<>();
-        List<ShopCatalog.Item> items = new ArrayList<>();
-        List<Integer> sizes = new ArrayList<>();
-        int rows = 0;
-        for (List<ShopCatalog.Item> piece : pieces) {
-            int[] split = Centered.split(piece.size());
-            if (rows + split.length > Centered.GRID_ROWS && rows > 0) {
-                out.add(page(items, sizes));
-                items = new ArrayList<>();
-                sizes = new ArrayList<>();
-                rows = 0;
-            }
-            items.addAll(piece);
-            for (int size : split) {
-                sizes.add(size);
-            }
-            rows += split.length;
-        }
-        if (!items.isEmpty()) {
-            out.add(page(items, sizes));
+        for (int from = 0; from < shown.size(); from += PAGE) {
+            List<ShopCatalog.Item> items = shown.subList(from, Math.min(shown.size(), from + PAGE));
+            out.add(page(items));
         }
         return out;
     }
 
-    private static Page page(List<ShopCatalog.Item> items, List<Integer> sizes) {
-        int[] counts = sizes.stream().mapToInt(Integer::intValue).toArray();
+    /** Full rows of 7, the remainder centred on the last row. */
+    static Page page(List<ShopCatalog.Item> items) {
+        int n = items.size();
+        int full = n / Centered.GRID_WIDTH;
+        int rest = n % Centered.GRID_WIDTH;
+        int[] counts = new int[full + (rest > 0 ? 1 : 0)];
+        java.util.Arrays.fill(counts, 0, full, Centered.GRID_WIDTH);
+        if (rest > 0) {
+            counts[full] = rest;
+        }
         return new Page(items, Centered.grid(counts), counts.length);
     }
 }

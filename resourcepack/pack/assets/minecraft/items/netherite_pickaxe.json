@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/item_island_pickaxe_netherite",
-     "type": "minecraft:model"
-    },
-    "when": "item/island_pickaxe_netherite"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_pickaxe",
      "type": "minecraft:model"
     },
@@ -28,20 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_pickaxe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_pickaxe_netherite",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_pickaxe_netherite"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_pickaxe_voidstone",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_pickaxe_voidstone"
    }
   ],
   "fallback": {

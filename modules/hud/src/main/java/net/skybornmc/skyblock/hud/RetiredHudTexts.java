@@ -15,7 +15,7 @@ final class RetiredHudTexts {
 
     static Map<String, String> all() {
         Map<String, String> m = new HashMap<>();
-        m.put("scoreboard.default.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
+        m.put("scoreboard.default.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
         m.put("scoreboard.default.lines", String.join("\n",
                 "<soft-blank>",
                 " <bold><c:header>| You</c:header></bold>",
@@ -28,7 +28,7 @@ final class RetiredHudTexts {
                 "if:island_level| <c:bar>|</c:bar> <progress:island_level_progress>",
                 "if:board_timer| <c:bar>|</c:bar> <timer>",
                 " <c:sky_ice>play.skybornmc.net"));
-        m.put("scoreboard.island.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
+        m.put("scoreboard.island.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
         m.put("scoreboard.island.lines", String.join("\n",
                 "<soft-blank>",
                 " <bold><c:header>| You</c:header></bold>",
@@ -42,8 +42,8 @@ final class RetiredHudTexts {
                 "if:island_next_note| <c:bar>|</c:bar> <c:text>Note:</c:text> <c:value><ph:island_next_note>",
                 "if:board_timer| <c:bar>|</c:bar> <timer>",
                 " <c:sky_ice>play.skybornmc.net"));
-        m.put("scoreboard.island-visit.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
-        m.put("scoreboard.spawn.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
+        m.put("scoreboard.island-visit.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
+        m.put("scoreboard.spawn.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
         m.put("scoreboard.spawn.lines", String.join("\n",
                 "<soft-blank>",
                 " <bold><c:header>| You</c:header></bold>",
@@ -55,11 +55,11 @@ final class RetiredHudTexts {
                 "if:afk_pool| <c:bar>|</c:bar><ph:afk_line>",
                 "if:board_timer| <c:bar>|</c:bar> <timer>",
                 " <c:sky_ice>play.skybornmc.net"));
-        m.put("scoreboard.depths.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
-        m.put("scoreboard.depths-forest.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
-        m.put("scoreboard.depths-combat.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
-        m.put("scoreboard.depths-gate.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
-        m.put("scoreboard.warzone.title", "<grad:phoenix><bold>PHOENIX SKYBLOCK</bold></grad>");
+        m.put("scoreboard.depths.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
+        m.put("scoreboard.depths-forest.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
+        m.put("scoreboard.depths-combat.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
+        m.put("scoreboard.depths-gate.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
+        m.put("scoreboard.warzone.title", "<c:ember>✦</c:ember> <bold><grad:phoenix>PHOENIX</grad> <c:parchment>SKYBLOCK</c:parchment></bold> <c:ember>✦</c:ember>"); // 2 Nov 2026 title
         return Map.copyOf(m);
     }
 }

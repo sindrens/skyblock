@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/item_island_axe_iron",
-     "type": "minecraft:model"
-    },
-    "when": "item/island_axe_iron"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_axe",
      "type": "minecraft:model"
     },
@@ -28,27 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_axe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_acacia",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_acacia"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_dark_oak",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_dark_oak"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_jungle",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_jungle"
    }
   ],
   "fallback": {

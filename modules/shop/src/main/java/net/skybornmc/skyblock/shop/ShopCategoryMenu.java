@@ -16,6 +16,12 @@ import java.util.List;
  */
 final class ShopCategoryMenu extends Menu {
 
+    /** Owner 3 Nov 2026: the shop is plain vanilla (no frame layer, no tinted panels). */
+    @Override
+    public boolean panel() {
+        return false;
+    }
+
     private final ShopModule module;
 
     ShopCategoryMenu(ShopModule module) {

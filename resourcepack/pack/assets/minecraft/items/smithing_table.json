@@ -10,7 +10,7 @@
    }
   ],
   "fallback": {
-   "model": "minecraft:item/smithing_table",
+   "model": "minecraft:block/smithing_table",
    "type": "minecraft:model"
   },
   "index": 0,

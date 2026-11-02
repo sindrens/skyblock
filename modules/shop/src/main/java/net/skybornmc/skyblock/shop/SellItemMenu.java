@@ -33,6 +33,12 @@ import java.util.Optional;
  */
 final class SellItemMenu extends Menu {
 
+    /** Owner 3 Nov 2026: the shop is plain vanilla (no frame layer, no tinted panels). */
+    @Override
+    public boolean panel() {
+        return false;
+    }
+
     static final int SLOT_ITEM = SLOT_SUMMARY;
     static final int SLOT_SWITCH = 19;
 

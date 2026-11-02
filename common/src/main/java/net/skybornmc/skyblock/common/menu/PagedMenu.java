@@ -90,10 +90,9 @@ public abstract class PagedMenu<T> extends Menu {
         return Math.max(3, contentRows + 2);
     }
 
-    /** The layout in use: a compact menu pages on its smaller grid, others use {@link #pageLayout()}. */
+    /** The layout in use: a compact menu pages on its own centred grid, others use {@link #pageLayout()}. */
     private PageLayout<T> layout() {
-        int rows = rows();
-        return rows >= 6 ? pageLayout() : PageLayout.grid((rows - 2) * 7);
+        return compact() ? PageLayout.centered((rows() - 2) * 7) : pageLayout();
     }
 
     @Override

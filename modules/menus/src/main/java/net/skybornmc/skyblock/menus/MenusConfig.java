@@ -8,6 +8,9 @@ import java.util.List;
 /** Settings of /menu, /help, /settings and the menu item ({@code navigation.yml}). Layout: menu.yml, help: help.yml. */
 public final class MenusConfig extends ModuleConfig {
 
+    @Setting(path = "help.hidden-commands", desc = "Commands /help never lists for players (owner 3 Nov 2026: /appeal is reached from the ban screen, not the help). First word of the command, without /.")
+    public List<String> helpHidden = List.of("appeal", "appeals");
+
     @Setting(path = "warp.aliases", desc = "/warp names for the Travel places of menu.yml ('name:place id'). /warp also takes the "
             + "place id itself (crate-yard) and without dashes (crateyard). Owner 2 Nov 2026: /warp crates.")
     public List<String> warpAliases = List.of("crates:crate-yard", "crate:crate-yard", "market:market", "forge:forge-quarter",

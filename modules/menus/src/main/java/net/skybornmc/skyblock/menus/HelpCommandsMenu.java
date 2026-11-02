@@ -37,8 +37,27 @@ final class HelpCommandsMenu extends PagedMenu<HelpEntry> {
     }
 
     /** The commands {@code sender} may use in {@code categories} (empty = all), sorted by category then name. */
+    /** {@code menu.yml help.hidden-commands}: first words never listed (set on load). */
+    private static volatile java.util.Set<String> hidden = java.util.Set.of();
+
+    static void hidden(List<String> commands) {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        for (String c : commands) {
+            out.add(c.strip().toLowerCase(java.util.Locale.ROOT).replaceFirst("^/", ""));
+        }
+        hidden = java.util.Set.copyOf(out);
+    }
+
+    /** Pure: true when /help hides this command path ({@code "appeal"}, {@code "appeal status"}). */
+    static boolean isHidden(String path, java.util.Set<String> hiddenWords) {
+        String first = path.strip().replaceFirst("^/", "").split("\\s+", 2)[0].toLowerCase(java.util.Locale.ROOT);
+        return hiddenWords.contains(first);
+    }
+
     static List<HelpEntry> commands(Nav nav, CommandSender sender, List<String> categories) {
+        java.util.Set<String> hiddenWords = hidden;
         return nav.core.commands().helpIndex(sender).stream()
+                .filter(e -> !isHidden(e.path(), hiddenWords))
                 .filter(e -> categories.isEmpty() || categories.stream().anyMatch(c -> c.equalsIgnoreCase(e.category())))
                 .filter(e -> !e.playerOnly() || sender instanceof Player)
                 .sorted(Comparator.comparing(HelpEntry::category).thenComparing(HelpEntry::path))

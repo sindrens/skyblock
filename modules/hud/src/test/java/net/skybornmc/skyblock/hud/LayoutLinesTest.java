@@ -71,4 +71,17 @@ class LayoutLinesTest {
         assertFalse(LayoutLines.present("-"));
         assertFalse(LayoutLines.present("—"));
     }
+
+    @Test
+    void gapsSeparateSectionsAndGoFirstOnAFullBoard() {
+        LayoutLines layout = LayoutLines.parse(String.join("<newline>",
+                " <bold><c:header>| You", " <c:bar>| a", " <bold><c:header>| Island", " <c:bar>| b", " footer"));
+        List<LayoutLines.Line> roomy = layout.visible(k -> true, new LayoutLines.Rules(15, 4, 0, true));
+        assertEquals(List.of(" <bold><c:header>| You", " <c:bar>| a", "", " <bold><c:header>| Island", " <c:bar>| b", "", " footer"),
+                texts(roomy));
+        List<LayoutLines.Line> tight = layout.visible(k -> true, new LayoutLines.Rules(6, 4, 0, true));
+        assertEquals(6, tight.size());
+        assertEquals(" footer", tight.getLast().text(), "the lowest gap goes first, the footer stays");
+        assertEquals(5, layout.visible(k -> true, new LayoutLines.Rules(15, 4, 0, false)).size(), "off: no gaps");
+    }
 }

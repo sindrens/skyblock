@@ -21,13 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_pickaxe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_pickaxe_copper",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_pickaxe_copper"
    }
   ],
   "fallback": {

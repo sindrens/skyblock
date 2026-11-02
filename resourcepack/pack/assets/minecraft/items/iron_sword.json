@@ -10,13 +10,6 @@
    },
    {
     "model": {
-     "model": "phoenix:item/icon/item_island_sword_iron",
-     "type": "minecraft:model"
-    },
-    "when": "item/island_sword_iron"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_sword",
      "type": "minecraft:model"
     },
@@ -35,27 +28,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_sword"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_sword_slime",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_sword_slime"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_sword_tide",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_sword_tide"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_sword_venom",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_sword_venom"
    }
   ],
   "fallback": {

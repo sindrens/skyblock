@@ -21,13 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_axe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_spruce",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_spruce"
    }
   ],
   "fallback": {

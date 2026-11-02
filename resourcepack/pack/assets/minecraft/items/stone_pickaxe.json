@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/item_island_pickaxe_stone",
-     "type": "minecraft:model"
-    },
-    "when": "item/island_pickaxe_stone"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_pickaxe",
      "type": "minecraft:model"
     },
@@ -28,13 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_pickaxe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_pickaxe_coal",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_pickaxe_coal"
    }
   ],
   "fallback": {

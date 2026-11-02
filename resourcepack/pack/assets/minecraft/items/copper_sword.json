@@ -21,13 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_sword"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_sword_bone",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_sword_bone"
    }
   ],
   "fallback": {

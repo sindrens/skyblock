@@ -142,4 +142,15 @@ class StyleTest {
         assertNotSame(java, reloaded, "a reload drops the cache");
         assertEquals("Q hi", plain.serialize(mm.deserialize("<prefix>hi", reloaded)));
     }
+
+    @Test
+    void eachModuleCanHaveItsOwnPrefix(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, YAML + "prefixes:\n  islands: \"Island » \"\n");
+        Style style = new Style();
+        style.load(file.toFile());
+        assertEquals("Island » ", style.prefixFor("islands"));
+        assertEquals("<c:brand>P</c:brand> ", style.prefixFor("shop"), "no own label: the shared prefix");
+        assertEquals("<c:brand>P</c:brand> ", style.prefixFor(null));
+    }
 }

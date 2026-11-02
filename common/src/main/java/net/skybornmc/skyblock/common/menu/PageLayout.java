@@ -45,4 +45,30 @@ public interface PageLayout<T> {
             return out;
         };
     }
+
+    /**
+     * Full rows of 7 with each page's last row centred ({@link Centered#grid}), {@code perPage} per page (whole rows).
+     * Compact {@link PagedMenu}s use it so short lists look symmetrical (owner 3 Nov 2026).
+     */
+    static <T> PageLayout<T> centered(int perPage) {
+        int per = Math.max(Centered.GRID_WIDTH, Math.min(PagedMenu.CONTENT_SLOTS.length, perPage));
+        return entries -> {
+            List<Page<T>> out = new ArrayList<>();
+            for (int from = 0; from < entries.size(); from += per) {
+                List<T> chunk = entries.subList(from, Math.min(entries.size(), from + per));
+                int full = chunk.size() / Centered.GRID_WIDTH;
+                int rest = chunk.size() % Centered.GRID_WIDTH;
+                int[] counts = new int[full + (rest > 0 ? 1 : 0)];
+                Arrays.fill(counts, 0, full, Centered.GRID_WIDTH);
+                if (rest > 0) {
+                    counts[full] = rest;
+                }
+                out.add(new Page<>(chunk, Centered.grid(counts)));
+            }
+            if (out.isEmpty()) {
+                out.add(new Page<>(List.of(), new int[0]));
+            }
+            return out;
+        };
+    }
 }

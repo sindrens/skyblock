@@ -31,13 +31,6 @@
    },
    {
     "model": {
-     "model": "phoenix:item/icon/item_tool_blueprint",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_blueprint"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/nav_next",
      "type": "minecraft:model"
     },

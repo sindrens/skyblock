@@ -10,7 +10,7 @@
    }
   ],
   "fallback": {
-   "model": "minecraft:item/bookshelf",
+   "model": "minecraft:block/bookshelf",
    "type": "minecraft:model"
   },
   "index": 0,

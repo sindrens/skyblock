@@ -31,7 +31,7 @@ final class HelpTopicMenu extends Menu {
 
     @Override
     public int rows() {
-        return 6;
+        return 5; // owner 3 Nov 2026: compact; pages rows 1-2, buttons row 3, bottom bar row 4
     }
 
     @Override

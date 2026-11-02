@@ -255,7 +255,12 @@ public final class Messages {
             }
             return Component.text("[missing: " + module + ":" + key + "]", NamedTextColor.RED);
         }
-        return parse(viewer, text, placeholders);
+        return parse(viewer, withPrefix(module, text), placeholders);
+    }
+
+    /** Puts the module's own {@code <prefix>} (style.yml {@code prefixes.<module>}) into a message of that module. */
+    private String withPrefix(String module, String text) {
+        return text.contains("<prefix>") ? text.replace("<prefix>", style.prefixFor(module)) : text;
     }
 
     private record Fixed(String source, int style, Component component) {
@@ -278,7 +283,7 @@ public final class Messages {
         if (hit != null && hit.style() == style.version() && hit.source().equals(text)) {
             return hit.component();
         }
-        Component parsed = parse(viewer, text);
+        Component parsed = parse(viewer, withPrefix(module, text));
         if (fixed.size() > 4096) {
             fixed.clear();
         }

@@ -341,4 +341,14 @@ class MenuFrameworkTest {
         assertEquals(16, pages.get(0).slots()[6]);
         assertEquals(10, pages.get(1).slots()[0]);
     }
+
+    @Test
+    void compactListsCentreTheirLastRow() {
+        var pages = PageLayout.<Integer>centered(14).pages(java.util.List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        assertEquals(1, pages.size());
+        assertEquals(10, pages.get(0).slots()[0]);
+        assertEquals(22, pages.get(0).slots()[7], "the 8th entry sits in the middle of row 2");
+        var three = PageLayout.<Integer>centered(7).pages(java.util.List.of(1, 2, 3));
+        assertEquals(java.util.List.of(12, 13, 14), java.util.Arrays.stream(three.get(0).slots()).boxed().toList());
+    }
 }

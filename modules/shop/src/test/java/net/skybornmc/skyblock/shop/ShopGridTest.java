@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** MENUS-V3 6.2: the grouped shop grid (whole groups per page, centred rows, even split). */
+/** Owner 3 Nov 2026: the shop grid fills full rows of 7, only a page's last row is centred, 3 rows per page. */
 class ShopGridTest {
 
     private static ShopCatalog.Item item(String id) {
@@ -49,11 +49,11 @@ class ShopGridTest {
             Set<String> placed = new HashSet<>();
             for (ShopGrid.Page page : pagesOf(c.id())) {
                 assertEquals(page.items().size(), page.slots().length);
-                assertTrue(page.rows() <= Centered.GRID_ROWS, c.id());
+                assertTrue(page.rows() <= ShopGrid.ROWS, c.id());
                 Set<Integer> slots = new HashSet<>();
                 for (int i = 0; i < page.slots().length; i++) {
                     int slot = page.slots()[i];
-                    assertTrue(slot >= 10 && slot <= 43 && slot % 9 >= 1 && slot % 9 <= 7, c.id() + " slot " + slot);
+                    assertTrue(slot >= 10 && slot <= 34 && slot % 9 >= 1 && slot % 9 <= 7, c.id() + " slot " + slot);
                     assertTrue(slots.add(slot), c.id() + " slot used twice: " + slot);
                     assertTrue(placed.add(page.items().get(i).id()), c.id() + " placed twice: " + page.items().get(i).id());
                 }
@@ -63,66 +63,31 @@ class ShopGridTest {
     }
 
     @Test
-    void farmingPageOneIsTheC5Mock() throws Exception {
-        List<ShopGrid.Page> pages = pagesOf("farming");
-        assertEquals(1, pages.size(), "Shop v5: seeds, crops and saplings fit on one page");
-        assertArrayEquals(new int[]{11, 12, 13, 14, 15, 19, 20, 21, 23, 24, 25, 29, 30, 31, 32, 33, 38, 39, 41, 42},
-                pages.get(0).slots(), "seeds row 1, crops row 2, saplings rows 3 and 4");
-        assertEquals("wheat_seeds", pages.get(0).items().get(0).id());
-        assertEquals("bone_meal", pages.get(0).items().get(4).id(), "helpers last");
-    }
-
-    @Test
-    void colorsHasThreePagesOfWholeColourGroups() throws Exception {
-        List<ShopGrid.Page> pages = pagesOf("colors");
-        assertEquals(3, pages.size());
-        assertEquals(4, pages.get(0).rows(), "concrete 6 + 5 + 5, extras 4");
-        assertEquals(3, pages.get(1).rows(), "stained glass 6 + 5 + 5");
-        assertTrue(pages.get(1).items().stream().allMatch(i -> i.id().endsWith("_stained_glass")));
-        assertTrue(pages.get(2).items().get(0).id().endsWith("_terracotta"));
-    }
-
-    @Test
-    void spawnersAreFourRowsOfFive() throws Exception {
-        List<ShopGrid.Page> pages = pagesOf("spawners");
-        assertEquals(1, pages.size());
-        assertArrayEquals(Centered.grid(5, 5, 5, 5), pages.get(0).slots());
-        assertEquals("spawner_pig", pages.get(0).items().get(0).id());
-        assertEquals("spawner_blaze", pages.get(0).items().get(15).id());
-    }
-
-    @Test
-    void aGroupThatDoesNotFitStartsTheNextPage() {
-        List<ShopCatalog.Group> groups = List.of(
-                new ShopCatalog.Group("a", ids("a", 16)),   // 3 rows
-                new ShopCatalog.Group("b", ids("b", 9)),    // 2 rows: does not fit the 1 row left
-                new ShopCatalog.Group("c", ids("c", 3)));   // 1 row: fits after b
+    void fullRowsFirstAndOnlyTheLastRowIsCentred() {
+        List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 3)), new ShopCatalog.Group("b", ids("b", 6)));
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
-        assertEquals(2, pages.size());
-        assertEquals(16, pages.get(0).items().size());
-        assertArrayEquals(Centered.grid(6, 5, 5), pages.get(0).slots());
-        assertEquals(12, pages.get(1).items().size());
-        assertArrayEquals(Centered.grid(5, 4, 3), pages.get(1).slots());
+        assertEquals(1, pages.size());
+        assertArrayEquals(Centered.grid(7, 2), pages.get(0).slots(), "3 + 6 = one full row and 2 centred, no zigzag");
+        assertEquals("a0", pages.get(0).items().get(0).id(), "group order kept");
+        assertEquals("b0", pages.get(0).items().get(3).id());
     }
 
     @Test
-    void aDisabledItemShortensItsGroup() {
+    void aDisabledItemIsLeftOut() {
         List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 8)));
         Function<String, ShopCatalog.Item> lookup = id -> id.equals("a3") ? null : item(id);
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, lookup);
         assertEquals(1, pages.size());
-        assertEquals(7, pages.get(0).items().size());
-        assertArrayEquals(Centered.grid(7), pages.get(0).slots(), "7 left = one full row, not 4 + 3");
+        assertArrayEquals(Centered.grid(7), pages.get(0).slots(), "7 left = one full row");
     }
 
     @Test
-    void aGroupOf29IsCutBy28() {
-        List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 29)));
+    void aPageHoldsThreeRows() {
+        List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 22)));
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
         assertEquals(2, pages.size());
-        assertEquals(28, pages.get(0).items().size());
-        assertEquals(4, pages.get(0).rows());
-        assertEquals(1, pages.get(1).items().size());
+        assertEquals(21, pages.get(0).items().size());
+        assertEquals(3, pages.get(0).rows());
         assertArrayEquals(new int[]{13}, pages.get(1).slots());
     }
 

@@ -30,7 +30,7 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
     static final String TIMER_KEY = "board_timer";
 
     /** What a line is, for the board rules. */
-    enum Kind { BLANK, SOFT_BLANK, HEADER, ROW, OTHER }
+    enum Kind { BLANK, SOFT_BLANK, HEADER, ROW, OTHER, GAP }
 
     /** One line: {@code condition} is a placeholder key (or keys joined by commas) or null (always shown); {@code text} is MiniMessage. */
     record Line(String condition, String text, Kind kind) {
@@ -40,7 +40,7 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
         }
 
         boolean blank() {
-            return kind == Kind.BLANK || kind == Kind.SOFT_BLANK;
+            return kind == Kind.BLANK || kind == Kind.SOFT_BLANK || kind == Kind.GAP;
         }
     }
 
@@ -48,8 +48,15 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
      * Board limits: {@code maxLines} in total (title not counted), {@code sectionRows} rows per header, and the soft
      * blank line shows only while the other visible lines are at most {@code softBlankMaxLines}.
      */
-    record Rules(int maxLines, int sectionRows, int softBlankMaxLines) {
+    record Rules(int maxLines, int sectionRows, int softBlankMaxLines, boolean gaps) {
+
+        Rules(int maxLines, int sectionRows, int softBlankMaxLines) {
+            this(maxLines, sectionRows, softBlankMaxLines, false);
+        }
     }
+
+    /** An automatic blank line between sections (owner 3 Nov 2026 "more space"); the first lines to go on a full board. */
+    static final Line GAP = new Line(null, "", Kind.GAP);
 
     LayoutLines {
         lines = List.copyOf(lines);
@@ -165,9 +172,39 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
         if (others > rules.softBlankMaxLines()) {
             out.removeIf(l -> l.kind() == Kind.SOFT_BLANK);
         }
-        // 5: the total cap.
         int max = Math.max(0, rules.maxLines());
+        // 4b: gaps before every section but the first and before the footer; dropped bottom-up while the board is full.
+        if (rules.gaps()) {
+            out = withGaps(out);
+            for (int i = out.size() - 1; i >= 0 && out.size() > max; i--) {
+                if (out.get(i).kind() == Kind.GAP) {
+                    out.remove(i);
+                }
+            }
+        }
+        // 5: the total cap.
         return out.size() > max ? new ArrayList<>(out.subList(0, max)) : out;
+    }
+
+    /** Pure: a gap before each header after the first section, and before a closing non-row line (the footer). */
+    static List<Line> withGaps(List<Line> lines) {
+        List<Line> out = new ArrayList<>(lines.size() + 4);
+        boolean seenSection = false;
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            boolean last = i == lines.size() - 1;
+            boolean previousBlank = !out.isEmpty() && out.getLast().blank();
+            if (line.kind() == Kind.HEADER) {
+                if (seenSection && !previousBlank) {
+                    out.add(GAP);
+                }
+                seenSection = true;
+            } else if (last && line.kind() == Kind.OTHER && seenSection && !previousBlank) {
+                out.add(GAP);
+            }
+            out.add(line);
+        }
+        return out;
     }
 
     /** True if any key of a condition ({@code a} or {@code a,b,...}) has a value. */

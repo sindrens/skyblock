@@ -10,7 +10,7 @@
    }
   ],
   "fallback": {
-   "model": "minecraft:item/oak_fence_gate",
+   "model": "minecraft:block/oak_fence_gate",
    "type": "minecraft:model"
   },
   "index": 0,

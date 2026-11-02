@@ -415,13 +415,15 @@ used as icon bases (test).
 
 ---
 
-## 13. Questions (each is built with the default unless you say otherwise)
-- **Q1 Icons:** use my variant picks (9.1), cut from the sheet? Or send the original PNGs / other picks. *Default: my
-  picks, cut from the sheet.*
-- **Q2 Textures kept:** crate keys, fuel cells, boosters and shard blocks keep custom pictures (only tools and rods go
-  vanilla)? *Default: yes.*
-- **Q3 Scoreboard title:** "PHOENIX SKYBLOCK" in plain bold gold (no gradient, no stars), or another name? *Default: yes.*
-- **Q4 Spawn/hub:** no tools at all outside the island and the Depths (2.5)? *Default: yes.*
-- **Q5 Crystal refunds:** island tool upgrades bought with crystals are refunded as shards 1:1 when tools become shared?
-  *Default: yes, and the island keeps the highest levels anyone had.*
-- **Q6 Pip:** Pip stays as the guide off the island (Depths), Kindle on the island? *Default: yes.*
+## 13. Owner answers (3 Nov 2026 00:22)
+- **Q1 Icons:** use the two sheets (`tools/cartoon/owner/`, 128x128 masters cut from them; picks in `render.py OWNER_PICKS`).
+  Anything missing is drawn in the same style.
+- **Q2 Textures kept:** yes, but crate keys, fuel cells, boosters and shard blocks get a **massive, detailed** art update
+  (batch 7, previews first).
+- **Q3 Scoreboard title:** "something else relevant, good looking, not too much" → `SKYBORN SKYBLOCK` in two plain
+  colours (sky blue + ember), no gradient, no stars.
+- **Q4 Tools outside island/Depths:** none (yes).
+- **Q5 Crystal refunds:** **no refunds**; the island keeps the highest levels anyone had.
+- **Q6 Pip:** yes, Pip is the guide off the island. **Kindle sends Pip with you and introduces him before you meet him**
+  (batch 2: a Kindle line "Take Pip with you, he knows the way down" right before the Depths step, then Pip appears next
+  to Kindle).

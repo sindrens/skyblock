@@ -120,13 +120,12 @@ class ShopCatalogGroupsTest {
 
     @Test
     void econResultPageCounts() throws Exception {
-        int[] expected = {3, 3, 1, 2, 3, 1, 1, 1, 1};
         List<ShopCatalog.Category> tabs = ShopCatalogTest.catalog().categories();
-        for (int i = 0; i < expected.length; i++) {
-            ShopCatalog.Category c = tabs.get(i);
+        for (ShopCatalog.Category c : tabs) {
             Map<String, ShopCatalog.Item> shown = new LinkedHashMap<>();
             c.enabledItems().forEach(it -> shown.put(it.id(), it));
-            assertEquals(expected[i], ShopGrid.pages(c.displayGroups(), shown::get).size(), c.id());
+            // Owner 3 Nov 2026: 21 items (3 full rows) per page, no group breaks.
+            assertEquals((c.enabledItems().size() + ShopGrid.PAGE - 1) / ShopGrid.PAGE, ShopGrid.pages(c.displayGroups(), shown::get).size(), c.id());
             for (ShopCatalog.Group g : c.groups()) {
                 assertEquals(Centered.split(g.items().size()).length, (g.items().size() + 6) / 7, c.id() + "." + g.id());
             }

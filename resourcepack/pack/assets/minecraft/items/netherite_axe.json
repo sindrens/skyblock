@@ -3,13 +3,6 @@
   "cases": [
    {
     "model": {
-     "model": "phoenix:item/icon/item_island_axe_netherite",
-     "type": "minecraft:model"
-    },
-    "when": "item/island_axe_netherite"
-   },
-   {
-    "model": {
      "model": "phoenix:item/icon/item_skin_frostbite_axe",
      "type": "minecraft:model"
     },
@@ -28,20 +21,6 @@
      "type": "minecraft:model"
     },
     "when": "item/skin_royal_gold_axe"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_crimson",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_crimson"
-   },
-   {
-    "model": {
-     "model": "phoenix:item/icon/item_tool_axe_warped",
-     "type": "minecraft:model"
-    },
-    "when": "item/tool_axe_warped"
    }
   ],
   "fallback": {

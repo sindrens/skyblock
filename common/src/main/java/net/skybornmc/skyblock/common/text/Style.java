@@ -63,6 +63,8 @@ public final class Style {
     private volatile Map<String, String> symbols = Map.of();
     private volatile Map<String, List<Color>> gradients = Map.of();
     private volatile String prefix = "";
+    /** Per-module {@code <prefix>} texts (owner 3 Nov 2026: a short label per feature instead of one server title). */
+    private volatile Map<String, String> prefixes = Map.of();
     private volatile Set<Integer> bedrockSafe = Set.of();
 
     /**
@@ -137,6 +139,17 @@ public final class Style {
         symbols = java.util.Collections.unmodifiableMap(newSymbols);
         gradients = java.util.Collections.unmodifiableMap(newGradients);
         prefix = yaml.getString("prefix", "");
+        Map<String, String> newPrefixes = new LinkedHashMap<>();
+        ConfigurationSection ps = yaml.getConfigurationSection("prefixes");
+        if (ps != null) {
+            for (String module : ps.getKeys(false)) {
+                String v = ps.getString(module);
+                if (v != null) {
+                    newPrefixes.put(module, v);
+                }
+            }
+        }
+        prefixes = Map.copyOf(newPrefixes);
         bedrockSafe = Set.copyOf(safe);
         fullJava = null;
         fullBedrock = null;
@@ -192,6 +205,12 @@ public final class Style {
         Map<String, String> syms = symbols;
         builder.tag("sym", (args, ctx) -> Tag.selfClosingInserting(Component.text(symbol(syms, args.popOr("missing symbol").value()))));
         return builder.build();
+    }
+
+    /** The {@code <prefix>} text of a module's messages: {@code prefixes.<module>}, else the shared {@code prefix}. */
+    public String prefixFor(String module) {
+        String own = module == null ? null : prefixes.get(module);
+        return own != null ? own : prefix;
     }
 
     /**
