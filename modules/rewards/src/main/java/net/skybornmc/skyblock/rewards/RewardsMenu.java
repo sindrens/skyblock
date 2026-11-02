@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * {@code /rewards} (spec section 5): one card per listed source (owner F3: Daily, Weekly, Monthly, Battle pass; Milestones
- * joins when that system is built), each with its state as icon and word (golden rule 8): {@code ✔ Ready}, {@code Claimed.
+ * {@code /rewards} (spec section 5): one card per listed source (owner F3: Daily, Weekly, Monthly, Battle pass, Milestones),
+ * each with its state as icon and word (golden rule 8): {@code ✔ Ready}, {@code Claimed.
  * Resets in ...}, {@code ✘ Locked: ...}. A click on a ready card claims that one; Claim all (slot 38) is only shown when
  * something is ready and claims each source on its own (one failure never stops the others). Updates every second; every
  * click re-checks on the server (never trusts the open menu). Bedrock: every action is a plain tap.
@@ -26,6 +26,8 @@ final class RewardsMenu extends Menu {
     static final int SLOT_WEEKLY = 11;
     static final int SLOT_MONTHLY = 12;
     static final int SLOT_PASS = 14;
+    /** Build plan slice 4: the Milestones card (ready tiers of the island and the profile). */
+    static final int SLOT_MILESTONES = 15;
     static final int SLOT_CLAIM_ALL = 38;
     static final int SLOT_SUMMARY = 4;
 
@@ -82,6 +84,7 @@ final class RewardsMenu extends Menu {
         periodic(SLOT_WEEKLY, PeriodicRules.Period.WEEK, now);
         periodic(SLOT_MONTHLY, PeriodicRules.Period.MONTH, now);
         pass();
+        milestones();
         if (ready > 0) {
             set(SLOT_CLAIM_ALL, glint(service.item(Material.LIME_DYE, service.text(viewer, RewardsModule.ID, "menu.rewards.claim-all.name"),
                     service.lines(viewer, RewardsModule.ID, "menu.rewards.claim-all.lore", Msg.number("count", ready)))),
@@ -177,6 +180,23 @@ final class RewardsMenu extends Menu {
                 pass.get().claimAll(viewer, true).thenAccept(n -> refreshIfOpen());
             } else {
                 viewer.performCommand("pass");
+            }
+        });
+    }
+
+    private void milestones() {
+        Optional<net.skybornmc.skyblock.common.milestones.MilestoneRewards> ms =
+                net.skybornmc.skyblock.common.milestones.MilestoneRewards.of(m.core.services());
+        if (ms.isEmpty()) {
+            return;
+        }
+        int ready = ms.get().ready(viewer);
+        ItemStack item = card(Material.EXPERIENCE_BOTTLE, "milestones", ready > 0 ? "ready" : "none", Msg.number("count", ready));
+        set(SLOT_MILESTONES, ready > 0 ? glint(item) : item, click -> {
+            if (ready > 0) {
+                ms.get().claimAll(viewer, true).thenAccept(n -> refreshIfOpen());
+            } else {
+                ms.get().open(viewer);
             }
         });
     }

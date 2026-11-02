@@ -31,6 +31,8 @@ claim-all:
   # Weekly / Monthly Reward claimed by Claim all. <rewards> = what it paid.
   weekly: "<c:success><sym:check></c:success> <c:text>Weekly Reward: <rewards>"
   monthly: "<c:success><sym:check></c:success> <c:text>Monthly Reward: <rewards>"
+  # Milestone tiers claimed by Claim all (the perks start now). <count> = chains.
+  milestones: "<c:success><sym:check></c:success> <c:text>Milestones: <c:value><count></c:value> <c:text>tier(s)"
   # The /rewards Claim all button. <rewards> = the summary line(s).
   done: "<prefix><c:success><sym:check></c:success> <rewards>"
 
@@ -168,6 +170,10 @@ menu:
       name: "<c:value><bold>Monthly Reward"
       ready: ["<c:text>Claim once a month on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:success><sym:check> Ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
       claimed: ["<c:text>Claim once a month on this profile.", "<c:bar>| </c:bar><c:text>Contains", "<contents>", "", "<c:muted>Claimed. Resets in <c:value><time>"]
+    milestones:
+      name: "<c:value><bold>Milestones"
+      ready: ["<c:text>Island and personal milestones.", "", "<c:success><sym:check> <c:value><count></c:value> <c:success>tier(s) ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      none: ["<c:muted>No tiers to claim right now.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open milestones"]
     pass:
       name: "<c:value><bold>Battle pass"
       ready: ["<c:success><sym:check> <count> tiers ready to claim", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]

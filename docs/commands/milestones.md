@@ -1,0 +1,7 @@
+# Milestones commands
+
+Milestones (Complete Developer Spec §7-9): grind an activity, reach tiers, claim perks that speed up that same activity. **Island Milestones** are shared by the island's members (crops, sugar cane, cactus, bamboo, ores, logs, stone, mobs including spawner mobs); **Personal Milestones** belong to one profile (Depths ores, dungeon mobs). Only real player actions count: never placed blocks, machines, AFK, the AFK pool, creative/spectator, visitors or coop players. Chains: `milestones.yml` (templates with `for-each`, curve presets, perks; a load check reports wrong perk targets, unknown families, duplicates and perks above 15% of a family cap). Settings: `milestones-settings.yml` (**`enabled: false` by default** until the release). Texts: `messages/milestones.yml`. Reload: `/skyblock reload milestones`.
+
+| Command | Description | Permission | Status |
+|---|---|---|---|
+| `/milestones` (`/ms`) | Overview with **Island** and **Personal**. A list shows the chains you (or your island) discovered, 21 per page: tier, progress bar, active and next perk; a **ready** tier glows and a click claims it (island tiers once per island by any member, lower tiers are marked too; the perk starts now and applies to every member anywhere). Otherwise a click opens the chain: one tile per tier (`✔` claimed, `★` ready, `▶` current, the next `show-next-tiers`, the rest `???`) and, for island chains, your contribution. No arguments, so nothing to tab-complete | `skyblock.milestones.use` (everyone) | ✅ (flag off) |

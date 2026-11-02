@@ -47,6 +47,9 @@ hub:
       daily: "daily reward"
       vote: "vote"
       pass: "battle pass"
+      weekly: "weekly reward"
+      monthly: "monthly reward"
+      milestones: "milestones"
   # Per button: name, lore (one sentence) and an optional own action line (else hub.action).
   buttons:
     home:

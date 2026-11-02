@@ -164,7 +164,7 @@ final class ToolsListener implements Listener {
             return;
         }
         module.tracker().gain(player, xp * module.config().islandFactor,
-                tool.get().kind() == ToolKind.AXE ? ToolData.STAT_LOGS : ToolData.STAT_BLOCKS);
+                tool.get().kind() == ToolKind.AXE ? ToolData.STAT_LOGS : ToolData.STAT_BLOCKS, 1, 0, type.name());
     }
 
     /** Pickaxes level on ores, axes on logs. */

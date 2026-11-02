@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### Milestones: action bar and /rewards (build plan slice 4; behind milestones.enabled: false)
+- Progress in the action bar after a counted harvest or block break (`milestones-settings.yml actionbar.enabled`, `actions` [harvest_crop, break_block], `gap-ms` 1500): chain, tier, bar and `progress/target`; each player can turn it off in `/settings` (Milestones: progress in the action bar).
+- `/rewards` Milestones card (slot 15): ready tiers glow, a click claims the highest ready tier of every chain; `/menu` Rewards and Claim all count `milestones` as a source (new common contract `MilestoneRewards`).
+### Milestones (Complete Developer Spec §7-9; behind `milestones-settings.yml enabled: false`)
+- **Counting:** ripe harvests, broken blocks (placed blocks never count) and kills by a player, in survival/adventure, outside the AFK pool; island chains only for members at their own island, personal chains in the Depths. Saved every `flush-seconds` (10), on quit, profile switch and stop. "New milestone" line on discovery; tier-ready notices batched over `notify.batch-seconds` (30).
+- **`/milestones` (`/ms`):** Island and Personal lists, tier tiles (`✔ ★ ▶ ???`), contribution %, claim ready tiers (island once per island; lower tiers marked). **Perks** through the bonus source `milestones`: highest claimed tier per chain, only for the chain's own block or mob (`BonusContext.target`), island and personal add up, family caps on top.
+- `milestones.yml`: 66 default chains (5 tiers each; placeholders for the balance run), load check incl. the 15% budget per family and target.
 ### Rewards: Reward Core, /rewards, Weekly and Monthly Reward (Complete Developer Spec §4-6; all behind flags, off by default)
 - **`/rewards`** (`daily.yml menu.enabled`): Daily, Weekly, Monthly and Battle pass cards with icon + word states, click to claim, Claim all (each source on its own, one failure never stops the others); `/weekly` and `/monthly` open it; join line "You have N rewards waiting" and a second line for waiting votes (`join-notice.votes`); the `/menu` Rewards count leaves out votes while the menu is on (spec G1).
 - **Weekly Reward** (`weekly.enabled`): per profile, Monday 00:00 Oslo, after `weekly.required-minutes` (180) of active play on that profile that week (new table `profile_active_week`, written with the playtime save). **Monthly Reward** (`monthly.enabled`): per profile, the 1st 00:00 Oslo, no requirement. Claims follow the Reward Core algorithm: period key fixed at the click, one transaction with a unique `reward_claims` row (rewards V003), ledger payout and pending grants; keys are bound (`weekly`/`monthly` key reasons). Unclaimed = lost.
