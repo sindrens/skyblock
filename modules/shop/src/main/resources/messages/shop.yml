@@ -34,18 +34,22 @@ spawner-name: "<mob> Spawner"
 tab-name: "<c:flame><name>"
 # Categories (ids from shop.yml): the category menu tiles and the grid title. Names are bold green (they are all Shop).
 categories:
-  wood:
-    short: "WOOD"
-    name: "<area:money><bold>Wood"
-    lore: ["<c:text>Logs, stems and leaves of", "<c:text>every tree. Craft your planks."]
-  stone-earth:
-    short: "STONE & EARTH"
-    name: "<area:money><bold>Stone & Earth"
-    lore: ["<c:text>Dirt, sand, stone, deepslate", "<c:text>and cave blocks."]
-  special:
-    short: "SPECIAL"
-    name: "<area:money><bold>Special Blocks"
-    lore: ["<c:text>Nether, End, quartz, ocean", "<c:text>and rare blocks."]
+  building:
+    short: "BUILDING"
+    name: "<area:money><bold>Building Blocks"
+    lore: ["<c:text>Logs, earth, stone, deepslate,", "<c:text>Nether, End and ocean blocks."]
+  nature:
+    short: "NATURE"
+    name: "<area:money><bold>Nature"
+    lore: ["<c:text>Leaves, grass, flowers, moss", "<c:text>and cave and Nether plants."]
+  farming:
+    short: "FARMING"
+    name: "<area:money><bold>Farming"
+    lore: ["<c:text>Seeds, crops, saplings", "<c:text>and bone meal."]
+  mob-drops:
+    short: "MOB DROPS"
+    name: "<area:money><bold>Mob Drops"
+    lore: ["<c:text>Bones, string, gunpowder,", "<c:text>pearls, blaze rods and more."]
   colors:
     short: "COLORS"
     name: "<area:money><bold>Colors"
@@ -53,15 +57,11 @@ categories:
   decoration:
     short: "DECORATION"
     name: "<area:money><bold>Decoration"
-    lore: ["<c:text>Lights, frames, flowers", "<c:text>and plants."]
+    lore: ["<c:text>Lights, frames, pots", "<c:text>and display blocks."]
   essentials:
     short: "ESSENTIALS"
     name: "<area:money><bold>Essentials"
     lore: ["<c:text>Torches, tools, buckets and", "<c:text>advanced workstations."]
-  farming:
-    short: "FARMING"
-    name: "<area:money><bold>Farming"
-    lore: ["<c:text>Seeds, saplings, plants, vines", "<c:text>and bone meal."]
   redstone:
     short: "REDSTONE"
     name: "<area:money><bold>Redstone"
@@ -74,13 +74,13 @@ categories:
 # Group names of the shop grid (shop.yml categories.<tab>.groups.<group>), for /admin and docs only: the grid draws no
 # captions (MENUS-V3 6.2). Items in no group form the last group "more".
 groups:
-  wood: { logs: "Logs", other: "Stems and bamboo", leaves: "Leaves", more: "More" }
-  stone-earth: { soil: "Soil", sand: "Sand and gravel", stone: "Stone", deep: "Deepslate and caves", more: "More" }
-  special: { nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
+  building: { wood: "Logs and stems", soil: "Soil", sand: "Sand and gravel", stone: "Stone", deep: "Deepslate and caves", nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
+  nature: { leaves: "Leaves", greens: "Grass and ferns", flowers: "Flowers", moss: "Moss and azalea", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
+  farming: { seeds: "Seeds", crops: "Crops", trees: "Saplings", more: "More" }
+  mob-drops: { undead: "Undead", hostile: "Hostile mobs", animal: "Animals", meat: "Meat", ocean: "Ocean", more: "More" }
   colors: { concrete: "Concrete", extras: "Glass, terracotta and wool", glass: "Stained glass", terracotta: "Terracotta", more: "More" }
-  decoration: { light: "Lights", display: "Display", greens: "Grass and ferns", nature: "Moss and azalea", flowers: "Flowers", more: "More" }
+  decoration: { light: "Lights", display: "Display", more: "More" }
   essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", more: "More" }
-  farming: { seeds: "Seeds", crops: "Crops", trees: "Saplings", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
   redstone: { power: "Power", machines: "Machines", inputs: "Inputs", rails: "Rails", more: "More" }
   spawners: { tier1: "Tier 1", tier2: "Tier 2", tier3: "Tier 3", tier4: "Tier 4", more: "More" }
 

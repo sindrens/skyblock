@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** MENUS-V3 6.2: shop.yml {@code groups:} and the category order. */
 class ShopCatalogGroupsTest {
 
-    static final List<String> ORDER = List.of("wood", "stone-earth", "special", "colors", "decoration", "essentials",
-            "farming", "redstone", "spawners");
+    static final List<String> ORDER = List.of("building", "nature", "farming", "mob-drops", "colors", "decoration",
+            "essentials", "redstone", "spawners");
 
     @Test
     void categoryOrderIsFivePlusFour() throws Exception {
@@ -111,8 +111,8 @@ class ShopCatalogGroupsTest {
     @Test
     void econResultCounts() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog();
-        assertEquals(255, c.size());
-        int[] expected = {23, 20, 25, 52, 38, 17, 40, 20, 20};
+        assertEquals(274, c.size());
+        int[] expected = {57, 54, 20, 19, 52, 15, 17, 20, 20};
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -120,7 +120,7 @@ class ShopCatalogGroupsTest {
 
     @Test
     void econResultPageCounts() throws Exception {
-        int[] expected = {2, 1, 2, 3, 2, 1, 2, 1, 1};
+        int[] expected = {3, 3, 1, 2, 3, 1, 1, 1, 1};
         List<ShopCatalog.Category> tabs = ShopCatalogTest.catalog().categories();
         for (int i = 0; i < expected.length; i++) {
             ShopCatalog.Category c = tabs.get(i);

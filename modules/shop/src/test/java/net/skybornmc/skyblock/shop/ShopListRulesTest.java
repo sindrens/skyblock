@@ -51,7 +51,7 @@ class ShopListRulesTest {
                 assertTrue(item.price() >= 5, item.id() + " costs " + item.price());
             }
         }
-        assertEquals(46, auto);
+        assertEquals(46 + 19, auto, "ECON-TABLES D3 plus the 19 mob drops");
         assertEquals(5, c.item("oak_leaves").orElseThrow().price(), "10 x $0.50");
         assertEquals(10, c.item("blue_orchid").orElseThrow().price(), "10 x $1");
         assertEquals(15, c.item("peony").orElseThrow().price(), "10 x $1.50, rounded up");

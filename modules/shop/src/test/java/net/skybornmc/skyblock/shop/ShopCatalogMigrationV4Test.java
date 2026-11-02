@@ -20,11 +20,11 @@ class ShopCatalogMigrationV4Test {
 
     @Test
     void untouchedV3FileBecomesTheBundledV4() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(ShopCatalogTest.v3(), ShopCatalogTest.bundled(),
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(ShopCatalogTest.v3(), ShopCatalogTest.v4(),
                 ShopCatalogTest.v3()).orElseThrow();
         assertEquals(4, r.yaml().getInt("config-version"));
         ShopCatalog migrated = ShopCatalogTest.catalogOf(r.yaml());
-        ShopCatalog expected = ShopCatalogTest.catalog();
+        ShopCatalog expected = ShopCatalogTest.catalogOf(ShopCatalogTest.v4());
         assertEquals(expected.items(), migrated.items(), "same tabs, items, order and prices as a fresh install");
         assertEquals(expected.categories(), migrated.categories(), "groups too");
         assertEquals(expected.worthOnly(), migrated.worthOnly());
@@ -42,7 +42,7 @@ class ShopCatalogMigrationV4Test {
         live.set("categories.redstone.items.hopper", 999);                          // owner price on a kept item
         live.set("categories.decoration.items.jukebox", 900);                       // the owner's own item
         live.set("categories.wood.items.oak_log", Map.of("price", 8, "enabled", false));
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(live, ShopCatalogTest.bundled(), ShopCatalogTest.v3())
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(live, ShopCatalogTest.v4(), ShopCatalogTest.v3())
                 .orElseThrow();
         ShopCatalog c = ShopCatalogTest.catalogOf(r.yaml());
         assertTrue(c.item("furnace").isEmpty());
@@ -57,7 +57,7 @@ class ShopCatalogMigrationV4Test {
     void anOwnersAutoPriceStaysAuto() throws Exception {
         YamlConfiguration live = ShopCatalogTest.v3();
         live.set("categories.stone-earth.items.dirt", "auto");
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(live, ShopCatalogTest.bundled(), ShopCatalogTest.v3())
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(live, ShopCatalogTest.v4(), ShopCatalogTest.v3())
                 .orElseThrow();
         assertEquals("auto", r.yaml().getString("categories.stone-earth.items.dirt"));
         assertTrue(r.changes().stream().noneMatch(l -> l.startsWith("dirt:")), () -> String.join("\n", r.changes()));
@@ -65,12 +65,12 @@ class ShopCatalogMigrationV4Test {
 
     @Test
     void theSecondRunDoesNothing() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(ShopCatalogTest.v3(), ShopCatalogTest.bundled(),
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrateV4(ShopCatalogTest.v3(), ShopCatalogTest.v4(),
                 ShopCatalogTest.v3()).orElseThrow();
-        assertTrue(ShopCatalogMigration.migrateV4(copy(r.yaml()), ShopCatalogTest.bundled(), ShopCatalogTest.v3()).isEmpty());
-        assertTrue(ShopCatalogMigration.migrateV4(ShopCatalogTest.bundled(), ShopCatalogTest.bundled(), ShopCatalogTest.v3())
+        assertTrue(ShopCatalogMigration.migrateV4(copy(r.yaml()), ShopCatalogTest.v4(), ShopCatalogTest.v3()).isEmpty());
+        assertTrue(ShopCatalogMigration.migrateV4(ShopCatalogTest.v4(), ShopCatalogTest.v4(), ShopCatalogTest.v3())
                 .isEmpty(), "a fresh v4 file is left alone");
-        assertFalse(ShopModule.addMissing(copy(r.yaml()), ShopCatalogTest.bundled()), "removed items are not added back");
+        assertFalse(ShopModule.addMissing(copy(r.yaml()), ShopCatalogTest.v4()), "removed items are not added back");
     }
 
     @Test
@@ -79,11 +79,13 @@ class ShopCatalogMigrationV4Test {
         live.set("categories.redstone.items.hopper", 999);
         YamlConfiguration v2 = ShopCatalogMigration.migrate(live, ShopCatalogTest.v2(), ShopCatalogTest.v1()).orElseThrow().yaml();
         YamlConfiguration v3 = ShopCatalogMigration.migrateV3(v2, ShopCatalogTest.v3(), ShopCatalogTest.v2()).orElseThrow().yaml();
-        YamlConfiguration v4 = ShopCatalogMigration.migrateV4(v3, ShopCatalogTest.bundled(), ShopCatalogTest.v3()).orElseThrow().yaml();
-        ShopCatalog c = ShopCatalogTest.catalogOf(v4);
+        YamlConfiguration v4 = ShopCatalogMigration.migrateV4(v3, ShopCatalogTest.v4(), ShopCatalogTest.v3()).orElseThrow().yaml();
         assertEquals(4, v4.getInt("config-version"));
+        YamlConfiguration v5 = ShopCatalogMigration.migrateV5(v4, ShopCatalogTest.bundled(), ShopCatalogTest.v4()).orElseThrow().yaml();
+        ShopCatalog c = ShopCatalogTest.catalogOf(v5);
+        assertEquals(5, v5.getInt("config-version"));
         assertEquals(999, c.item("hopper").orElseThrow().price());
-        assertEquals(255, c.size());
+        assertEquals(274, c.size());
         assertEquals(1_500, c.worth("ender_chest").orElseThrow());
         assertTrue(c.worth("oak_planks").isPresent(), "removed in v4: block worth only");
     }

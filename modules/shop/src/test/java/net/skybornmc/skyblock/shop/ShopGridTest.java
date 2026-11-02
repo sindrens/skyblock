@@ -65,7 +65,7 @@ class ShopGridTest {
     @Test
     void farmingPageOneIsTheC5Mock() throws Exception {
         List<ShopGrid.Page> pages = pagesOf("farming");
-        assertEquals(2, pages.size());
+        assertEquals(1, pages.size(), "Shop v5: seeds, crops and saplings fit on one page");
         assertArrayEquals(new int[]{11, 12, 13, 14, 15, 19, 20, 21, 23, 24, 25, 29, 30, 31, 32, 33, 38, 39, 41, 42},
                 pages.get(0).slots(), "seeds row 1, crops row 2, saplings rows 3 and 4");
         assertEquals("wheat_seeds", pages.get(0).items().get(0).id());

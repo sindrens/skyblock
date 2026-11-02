@@ -100,6 +100,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String V2_DEFAULTS = "migrations/shop-v2.yml";
     /** The frozen Shop v3 defaults: baseline of the v4 migration (ECON-SELL-SHOP-AH B1 shop lists). */
     static final String V3_DEFAULTS = "migrations/shop-v3.yml";
+    /** The frozen Shop v4 defaults: baseline of the v5 migration (owner's new tabs, 2 Nov 2026). */
+    static final String V4_DEFAULTS = "migrations/shop-v4.yml";
     /** /settings toggle ids (F14). */
     static final String SETTING_UNDO = "shop-undo";
     static final String SETTING_BIG_BUY = "shop-big-buy";
@@ -290,10 +292,17 @@ public final class ShopModule implements SkyblockModule, Listener {
                     yaml = v3.get().yaml();
                     writeMigration(file, yaml, v3.get().changes(), ShopCatalogMigration.V3);
                 }
-                Optional<ShopCatalogMigration.Result> v4 = ShopCatalogMigration.migrateV4(yaml, bundled, v3Defaults);
+                YamlConfiguration v4Defaults = bundled(V4_DEFAULTS);
+                // v3 -> v4 targets the frozen v4 file; v4 -> v5 then moves it to the bundled file.
+                Optional<ShopCatalogMigration.Result> v4 = ShopCatalogMigration.migrateV4(yaml, v4Defaults, v3Defaults);
                 if (v4.isPresent()) {
                     yaml = v4.get().yaml();
                     writeMigration(file, yaml, v4.get().changes(), ShopCatalogMigration.V4);
+                }
+                Optional<ShopCatalogMigration.Result> v5 = ShopCatalogMigration.migrateV5(yaml, bundled, v4Defaults);
+                if (v5.isPresent()) {
+                    yaml = v5.get().yaml();
+                    writeMigration(file, yaml, v5.get().changes(), ShopCatalogMigration.V5);
                 }
                 if (addMissing(yaml, bundled)) {
                     yaml.save(file);
@@ -585,7 +594,8 @@ public final class ShopModule implements SkyblockModule, Listener {
         if (direct.isPresent() || raw == null) {
             return direct;
         }
-        String mapped = ShopCatalogMigration.TAB_OF_OLD_CATEGORY.get(raw.toLowerCase(Locale.ROOT));
+        String key = raw.toLowerCase(Locale.ROOT);
+        String mapped = ShopCatalogMigration.TAB_ALIASES.getOrDefault(key, ShopCatalogMigration.TAB_OF_OLD_CATEGORY.get(key));
         return mapped == null ? Optional.empty() : catalog.category(mapped);
     }
 

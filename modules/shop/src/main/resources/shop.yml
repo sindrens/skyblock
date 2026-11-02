@@ -2,7 +2,7 @@
 #  BUILDER SHOP PRICES (Shop v2, GUI-3)  -  DRAFT: THE OWNER APPROVES THESE PRICES BEFORE LAUNCH (docs/ECONOMY_BALANCE.md §12).
 # =====================================================================================================================
 # What /shop sells and for how much (money, whole units, price per ONE item). The shop is a money sink: nothing here can
-# be sold back in the shop (selling is /sell). Design: docs/design/SHOP_DESIGN.md (9 tabs); lists: ECON-TABLES D (255 items).
+# be sold back in the shop (selling is /sell). Design: docs/design/SHOP_DESIGN.md (9 tabs); lists: ECON-TABLES D + Mob Drops (274 items).
 #
 # Format:
 #   categories.<tab>.icon: <item id>                 the tab's icon (row 0 of every shop page; names: messages/shop.yml)
@@ -39,22 +39,28 @@
 # Default prices: the shop takes ~4% of what players earn (docs/ECONOMY_BALANCE.md §1.2 "Shop spend"); a stack of a
 # common block costs about 3-8 minutes of first-hour income. New entries in a plugin update are added to this file
 # automatically; to remove an item set enabled: false (a deleted entry comes back on the next update).
-# config-version 4 = Shop v4 (ECON-TABLES D: planks, furnace, chest and other things crafted from shop items left; leaves,
-# flowers and plants came in with price: auto). Older files are migrated once on startup: 1 -> 2 (backup
-# shop.yml.before-v2, shop-migration-v2.log), 2 -> 3 (shop.yml.before-v3, shop-migration-v3.log), 3 -> 4
-# (shop.yml.before-v4, shop-migration-v4.log): your prices, enabled: false, requires and own items stay; default items
-# the new file drops move to worth-only.
+# config-version 5 = Shop v5 (owner 2 Nov 2026): tabs Building Blocks, Nature, Farming, Mob Drops, Colors | Decoration,
+# Essentials, Redstone, Spawners. v4 (ECON-TABLES D) took out planks, furnace, chest and other things crafted from shop
+# items and brought leaves, flowers and plants with price: auto. Older files are migrated once on startup, one version at a
+# time (backup shop.yml.before-v<N>, shop-migration-v<N>.log): your prices, enabled: false, requires and own items stay;
+# default items the new file drops move to worth-only.
 # Reload: /skyblock reload shop
-config-version: 4
+config-version: 5
 
 categories:
-  # Logs, stems and leaves of every tree. Planks are crafted (1 log = 4 planks), so the shop sells logs only.
-  wood:
-    icon: oak_log
+  # Wood, stone, earth, Nether, End and ocean blocks, sorted by type. Polished, brick and plank variants are crafted.
+  building:
+    icon: stone_bricks
     groups:
-      logs: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, cherry_log, pale_oak_log]
-      other: [crimson_stem, warped_stem, bamboo_block]
-      leaves: [oak_leaves, spruce_leaves, birch_leaves, jungle_leaves, acacia_leaves, dark_oak_leaves, mangrove_leaves, cherry_leaves, pale_oak_leaves, azalea_leaves, flowering_azalea_leaves]
+      wood: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, cherry_log, pale_oak_log, crimson_stem, warped_stem, bamboo_block]
+      soil: [dirt, mud, rooted_dirt, grass_block, podzol, clay]
+      sand: [sand, gravel, red_sand]
+      stone: [tuff, diorite, granite, calcite, cobblestone, stone, bricks]
+      deep: [cobbled_deepslate, pointed_dripstone, deepslate, dripstone_block]
+      nether: [netherrack, basalt, blackstone, soul_sand, soul_soil, nether_bricks, red_nether_bricks, magma_block, crimson_nylium, warped_nylium, warped_wart_block]
+      end: [end_stone, purpur_block, quartz_block, smooth_quartz]
+      ocean: [prismarine, prismarine_bricks, dark_prismarine]
+      rare: [snow_block, ice, mycelium, amethyst_block, copper_block, obsidian, crying_obsidian]
     items:
       oak_log: 8
       spruce_log: 8
@@ -68,8 +74,63 @@ categories:
       crimson_stem: 8
       warped_stem: 8
       bamboo_block: 8
-  # Earth, sand, stone, deepslate and cave blocks. Stone breaks into cobblestone, which /sell buys: keep it above 7.5x
-  # its sell price. Polished and brick variants are crafted or stonecut.
+      dirt: 4
+      mud: 5
+      rooted_dirt: auto
+      grass_block: 8
+      podzol: 8
+      clay: 12
+      sand: 4
+      gravel: 4
+      red_sand: 5
+      tuff: 5
+      diorite: 5
+      granite: 5
+      calcite: 6
+      cobblestone: 8
+      stone: { price: 8, contains: { cobblestone: 1 } }
+      bricks: 12
+      cobbled_deepslate: 5
+      pointed_dripstone: auto
+      deepslate: 6
+      dripstone_block: auto
+      netherrack: 3
+      basalt: 6
+      blackstone: 6
+      soul_sand: 8
+      soul_soil: 8
+      nether_bricks: 10
+      red_nether_bricks: 12
+      magma_block: auto
+      crimson_nylium: auto
+      warped_nylium: auto
+      warped_wart_block: auto
+      end_stone: 10
+      purpur_block: 15
+      quartz_block: 20
+      smooth_quartz: 22
+      prismarine: 20
+      prismarine_bricks: 24
+      dark_prismarine: 28
+      snow_block: 5
+      ice: 8
+      mycelium: 10
+      amethyst_block: 30
+      copper_block: 40
+      obsidian: 60
+      crying_obsidian: 80
+  # Leaves, grass, flowers, moss and the plants of lush caves and the Nether.
+  nature:
+    icon: oak_leaves
+    groups:
+      leaves: [oak_leaves, spruce_leaves, birch_leaves, jungle_leaves, acacia_leaves, dark_oak_leaves, mangrove_leaves, cherry_leaves, pale_oak_leaves, azalea_leaves, flowering_azalea_leaves]
+      greens: [short_grass, fern, dead_bush]
+      flowers: [dandelion, poppy, cornflower, blue_orchid, allium, azure_bluet, red_tulip, orange_tulip, white_tulip, pink_tulip, oxeye_daisy, lily_of_the_valley, sunflower, lilac, rose_bush, peony]
+      moss: [moss_block, azalea, flowering_azalea, spore_blossom]
+      plants: [vine, kelp, bamboo, lily_pad, brown_mushroom, red_mushroom, glow_berries]
+      lush: [glow_lichen, hanging_roots, mangrove_roots, muddy_mangrove_roots, big_dripleaf, small_dripleaf, sea_pickle]
+      nether: [crimson_roots, warped_roots, weeping_vines, twisting_vines, crimson_fungus, warped_fungus]
+    items:
       oak_leaves: auto
       spruce_leaves: auto
       birch_leaves: auto
@@ -81,70 +142,107 @@ categories:
       pale_oak_leaves: auto
       azalea_leaves: auto
       flowering_azalea_leaves: auto
-  stone-earth:
-    icon: stone_bricks
+      short_grass: auto
+      fern: auto
+      dead_bush: auto
+      dandelion: 8
+      poppy: 8
+      cornflower: 10
+      blue_orchid: auto
+      allium: auto
+      azure_bluet: auto
+      red_tulip: auto
+      orange_tulip: auto
+      white_tulip: auto
+      pink_tulip: auto
+      oxeye_daisy: auto
+      lily_of_the_valley: auto
+      sunflower: 15
+      lilac: auto
+      rose_bush: auto
+      peony: auto
+      moss_block: 8
+      azalea: 20
+      flowering_azalea: 25
+      spore_blossom: 40
+      vine: 5
+      kelp: 8
+      bamboo: 10
+      lily_pad: 10
+      brown_mushroom: 10
+      red_mushroom: 10
+      glow_berries: 15
+      glow_lichen: auto
+      hanging_roots: auto
+      mangrove_roots: auto
+      muddy_mangrove_roots: auto
+      big_dripleaf: auto
+      small_dripleaf: auto
+      sea_pickle: auto
+      crimson_roots: auto
+      warped_roots: auto
+      weeping_vines: auto
+      twisting_vines: auto
+      crimson_fungus: auto
+      warped_fungus: auto
+  # Seeds, crops and saplings. Crops that are their own seed sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more.
+  farming:
+    icon: wheat_seeds
     groups:
-      soil: [dirt, mud, rooted_dirt, grass_block, podzol, clay]
-      sand: [sand, gravel, red_sand]
-      stone: [tuff, diorite, granite, calcite, cobblestone, stone, bricks]
-      deep: [cobbled_deepslate, pointed_dripstone, deepslate, dripstone_block]
+      seeds: [wheat_seeds, beetroot_seeds, melon_seeds, pumpkin_seeds, bone_meal]
+      crops: [carrot, potato, sugar_cane, cocoa_beans, cactus, sweet_berries]
+      trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
     items:
-      dirt: 4
-      grass_block: 8
-      podzol: 8
-      mud: 5
-      sand: 4
-      red_sand: 5
-      gravel: 4
-      clay: 12
-      cobblestone: 8
-      stone: { price: 8, contains: { cobblestone: 1 } }
-      bricks: 12
-      calcite: 6
-      tuff: 5
-      diorite: 5
-      granite: 5
-      deepslate: 6
-      cobbled_deepslate: 5
-  # Nether, End, ocean and ice blocks. The Nether and End are off, so this is the only source. Polished and brick variants
-  # and packed/blue ice are crafted.
-      rooted_dirt: auto
-      dripstone_block: auto
-      pointed_dripstone: auto
-  special:
-    icon: quartz_block
+      wheat_seeds: 10
+      beetroot_seeds: 15
+      melon_seeds: 40
+      pumpkin_seeds: 40
+      bone_meal: 30
+      carrot: 120
+      potato: 120
+      sugar_cane: 200
+      cocoa_beans: 350
+      cactus: 475
+      sweet_berries: 650
+      oak_sapling: 25
+      spruce_sapling: 25
+      birch_sapling: 25
+      jungle_sapling: 30
+      acacia_sapling: 30
+      dark_oak_sapling: 30
+      cherry_sapling: 35
+      pale_oak_sapling: 35
+      mangrove_propagule: 35
+  # Mob drops (price: auto = 10x the sell base). Spawner drops are sold with /sell, not bought here.
+  mob-drops:
+    icon: bone
     groups:
-      nether: [netherrack, basalt, blackstone, soul_sand, soul_soil, nether_bricks, red_nether_bricks, magma_block, crimson_nylium, warped_nylium, warped_wart_block]
-      end: [end_stone, purpur_block, quartz_block, smooth_quartz]
-      ocean: [prismarine, prismarine_bricks, dark_prismarine]
-      rare: [snow_block, ice, mycelium, amethyst_block, copper_block, obsidian, crying_obsidian]
+      undead: [rotten_flesh, bone]
+      hostile: [string, spider_eye, slime_ball, gunpowder, ender_pearl, blaze_rod]
+      animal: [feather, leather, rabbit_hide, rabbit_foot]
+      meat: [porkchop, beef, chicken, mutton, rabbit]
+      ocean: [prismarine_shard, prismarine_crystals]
     items:
-      netherrack: 3
-      soul_sand: 8
-      soul_soil: 8
-      basalt: 6
-      blackstone: 6
-      nether_bricks: 10
-      red_nether_bricks: 12
-      end_stone: 10
-      purpur_block: 15
-      quartz_block: 20
-      smooth_quartz: 22
-      prismarine: 20
-      prismarine_bricks: 24
-      dark_prismarine: 28
-      amethyst_block: 30
-      obsidian: 60
-      crying_obsidian: 80
-      ice: 8
-      snow_block: 5
-      copper_block: 40
-      mycelium: 10
+      rotten_flesh: auto
+      bone: auto
+      string: auto
+      spider_eye: auto
+      slime_ball: auto
+      gunpowder: auto
+      ender_pearl: auto
+      blaze_rod: auto
+      feather: auto
+      leather: auto
+      rabbit_hide: auto
+      rabbit_foot: auto
+      porkchop: auto
+      beef: auto
+      chicken: auto
+      mutton: auto
+      rabbit: auto
+      prismarine_shard: auto
+      prismarine_crystals: auto
   # Concrete, stained glass and terracotta in all 16 colours (2 pages). Wool, carpets and dyes are crafted.
-      magma_block: auto
-      crimson_nylium: auto
-      warped_nylium: auto
-      warped_wart_block: auto
   colors:
     icon: light_blue_stained_glass
     groups:
@@ -205,56 +303,30 @@ categories:
       tinted_glass: 30
       terracotta: 5
       white_wool: 6
-  # Lights, display blocks, grass, ferns and every flower.
+  # Lights and display blocks.
   decoration:
     icon: lantern
     groups:
       light: [soul_torch, candle, end_rod, campfire, shroomlight, lantern, ochre_froglight, verdant_froglight, pearlescent_froglight, soul_lantern]
       display: [flower_pot, iron_bars, decorated_pot, item_frame, glow_item_frame]
-      greens: [short_grass, fern, dead_bush]
-      nature: [moss_block, azalea, flowering_azalea, spore_blossom]
-      flowers: [dandelion, poppy, cornflower, blue_orchid, allium, azure_bluet, red_tulip, orange_tulip, white_tulip, pink_tulip, oxeye_daisy, lily_of_the_valley, sunflower, lilac, rose_bush, peony]
     items:
       soul_torch: 5
-      lantern: 40
-      soul_lantern: 45
-      end_rod: 30
       candle: 15
+      end_rod: 30
       campfire: 30
       shroomlight: 30
+      lantern: 40
       ochre_froglight: 40
       verdant_froglight: 40
       pearlescent_froglight: 40
+      soul_lantern: 45
       flower_pot: 10
+      iron_bars: 10
       decorated_pot: 20
       item_frame: 25
       glow_item_frame: 40
-      iron_bars: 10
-      moss_block: 8
-      azalea: 20
-      flowering_azalea: 25
-      spore_blossom: 40
-      dandelion: 8
-      poppy: 8
-      cornflower: 10
-      sunflower: 15
   # Advanced workstations, buckets, tools and food. Crafting table, furnace, chest and other simple crafts are made by the
   # player (ECON-TABLES D1).
-      short_grass: auto
-      fern: auto
-      dead_bush: auto
-      blue_orchid: auto
-      allium: auto
-      azure_bluet: auto
-      red_tulip: auto
-      orange_tulip: auto
-      white_tulip: auto
-      pink_tulip: auto
-      oxeye_daisy: auto
-      lily_of_the_valley: auto
-      lilac: auto
-      rose_bush: auto
-      peony: auto
   essentials:
     icon: crafting_table
     groups:
@@ -279,58 +351,7 @@ categories:
       scaffolding: 5
       white_bed: 30
       bread: 15
-  # Seeds and plants. Crops that are their own seed (carrot, potato, sugar cane ...) sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more. Farming tier unlocks come later (requires: { farming: <level> }).
-  farming:
-    icon: wheat_seeds
-    groups:
-      seeds: [wheat_seeds, beetroot_seeds, melon_seeds, pumpkin_seeds, bone_meal]
-      crops: [carrot, potato, sugar_cane, cocoa_beans, cactus, sweet_berries]
-      trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
-      plants: [vine, kelp, bamboo, lily_pad, brown_mushroom, red_mushroom, glow_berries]
-      lush: [glow_lichen, hanging_roots, mangrove_roots, muddy_mangrove_roots, big_dripleaf, small_dripleaf, sea_pickle]
-      nether: [crimson_roots, warped_roots, weeping_vines, twisting_vines, crimson_fungus, warped_fungus]
-    items:
-      wheat_seeds: 10
-      beetroot_seeds: 15
-      melon_seeds: 40
-      pumpkin_seeds: 40
-      carrot: 120
-      potato: 120
-      sugar_cane: 200
-      cocoa_beans: 350
-      cactus: 475
-      sweet_berries: 650
-      oak_sapling: 25
-      spruce_sapling: 25
-      birch_sapling: 25
-      jungle_sapling: 30
-      acacia_sapling: 30
-      dark_oak_sapling: 30
-      cherry_sapling: 35
-      pale_oak_sapling: 35
-      mangrove_propagule: 35
-      bamboo: 10
-      kelp: 8
-      lily_pad: 10
-      brown_mushroom: 10
-      red_mushroom: 10
-      vine: 5
-      glow_berries: 15
-      bone_meal: 30
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
-      big_dripleaf: auto
-      small_dripleaf: auto
-      glow_lichen: auto
-      hanging_roots: auto
-      mangrove_roots: auto
-      muddy_mangrove_roots: auto
-      sea_pickle: auto
-      crimson_fungus: auto
-      warped_fungus: auto
-      crimson_roots: auto
-      warped_roots: auto
-      weeping_vines: auto
-      twisting_vines: auto
   redstone:
     icon: redstone
     groups:

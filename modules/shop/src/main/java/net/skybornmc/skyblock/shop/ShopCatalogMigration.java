@@ -37,8 +37,22 @@ final class ShopCatalogMigration {
     static final int V3 = 3;
     /** ECON-SELL-SHOP-AH B1: the shop lists of ECON-TABLES D (remove 53, add 46 with {@code price: auto}). */
     static final int V4 = 4;
+    /** Owner 2 Nov 2026: tabs Building Blocks, Nature, Farming, Mob Drops, Colors, Decoration, Essentials, Redstone, Spawners. */
+    static final int V5 = 5;
     /** The current version (what a fresh install writes). */
-    static final int VERSION = V4;
+    static final int VERSION = V5;
+
+    /** {@code /shop <old tab>} still finds the tab its items moved to. */
+    static final Map<String, String> TAB_ALIASES = Map.of(
+            "wood", "building",
+            "stone-earth", "building",
+            "special", "building",
+            "building-blocks", "building",
+            "stone-bricks", "building",
+            "glass-colors", "colors",
+            "utility", "essentials",
+            "mobdrops", "mob-drops",
+            "plants", "nature");
 
     /** Old category → new tab, for items the owner added himself. */
     static final Map<String, String> TAB_OF_OLD_CATEGORY = Map.of(
@@ -182,6 +196,15 @@ final class ShopCatalogMigration {
      */
     static Optional<Result> migrateV4(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v3Defaults) {
         return migrateTo(live, bundled, v3Defaults, V4, "Shop v4");
+    }
+
+    /**
+     * v4 &rarr; v5 (owner 2 Nov 2026): the tabs are regrouped (wood, stone-earth and special become Building Blocks; leaves,
+     * flowers and plants move to Nature; a Mob Drops tab with {@code price: auto}). Data-driven like v4: items keep their
+     * live entry and move to their new tab, owner items in a tab that is gone go to Decoration.
+     */
+    static Optional<Result> migrateV5(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v4Defaults) {
+        return migrateTo(live, bundled, v4Defaults, V5, "Shop v5");
     }
 
     private static Optional<Result> migrateTo(YamlConfiguration live, YamlConfiguration bundledV3, YamlConfiguration v2Defaults,

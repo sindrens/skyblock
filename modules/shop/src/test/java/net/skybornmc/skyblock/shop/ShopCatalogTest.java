@@ -53,6 +53,10 @@ class ShopCatalogTest {
         return resource(ShopModule.V3_DEFAULTS);
     }
 
+    static YamlConfiguration v4() throws Exception {
+        return resource(ShopModule.V4_DEFAULTS);
+    }
+
     /** B1: {@code price: auto} from the real sell.yml (economy module, multiplier 1), markup 10, buy multiplier 1. */
     static ShopCatalog.Pricing pricing() {
         try {
@@ -99,14 +103,14 @@ class ShopCatalogTest {
     void nineTabsInTheDesignOrderOnTheTopRow() throws Exception {
         ShopCatalog c = catalog();
         // MENUS-V3 6.2: row 1 wood .. decoration, row 2 essentials .. spawners (5 + 4 on the category menu).
-        assertEquals(List.of("wood", "stone-earth", "special", "colors", "decoration", "essentials", "farming", "redstone", "spawners"),
+        assertEquals(ShopCatalogGroupsTest.ORDER,
                 c.categories().stream().map(ShopCatalog.Category::id).toList());
         for (int i = 0; i < c.categories().size(); i++) {
             ShopCatalog.Category tab = c.categories().get(i);
             assertEquals(i, tab.slot(), "tab " + tab.id() + " sits in slot " + i);
             assertTrue(realItem(tab.icon()), tab.icon());
             assertFalse(tab.enabledItems().isEmpty(), tab.id());
-            int pages = tab.id().equals("colors") ? 3 : 2;
+            int pages = Set.of("colors", "building", "nature").contains(tab.id()) ? 3 : 2;
             assertTrue(tab.items().size() <= 28 * pages, tab.id() + " fits " + pages + " page(s)");
         }
         assertEquals(ShopCatalog.Kind.SPAWNER, c.category("spawners").orElseThrow().kind());
@@ -117,8 +121,8 @@ class ShopCatalogTest {
         ShopCatalog c = catalog();
         // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
         // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
-        assertEquals(255, c.size());
-        int[] expected = {23, 20, 25, 52, 38, 17, 40, 20, 20};
+        assertEquals(274, c.size());
+        int[] expected = {57, 54, 20, 19, 52, 15, 17, 20, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -181,7 +185,8 @@ class ShopCatalogTest {
         String text = Files.readString(Path.of(ShopCatalogTest.class.getClassLoader().getResource("shop.yml").toURI()));
         assertTrue(text.contains("THE OWNER APPROVES THESE PRICES BEFORE LAUNCH"));
         assertEquals(ShopCatalogMigration.VERSION, bundled().getInt("config-version"));
-        assertEquals(4, ShopCatalogMigration.VERSION);
+        assertEquals(5, ShopCatalogMigration.VERSION);
+        assertEquals(4, v4().getInt("config-version"), "the frozen v4 file stays version 4");
         assertEquals(2, v2().getInt("config-version"), "the frozen v2 file stays version 2");
         assertEquals(3, v3().getInt("config-version"), "the frozen v3 file stays version 3");
     }
@@ -270,7 +275,7 @@ class ShopCatalogTest {
                 """);
         assertTrue(ShopModule.addMissing(owner, bundled()));
         assertEquals(99, owner.getInt("categories.wood.items.oak_log"), "owner prices are kept");
-        assertTrue(owner.contains("categories.wood.items.spruce_log"));
+        assertTrue(owner.contains("categories.building.items.spruce_log"), "new items join the bundled tab");
         assertFalse(owner.contains("categories.stone-earth.items.dirt"), "moved items are not added back");
         assertFalse(owner.contains("categories.decoration.items.lantern"), "items parked under worth-only stay parked");
         assertTrue(owner.contains("categories.essentials"));
