@@ -157,8 +157,13 @@ final class ProgressionFacade implements ProgressionService {
 
     @Override
     public void levelPointsProvider(LevelSource source, ToDoubleFunction<UUID> pointsByIsland) {
+        levelPointsProvider(source, "", pointsByIsland);
+    }
+
+    @Override
+    public void levelPointsProvider(LevelSource source, String key, ToDoubleFunction<UUID> pointsByIsland) {
         if (source == LevelSource.UPGRADES || source == LevelSource.ACHIEVEMENTS || source == LevelSource.COLLECTIONS) {
-            levels.provider(source, pointsByIsland);
+            levels.provider(source, key, pointsByIsland);
         }
     }
 

@@ -9,5 +9,5 @@ lp group helper permission set skyblock.wardrobe.staff true
 lp group admin permission set skyblock.wardrobe.admin true
 
 # /loadout is for everyone (plugin default: true). Loadout presets: 2 free (wardrobe.yml loadout.free-slots); donor ranks
-# get more: Fledgling 3, Flamecrest 4, Pyrelord 5, granted in ranks.txt (RANKS-V2). Slots bought with store credits are in
+# get more: Fledgling 3, Flamecrest 4, Pyrelord 5, granted in base.txt (Ranks V2 section) (RANKS-V2). Slots bought with store credits are in
 # the loadout_slots_bought table.

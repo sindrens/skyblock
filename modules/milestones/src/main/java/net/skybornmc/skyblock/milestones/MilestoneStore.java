@@ -114,6 +114,16 @@ final class MilestoneStore {
                 scope.name(), scopeId);
     }
 
+    /** Synergy: completed island tiers per island (startup, one grouped query). */
+    static Map<UUID, Integer> islandTierCounts(Connection c) throws SQLException {
+        Map<UUID, Integer> out = new HashMap<>();
+        for (Map.Entry<UUID, Integer> e : Sql.query(c, "SELECT scope_id, COUNT(*) FROM milestone_tiers WHERE scope_type = ? GROUP BY scope_id",
+                rs -> Map.entry(Sql.uuid(rs, "scope_id"), rs.getInt(2)), ProgressBuffer.Scope.ISLAND.name())) {
+            out.put(e.getKey(), e.getValue());
+        }
+        return out;
+    }
+
     /** Highest claimed tier per chain of a scope (the perks: OWNER B3, the highest replaces lower ones). */
     static Map<String, Integer> claimed(Connection c, ProgressBuffer.Scope scope, UUID scopeId) throws SQLException {
         Map<String, Integer> out = new HashMap<>();

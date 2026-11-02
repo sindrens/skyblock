@@ -123,7 +123,7 @@ freerank:
 # Ranks V2: /rankrewards (weekly kit per profile, monthly tag per account).
 rank-rewards:
   title: "Rank rewards"
-  off: "<prefix><c:error><sym:cross></c:error> <c:text>Rank rewards are off right now."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Rank rewards are off right now."
   weekly:
     ready:
       name: "<area:reward><bold>Weekly Kit"

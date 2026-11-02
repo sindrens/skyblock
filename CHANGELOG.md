@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Island level synergy (owner, 2 Nov 2026: "island level without pillars, plan synergy")
+- **Fix:** without pillar points the level caps squeezed every capped source to about 0; `progression.yml` v3 sets the caps to 0 (off) unless edited (OPEN_QUESTIONS LEVEL-NP1).
+- **Milestones feed the island level:** each completed island milestone tier gives `level.points-per-island-tier` (2) points in the earned source, now named "Milestones & Collections". Counted from one startup query and kept in memory, so offline islands keep them.
+- Progression: several modules can feed one level source (`ProgressionService#levelPointsProvider(source, key, fn)`).
 ### Chat, tab, scoreboard and staff mode polish (owner, 2 Nov 2026)
 - **Tags:** bold, one capital word after the name (`OWNER Pouched PHOENIX`); `cosmetics.yml tag.format` moves to `<bold><tag></bold>` (unedited value only). Existing tags restyled (unedited displays upgrade on load) and 10 new themed tags (Eclipse, Pyro, Blaze, Cinder, Stormborn, Skyward, Mogul, Abyssal, Harvest, Grinder) copied into live `tags-titles.yml` once.
 - **Titles:** gone from the chat line (`format.chat` default without `<title>`); shown in the hover card on the name (`hover-title`) and on `/is top` island entries (the leader's title, `top-menu.entry.title`). New `Cosmetics#titleByName` (offline leaders read in the background, 5 min cache).

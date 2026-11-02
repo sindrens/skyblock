@@ -45,6 +45,11 @@ public final class MilestonesConfig extends ModuleConfig {
     @Setting(path = "actionbar.gap-ms", desc = "Shortest time between two progress lines for one player.", min = 250, max = 60_000)
     public int actionBarGapMs = 1_500;
 
+    @Setting(path = "level.points-per-island-tier", desc = "Synergy (owner 2 Nov 2026: island level without pillars): island "
+            + "level points for every completed ISLAND milestone tier (earned, never go down in a season; source 'collections'). "
+            + "0 = milestones give no island level.", min = 0, max = 1000, level = Setting.Level.OWNER)
+    public double levelPointsPerIslandTier = 2;
+
     /** Version 2 (owner 2 Nov 2026: "please enable milestones"): on, unless the owner switched it off by hand. */
     @Override
     public int version() {

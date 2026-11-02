@@ -2,4 +2,4 @@
 # Node definitions: modules/profiles/src/main/resources/permissions/profiles.yml. One console command per line; # = comment.
 
 # /profiles is for everyone (plugin default: true).
-# Free profile slots come with Firewing (slot 2) and Pyrelord (slot 3): granted in ranks.txt (card F2, RANKS-V2).
+# Free profile slots come with Firewing (slot 2) and Pyrelord (slot 3): granted in base.txt (Ranks V2 section) (card F2, RANKS-V2).

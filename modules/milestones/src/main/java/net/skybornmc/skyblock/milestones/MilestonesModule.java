@@ -83,6 +83,8 @@ public final class MilestonesModule implements SkyblockModule {
         for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
             claims.load(p);
         }
+        levelPoints = new IslandLevelPoints(this);
+        levelPoints.start();
         registerCommand();
         // Slice 4: the action bar progress can be turned off per player (default on).
         core.services().optional(net.skybornmc.skyblock.common.settings.PlayerSettings.class).ifPresent(s -> s.register(
@@ -90,6 +92,8 @@ public final class MilestonesModule implements SkyblockModule {
                         net.skybornmc.skyblock.common.settings.SettingCategory.GAMEPLAY, org.bukkit.Material.EXPERIENCE_BOTTLE, true, null,
                         ID, "settings." + ProgressBar.SETTING, false)));
     }
+
+    private IslandLevelPoints levelPoints;
 
     ProgressBar bar() {
         return bar;
@@ -127,6 +131,10 @@ public final class MilestonesModule implements SkyblockModule {
     @Override
     public void disable() {
         core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class).ifPresent(b -> b.unregister(BONUS_SOURCE));
+        if (levelPoints != null) {
+            levelPoints.stop();
+            levelPoints = null;
+        }
         if (engine != null) {
             HandlerList.unregisterAll(engine);
             engine.stop();

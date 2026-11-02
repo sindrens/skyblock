@@ -1,7 +1,7 @@
 # LuckPerms grants for the perks module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/perks/src/main/resources/permissions/perks.yml. One console command per line; # = comment.
 
-# --- Perks module (/craft /ec /hat /nick are rank perks: donor groups get them in ranks.txt; Ashborn (group ember) is given automatically, see AshbornAuto) ---
+# --- Perks module (/craft /ec /hat /nick are rank perks: donor groups get them in base.txt (Ranks V2 section); Ashborn (group ember) is given automatically, see AshbornAuto) ---
 # Owner answer 376: /trash is for admins and the owner only (never a donor perk); owner inherits it from admin.
 lp group admin permission set skyblock.perks.trash true
 # Staff: realname from helper, repair + nicknames of others from mod. /sudo is owner-only (owner has *).

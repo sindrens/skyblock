@@ -37,7 +37,7 @@ class ShopCatalogMigrationV3Test {
         assertEquals(expected.items(), migrated.items(), "same tabs, items, order and prices as a fresh install");
         assertEquals(expected.categories(), migrated.categories(), "groups too");
         assertEquals(expected.worthOnly(), migrated.worthOnly());
-        assertEquals(ShopCatalogGroupsTest.ORDER, migrated.categories().stream().map(ShopCatalog.Category::id).toList());
+        // (The tab order of v3 is checked through categories above; ShopCatalogGroupsTest.ORDER is the current v5 order.)
         // The live Spawners tab is the economy design's: 20 mobs, tiers 1 to 4 (ECON-SPAWNERS).
         assertEquals(100_000, migrated.item("spawner_pig").orElseThrow().price());
         assertEquals(1_000_000, migrated.item("spawner_zombified_piglin").orElseThrow().price());

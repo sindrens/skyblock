@@ -73,7 +73,7 @@ final class RankRewards implements Listener {
 
     void open(Player player) {
         if (!config.rankRewardsEnabled) {
-            msg.send(player, "rank-rewards.off");
+            msg.send(player, "rank-rewards.disabled");
             return;
         }
         status(player).thenAccept(s -> core.menus().open(player, new RankRewardsMenu(this, s)));

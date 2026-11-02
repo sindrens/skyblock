@@ -130,6 +130,16 @@ public interface ProgressionService {
     default void levelPointsProvider(LevelSource source, ToDoubleFunction<UUID> pointsByIsland) {
     }
 
+    /**
+     * Like {@link #levelPointsProvider(LevelSource, ToDoubleFunction)} for a second module feeding the same source (e.g.
+     * island milestones into {@link LevelSource#COLLECTIONS}): every key adds up. {@code null} removes this key only.
+     */
+    default void levelPointsProvider(LevelSource source, String key, ToDoubleFunction<UUID> pointsByIsland) {
+        if (key == null || key.isEmpty()) {
+            levelPointsProvider(source, pointsByIsland);
+        }
+    }
+
     /** Asks for a (debounced) recalculation of the island's level, e.g. after an upgrade was bought. Main thread. */
     default void requestLevelUpdate(UUID islandId) {
     }

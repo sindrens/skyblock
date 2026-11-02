@@ -142,12 +142,13 @@ level-menu:
       how:
         - "<c:muted>Complete island achievements."
     collections:
-      name: "<c:flame>Collections"
+      name: "<c:flame>Milestones & Collections"
       soon:
-        - "<c:muted>Coming soon: collection"
-        - "<c:muted>milestones give points."
+        - "<c:muted>Coming soon: milestones and"
+        - "<c:muted>collections give points."
       how:
-        - "<c:muted>Reach collection milestones."
+        - "<c:muted>Complete island milestone tiers"
+        - "<c:muted>(/milestones) and collection pages."
     skills:
       name: "<c:flame>Members' skills"
       # <counted> <members> <average> <days>

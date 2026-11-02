@@ -120,7 +120,8 @@ final class LevelManager implements Listener {
     private final Set<UUID> again = new HashSet<>();
     private final Set<UUID> activeToday = new HashSet<>();
     private final LevelDebounce debounce = new LevelDebounce();
-    private final Map<LevelSource, ToDoubleFunction<UUID>> providers = new ConcurrentHashMap<>();
+    /** Source -> provider key ("" = the source's own module, "milestones" ...) -> points by island. Summed per source. */
+    private final Map<LevelSource, Map<String, ToDoubleFunction<UUID>>> providers = new ConcurrentHashMap<>();
     /** Runs on the main thread once the stored levels are loaded (M5.7: the boards rank right away). */
     private Runnable onLoaded = () -> { };
     private LevelMath.Weights weights;
@@ -426,18 +427,23 @@ final class LevelManager implements Listener {
     }
 
     private double provided(LevelSource source, UUID islandId) {
-        ToDoubleFunction<UUID> f = providers.get(source);
-        if (f == null) {
+        Map<String, ToDoubleFunction<UUID>> fs = providers.get(source);
+        if (fs == null || fs.isEmpty()) {
             return 0;
         }
-        try {
-            // Timed on its own (PERF7): these come from other modules (upgrades, achievements, collections).
-            double v = core.scheduler().timer().time("progression-level-source:" + source.id(), () -> f.applyAsDouble(islandId));
-            return Double.isFinite(v) && v > 0 ? v : 0;
-        } catch (RuntimeException e) {
-            core.plugin().getLogger().log(Level.WARNING, "Progression: level source '" + source.id() + "' failed", e);
-            return 0;
+        double sum = 0;
+        for (Map.Entry<String, ToDoubleFunction<UUID>> e : fs.entrySet()) {
+            ToDoubleFunction<UUID> f = e.getValue();
+            String name = e.getKey().isEmpty() ? source.id() : source.id() + "/" + e.getKey();
+            try {
+                // Timed on its own (PERF7): these come from other modules (upgrades, achievements, collections, milestones).
+                double v = core.scheduler().timer().time("progression-level-source:" + name, () -> f.applyAsDouble(islandId));
+                sum += Double.isFinite(v) && v > 0 ? v : 0;
+            } catch (RuntimeException ex) {
+                core.plugin().getLogger().log(Level.WARNING, "Progression: level source '" + name + "' failed", ex);
+            }
         }
+        return sum;
     }
 
     /** XP of exactly that profile: online = cache (cheap), offline = database at most every skills-cache-minutes. */
@@ -856,13 +862,22 @@ final class LevelManager implements Listener {
     }
 
     void provider(LevelSource source, ToDoubleFunction<UUID> provider) {
+        provider(source, "", provider);
+    }
+
+    /** Adds (or with {@code null} removes) one keyed provider of a source; all providers of a source add up. */
+    void provider(LevelSource source, String key, ToDoubleFunction<UUID> provider) {
         if (source == null) {
             return;
         }
+        String k = key == null ? "" : key;
         if (provider == null) {
-            providers.remove(source);
+            providers.computeIfPresent(source, (s, m) -> {
+                m.remove(k);
+                return m.isEmpty() ? null : m;
+            });
         } else {
-            providers.put(source, provider);
+            providers.computeIfAbsent(source, s -> new ConcurrentHashMap<>()).put(k, provider);
         }
     }
 
