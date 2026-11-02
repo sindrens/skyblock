@@ -2,7 +2,7 @@
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/is tools` | Your island tools: tier (wood → netherite, crystals), 7 upgrades per tool (crystals; confirm above `confirm-above`), a new copy (older copies stop working), the hoe storage (take a stack, sell all). Sneak + click with a tool opens it too | `skyblock.islandtools.use` | ✅ |
+| `/is tools` | Your island's shared tools: tier (wood → netherite, shards + money), 8 upgrades per tool incl. Shard Finder (shards + the island task for that tool; confirm above `confirm-above`), a new copy (older copies stop working), the hoe storage (take a stack, sell all). Sneak + right-click in the air with a tool opens that tool | `skyblock.islandtools.use` | ✅ |
 | `/islandtools` (`/itools`) | Same menu | `skyblock.islandtools.use` | ✅ |
 | `/islandtools reset <player>` | Staff: back to the wooden set, hoe storage emptied (audited `island_tools_reset`) | `skyblock.islandtools.admin` | ✅ |
 
