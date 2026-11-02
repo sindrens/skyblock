@@ -68,7 +68,7 @@ import java.util.logging.Level;
  * <p><b>Item safety.</b> Items in the sell chest are copied into the player's own data while it is open (saved together
  * with the inventory, see {@link SellChestStore}) and handed back when it closes; a crash hands them back on the next
  * join. A sale takes the items out on the main thread (escrow), the player's data is saved, and one guarded ledger
- * transaction pays them; if it fails every stack is handed back (inventory, then ender chest, then the feet, or stored
+ * transaction pays them; if it fails every stack is handed back (inventory, then /box, or stored
  * and handed back on the next join if the player left or switched profile).</p>
  */
 public final class SellFeature implements Listener {
@@ -112,6 +112,7 @@ public final class SellFeature implements Listener {
     private SellStore store;
     private SellServiceImpl service;
     private volatile boolean ready;
+    private HotAnnouncer hotAnnouncer;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Key of the sell chest's crash copy in the player's persistent data. */
     private NamespacedKey chestKey;
@@ -197,6 +198,8 @@ public final class SellFeature implements Listener {
         }));
         long save = config.sellSaveSeconds * 20L;
         tasks.add(core.scheduler().asyncRepeat(save, save, this::save));
+        hotAnnouncer = new HotAnnouncer(core, this, () -> config);
+        hotAnnouncer.start();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerCommand();
         core.scheduler().later("sell-settings", 1L, this::registerSettings);
@@ -216,6 +219,9 @@ public final class SellFeature implements Listener {
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        if (hotAnnouncer != null) {
+            hotAnnouncer.stop();
+        }
         var s = settings;
         settings = null;
         if (s != null) {
@@ -247,6 +253,29 @@ public final class SellFeature implements Listener {
             core.plugin().getLogger().log(Level.WARNING, "Sell: could not save prices (retried later)", e);
             return null;
         });
+    }
+
+    /** Prices are loaded and selling works. */
+    boolean ready() {
+        return ready;
+    }
+
+    private volatile List<net.skybornmc.skyblock.common.sell.SellPrice> tipsCache = List.of();
+    private volatile long tipsAt = Long.MIN_VALUE;
+
+    /** A4: the Market Tips (furthest above base), worked out again at most every {@code sell.market-tips.refresh-seconds}. */
+    List<net.skybornmc.skyblock.common.sell.SellPrice> marketTips() {
+        long now = System.currentTimeMillis();
+        if (now - tipsAt < config.marketTipsRefreshSeconds * 1_000L) {
+            return tipsCache;
+        }
+        List<net.skybornmc.skyblock.common.sell.SellPrice> prices = new ArrayList<>();
+        for (String key : service.itemKeys()) {
+            service.price(key).ifPresent(prices::add);
+        }
+        tipsCache = MarketTips.pick(prices, service.hotKey(), config.marketTipsMinBase, config.marketTipsMinPercent, config.marketTipsSize);
+        tipsAt = now;
+        return tipsCache;
     }
 
     public SellServiceImpl service() {
@@ -979,6 +1008,9 @@ public final class SellFeature implements Listener {
         Player player = event.getPlayer();
         // The profile module attached the active profile at LOWEST: items a crash left in the sell chest come back now.
         recoverChest(player);
+        if (hotAnnouncer != null) {
+            hotAnnouncer.onJoin(player); // A3: today's Hot Item, once per day
+        }
         // A little later: the profile module loads the active profile on join.
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
             if (player.isOnline() && ready) {

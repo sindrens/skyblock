@@ -196,7 +196,7 @@ public final class SellServiceImpl implements SellService {
         SellCatalog cat = catalog.get();
         if (!today.equals(hotDay) || cat != hotCatalog) {
             EconomyConfig c = config.get();
-            hotKey = c.sellHotEnabled ? HotItem.pick(today, cat.all(), c.sellHotCategories, c.sellHotSalt) : null;
+            hotKey = c.sellHotEnabled ? HotItem.pick(today, cat.all(), c.sellHotCategories, c.sellHotSalt, c.hotMinBase) : null;
             hotDay = today;
             hotCatalog = cat;
         }

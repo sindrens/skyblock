@@ -24,4 +24,12 @@ class MarketTipsTest {
         assertEquals(1, MarketTips.pick(all, null, 5, 5, 1).size());
         assertEquals("hot", MarketTips.pick(all, null, 5, 5, 1).getFirst().itemKey());
     }
+
+    @Test
+    void tipsAreCentredOnRowTwo() {
+        assertEquals(13, MarketTipsMenu.firstSlot(1));
+        assertEquals(11, MarketTipsMenu.firstSlot(5));
+        assertEquals(10, MarketTipsMenu.firstSlot(7));
+        assertEquals(9, MarketTipsMenu.firstSlot(20));
+    }
 }

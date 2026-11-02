@@ -355,6 +355,9 @@ sell:
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. Your items are back."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale didn't go through, your items are back. Try again."
   refund-delivered: "<prefix><c:success><sym:check></c:success> <c:text>You got back <c:value><amount>x</c:value> <item> <c:text>from a sale that didn't go through."
+  hot:
+    announce: "<tag:market><bold>[Market]</bold></tag> <c:text>Today's Hot Item is <c:value><item></c:value><c:text>: <c:success><percent>%</c:success> <c:text>sell price until midnight. <c:muted>/sell</c:muted>"
+    join: "<tag:market><bold>[Market]</bold></tag> <c:text>Hot Item today: <c:value><item></c:value> <c:success><percent>%</c:success> <c:muted>(/sell)"
   # Why an item can't be sold (/sell hand, and the action bar when you put it into the sell chest).
   reason:
     empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
@@ -392,12 +395,49 @@ sell:
     boosters: "Boosters"
     events: "Event"
   # The sell chest (SELL2): /sell, the Sell button in /shop and in the satchel.
+  # A4: Market Tips (sell chest button, slot 48): the items furthest above base right now.
+  tips:
+    title: "Market Tips"
+    info:
+      - "<c:text>The items that sell furthest above"
+      - "<c:text>their base price right now."
+      - "<c:muted>Worked out again every minute."
+    hot:
+      name: "<c:flame><sym:star></c:flame> <c:value>Hot Item: <item>"
+      lore:
+        - "<c:text>Sells for <c:success><percent>%</c:success> <c:text>today."
+        - "<c:text>Price now: <unit> <c:muted>each"
+        - ""
+        - "<c:muted>A new Hot Item every day at midnight."
+    no-hot:
+      name: "<c:muted>No Hot Item today"
+      lore:
+        - "<c:text>Check back tomorrow."
+    tip:
+      name: "<c:value><item>"
+      lore:
+        - "<c:text>Price now: <unit> <c:muted>each"
+        - "<c:text>Above base: <c:success><percent>%"
+        - "<c:text>Base: <base>"
+    empty:
+      name: "<c:muted>No tips right now"
+      lore:
+        - "<c:text>No item is far above its base price."
+        - "<c:text>Prices rise when few players sell."
   chest:
     title: "Sell"
     info:
       - "<c:text>Put items into the top 4 rows"
       - "<c:text>(click, shift-click or drag), then"
       - "<c:text>press Sell. Closing gives them back."
+    tips:
+      name: "<c:value><bold>Market Tips"
+      lore:
+        - "<c:text>The best-paying items right now"
+        - "<c:text>and today's Hot Item."
+        - ""
+        - "<c:muted>Items in the chest go back to"
+        - "<c:muted>your inventory when you open it."
     sell-inventory:
       name: "<c:value><bold>Add my inventory"
       lore:
