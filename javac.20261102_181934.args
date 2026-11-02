@@ -1,0 +1,11 @@
+-proc:none
+-d
+/tmp/claude-0/jc
+modules/milestones/src/main/java/net/skybornmc/skyblock/milestones/MilestoneTopMenu.java
+modules/milestones/src/main/java/net/skybornmc/skyblock/milestones/MilestoneStore.java
+modules/milestones/src/main/java/net/skybornmc/skyblock/milestones/MilestoneClaims.java
+modules/milestones/src/main/java/net/skybornmc/skyblock/milestones/MilestonesMenu.java
+modules/npcs/src/main/java/net/skybornmc/skyblock/npcs/BoardSource.java
+modules/npcs/src/main/java/net/skybornmc/skyblock/npcs/Leaderboards.java
+modules/npcs/src/main/java/net/skybornmc/skyblock/npcs/NpcsConfig.java
+common/src/main/java/net/skybornmc/skyblock/common/milestones/MilestoneRewards.java

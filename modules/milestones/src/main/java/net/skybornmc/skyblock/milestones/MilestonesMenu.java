@@ -25,6 +25,8 @@ final class MilestonesMenu extends Menu {
 
     static final int SLOT_ISLAND = 20;
     static final int SLOT_PERSONAL = 24;
+    /** F13a: the milestone leaderboard, between the two big buttons. */
+    static final int SLOT_TOP = 22;
     static final int[] CHAIN_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
 
     private final MilestonesModule m;
@@ -153,6 +155,8 @@ final class MilestonesMenu extends Menu {
                 click -> openChild(new MilestonesMenu(m, MilestoneModel.Menu.ISLAND)));
         set(SLOT_PERSONAL, service.item(Material.DEEPSLATE_DIAMOND_ORE, viewer, MilestonesModule.ID, "menu.overview.personal"),
                 click -> openChild(new MilestonesMenu(m, MilestoneModel.Menu.PERSONAL)));
+        set(SLOT_TOP, service.item(Material.GOLDEN_HELMET, viewer, MilestonesModule.ID, "menu.overview.top"),
+                click -> openChild(new MilestoneTopMenu(m, true)));
     }
 
     /** The highest completed tier not claimed yet (0 = nothing to claim). */

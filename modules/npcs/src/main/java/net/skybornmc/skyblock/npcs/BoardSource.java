@@ -18,7 +18,7 @@ import java.util.Optional;
  * {@code island <stat> [period] [board]}, {@code island_level [all|solo|team]}, {@code island_value [all|solo|team]}
  * (PHASE-5 M5.2, progression module), {@code island_gain [this_week] [all|solo|team|cycle]},
  * {@code pillar_gain [this_week] [all|solo|team|cycle]} (M5.7 weekly boards; {@code cycle} switches between Solo and Team)
- * or {@code none} (shown as "Coming soon").
+ * {@code milestones island|personal} (F13a: most completed milestone tiers) or {@code none} (shown as "Coming soon").
  * Parsed from {@code npcs.yml → leaderboards.sources}.
  */
 sealed interface BoardSource {
@@ -73,6 +73,14 @@ sealed interface BoardSource {
         }
     }
 
+    /** Milestone board (F13a/G6): completed milestone tiers per island or per player (best profile). */
+    record Milestones(boolean island) implements BoardSource {
+        @Override
+        public String key() {
+            return "milestones:" + (island ? "island" : "personal");
+        }
+    }
+
     /** One source text; empty = invalid. */
     static Optional<BoardSource> parse(String text) {
         if (text == null || text.isBlank()) {
@@ -107,6 +115,15 @@ sealed interface BoardSource {
                 }
                 return IslandTop.Board.byId(p[i]).map(b -> new IslandWeekly(kind, b, false));
             }
+            case "milestones":
+                if (p.length != 2) {
+                    return Optional.empty();
+                }
+                return switch (p[1]) {
+                    case "island" -> Optional.of(new Milestones(true));
+                    case "personal" -> Optional.of(new Milestones(false));
+                    default -> Optional.empty();
+                };
             case "skill":
                 return p.length == 2 ? SkillType.byId(p[1]).map(Skill::new) : Optional.empty();
             case "island": {

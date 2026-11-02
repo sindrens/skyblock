@@ -33,4 +33,18 @@ public interface MilestoneRewards {
 
     /** Opens {@code /milestones}. */
     void open(Player player);
+
+    /**
+     * Milestone leaderboard (owner F13a/G6, the "Island Milestones" and "Personal Milestones" boards): the most completed
+     * tiers, highest first. Database work off the main thread; the future may complete on any thread.
+     * <ul>
+     *   <li>{@code island = true}: {@link TopLine#player()} is the <b>island id</b> and {@link TopLine#name()} is
+     *   {@code null} (the caller resolves the island name on the main thread).</li>
+     *   <li>{@code island = false}: one line per player from their best live profile (P7), with the last known name.</li>
+     * </ul>
+     * {@link TopLine#value()} is the number of completed tiers (milestone points).
+     */
+    default CompletableFuture<java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(boolean island, int limit) {
+        return CompletableFuture.completedFuture(java.util.List.of());
+    }
 }

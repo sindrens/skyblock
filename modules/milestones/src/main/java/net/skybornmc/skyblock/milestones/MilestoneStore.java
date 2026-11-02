@@ -124,6 +124,36 @@ final class MilestoneStore {
         return out;
     }
 
+    /**
+     * Milestone leaderboard (F13a/G6): completed tiers per island ({@code island}; the line's player is the island id, the
+     * name is null) or per player (best live profile per owner through {@code bestPerOwner}, P7, with the last known name).
+     * The personal read takes a few times more rows than shown because one player can own several profiles.
+     */
+    static List<net.skybornmc.skyblock.common.leaderboard.TopLine> top(Connection c, boolean island, int limit,
+            Function<Map<UUID, Long>, List<net.skybornmc.skyblock.common.profile.BestProfile.Entry>> bestPerOwner) throws SQLException {
+        if (limit <= 0) {
+            return List.of();
+        }
+        String scope = (island ? ProgressBuffer.Scope.ISLAND : ProgressBuffer.Scope.PROFILE).name();
+        int read = island ? limit : limit * net.skybornmc.skyblock.common.profile.SlotRules.MAX_SLOTS + 10;
+        Map<UUID, Long> counts = new java.util.LinkedHashMap<>();
+        for (Map.Entry<UUID, Long> e : Sql.query(c, "SELECT scope_id, COUNT(*) AS n FROM milestone_tiers WHERE scope_type = ? "
+                + "GROUP BY scope_id ORDER BY n DESC, scope_id LIMIT ?", rs -> Map.entry(Sql.uuid(rs, "scope_id"), rs.getLong("n")), scope, read)) {
+            counts.put(e.getKey(), e.getValue());
+        }
+        List<net.skybornmc.skyblock.common.leaderboard.TopLine> out = new ArrayList<>();
+        if (island) {
+            counts.forEach((id, n) -> out.add(new net.skybornmc.skyblock.common.leaderboard.TopLine(id, null, n)));
+            return out;
+        }
+        List<net.skybornmc.skyblock.common.profile.BestProfile.Entry> best = bestPerOwner.apply(counts);
+        for (var e : best.size() > limit ? best.subList(0, limit) : best) {
+            String name = Sql.queryOne(c, "SELECT name FROM players WHERE uuid = ?", rs -> rs.getString(1), e.owner()).orElse(null);
+            out.add(new net.skybornmc.skyblock.common.leaderboard.TopLine(e.owner(), name, e.value()));
+        }
+        return out;
+    }
+
     /** Highest claimed tier per chain of a scope (the perks: OWNER B3, the highest replaces lower ones). */
     static Map<String, Integer> claimed(Connection c, ProgressBuffer.Scope scope, UUID scopeId) throws SQLException {
         Map<String, Integer> out = new HashMap<>();

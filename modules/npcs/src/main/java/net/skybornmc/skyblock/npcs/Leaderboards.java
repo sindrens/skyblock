@@ -168,6 +168,12 @@ final class Leaderboards {
             case BoardSource.IslandWeekly w -> CompletableFuture.completedFuture(services
                     .optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
                     .map(pr -> weekly(pr, w, size)).orElse(List.of()));
+            // F13a: milestone boards. Personal rows carry names already; island rows get their names on the main thread.
+            case BoardSource.Milestones ms -> services.optional(net.skybornmc.skyblock.common.milestones.MilestoneRewards.class)
+                    .map(mr -> ms.island()
+                            ? mr.top(true, size).thenCompose(list -> scheduler.supplyMain("npcs:board-milestones", () -> milestoneIslands(list)))
+                            : mr.top(false, size).thenApply(list -> players(list, this::milestonePoints)))
+                    .orElse(CompletableFuture.completedFuture(List.of()));
             case BoardSource.Island i -> services.optional(IslandStatsService.class)
                     .map(st -> st.top(i.stat(), i.period(), i.board(), size)
                             .thenCompose(list -> scheduler.supplyMain("npcs:board-island", () -> islands(list, i.stat()))))
@@ -228,21 +234,38 @@ final class Leaderboards {
         return out;
     }
 
+    private Component milestonePoints(long points) {
+        return module.text("leaderboard.value.milestones", Msg.number("points", points));
+    }
+
+    /** Main thread: milestone rows per island (the line's player is the island id). */
+    private List<Row> milestoneIslands(List<TopLine> list) {
+        List<Row> out = new ArrayList<>(list.size());
+        for (TopLine line : list) {
+            out.add(new Row(displayName(islandName(line.player()), module.plain("leaderboard.unknown-island")), milestonePoints(line.value())));
+        }
+        return out;
+    }
+
+    /** Main thread: an island's name, else its owner's name, else null. */
+    private String islandName(java.util.UUID islandId) {
+        IslandService islands = module.core().services().optional(IslandService.class).orElse(null);
+        var info = islands == null ? null : islands.island(islandId).orElse(null);
+        if (info == null) {
+            return null;
+        }
+        String name = info.name();
+        if ((name == null || name.isBlank()) && info.owner() != null) {
+            name = Bukkit.getOfflinePlayer(info.owner()).getName();
+        }
+        return name;
+    }
+
     /** Main thread: island names from the islands service (else the owner's name). */
     private List<Row> islands(List<IslandStatsService.TopEntry> list, IslandStat stat) {
-        IslandService islands = module.core().services().optional(IslandService.class).orElse(null);
         List<Row> out = new ArrayList<>(list.size());
         for (IslandStatsService.TopEntry e : list) {
-            String name = null;
-            if (islands != null) {
-                var info = islands.island(e.islandId()).orElse(null);
-                if (info != null) {
-                    name = info.name();
-                    if ((name == null || name.isBlank()) && info.owner() != null) {
-                        name = Bukkit.getOfflinePlayer(info.owner()).getName();
-                    }
-                }
-            }
+            String name = islandName(e.islandId());
             String amount = switch (stat.unit()) {
                 case MONEY -> Format.money(e.amount());
                 case SECONDS -> Format.duration(java.time.Duration.ofSeconds(e.amount()));

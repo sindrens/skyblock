@@ -129,6 +129,15 @@ final class MilestoneClaims implements BonusSource, net.skybornmc.skyblock.commo
     }
 
     @Override
+    public CompletableFuture<java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine>> top(boolean island, int limit) {
+        var profiles = m.core().services().optional(net.skybornmc.skyblock.common.profile.ProfileService.class).orElse(null);
+        java.util.function.Function<java.util.Map<java.util.UUID, Long>, java.util.List<net.skybornmc.skyblock.common.profile.BestProfile.Entry>> best =
+                profiles != null ? profiles::bestPerOwner
+                        : values -> net.skybornmc.skyblock.common.profile.BestProfile.collapse(values, k -> k, k -> true);
+        return m.core().database().async(c -> MilestoneStore.top(c, island, limit, best));
+    }
+
+    @Override
     public CompletableFuture<Integer> claimAll(Player player, boolean announce) {
         java.util.List<java.util.Map.Entry<MilestoneModel.Chain, Integer>> todo = new java.util.ArrayList<>();
         for (UUID scopeId : new UUID[]{islandOf(player), profileOf(player)}) {
