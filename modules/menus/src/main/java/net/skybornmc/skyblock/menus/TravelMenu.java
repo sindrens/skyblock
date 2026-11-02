@@ -65,7 +65,7 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
         navBar();
         List<WarpLayout.Warp> shown = new ArrayList<>();
         for (WarpLayout.Warp warp : nav.travel.warps()) {
-            if (available(warp) && shown.size() < WarpLayout.MAX_PLACES) {
+            if (available(nav, warp) && shown.size() < WarpLayout.MAX_PLACES) {
                 shown.add(warp);
             }
         }
@@ -97,6 +97,10 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
     }
 
     private Component name(WarpLayout.Warp warp) {
+        return name(nav, viewer, warp);
+    }
+
+    static Component name(Nav nav, Player viewer, WarpLayout.Warp warp) {
         String key = "travel.places." + warp.id() + ".name";
         if (nav.core.messages().raw(Nav.TEXTS, key) == null) {
             return nav.text(viewer, "travel.fallback-name", Nav.pre("name", pretty(warp.id())));
@@ -104,50 +108,57 @@ final class TravelMenu extends net.skybornmc.skyblock.common.menu.Menu {
         return nav.text(viewer, key);
     }
 
-    private boolean available(WarpLayout.Warp warp) {
-        return switch (warp.target()) {
-            case WarpLayout.Command c -> HubLayout.commandExists(c.command());
-            case WarpLayout.Point p -> location(p).isPresent();
-            case WarpLayout.Place p -> Bukkit.getWorld(p.world()) != null;
-        };
+    private void go(Player player, WarpLayout.Warp warp, Component name) {
+        if (warp.target() instanceof WarpLayout.Command c) {
+            // A screen the command opens (the island browser) gets Back to Travel; a teleport closes the menu.
+            service.navigate(player, this, () -> player.performCommand(c.command()));
+            return;
+        }
+        player.closeInventory();
+        travel(nav, player, warp, name);
     }
 
-    private void go(Player player, WarpLayout.Warp warp, Component name) {
+    /** Teleports to a place (or runs its command). Used by the menu and by {@code /warp <place>}. */
+    static void travel(Nav nav, Player player, WarpLayout.Warp warp, Component name) {
         switch (warp.target()) {
-            // A screen the command opens (the island browser) gets Back to Travel; a teleport closes the menu.
-            case WarpLayout.Command c -> service.navigate(player, this, () -> player.performCommand(c.command()));
-            case WarpLayout.Point p -> {
-                player.closeInventory();
-                location(p).ifPresentOrElse(to -> teleport(player, warp, to, name), () -> gone(player));
-            }
+            case WarpLayout.Command c -> player.performCommand(c.command());
+            case WarpLayout.Point p -> location(nav, p).ifPresentOrElse(to -> teleport(nav, player, warp, to, name), () -> gone(nav, player));
             case WarpLayout.Place p -> {
-                player.closeInventory();
                 World world = Bukkit.getWorld(p.world());
                 if (world == null) {
-                    gone(player);
+                    gone(nav, player);
                 } else {
-                    teleport(player, warp, new Location(world, p.x(), p.y(), p.z(), p.yaw(), p.pitch()), name);
+                    teleport(nav, player, warp, new Location(world, p.x(), p.y(), p.z(), p.yaw(), p.pitch()), name);
                 }
             }
         }
     }
 
-    private void teleport(Player player, WarpLayout.Warp warp, Location to, Component name) {
+    /** True when the place works on this server (build applied, world loaded, command there). */
+    static boolean available(Nav nav, WarpLayout.Warp warp) {
+        return switch (warp.target()) {
+            case WarpLayout.Command c -> HubLayout.commandExists(c.command());
+            case WarpLayout.Point p -> location(nav, p).isPresent();
+            case WarpLayout.Place p -> Bukkit.getWorld(p.world()) != null;
+        };
+    }
+
+    private static void teleport(Nav nav, Player player, WarpLayout.Warp warp, Location to, Component name) {
         TeleportService teleports = nav.core.services().optional(TeleportService.class).orElse(null);
         if (teleports == null) {
-            gone(player);
+            gone(nav, player);
             return;
         }
         teleports.request(player, to, reason(warp.reason()), TeleportOptions.builder()
                 .destination(PlainTextComponentSerializer.plainText().serialize(name)).build());
     }
 
-    private void gone(Player player) {
+    private static void gone(Nav nav, Player player) {
         nav.msg.send(player, "travel.gone");
         nav.core.sounds().play(player, "error");
     }
 
-    private Optional<Location> location(WarpLayout.Point p) {
+    private static Optional<Location> location(Nav nav, WarpLayout.Point p) {
         Optional<BuildPoints> points = nav.core.services().optional(BuildPoints.class);
         if (points.isEmpty()) {
             return Optional.empty();

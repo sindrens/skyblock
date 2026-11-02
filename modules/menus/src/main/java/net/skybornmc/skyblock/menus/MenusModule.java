@@ -77,6 +77,56 @@ public final class MenusModule implements SkyblockModule {
         registerCommands();
     }
 
+    /** Names /warp accepts: aliases and place ids of places that work on this server. */
+    private java.util.List<String> warpNames() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String a : config.warpAliases) {
+            int i = a.indexOf(':');
+            if (i > 0 && findWarp(a.substring(i + 1).trim()) != null) {
+                out.add(a.substring(0, i).trim());
+            }
+        }
+        for (WarpLayout.Warp w : nav.travel.warps()) {
+            out.add(w.id());
+        }
+        return out;
+    }
+
+    private WarpLayout.Warp findWarp(String name) {
+        if (name == null) {
+            return null;
+        }
+        String n = name.toLowerCase(java.util.Locale.ROOT);
+        for (String a : config.warpAliases) {
+            int i = a.indexOf(':');
+            if (i > 0 && a.substring(0, i).trim().equalsIgnoreCase(n)) {
+                n = a.substring(i + 1).trim();
+                break;
+            }
+        }
+        for (WarpLayout.Warp w : nav.travel.warps()) {
+            if (w.id().equals(n) || w.id().replace("-", "").equals(n.replace("-", ""))) {
+                return w;
+            }
+        }
+        return null;
+    }
+
+    private void warp(org.bukkit.entity.Player player, String name) {
+        if (name == null || name.isBlank()) {
+            core.menus().open(player, new TravelMenu(nav));
+            return;
+        }
+        WarpLayout.Warp w = findWarp(name);
+        if (w == null || !TravelMenu.available(nav, w)) {
+            throw new net.skybornmc.skyblock.common.command.CommandFailure(Nav.TEXTS, "travel.unknown", Nav.pre("name", name));
+        }
+        if (w.permission() != null && !w.permission().isBlank() && !player.hasPermission(w.permission())) {
+            throw new net.skybornmc.skyblock.common.command.CommandFailure(Nav.TEXTS, "travel.locked-warp");
+        }
+        TravelMenu.travel(nav, player, w, TravelMenu.name(nav, player, w));
+    }
+
     @Override
     public void reload() {
         core.configs().load(config);
@@ -239,6 +289,15 @@ public final class MenusModule implements SkyblockModule {
                 .description("Open the main menu with every feature").category("Info")
                 .permission(PERM_MENU).playerOnly().aliases("gui")
                 .executes(ctx -> core.menus().open(ctx.player(), new HubMenu(nav))));
+
+        // Owner 2 Nov 2026 ("/warp crates"): the Travel places by name; no name opens the Travel menu.
+        net.skybornmc.skyblock.common.command.Arg<String> place = net.skybornmc.skyblock.common.command.Arg.word("place",
+                (sender, raw) -> raw.toLowerCase(java.util.Locale.ROOT),
+                net.skybornmc.skyblock.common.command.Suggest.of(this::warpNames));
+        commands.register(CommandSpec.command("warp")
+                .description("Travel to a place: /warp crates, /warp market ... (no name: the Travel menu)").category("Info")
+                .permission(PERM_MENU).playerOnly().aliases("warps").optional(place).example("warp crates")
+                .executes(ctx -> warp(ctx.player(), ctx.getOr(place, null))));
 
         commands.register(CommandSpec.command("staff")
                 .description("Staff hub: display editor, config editor and staff tools").category("Staff")

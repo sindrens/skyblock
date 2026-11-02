@@ -11,7 +11,6 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/help [topic]` | Help GUI | `skyblock.help` | ⬜ |
 | `/spawn` | Teleport to spawn | `skyblock.spawn` | ⬜ |
 | `/tpa`, `/tpahere`, `/tpaccept`, `/tpdeny`, `/back` | Teleports | `skyblock.tpa`, `skyblock.back` | ⬜ |
-| `/warp`, `/warps` | Server + island warps | `skyblock.warp` | ⬜ |
 | `/is` | Island GUI / home | `skyblock.island` | ⬜ |
 | `/is visit <player>`, `/is invite`, `/is kick`, `/is lock` | Island management | `skyblock.island.*` | ⬜ |
 | `/is upgrade` (= `/is masteries`) | Upgrades + tasks | `skyblock.island.upgrade` | ⬜ |
