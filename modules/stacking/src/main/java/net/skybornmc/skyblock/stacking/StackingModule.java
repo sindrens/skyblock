@@ -64,6 +64,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private SpawnerDropItems dropItems;
     private UnlockTracker unlock;
     private final MobDropGuard dropGuard = new MobDropGuard();
+    private final SpawnerMobSafety mobSafety = new SpawnerMobSafety(this::config);
     private MobStacker mobs;
     private ItemStacker items;
     private SpawnerManager spawners;
@@ -101,7 +102,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         applyConfig();
         spawnerItems.register();
         spawners.load();
-        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers, dropGuard)) {
+        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety)) {
             Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         }
         indexLoaded();
@@ -131,7 +132,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         if (unlock != null) {
             unlock.flushBlocking();
         }
-        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard)) {
+        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety)) {
             if (listener != null) {
                 HandlerList.unregisterAll(listener);
             }

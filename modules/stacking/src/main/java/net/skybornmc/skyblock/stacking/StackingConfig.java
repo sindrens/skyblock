@@ -61,6 +61,10 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "mobs.natural-merge-budget", desc = "Most moving mobs checked per run (spreads the work over several runs).", min = 10, max = 10_000)
     public int naturalMergeBudget = 200;
 
+    @Setting(path = "mobs.spawner-mobs-hurt-players", desc = "Spawner mobs can hurt players (contact, poison, explosions, arrows). "
+            + "Off (feedback 1 Nov 2026): they stand still and never do damage; players still kill them.")
+    public boolean spawnerMobsHurtPlayers = false;
+
     @Setting(path = "mobs.spawner-mobs-burn-in-day", desc = "Zombies and skeletons from spawners burn in daylight (owner S25: spawn conditions ignored, so off).")
     public boolean spawnerMobsBurnInDay = false;
 
