@@ -28,6 +28,8 @@ public final class ProfilesModule implements SkyblockModule {
 
     static final String ID = "profiles";
     static final String PERM_USE = "skyblock.profiles.use";
+    static final String PERM_INFO = "skyblock.profiles.admin.info";
+    static final String PERM_RESET = "skyblock.profiles.admin.reset";
 
     final Core core;
     final ModuleMessages msg;
@@ -68,7 +70,22 @@ public final class ProfilesModule implements SkyblockModule {
                 .permission(PERM_USE)
                 .playerOnly()
                 .aliases("profile")
-                .executes(ctx -> open(ctx.player())));
+                .executes(ctx -> open(ctx.player()))
+                .sub(CommandSpec.sub("info").description("Staff: a player's profiles (slot, name, active, playtime, island)")
+                        .permission(PERM_INFO).arg(net.skybornmc.skyblock.common.command.Args.offlinePlayer("player"))
+                        .example("profiles info Steve")
+                        .executes(ctx -> service.staffInfo(ctx.sender(), ctx.get(net.skybornmc.skyblock.common.command.Args.offlinePlayer("player")))))
+                .sub(resetSpec()));
+    }
+
+    /** {@code /profiles reset <player> [slot]} (staff, confirm): a fresh profile in that slot (default: the active one). */
+    private CommandSpec resetSpec() {
+        var player = net.skybornmc.skyblock.common.command.Args.offlinePlayer("player");
+        var slot = net.skybornmc.skyblock.common.command.Args.integer("slot", 1, 3, "1", "2", "3");
+        return CommandSpec.sub("reset").description("Staff: replace a player's profile with a fresh one (offline players; confirm)")
+                .permission(PERM_RESET).arg(player).optional(slot).confirm(10)
+                .example("profiles reset Steve 1")
+                .executes(ctx -> service.staffReset(ctx.sender(), ctx.get(player), ctx.getOr(slot, null)));
     }
 
     @Override

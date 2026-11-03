@@ -177,3 +177,17 @@ slots:
       - "<c:text>Unlocks profile slot <c:value><slot></c:value> for"
       - "<c:value><price> credits</c:value><c:text>. Yours forever,"
       - "<c:text>also after a season reset."
+
+# Staff: /profiles info and /profiles reset (feedback 31 Oct 2026). <player> <slot> <profile> <island> <playtime> <count> <online>
+staff:
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player named <c:value><player></c:value> <c:text>has joined before."
+  info:
+    header: "<c:header><bold>| Profiles of <player></bold></c:header> <c:muted>(<count>, <online>)"
+    line: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:muted>· island <island> · <playtime>"
+    line-active: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:success>(active)</c:success> <c:muted>· island <island> · <playtime>"
+  reset:
+    online: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is online. Kick them first (/kick), then reset."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't reset your own profile. Ask another admin or use the console."
+    no-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no profile in slot <c:value><slot></c:value><c:text>. See /profiles info <player>."
+    team-leader: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>leads a team island. Give it to another member first (/isadmin setowner)."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Reset <c:value><player></c:value><c:text>'s profile <c:value><profile></c:value> <c:text>(slot <slot>). They start fresh on their next login."

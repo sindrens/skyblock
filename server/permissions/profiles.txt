@@ -3,3 +3,7 @@
 
 # /profiles is for everyone (plugin default: true).
 # Free profile slots come with Firewing (slot 2) and Pyrelord (slot 3): granted in base.txt (Ranks V2 section) (card F2, RANKS-V2).
+
+# Staff (feedback 31 Oct 2026): helpers see a player's profiles, admins can reset one (offline, confirm, audited).
+lp group helper permission set skyblock.profiles.admin.info true
+lp group admin permission set skyblock.profiles.admin.reset true

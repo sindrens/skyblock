@@ -614,6 +614,107 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         }, main);
     }
 
+    // ================================================================== staff: info and reset (feedback 31 Oct 2026)
+
+    /** {@code /profiles info <player>}: every live profile of the account (slot, name, active, playtime, island). */
+    void staffInfo(org.bukkit.command.CommandSender staff, String name) {
+        org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(name);
+        if (target == null) {
+            module.msg.send(staff, "staff.unknown", Msg.p("player", name));
+            return;
+        }
+        UUID owner = target.getUniqueId();
+        core.database().async(c -> new Object[]{store.liveProfiles(c, owner), store.activeProfile(c, owner).orElse(null)})
+                .whenCompleteAsync((pair, error) -> {
+                    if (error != null) {
+                        core.plugin().getLogger().log(Level.WARNING, "Profiles: info of " + name + " failed", Database.cause(error));
+                        module.msg.send(staff, "error");
+                        return;
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<Profile> live = (List<Profile>) pair[0];
+                    UUID active = (UUID) pair[1];
+                    module.msg.send(staff, "staff.info.header", Msg.p("player", name), Msg.number("count", live.size()),
+                            Msg.p("online", target.isOnline() ? "online" : "offline"));
+                    var islands = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class);
+                    for (Profile p : live) {
+                        String island = islands.flatMap(i -> i.islandOf(p.id())).map(i -> i.name()).orElse("-");
+                        module.msg.send(staff, p.id().equals(active) ? "staff.info.line-active" : "staff.info.line",
+                                Msg.number("slot", p.slot()), Msg.p("profile", name(p)), Msg.p("island", island),
+                                Msg.p("playtime", net.skybornmc.skyblock.common.util.Format.duration(java.time.Duration.ofMillis(p.playtimeMillis()))),
+                                Msg.p("player", name));
+                    }
+                }, main);
+    }
+
+    /**
+     * {@code /profiles reset <player> [slot]}: replaces one profile (default the active one) with a fresh one in the same
+     * slot; every module cleans up its data through {@link ProfileDeletedEvent} (islands, money, skills, keys ...). Offline
+     * players only (the active profile's items live in the player file until the next login applies the empty state).
+     * A team island's leader is refused (transfer the island first), like a player's own delete.
+     */
+    void staffReset(org.bukkit.command.CommandSender staff, String name, Integer slot) {
+        org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(name);
+        if (target == null) {
+            module.msg.send(staff, "staff.unknown", Msg.p("player", name));
+            return;
+        }
+        if (target.isOnline()) {
+            module.msg.send(staff, "staff.reset.online", Msg.p("player", name));
+            return;
+        }
+        if (staff instanceof Player self && self.getUniqueId().equals(target.getUniqueId())) {
+            module.msg.send(staff, "staff.reset.self");
+            return;
+        }
+        UUID owner = target.getUniqueId();
+        core.database().async(c -> new Object[]{store.liveProfiles(c, owner), store.activeProfile(c, owner).orElse(null)})
+                .thenComposeAsync(pair -> {
+                    @SuppressWarnings("unchecked")
+                    List<Profile> live = (List<Profile>) pair[0];
+                    UUID active = (UUID) pair[1];
+                    Optional<Profile> pick = live.stream()
+                            .filter(p -> slot == null ? p.id().equals(active) : p.slot() == slot).findFirst();
+                    if (pick.isEmpty()) {
+                        module.msg.send(staff, "staff.reset.no-profile", Msg.p("player", name), Msg.p("slot", slot == null ? "active" : String.valueOf(slot)));
+                        return java.util.concurrent.CompletableFuture.completedFuture(null);
+                    }
+                    Profile profile = pick.get();
+                    boolean teamLeader = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                            .flatMap(i -> i.islandOf(profile.id()))
+                            .map(i -> i.team() && profile.id().equals(i.owner())).orElse(false);
+                    if (teamLeader) {
+                        module.msg.send(staff, "staff.reset.team-leader", Msg.p("player", name));
+                        return java.util.concurrent.CompletableFuture.completedFuture(null);
+                    }
+                    return core.database().transaction(c -> store.staffReset(c, owner, profile.id(), System.currentTimeMillis()));
+                }, main)
+                .whenCompleteAsync((reset, error) -> {
+                    if (error != null) {
+                        Throwable cause = Database.cause(error);
+                        if (cause instanceof ProfileStore.Refused) {
+                            module.msg.send(staff, "staff.reset.no-profile", Msg.p("player", name), Msg.p("slot", String.valueOf(slot)));
+                        } else {
+                            core.plugin().getLogger().log(Level.SEVERE, "Profiles: staff reset of " + name + " failed", cause);
+                            module.msg.send(staff, "error");
+                        }
+                        return;
+                    }
+                    if (reset == null) {
+                        return; // refused above, already told
+                    }
+                    remember(reset.gone().id(), owner, true);
+                    remember(reset.fresh().id(), owner, false);
+                    core.audit().logPlayer(AuditCategory.AUTH, "profile_staff_reset",
+                            staff instanceof Player p ? Actor.player(p) : Actor.system("console"), owner, name, null, null,
+                            Map.of("profile", reset.gone().id().toString(), "new_profile", reset.fresh().id().toString(),
+                                    "slot", reset.gone().slot(), "active", reset.wasActive()));
+                    Bukkit.getPluginManager().callEvent(new ProfileDeletedEvent(reset.gone()));
+                    module.msg.send(staff, "staff.reset.done", Msg.p("player", name), Msg.number("slot", reset.gone().slot()),
+                            Msg.p("profile", name(reset.gone())));
+                }, main);
+    }
+
     private void updateProfiles(UUID owner, List<Profile> live) {
         Session current = sessions.get(owner);
         if (current != null) {

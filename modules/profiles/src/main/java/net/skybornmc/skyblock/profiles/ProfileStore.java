@@ -267,6 +267,33 @@ final class ProfileStore {
         return profile;
     }
 
+    /** A staff reset: the old profile (now deleted), its fresh replacement in the same slot, and whether it was the active one. */
+    record StaffReset(Profile gone, Profile fresh, boolean wasActive) {
+    }
+
+    /**
+     * Staff reset of one profile (feedback 31 Oct 2026, "reset someone's profile in one go"): marks it deleted (its id is
+     * never used again), creates a fresh profile in the same slot and, when it was the active one, makes the fresh profile
+     * active with an empty pending state, so the next login starts with an empty inventory (the player file still holds
+     * the old items until then). The owner must be offline. One transaction.
+     *
+     * @throws Refused {@code gone}
+     */
+    StaffReset staffReset(Connection c, UUID owner, UUID id, long now) throws SQLException {
+        UUID active = lockAccount(c, owner).orElseThrow(() -> new Refused("gone"));
+        Profile profile = liveProfile(c, owner, id).orElseThrow(() -> new Refused("gone"));
+        Sql.update(c, "UPDATE profiles SET deleted_at = ?, settings = NULL WHERE id = ?", now, id);
+        Sql.update(c, "DELETE FROM profile_states WHERE profile_id = ?", id);
+        Profile fresh = insertProfile(c, owner, profile.slot(), now);
+        boolean wasActive = active.equals(id);
+        if (wasActive) {
+            Sql.update(c, "UPDATE profile_accounts SET active_profile = ? WHERE owner = ?", fresh.id(), owner);
+            Sql.update(c, "INSERT INTO profile_states (profile_id, owner, inventory, ender_chest, data, saved_at) VALUES (?, ?, NULL, NULL, NULL, ?)",
+                    fresh.id(), owner, now);
+        }
+        return new StaffReset(profile, fresh, wasActive);
+    }
+
     // ------------------------------------------------------------------ slots
 
     /** Stores a slot unlock once; false if the slot was unlocked already. */
