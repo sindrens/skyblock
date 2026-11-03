@@ -115,6 +115,23 @@ public final class IslandToolsConfig extends ModuleConfig {
             "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
             "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
             "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2", "axe:auto_sell:autosell:1:300:1",
+            // Hoe (owner 3 Nov 2026: more levels, cheaper steps, Auto-Sell after ~2 minutes of farming)
+            "hoe:auto_sell:autosell:1:20:1", "hoe:row:row:4:15:2.2", "hoe:extra_drops:drops:10:10:1.55",
+            "hoe:shard_finder:shards:10:10:1.55", "hoe:storage:storage:10:10:1.6", "hoe:efficiency:enchant=efficiency:5:8:1.7",
+            "hoe:fortune:enchant=fortune:3:20:2.2", "hoe:magnet:magnet:1:30:1", "hoe:haste:haste:2:30:2.5",
+            "sword:sharpness:enchant=sharpness:5:15:2.2", "sword:looting:enchant=looting:3:25:2.5",
+            "sword:sweeping:enchant=sweeping_edge:3:20:2.4", "sword:fire_aspect:enchant=fire_aspect:2:30:2.8",
+            "sword:knockback:enchant=knockback:2:10:2.5", "sword:extra_drops:drops:5:20:2.2", "sword:lifesteal:lifesteal:3:40:2.5",
+            "sword:shard_finder:shards:5:25:2.2");
+
+    /** The v2-v4 default (before the 3 Nov 2026 hoe rework). */
+    static final List<String> UPGRADES_V2 = List.of(
+            "pickaxe:efficiency:enchant=efficiency:5:10:2", "pickaxe:fortune:enchant=fortune:3:25:2.5", "pickaxe:haste:haste:2:40:3",
+            "pickaxe:magnet:magnet:1:60:1", "pickaxe:smelter:smelt:5:15:2", "pickaxe:extra_drops:drops:5:20:2.2",
+            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2", "pickaxe:auto_sell:autosell:1:300:1",
+            "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
+            "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
+            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2", "axe:auto_sell:autosell:1:300:1",
             "hoe:row:row:4:20:3", "hoe:storage:storage:5:15:2.5", "hoe:fortune:enchant=fortune:3:25:2.5",
             "hoe:extra_drops:drops:5:20:2.2", "hoe:magnet:magnet:1:60:1", "hoe:efficiency:enchant=efficiency:3:10:2",
             "hoe:haste:haste:2:40:3", "hoe:shard_finder:shards:5:25:2.2", "hoe:auto_sell:autosell:1:300:1",
@@ -196,7 +213,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
@@ -207,6 +224,7 @@ public final class IslandToolsConfig extends ModuleConfig {
                 "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)),
                 // v3 (owner 3 Nov 2026 20:31, "island tools everywhere, including the Depths")
                 4, java.util.Map.of("shards.chance-hoe", ValueChange.of(1.0, 3.0), "growth.label", ValueChange.of(true, false)),
+                5, java.util.Map.of("upgrades", ValueChange.of(UPGRADES_V2, d.upgrades)),
                 3, java.util.Map.of("only-on-island", ValueChange.of(true, false),
                         "own-inventory-worlds", ValueChange.of(List.of("depths"), List.of()),
                         "put-away-worlds", ValueChange.of(List.of("depths"), List.of())));
