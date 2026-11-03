@@ -119,13 +119,16 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ starter kit, forge, menu
 
-    @Setting(path = "world-tools.enabled", desc = "Owner 3 Nov 2026: Depths tools exist only in the Depths. Outside it they are put away (same slots) and come back when you enter the Depths.")
+    @Setting(path = "world-tools.enabled", desc = "Owner 3 Nov 2026: the Depths has its own inventory (island and spawn share the other one). Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island.")
     public boolean worldToolsEnabled = true;
 
     @Setting(path = "world-tools.depths-worlds", desc = "Worlds where Depths tools are carried (everywhere else they are put away).")
     public List<String> worldToolsDepthsWorlds = List.of("depths");
 
-    @Setting(path = "world-tools.auto-starter", desc = "A player who enters the Depths without any Depths tool gets the starter kit automatically (with the starter-kit cooldown).")
+    @Setting(path = "world-inventory.depths-items", desc = "Items of a profile's first Depths inventory, 'MATERIAL amount action'. Action satchel = opens /satchel, dungeon = opens /dungeon, - = a plain item. Names: tools messages world-inventory.item.<action>.")
+    public List<String> worldInventoryDepthsItems = List.of("LEATHER 1 satchel", "RECOVERY_COMPASS 1 dungeon", "TORCH 16 -");
+
+    @Setting(path = "world-tools.auto-starter", desc = "The first Depths inventory of a profile also gets the starter tools (once per profile, see starter-kit.once).")
     public boolean worldToolsAutoStarter = true;
 
     @Setting(path = "starter-kit.cooldown-hours", desc = "Hours between two starter kit claims (owner: 24). Only missing pieces are given.", min = 0, max = 720)

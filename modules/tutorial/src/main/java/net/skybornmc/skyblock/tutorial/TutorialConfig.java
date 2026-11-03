@@ -111,6 +111,9 @@ public final class TutorialConfig extends ModuleConfig {
     @Setting(path = "guide.update-ticks", desc = "How often the boss bar compass and action bar update (ticks).", min = 2, max = 40)
     public int updateTicks = 5;
 
+    @Setting(path = "guide.menu-hint", desc = "Owner 3 Nov 2026: every menu shows the current tutorial step (a book in a free bottom-row slot), because chat is hard to read while a menu is open.")
+    public boolean menuHint = true;
+
     @Setting(path = "guide.bossbar", desc = "Show the boss bar compass.")
     public boolean bossbar = true;
 

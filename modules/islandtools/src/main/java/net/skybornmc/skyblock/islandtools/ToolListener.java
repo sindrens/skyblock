@@ -402,6 +402,12 @@ final class ToolListener implements Listener {
         m.placeForWorld(event.getPlayer());
     }
 
+    /** Owner 3 Nov 2026: the Depths has its own inventory; after a swap back to the island set the tools are checked again. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSwap(net.skybornmc.skyblock.common.player.InventorySwappedEvent event) {
+        m.placeForWorld(event.getPlayer());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();

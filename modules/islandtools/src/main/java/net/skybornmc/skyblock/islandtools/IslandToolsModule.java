@@ -334,8 +334,9 @@ public final class IslandToolsModule implements SkyblockModule {
 
     /** T1/D6: in a put-away world the tools leave the inventory (slot remembered); on the island they come back. */
     void placeForWorld(Player p) {
-        if (!loaded(p) || !config.enabled) {
-            return;
+        if (!loaded(p) || !config.enabled || net.skybornmc.skyblock.common.player.InventorySwappedEvent.pending(p)
+                || config.ownInventoryWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()))) {
+            return; // the Depths set never holds island tools; a waiting swap calls this again when it is done
         }
         boolean away = putAwayWorld(p);
         boolean onIsland = islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(false);

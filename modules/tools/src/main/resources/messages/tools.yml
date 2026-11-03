@@ -384,9 +384,18 @@ forge:
 # Starter kit (Quartermaster). <count> <hours> <time>
 # Owner 3 Nov 2026: Depths tools only in the Depths (action bar). <count>
 world-tools:
-  put-away: "<c:muted>Your Depths tools wait for you in the Depths (<count>)"
-  given-back: "<c:text>Your Depths tools are back (<c:value><count></c:value>)"
   forge-in-depths: "<prefix><c:text>Your Depths tools are in the Depths, so forging happens there: the smith stands at the Depths gate. <click:run_command:'/warp depths'><hover:show_text:'<c:text>Go to the Depths'><c:action>[Go to the Depths]</c:action></hover></click>"
+
+world-inventory:
+  to-depths: "<c:text>Depths inventory <c:muted>· your island items wait on the island"
+  to-surface: "<c:text>Island inventory <c:muted>· your Depths items wait in the Depths"
+  item:
+    satchel:
+      name: "<c:value>Satchel"
+      lore: "<c:muted>Right-click: open your satchel (everything you mine goes here)"
+    dungeon:
+      name: "<c:value>Dungeon Map"
+      lore: "<c:muted>Right-click: pick a mine, forest or combat tier"
 
 starter:
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><count></c:value> starter tool(s). Claim missing ones again in <hours> h."

@@ -73,6 +73,7 @@ public final class TutorialModule implements SkyblockModule {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         targets = new Targets(this);
         guides = new Guides(this);
+        core.menus().hints(guides::menuHint);
         engine = new TutorialEngine(this);
         starter = new StarterKitContents(this);
         listener = new TutorialListener(this);
@@ -140,6 +141,7 @@ public final class TutorialModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        core.menus().hints(null);
         if (cameras != null) {
             cameras.stopAll(); // first: everyone in a camera gets game mode and position back
         }

@@ -285,6 +285,12 @@ final class MenuItem implements Listener {
         ensureLater(event.getPlayer());
     }
 
+    /** The Depths has its own inventory (tools world-tools): the star goes into the new set too. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventorySwap(net.skybornmc.skyblock.common.player.InventorySwappedEvent event) {
+        ensureLater(event.getPlayer());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameMode(PlayerGameModeChangeEvent event) {
         ensureLater(event.getPlayer());

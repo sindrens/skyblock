@@ -353,6 +353,28 @@ final class Guides {
         };
     }
 
+    /**
+     * Owner 3 Nov 2026 ("tutorial text in chat is hard to see when a GUI is open, add the text inside the GUI"): the
+     * current step as one book in a free bottom-row slot of every menu (common MenuService hints). Null when no step.
+     */
+    org.bukkit.inventory.ItemStack menuHint(Player player) {
+        if (!module.config().menuHint) {
+            return null;
+        }
+        Progress p = module.engine().progress(player.getUniqueId());
+        if (p == null || p.state != State.ACTIVE || p.step == null) {
+            return null;
+        }
+        String step = p.step;
+        TutorialFlow flow = module.engine().flow();
+        Component hint = module.msg().has("steps." + step + ".hint")
+                ? module.msg().component(player, "steps." + step + ".hint", counts(p, step)) : Component.empty();
+        return module.core().menus().item(Material.KNOWLEDGE_BOOK, player, TutorialModule.ID, "menu-hint",
+                Msg.number("number", flow.number(step)), Msg.number("total", flow.size()),
+                Msg.c("objective", module.msg().component(player, "steps." + step + ".objective")),
+                Msg.c("hint", hint), Msg.number("count", p.count(step)), Msg.number("needed", needed(step)));
+    }
+
     private TagResolver[] counts(Progress p, String step) {
         return new TagResolver[]{Msg.number("count", p.count(step)), Msg.number("needed", needed(step))};
     }

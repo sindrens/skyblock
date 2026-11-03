@@ -1,6 +1,15 @@
 # Changelog
 
 ## [Unreleased]
+### v5 owner fixes (3 Nov 09:17)
+- **The Depths has its own inventory**: the island and spawn share one inventory, the Depths has another. Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island and island items never reach the Depths (`tools.yml world-tools.*`, table `world_inventory`). The first Depths visit of a profile starts with a Satchel (right-click opens /satchel), a Dungeon Map (opens /dungeon), 16 torches (`world-inventory.depths-items`) and the starter tools. Island tools are still put away at spawn and come back on the island. Profiles can't be switched inside the Depths (profiles config v2).
+- **Hunger is off everywhere** (`essentials.yml hunger-disabled`).
+- **Tutorial text inside menus**: every menu shows the current tutorial step as a book in a free bottom-row slot (`tutorial.yml guide.menu-hint`), so it can be read while a menu is open.
+- **No free starter kit**: the starter tools are given once per profile (`starter-kit.once`), the first time you enter the Depths.
+- **The tutorial forge is no longer free**; the Forge shows what is missing. **Forge costs are lower**: money at 15% and materials at 25% of the catalog (`forge.money-percent`, `forge.materials-percent`, editable in /admin).
+- **The island hoe leaves unripe crops alone** (an action bar says so).
+- **/shop opens the island shop again** (a command redirect wins over the store plugin's /shop).
+- Crates: a tiered crate with no draws can't break an open any more.
 ### v5 batch 5: economy
 - **Every shop item can be sold**: 126 shop items that had no price (logs, stones, leaves, flowers, saplings, glass, concrete, terracotta, decoration ...) get one at their shop price / 8 (`sell.yml roots`), always under the shop's 7.5x rule; crafted items are still capped at their recipe price, so nothing can be bought, crafted and sold for profit.
 - **/shop search**: `/shop stone`, `/shop string`, `/shop spaw` (spawners), `/shop oak log`, one typo allowed; one clear match opens its buy screen, several open a results page (best first). Tab completion lists tabs and items.

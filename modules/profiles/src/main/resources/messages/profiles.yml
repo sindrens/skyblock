@@ -111,7 +111,7 @@ switch:
   changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
   locked: "<prefix><c:error><sym:cross> That slot is locked, so you can't switch to it. You can still delete it."
   cooldown: "<prefix><c:error><sym:cross> Wait <c:value><time></c:value> before you switch again."
-  blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here."
+  blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here. Leave the Depths first (it has its own inventory)."
   dead: "<prefix><c:error><sym:cross> Respawn first."
   cursor: "<prefix><c:error><sym:cross> Put the item on your cursor away first."
   refused: "<prefix><c:error><sym:cross> You can't switch profiles right now."

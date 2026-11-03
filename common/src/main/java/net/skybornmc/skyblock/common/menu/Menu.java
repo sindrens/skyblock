@@ -248,6 +248,20 @@ public abstract class Menu implements InventoryHolder {
         set(slot, new MenuButton(item, null));
     }
 
+    /** True when nothing is on {@code slot} (no item and no button). Framework use (menu hints). */
+    final boolean emptyAt(int slot) {
+        if (inventory == null || slot < 0 || slot >= inventory.getSize() || buttons.containsKey(slot)) {
+            return false;
+        }
+        ItemStack s = inventory.getItem(slot);
+        return s == null || s.isEmpty();
+    }
+
+    /** Framework use: the tutorial hint (display only). */
+    final void setHint(int slot, ItemStack item) {
+        set(slot, item);
+    }
+
     /**
      * Shows a "Loading…" item now and the real button when {@code future} completes (on the main thread, only if
      * this menu is still open). A failed future shows an error item.
@@ -326,6 +340,9 @@ public abstract class Menu implements InventoryHolder {
             tilesDirty = true;
         }
         build();
+        if (service != null) {
+            service.applyHint(this);
+        }
     }
 
     /** Opens {@code menu} for the same viewer with this menu as its parent (Back returns here). */

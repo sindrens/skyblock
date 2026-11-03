@@ -46,6 +46,11 @@ step-done:
 hint:
   chat: "<prefix><c:ember>Tip</c:ember> <c:muted><sym:dot></c:muted> <hint>"
 
+# The current step inside every menu (a book in a free bottom-row slot): chat is hard to read while a menu is open.
+menu-hint:
+  name: "<c:flame><bold>Tutorial</bold></c:flame> <c:muted>· step <number>/<total>"
+  lore: ["<c:value><objective>", "<hint>"]
+
 # One section per step. name: short name (menus, locks). objective: the scoreboard Next line and the boss bar.
 # target: name on the compass. hint: the wait hint (one chat line). title: shown when the step starts (<needed> =
 # the step's count). unlocked: added to the "done" chat line. lore: description in the steps menu.
@@ -129,11 +134,11 @@ steps:
     name: "Forge"
     objective: "Forge your pickaxe"
     target: "Forge"
-    hint: "<c:text>Follow Pip to the <c:value>Forge</c:value><c:text>, click the smith and forge your pickaxe. This one is free!"
+    hint: "<c:text>Follow Pip to the <c:value>Forge</c:value><c:text>, click the smith and forge your pickaxe. The Forge shows what is still missing: mine and sell until every line is green."
     title:
       title: "<c:flame><bold>Forge your pickaxe</bold>"
-      subtitle: "<c:text>Your first forge is free"
-    lore: ["<c:text>Open the Forge and forge your", "<c:text>pickaxe to tier 2. It's free now."]
+      subtitle: "<c:text>Bring loot and money"
+    lore: ["<c:text>Open the Forge and forge your", "<c:text>pickaxe to tier 2 (it shows what you need)."]
   help:
     name: "Help"
     objective: "Talk to the Depths Guide"

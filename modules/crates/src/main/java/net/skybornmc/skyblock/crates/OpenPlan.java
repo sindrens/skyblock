@@ -114,7 +114,7 @@ final class OpenPlan {
         RollEngine.Batch batch = crate.tiered()
                 ? RollEngine.rollTiered(crate, keys.total(), rng, ctx.owns())
                 : RollEngine.roll(crate, counter, keys.total(), rng, ctx.owns());
-        int perOpen = crate.tiered() ? crate.perOpen() : 1;
+        int perOpen = crate.tiered() ? Math.max(1, crate.perOpen()) : 1; // a tiered crate with no draws must not divide by 0
         List<Grant> grants = new ArrayList<>(batch.rolls().size());
         for (int i = 0; i < batch.rolls().size(); i++) {
             // A tiered open gives several rewards from one key: they all share that key's bound flag.

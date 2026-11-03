@@ -273,6 +273,7 @@ public final class MenuService implements Listener {
         menu.plainTitle = title;
         try {
             menu.build();
+            applyHint(menu);
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
             menu.detach();
@@ -753,6 +754,44 @@ public final class MenuService implements Listener {
      * See {@link Menu#navBar()}: Back (when the menu has a parent and is not the main menu) and Close. PERF2: the two
      * items are built once per opening and reused by every live refresh.
      */
+    private volatile java.util.function.Function<Player, ItemStack> hints;
+
+    /**
+     * Owner 3 Nov 2026 ("tutorial text in chat is hard to see when a GUI is open, add the text inside the GUI"): a
+     * provider of one display-only item (the tutorial's current step) that every menu shows in a free bottom-row slot.
+     * {@code null} (or a provider returning null) shows nothing. One provider; the tutorial module sets it.
+     */
+    public void hints(java.util.function.Function<Player, ItemStack> provider) {
+        this.hints = provider;
+    }
+
+    /** Puts the hint item into the first empty bottom-row slot (never over a button). Called after every build. */
+    void applyHint(Menu menu) {
+        java.util.function.Function<Player, ItemStack> provider = hints;
+        int rows = menu.rows();
+        if (provider == null || rows < 3 || rows > 6) {
+            return;
+        }
+        ItemStack item;
+        try {
+            item = provider.apply(menu.viewer());
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "The menu hint provider failed", e);
+            return;
+        }
+        if (item == null || item.isEmpty()) {
+            return;
+        }
+        int bar = (rows - 1) * 9;
+        int[] order = rows == 3 ? new int[]{23, 24, 21} : new int[]{bar + 3, bar + 5, bar + 6, bar + 2, bar + 1};
+        for (int slot : order) {
+            if (menu.emptyAt(slot)) {
+                menu.setHint(slot, item);
+                return;
+            }
+        }
+    }
+
     void applyNavBar(Menu menu) {
         int rows = menu.rows();
         Player viewer = menu.viewer();

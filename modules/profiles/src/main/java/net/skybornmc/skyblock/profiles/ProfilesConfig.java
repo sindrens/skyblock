@@ -21,7 +21,19 @@ public final class ProfilesConfig extends ModuleConfig {
     public int switchCooldownSeconds = 10;
 
     @Setting(path = "switch.blocked-worlds", desc = "Worlds where switching is not allowed (e.g. the boss arena). Combat and freeze are checked by their modules.")
-    public List<String> blockedWorlds = List.of();
+    public List<String> blockedWorlds = List.of("depths");
+
+    /** Version 2 (owner 3 Nov 2026): the Depths has its own inventory, so switching waits until you are out of it (untouched lists only). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("switch.blocked-worlds",
+                ValueChange.of(List.of(), List.of("depths"))));
+    }
 
     @Setting(path = "switch.timeout-seconds", desc = "A switch that waits longer than this for the database is cancelled (nothing changes).",
             min = 2, max = 60)
