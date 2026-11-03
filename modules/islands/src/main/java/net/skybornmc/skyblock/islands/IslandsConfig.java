@@ -331,12 +331,21 @@ public final class IslandsConfig extends ModuleConfig {
             + "are online on that profile (restorable from the backup; offline members keep their items, see OPEN_QUESTIONS).")
     public boolean profileResetItems = true;
 
+    @Setting(path = "lifecycle.profile-reset.on-join", desc = "Feedback 3 Nov 2026: replacing your solo island to join another one "
+            + "resets your profile (inventory and ender chest emptied, money taken; restorable backup) and you start with join-money.")
+    public boolean profileResetOnJoin = true;
+
+    @Setting(path = "lifecycle.profile-reset.join-money", desc = "Money a player has right after joining an island (topped up to this; 0 = off).",
+            min = 0, max = 1_000_000_000)
+    public long joinMoney = 1_000;
+
     /** Owner answer 591: does removing an island for {@code reason} reset its members' profiles? */
     public boolean resetsProfiles(String reason) {
         return switch (reason) {
             case IslandStore.REASON_DISBAND -> profileResetOnDisband;
             case IslandStore.REASON_RESET -> profileResetOnReset;
             case IslandStore.REASON_DELETE -> profileResetOnDelete;
+            case IslandStore.REASON_JOIN -> profileResetOnJoin;
             default -> false;
         };
     }

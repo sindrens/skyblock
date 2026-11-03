@@ -419,6 +419,33 @@ final class MemberManager {
                 viewer -> msg.send(viewer, "accept.replace.cancelled")).twoStep());
     }
 
+    /**
+     * Feedback 3 Nov 2026 ("the player joining an island has to start with 1k dollars"): a few seconds after the join (the
+     * profile reset of a replaced solo island takes the money first), the balance is topped up to join-money. Once per
+     * island and profile (idempotency key).
+     */
+    private void topUpJoinMoney(Player player, Island island) {
+        long target = config().joinMoney;
+        var economy = core.services().optional(net.skybornmc.skyblock.common.economy.EconomyService.class);
+        if (target <= 0 || economy.isEmpty()) {
+            return;
+        }
+        UUID profile = islands.key(player);
+        var account = net.skybornmc.skyblock.common.economy.AccountRef.player(profile);
+        core.scheduler().later("islands:join-money", 60L, () -> economy.get()
+                .balance(account, net.skybornmc.skyblock.common.economy.Currency.MONEY)
+                .thenCompose(current -> current >= target
+                        ? java.util.concurrent.CompletableFuture.<net.skybornmc.skyblock.common.economy.TxResult>completedFuture(null)
+                        : economy.get().execute(net.skybornmc.skyblock.common.economy.Transaction.deposit(account,
+                                        net.skybornmc.skyblock.common.economy.Currency.MONEY, target - current, "island_join_money")
+                                .actor(Actor.system("islands")).reference("island join " + island.id())
+                                .idempotencyKey("island_join_money:" + island.id() + ":" + profile)))
+                .exceptionally(e -> {
+                    core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Islands: join money for " + player.getName() + " failed", e);
+                    return null;
+                }));
+    }
+
     private void joined(Player player, MemberStore.AcceptResult.Joined joined) {
         invites.removeTarget(islands.key(player));
         Island island = islands.byId(joined.islandId());
@@ -442,6 +469,7 @@ final class MemberManager {
         }
         msg.title(player, "accept.title", Msg.p("island", name));
         core.sounds().play(player, "unlock");
+        topUpJoinMoney(player, island);
         if (portalJoins.remove(player.getUniqueId())) {
             islands.teleportHome(player); // TQ19: joined from the island portal choice
         }
