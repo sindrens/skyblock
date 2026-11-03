@@ -3,7 +3,7 @@
 ## [Unreleased]
 ### v5 owner fixes (3 Nov 09:17)
 - **The Depths has its own inventory**: the island and spawn share one inventory, the Depths has another. Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island and island items never reach the Depths (`tools.yml world-tools.*`, table `world_inventory`). The first Depths visit of a profile starts with a Satchel (right-click opens /satchel), a Dungeon Map (opens /dungeon), 16 torches (`world-inventory.depths-items`) and the starter tools. Island tools are still put away at spawn and come back on the island. Profiles can't be switched inside the Depths (profiles config v2).
-- **Hunger is off everywhere** (`essentials.yml hunger-disabled`).
+- **Hunger is off everywhere** (`essentials.yml hunger.disabled`).
 - **Tutorial text inside menus**: every menu shows the current tutorial step as a book in a free bottom-row slot (`tutorial.yml guide.menu-hint`), so it can be read while a menu is open.
 - **No free starter kit**: the starter tools are given once per profile (`starter-kit.once`), the first time you enter the Depths.
 - **The tutorial forge is no longer free**; the Forge shows what is missing. **Forge costs are lower**: money at 15% and materials at 25% of the catalog (`forge.money-percent`, `forge.materials-percent`, editable in /admin).
