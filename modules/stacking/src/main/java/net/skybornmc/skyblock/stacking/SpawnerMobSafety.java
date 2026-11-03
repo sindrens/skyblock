@@ -112,8 +112,9 @@ final class SpawnerMobSafety implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLoad(EntitiesLoadEvent event) {
         for (Entity e : event.getEntities()) {
-            if (e instanceof Mob mob && spawnerMob(mob) && mob.isAware()) {
+            if (e instanceof Mob mob && spawnerMob(mob) && (mob.isAware() || mob.hasAI())) {
                 mob.setAware(false);
+                mob.setAI(false);
             }
         }
     }

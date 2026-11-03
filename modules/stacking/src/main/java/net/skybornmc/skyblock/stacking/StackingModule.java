@@ -164,7 +164,8 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
                 id -> isMobType(entityType(id)), problems::add);
         steps = SpawnerSteps.parse(config.speedSteps, config.mobSteps, config.lootSteps, config.spawnerIntervalFloorSeconds, problems::add);
         dropItems.load(config.spawnerDropItems, problems::add);
-        drops = SpawnerDrops.parse(config.spawnerDrops, id -> isMobType(entityType(id)), id -> dropItems.ids().contains(id), problems::add);
+        drops = SpawnerDrops.parse(config.spawnerDrops, id -> isMobType(entityType(id)),
+                id -> dropItems.ids().contains(id) || SpawnerDrops.vanilla(id) != null, problems::add);
         for (String mob : tiers.sellableTypes()) {
             if (drops.of(mob).isEmpty()) {
                 problems.add("stacking.yml → spawners.drops: sold spawner mob '" + mob + "' has no custom drop (it keeps vanilla loot)");
@@ -533,7 +534,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
             return 0;
         }
         double base = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class)
-                .flatMap(s -> s.price("custom:" + drop.get().item())).map(p -> (double) p.base()).orElse(0.0);
+                .flatMap(s -> s.price(SpawnerDrops.priceKey(drop.get().item()))).map(p -> (double) p.base()).orElse(0.0);
         if (base <= 0) {
             return 0;
         }

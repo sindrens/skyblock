@@ -21,6 +21,23 @@ final class SpawnerDrops {
 
     static final SpawnerDrops EMPTY = new SpawnerDrops(Map.of());
 
+    /**
+     * Owner 3 Nov 2026 ("zombie rotten flesh, blaze blaze rods"): a drop can be a plain vanilla item ({@code zombie:rotten_flesh:1})
+     * instead of a custom one; the island's loot upgrade and the payback math work the same. The vanilla material, or null.
+     */
+    static org.bukkit.Material vanilla(String item) {
+        if (item == null || item.startsWith("mobdrop_")) {
+            return null;
+        }
+        org.bukkit.Material m = org.bukkit.Material.matchMaterial(item);
+        return m != null && m.isItem() && !m.isAir() ? m : null;
+    }
+
+    /** The sell.yml key of a drop: the vanilla name, or {@code custom:<id>}. */
+    static String priceKey(String item) {
+        return vanilla(item) != null ? item.toLowerCase(java.util.Locale.ROOT) : "custom:" + item;
+    }
+
     private final Map<String, Drop> byMob;
 
     private SpawnerDrops(Map<String, Drop> byMob) {

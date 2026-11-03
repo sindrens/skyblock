@@ -413,6 +413,9 @@ final class MobStacker implements Listener {
         living.getPersistentDataContainer().set(StackKeys.SPAWNER_MOB, PersistentDataType.BYTE, (byte) 1);
         if (living instanceof Mob mob) {
             mob.setAware(false); // owner S7: no AI for spawner mobs
+            // Owner 3 Nov 2026 ("blaze and ghast don't fly, guardian no jump, everyone stands still"): no AI at all, so no
+            // flying, flopping, knockback or drifting; they can still be hit and killed.
+            mob.setAI(false);
             mob.getEquipment().clear(); // owner SK9: vanilla loot only
         }
         if (living instanceof Slime slime) {
@@ -656,10 +659,17 @@ final class MobStacker implements Listener {
     private void customDrop(SpawnerDrops.Drop drop, Location at, long killed, long rolls, List<Drop> out) {
         double loot = module.lootMultiplier(at);
         long amount = SpawnerDrops.amount(killed, rolls, drop.perMob(), loot, () -> ThreadLocalRandom.current().nextDouble());
-        if (amount <= 0 || module.core().items().get(drop.item()).isEmpty()) {
+        if (amount <= 0) {
             return;
         }
-        out.add(new Drop(module.core().items().create(drop.item(), 1, "spawner", null), amount));
+        if (module.core().items().get(drop.item()).isPresent()) {
+            out.add(new Drop(module.core().items().create(drop.item(), 1, "spawner", null), amount));
+            return;
+        }
+        org.bukkit.Material vanilla = SpawnerDrops.vanilla(drop.item());
+        if (vanilla != null) {
+            out.add(new Drop(new ItemStack(vanilla), amount));
+        }
     }
 
     /**

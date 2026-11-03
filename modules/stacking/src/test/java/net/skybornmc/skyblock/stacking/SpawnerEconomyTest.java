@@ -100,13 +100,17 @@ class SpawnerEconomyTest {
         for (String line : c.spawnerDropItems) {
             items.add(line.substring(0, line.indexOf('=')));
         }
-        SpawnerDrops drops = SpawnerDrops.parse(c.spawnerDrops, mob -> true, items::contains, problems::add);
+        SpawnerDrops drops = SpawnerDrops.parse(c.spawnerDrops, mob -> true, id -> items.contains(id) || SpawnerDrops.vanilla(id) != null,
+                problems::add);
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertEquals(23, drops.all().size(), "20 earned mobs + 3 premium (ECON-TABLES A)");
         YamlConfiguration sell = YamlConfiguration.loadConfiguration(new File("../economy/src/main/resources/sell.yml"));
         List<String> unpriced = new ArrayList<>();
         for (SpawnerDrops.Drop d : drops.all().values()) {
-            if (sell.getDouble("custom-items.spawner-drops." + d.item(), 0) <= 0) {
+            double price = SpawnerDrops.vanilla(d.item()) != null
+                    ? sell.getDouble("categories.mob-loot." + d.item(), 0)
+                    : sell.getDouble("custom-items.spawner-drops." + d.item(), 0);
+            if (price <= 0) {
                 unpriced.add(d.item());
             }
         }

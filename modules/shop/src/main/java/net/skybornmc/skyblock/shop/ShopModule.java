@@ -827,6 +827,17 @@ public final class ShopModule implements SkyblockModule, Listener {
      * ECON-SPAWNERS step 13: extra Information rows of a spawner tile: its drop and today's base sell price, and how many
      * of the tier the viewer's island holds of its cap. Called from {@code ShopTooltips.spawnerRows} (one seam line).
      */
+    /** "rotten_flesh" → "Rotten Flesh" (vanilla spawner drops have no name in messages/stacking.yml). */
+    static String vanillaName(String id) {
+        StringBuilder out = new StringBuilder();
+        for (String w : id.toLowerCase(Locale.ROOT).split("_")) {
+            if (!w.isEmpty()) {
+                out.append(out.isEmpty() ? "" : " ").append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
+            }
+        }
+        return out.toString();
+    }
+
     void spawnerRows(net.skybornmc.skyblock.common.item.LoreBuilder.Section info, Player viewer, ShopCatalog.Item item) {
         Optional<StackingService> st = stacking();
         if (st.isEmpty() || !item.spawner()) {
@@ -834,10 +845,11 @@ public final class ShopModule implements SkyblockModule, Listener {
         }
         st.get().spawnerDropItem(item.mob()).ifPresent(drop -> {
             String name = core.messages().raw("stacking", "drops." + drop);
+            boolean custom = drop.startsWith("mobdrop_") || org.bukkit.Material.matchMaterial(drop) == null;
             if (name == null || name.isBlank() || name.startsWith("[missing")) {
-                name = drop;
+                name = custom ? drop : vanillaName(drop);
             }
-            long price = core.services().optional(SellService.class).flatMap(s -> s.price("custom:" + drop))
+            long price = core.services().optional(SellService.class).flatMap(s -> s.price(custom ? "custom:" + drop : drop))
                     .map(p -> Math.round((double) p.base())).orElse(0L);
             info.row(raw("lore.spawner-drop"), net.skybornmc.skyblock.common.item.LoreBuilder.fill(raw("lore.spawner-drop-value"),
                     Map.of("item", name, "price", net.skybornmc.skyblock.common.util.Format.number(price))));

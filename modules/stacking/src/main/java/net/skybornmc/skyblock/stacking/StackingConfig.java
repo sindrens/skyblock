@@ -142,7 +142,18 @@ public final class StackingConfig extends ModuleConfig {
     public int unlockSaveSeconds = 30;
 
     @Setting(path = "spawners.drops", desc = "Custom drop per spawner mob: mob:item id:amount per mob (ECON-SPAWNERS S6). Spawner mobs with a line drop only this item; others keep vanilla loot.", level = Setting.Level.OWNER)
-    public List<String> spawnerDrops = List.of("pig:mobdrop_pig:1", "cow:mobdrop_cow:1", "chicken:mobdrop_chicken:1", "sheep:mobdrop_sheep:1",
+    public List<String> spawnerDrops = List.of(
+            // Owner 3 Nov 2026: each mob drops its own vanilla item; the amount per kill keeps the income of the balance
+            // model (old custom drop price / sell price of the item). Premium mobs keep their custom drop.
+            "pig:porkchop:0.5", "cow:beef:0.5", "chicken:chicken:0.5", "sheep:mutton:0.5", "rabbit:rabbit:0.5",
+            "zombie:rotten_flesh:0.55", "skeleton:bone:0.55", "spider:string:0.55", "cave_spider:spider_eye:0.55",
+            "slime:slime_ball:0.55", "creeper:gunpowder:0.48", "witch:glowstone_dust:0.48", "drowned:rotten_flesh:0.89",
+            "husk:rotten_flesh:0.89", "stray:bone:0.89", "blaze:blaze_rod:0.49", "enderman:ender_pearl:0.49",
+            "guardian:prismarine_shard:0.49", "hoglin:porkchop:3", "zombified_piglin:rotten_flesh:1.67",
+            "iron_golem:iron_ingot:4.4", "wither_skeleton:mobdrop_wither_skeleton:1", "evoker:mobdrop_evoker:1");
+
+    /** The custom-item drops before 3 Nov 2026 (version 3 moves untouched lists to the vanilla items). */
+    static final List<String> SPAWNER_DROPS_V2 = List.of("pig:mobdrop_pig:1", "cow:mobdrop_cow:1", "chicken:mobdrop_chicken:1", "sheep:mobdrop_sheep:1",
             "rabbit:mobdrop_rabbit:1", "zombie:mobdrop_zombie:1", "skeleton:mobdrop_skeleton:1", "spider:mobdrop_spider:1",
             "cave_spider:mobdrop_cave_spider:1", "slime:mobdrop_slime:1", "creeper:mobdrop_creeper:1", "witch:mobdrop_witch:1",
             "drowned:mobdrop_drowned:1", "husk:mobdrop_husk:1", "stray:mobdrop_stray:1", "blaze:mobdrop_blaze:1",
@@ -256,7 +267,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -270,7 +281,8 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of(
+        return java.util.Map.of(3, java.util.Map.of("spawners.drops", ValueChange.of(SPAWNER_DROPS_V2, new StackingConfig().spawnerDrops)),
+                2, java.util.Map.of(
                 "spawners.stack-max", ValueChange.of(512, 32),
                 "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "squid"),
                         List.of("zombie", "skeleton", "spider", "cave_spider", "slime")),
