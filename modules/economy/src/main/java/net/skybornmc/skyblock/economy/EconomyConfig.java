@@ -441,7 +441,7 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "sell.skip-hotbar-default", desc = "QUICK1 sell protection: the default of the /settings switch "
             + "\"Sell all skips hotbar\" (/sell all and \"Sell inventory\" leave hotbar slots 1-9 alone; /sell hand and "
             + "putting items into the sell chest by hand still sell them).")
-    public boolean sellSkipHotbarDefault = true;
+    public boolean sellSkipHotbarDefault = false; // feedback 3 Nov 2026: /sell all also sells the hotbar
 
     /** The icon list before I9 (GUI-P2 7.2); an untouched live list moves to the new one (version 5). */
     static final List<String> OLD_ICONS = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "credits:EMERALD",
@@ -466,12 +466,13 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)));
+        return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
+                6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)));
     }
 
     @Override

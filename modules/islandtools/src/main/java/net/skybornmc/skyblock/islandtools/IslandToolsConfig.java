@@ -30,7 +30,7 @@ public final class IslandToolsConfig extends ModuleConfig {
     public double shardAxe = 2;
 
     @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 shard per ripe crop harvested with the island hoe.", min = 0, max = 100)
-    public double shardHoe = 1;
+    public double shardHoe = 3; // feedback 3 Nov 2026: the hoe earns shards from the start
 
     @Setting(path = "shards.chance-sword", desc = "Percent chance of 1 shard per mob killed with the island sword.", min = 0, max = 100)
     public double shardSword = 4;
@@ -71,6 +71,13 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "growth.step-floor-ms", desc = "Shortest time between two stages of one crop (milliseconds).", min = 100, max = 60000)
     public long growthStepFloorMillis = 500;
 
+    @Setting(path = "growth.stage-seconds", desc = "Feedback 3 Nov 2026: seconds per growth stage of an island crop without upgrades "
+            + "(the crop-growth upgrade makes it faster, down to step-floor-ms).", min = 0.5, max = 600)
+    public double growthStageSeconds = 3;
+
+    @Setting(path = "growth.bonemeal-stages", desc = "Stages one bone meal adds to an island crop (1 to this, random).", min = 1, max = 7)
+    public int growthBonemealStages = 3;
+
     @Setting(path = "growth.budget", desc = "Most crops grown per half second (the rest wait for the next run; keeps the tick time flat).", min = 10, max = 10000)
     public int growthBudget = 600;
 
@@ -78,7 +85,7 @@ public final class IslandToolsConfig extends ModuleConfig {
     public boolean growthSound = true;
 
     @Setting(path = "growth.label", desc = "Looking at a crop on an island shows its stage and the time to the next one (only you see it).")
-    public boolean growthLabel = true;
+    public boolean growthLabel = false; // feedback 3 Nov 2026: no hologram over crops
 
     @Setting(path = "growth.label-range", desc = "How far you can look at a crop for its label (blocks).", min = 1, max = 10)
     public int growthLabelRange = 5;
@@ -185,7 +192,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
@@ -195,6 +202,7 @@ public final class IslandToolsConfig extends ModuleConfig {
         return java.util.Map.of(2, java.util.Map.of("tier-costs", ValueChange.of(TIER_COSTS_V1, d.tierCosts),
                 "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)),
                 // v3 (owner 3 Nov 2026 20:31, "island tools everywhere, including the Depths")
+                4, java.util.Map.of("shards.chance-hoe", ValueChange.of(1.0, 3.0), "growth.label", ValueChange.of(true, false)),
                 3, java.util.Map.of("only-on-island", ValueChange.of(true, false),
                         "own-inventory-worlds", ValueChange.of(List.of("depths"), List.of()),
                         "put-away-worlds", ValueChange.of(List.of("depths"), List.of())));

@@ -112,13 +112,44 @@ final class IslandGrowth implements Listener {
         if (byKey.containsKey(key)) {
             return;
         }
-        long step = stepMillis(fullSeconds(b.getLocation()), a.getMaximumAge(), m.config().growthStepFloorMillis);
+        // Feedback 3 Nov 2026: one stage every growth.stage-seconds (3 s); the crop-growth upgrade scales it down.
+        double factor = fullSeconds(b.getLocation()) / Math.max(1.0, m.config().regrowBase);
+        long step = Math.max(m.config().growthStepFloorMillis, Math.round(m.config().growthStageSeconds * 1000 * factor));
         Due d = new Due(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), b.getType(), System.currentTimeMillis() + step, step);
         byKey.put(key, d);
         queue.add(d);
         while (byKey.size() > m.config().regrowMax && !queue.isEmpty()) {
             byKey.remove(queue.poll().key());
         }
+    }
+
+    /**
+     * Feedback 3 Nov 2026 ("make bonemeal work on the crops"): vanilla bone meal growth is part of the growth the island
+     * clock cancels, so bone meal is applied here: 1 to growth.bonemeal-stages stages, one bone meal used. Runs after
+     * island protection (ignoreCancelled), so only players who may build there can use it.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBoneMeal(PlayerInteractEvent e) {
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK || e.getItem() == null || e.getItem().getType() != Material.BONE_MEAL
+                || !m.config().growthEnabled) {
+            return;
+        }
+        Block b = e.getClickedBlock();
+        if (b == null || !CROPS.contains(b.getType()) || !islandWorld(b.getWorld()) || !(b.getBlockData() instanceof Ageable a)
+                || a.getAge() >= a.getMaximumAge()) {
+            return;
+        }
+        e.setCancelled(true);
+        if (e.getPlayer().getGameMode() != org.bukkit.GameMode.CREATIVE) {
+            e.getItem().subtract(1);
+        }
+        int add = 1 + java.util.concurrent.ThreadLocalRandom.current().nextInt(Math.max(1, m.config().growthBonemealStages));
+        a.setAge(Math.min(a.getMaximumAge(), a.getAge() + add));
+        b.setBlockData(a, false);
+        b.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, b.getLocation().add(0.5, 0.5, 0.5), 8, 0.3, 0.3, 0.3, 0);
+        b.getWorld().playSound(b.getLocation(), Sound.ITEM_BONE_MEAL_USE, 0.8f, 1f);
+        byKey.remove(Due.key(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ()));
+        track(b);
     }
 
     /** Every half second: grows the crops whose time came by one stage (loaded chunks only, a small budget per run). */
