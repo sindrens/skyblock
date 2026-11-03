@@ -17,7 +17,7 @@ afk:
   # Allowed: 0 to 240
   auto-minutes: 5
   # Tell everyone when a player goes AFK or comes back.
-  broadcast: true
+  broadcast: false
 broadcast:
   # Also show /broadcast messages as a title on screen.
   title: true

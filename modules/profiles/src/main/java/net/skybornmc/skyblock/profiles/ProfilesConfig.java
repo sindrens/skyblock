@@ -16,23 +16,27 @@ public final class ProfilesConfig extends ModuleConfig {
             min = 0, max = 1_000_000, level = Setting.Level.OWNER)
     public long slot3Price = 1_500;
 
-    @Setting(path = "switch.cooldown-seconds", desc = "Seconds between two switches (anti-spam only; owner P5 asked for no real cooldown). "
+    @Setting(path = "switch.cooldown-seconds", desc = "Seconds between two switches (owner 3 Nov 2026: 30; was 10 after owner P5). "
             + "Bypass: skyblock.cooldown.bypass.", min = 0, max = 3600)
-    public int switchCooldownSeconds = 10;
+    public int switchCooldownSeconds = 30;
 
     @Setting(path = "switch.blocked-worlds", desc = "Worlds where switching is not allowed (e.g. the boss arena). Combat and freeze are checked by their modules.")
     public List<String> blockedWorlds = List.of("depths");
 
-    /** Version 2 (owner 3 Nov 2026): the Depths has its own inventory, so switching waits until you are out of it (untouched lists only). */
+    /**
+     * Version 2 (owner 3 Nov 2026): the Depths has its own inventory, so switching waits until you are out of it (untouched
+     * lists only). Version 3 (feedback 31 Oct): 30 s between switches (untouched values only).
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("switch.blocked-worlds",
-                ValueChange.of(List.of(), List.of("depths"))));
+                        ValueChange.of(List.of(), List.of("depths"))),
+                3, java.util.Map.of("switch.cooldown-seconds", ValueChange.of(10, 30)));
     }
 
     @Setting(path = "switch.timeout-seconds", desc = "A switch that waits longer than this for the database is cancelled (nothing changes).",

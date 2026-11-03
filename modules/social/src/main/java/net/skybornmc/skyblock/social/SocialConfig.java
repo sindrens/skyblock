@@ -34,8 +34,8 @@ public final class SocialConfig extends ModuleConfig {
     @Setting(path = "afk.auto-minutes", desc = "Minutes without activity before a player is marked AFK. 0 = never.", min = 0, max = 240)
     public int afkAutoMinutes = 5;
 
-    @Setting(path = "afk.broadcast", desc = "Tell everyone when a player goes AFK or comes back.")
-    public boolean afkBroadcast = true;
+    @Setting(path = "afk.broadcast", desc = "Tell everyone when a player goes AFK or comes back (owner 3 Nov 2026: off, the tab list shows AFK).")
+    public boolean afkBroadcast = false;
 
     @Setting(path = "broadcast.title", desc = "Also show /broadcast messages as a title on screen.")
     public boolean broadcastTitle = true;
