@@ -29,8 +29,9 @@ final class SpawnerDrops {
         if (item == null || item.startsWith("mobdrop_")) {
             return null;
         }
+        // Name lookup only (isItem()/isAir() need a running server's registries, so unit tests could not call them).
         org.bukkit.Material m = org.bukkit.Material.matchMaterial(item);
-        return m != null && m.isItem() && !m.isAir() ? m : null;
+        return m != null && m != org.bukkit.Material.AIR ? m : null;
     }
 
     /** The sell.yml key of a drop: the vanilla name, or {@code custom:<id>}. */

@@ -59,7 +59,7 @@ public final class NiceNumbers {
         while (value / scale >= 100) {
             scale *= 10;
         }
-        return (value / scale) > 30 ? 5 * scale : scale;
+        return (value / scale) >= 30 ? 5 * scale : scale; // from 30 on the leading pair moves in fives (300 -> 350)
     }
 
     /** Rounds a series and keeps it strictly increasing (a value that would not exceed the previous one moves up a step). */
