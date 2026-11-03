@@ -41,7 +41,7 @@ for _ in $(seq 1 180); do
 done
 grep -q 'For help, type "help"' "$LOG" 2>/dev/null || { echo "Server did not finish starting; permissions not applied."; exit 1; }
 # Paper finishes world setup a moment after "Done"; commands sent in the same tick fail (getLevel() null).
-sleep 8
+sleep 4
 
 COUNT=0
 for FILE in "${FILES[@]}"; do
@@ -50,7 +50,7 @@ for FILE in "${FILES[@]}"; do
     tmux send-keys -t skyblock -l "$line"
     tmux send-keys -t skyblock Enter
     COUNT=$((COUNT + 1))
-    sleep 0.2
+    sleep 0.03
   done < "$FILE"
 done
 echo "$HASH" > "$STAMP"

@@ -5,8 +5,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 OLD_INODE=$(stat -c %i logs/latest.log 2>/dev/null || echo 0)
 if tmux has-session -t skyblock 2>/dev/null; then
-  tmux send-keys -t skyblock -l "say Updating: restart in 10 seconds"; tmux send-keys -t skyblock Enter
-  sleep 10
+  WARN=5; [ "${QUICK:-0}" = "1" ] && WARN=0
+  if [ "$WARN" -gt 0 ]; then
+    tmux send-keys -t skyblock -l "say Updating: restart in $WARN seconds"; tmux send-keys -t skyblock Enter
+    sleep "$WARN"
+  fi
   tmux send-keys -t skyblock -l "stop"; tmux send-keys -t skyblock Enter
   for _ in $(seq 1 120); do tmux has-session -t skyblock 2>/dev/null || break; sleep 1; done
 fi

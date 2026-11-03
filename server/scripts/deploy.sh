@@ -3,6 +3,8 @@
 # (no sudo needed), downloads plugin updates, applies secrets, restarts gracefully and re-applies permissions.
 # Used by Claude (automatic releases) and by the GitHub deploy workflow.
 #   ./server/scripts/deploy.sh [ssh-key] [minecraft@host]
+#   UPDATE=1 ./server/scripts/deploy.sh   also downloads the newest Paper and plugins (slow; off by default)
+#   QUICK=1  ./server/scripts/deploy.sh   restarts without the in-game warning
 # Defaults: key ../.skyborn-claude/deploy_key (next to the repo), host from server/.vps-target.
 set -euo pipefail
 export COPYFILE_DISABLE=1   # macOS: never pack ._ metadata files
@@ -23,11 +25,13 @@ JAR=$(cd "$ROOT" && ls -t plugin/build/libs/PhoenixSkyblock-*.jar server/plugins
 mkdir -p "$STAGE/server/plugins"; cp "$ROOT/$JAR" "$STAGE/server/plugins/"
 git -C "$ROOT" ls-files server > "$LIST"
 
-echo "== Deploying $(basename "$JAR") + configs to $TARGET"
+UPDATE="${UPDATE:-0}"; QUICK="${QUICK:-0}"
+FETCH='true'; [ "$UPDATE" = "1" ] && FETCH='./scripts/fetch.sh'
+echo "== Deploying $(basename "$JAR") + configs to $TARGET$([ "$UPDATE" = "1" ] && echo " (with plugin updates)")"
 # Stage the tracked files next to the jar first: bsdtar (macOS) resolves -T entries against the LAST -C, which shipped only the jar.
 (cd "$ROOT" && tar -cf - -T "$LIST") | tar -xf - -C "$STAGE"
 tar -czf - -C "$STAGE" server \
-  | "${SSH[@]}" "$TARGET" 'set -e; cd /opt/skyblock && rm -f server/plugins/PhoenixSkyblock-*.jar && tar -xzf - 2>/dev/null \
-      && find server -name "._*" -type f -delete && chmod +x server/start.sh server/scripts/*.sh && cd server && ./scripts/fetch.sh && ./scripts/apply-secrets.sh \
-      && ./scripts/restart-and-apply.sh'
+  | "${SSH[@]}" "$TARGET" "set -e; cd /opt/skyblock && rm -f server/plugins/PhoenixSkyblock-*.jar && tar -xzf - 2>/dev/null \
+      && find server -name '._*' -type f -delete && chmod +x server/start.sh server/scripts/*.sh && cd server && $FETCH && ./scripts/apply-secrets.sh \
+      && QUICK=$QUICK ./scripts/restart-and-apply.sh"
 echo "== Released."
