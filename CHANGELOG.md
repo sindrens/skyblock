@@ -13,6 +13,14 @@
 - **Depths inventory is crash-safe**: the side you just left stays in your player file until the database has it, so a crash, a database error or quitting right after a swap can't lose it; writes that finish out of order can't bring back an old set.
 - **Players from the previous release keep their Depths tools**: the first Depths inventory takes the Depths tools you carry and the ones the previous release put away (`tool_stash`), and only gives the starter tool types you are missing.
 - **The Quartermaster's free starter kit is gone** from the Forge menu; tier 1 tools come only with the first Depths visit (given right away, no claim that can be spent on the island). The Forge's tier 1 slot says so.
+- **Menus are the plain vanilla chest again** (no red frame panel; `menus.yml gui.font.panels`, config v3 flips untouched files). The scoreboard/tab logo stays.
+- **Island tool menu opens again** (right-click and sneak-right-click): number-list settings were loaded as text and the tier costs crashed the menu; every `List<Integer/Long/Double>` setting now loads as numbers (also hoe row lengths and tool task sizes).
+- **WorldEdit wand** is a warped fungus on a stick (`//wand`), so the island and Depths axes no longer select.
+- **/is create** (create your island; with one it says so), **/keys** (your crate keys in chat with [Open] links).
+- **Obsidian back to lava**: right-click obsidian on an island with an empty bucket (needs the Break right; 2 s cooldown, 120 per hour; `islands.yml obsidian-bucket.*`).
+- **Starter chest**: a new island's chest is emptied before it is filled (`starter-chest.clear-before-fill`).
+- **Spawner mobs never hurt players** (contact, poison/wither, creeper explosions, arrows; `stacking.yml mobs.spawner-mobs-hurt-players`) and keep no AI after a restart.
+- No "[name] is AFK" chat broadcast (and its dead /settings switch is gone); 30 s between profile switches.
 - Hunger stays off after a profile switch; a kit item in both hands runs once; a failed inventory load retries instead of blocking island tools.
 ### v5 batch 5: economy
 - **Every shop item can be sold**: 126 shop items that had no price (logs, stones, leaves, flowers, saplings, glass, concrete, terracotta, decoration ...) get one at their shop price / 8 (`sell.yml roots`), always under the shop's 7.5x rule; crafted items are still capped at their recipe price, so nothing can be bought, crafted and sold for profit.
