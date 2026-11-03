@@ -107,21 +107,22 @@ category:
 # Grid tile tooltips (GUI-P3, I9 section 12, MENUS-V3 6.4). LoreBuilder labels: {price}, {pct} are filled in. Java viewers
 # get one muted hint; Bedrock viewers none.
 tooltip:
-  buy: "<gray>Buy: <green>{price}</green> <dark_gray>each"
-  sell: "<gray>Sell: <gold>{price}</gold> <dark_gray>each"
-  not-sellable: "<gray>Sell: <red>can't be sold"
-  falling: "<c:warning>Falling: -{pct}%</c:warning> <c:muted>from base price</c:muted>"
-  rising: "<c:success>Rising: +{pct}%</c:success> <c:muted>from base price</c:muted>"
-  hot: "<c:success>Hot item today: +{pct}%</c:success>"
+  # Owner 3 Nov 2026: the item mockup format: | label gray, value white, one colour per job.
+  buy: "<c:bar>|</c:bar> <c:text>Buy:</c:text> <c:value>{price}</c:value> <c:muted>each"
+  sell: "<c:bar>|</c:bar> <c:text>Sell:</c:text> <c:value>{price}</c:value> <c:muted>each"
+  not-sellable: "<c:bar>|</c:bar> <c:text>Sell:</c:text> <c:muted>not bought back"
+  falling: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:warning>-{pct}%</c:warning> <c:muted>today"
+  rising: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>today"
+  hot: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>hot today"
   # ONE muted Java hint per tile (MENUS-V3 D6): hint-sell when the item sells, else hint-stack. Shift + Right-click and
   # middle click still sell every one you carry (taught in /help shop and by the sell GUI's Sell all button).
-  hint-sell: "Right-click: sell"
-  hint-stack: "Shift-click: buy a stack"
+  hint-sell: "Right-click to sell"
+  hint-stack: "Shift-click to buy a stack"
   action-input: "CLICK"
   action: "to buy"
 
 entry:
-  name: "<white><item>"
+  name: "<c:value><bold><item>"
   locked: "<c:error><sym:cross> Locked"
   requires: "<c:text>Needs <c:value><skill> <level></c:value><c:text>."
   # ECON-SPAWNERS step 13: a spawner tier unlocks per island by kills. <needed> <have> <what>
@@ -170,7 +171,7 @@ buy:
     name: "<area:money><bold>Sell"
     lore: ["<c:text>Sell this item instead.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   item:
-    name: "<white><item>"
+    name: "<c:value><bold><item>"
     room:
       - ""
       - "<c:text>Room for: <c:value><fits>"

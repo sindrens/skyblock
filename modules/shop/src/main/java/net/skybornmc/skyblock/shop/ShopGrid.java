@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 /**
  * The item grid of a shop tab. Owner 3 Nov 2026 ("no zigzag, clean, more space"): the tab's items in group order fill
- * full rows of 7 left to right; only the very last row of a page is centred. A page has {@link #ROWS} rows (screen rows
+ * rows of 7 left to right, the last row too (no centring, no holes). A page has {@link #ROWS} rows (screen rows
  * 1-3), so row 4 stays empty as breathing room above the bottom bar. Pure.
  */
 final class ShopGrid {
@@ -51,16 +51,12 @@ final class ShopGrid {
         return out;
     }
 
-    /** Full rows of 7, the remainder centred on the last row. */
+    /** Rows of 7 left to right, the last row too (a centred last row left holes in the middle: the zigzag). */
     static Page page(List<ShopCatalog.Item> items) {
-        int n = items.size();
-        int full = n / Centered.GRID_WIDTH;
-        int rest = n % Centered.GRID_WIDTH;
-        int[] counts = new int[full + (rest > 0 ? 1 : 0)];
-        java.util.Arrays.fill(counts, 0, full, Centered.GRID_WIDTH);
-        if (rest > 0) {
-            counts[full] = rest;
+        int[] slots = new int[items.size()];
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = 9 * (1 + i / Centered.GRID_WIDTH) + 1 + i % Centered.GRID_WIDTH;
         }
-        return new Page(items, Centered.grid(counts), counts.length);
+        return new Page(items, slots, (items.size() + Centered.GRID_WIDTH - 1) / Centered.GRID_WIDTH);
     }
 }

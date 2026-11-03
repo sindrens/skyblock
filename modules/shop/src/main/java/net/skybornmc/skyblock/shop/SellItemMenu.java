@@ -106,7 +106,11 @@ final class SellItemMenu extends Menu {
         }
         choices.add(button(info, 0, carried, all));
         choices.add(typeButton(info, carried, all));
-        int[] columns = Centered.columns(choices.size());
+        // Owner 3 Nov 2026: the buttons side by side in the middle of the row (no gaps), easy to scan.
+        int[] columns = new int[choices.size()];
+        for (int col = 0; col < columns.length; col++) {
+            columns[col] = (9 - columns.length) / 2 + col;
+        }
         for (int i = 0; i < choices.size(); i++) {
             set(9 + columns[i], choices.get(i));
         }

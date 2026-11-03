@@ -60,7 +60,7 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
         if (guard.expired(System.currentTimeMillis())) {
             guard.disarm();
         }
-        module.undoButton(viewer).ifPresent(b -> set(SLOT_ACTION_B, b));
+        module.undoButton(viewer).ifPresentOrElse(b -> set(SLOT_ACTION_B, b), () -> set(SLOT_ACTION_B, (net.skybornmc.skyblock.common.menu.MenuButton) null));
     }
 
     /** GUI-FONT plaque: the tab's short noun ({@code categories.<id>.short}, e.g. {@code FARMING}). */
@@ -114,7 +114,7 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
     protected void decorate() {
         setWallet("money", module.moneyText(module.balance(viewer)), null);
         module.sellChestButton(viewer, this).ifPresent(b -> set(SLOT_ACTION_A, b));
-        module.undoButton(viewer).ifPresent(b -> set(SLOT_ACTION_B, b));
+        module.undoButton(viewer).ifPresentOrElse(b -> set(SLOT_ACTION_B, b), () -> set(SLOT_ACTION_B, (net.skybornmc.skyblock.common.menu.MenuButton) null));
     }
 
     @Override

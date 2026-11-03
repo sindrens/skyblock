@@ -88,7 +88,7 @@ final class BuyMenu extends Menu {
             return;
         }
         if (ticksOpen() % 20 == 0) {
-            module.undoButton(viewer).ifPresent(b -> set(SLOT_UNDO, b));
+            module.undoButton(viewer).ifPresentOrElse(b -> set(SLOT_UNDO, b), () -> set(SLOT_UNDO, (net.skybornmc.skyblock.common.menu.MenuButton) null));
         }
     }
 
@@ -126,7 +126,11 @@ final class BuyMenu extends Menu {
             choices.add(MenuButton.of(service.icon(viewer, "ui/type", service.text(viewer, ShopModule.ID, "buy.type.name", max),
                     service.lines(viewer, ShopModule.ID, "buy.type.lore", max)), click -> askAmount(click.player())));
         }
-        int[] columns = Centered.columns(choices.size());
+        // Owner 3 Nov 2026: the buttons side by side in the middle of the row (no gaps), easy to scan.
+        int[] columns = new int[choices.size()];
+        for (int col = 0; col < columns.length; col++) {
+            columns[col] = (9 - columns.length) / 2 + col;
+        }
         for (int i = 0; i < choices.size(); i++) {
             set(9 + columns[i], choices.get(i));
         }
@@ -138,7 +142,7 @@ final class BuyMenu extends Menu {
                         module.switchTo(this, new SellItemMenu(module, item, categoryId));
                     });
         }
-        module.undoButton(viewer).ifPresent(b -> set(SLOT_UNDO, b));
+        module.undoButton(viewer).ifPresentOrElse(b -> set(SLOT_UNDO, b), () -> set(SLOT_UNDO, (net.skybornmc.skyblock.common.menu.MenuButton) null));
     }
 
     /** Fill inventory keeps its own icon ({@code shop/fill}, chest) while it can buy; the armed look stays orange. */

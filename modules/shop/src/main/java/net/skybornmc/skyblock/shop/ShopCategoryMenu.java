@@ -35,7 +35,24 @@ final class ShopCategoryMenu extends Menu {
 
     @Override
     public int rows() {
-        return Centered.layout(categories().size()).rows();
+        int n = categories().size();
+        return n <= 9 ? 3 : Centered.layout(n).rows();
+    }
+
+    /**
+     * Owner 3 Nov 2026 ("fix the zigzag"): up to 9 tabs sit side by side in one row (no 5 + 4 stagger), centred
+     * without gaps. Pure.
+     */
+    static int[] tabSlots(int n) {
+        if (n > 9) {
+            return Centered.layout(n).slots();
+        }
+        int start = 9 + (9 - n) / 2;
+        int[] out = new int[n];
+        for (int i = 0; i < n; i++) {
+            out[i] = start + i;
+        }
+        return out;
     }
 
     @Override
@@ -76,7 +93,7 @@ final class ShopCategoryMenu extends Menu {
             return;
         }
         setWallet("money", module.moneyText(module.balance(viewer)), null);
-        int[] slots = Centered.layout(list.size()).slots();
+        int[] slots = tabSlots(list.size());
         for (int i = 0; i < list.size(); i++) {
             ShopCatalog.Category c = list.get(i);
             List<Component> lore = new ArrayList<>(module.categoryLore(viewer, c));

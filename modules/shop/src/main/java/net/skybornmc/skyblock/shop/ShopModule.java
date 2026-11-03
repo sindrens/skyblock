@@ -1373,9 +1373,7 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     /** A category's tile icon: its catalogue icon ({@code shop/<id>}), or the vanilla {@code icon} item for owner-added categories. */
     ItemStack categoryIcon(Player viewer, ShopCatalog.Category c, Component name, List<Component> lore) {
-        if (core.menus().icons().has(c.iconKey())) {
-            return core.menus().icon(viewer, c.iconKey(), name, lore);
-        }
+        // Owner 3 Nov 2026: plain vanilla tab icons (the shop.yml icon), no resource-pack pictures.
         Material icon = Material.matchMaterial(c.icon() == null ? "" : c.icon());
         return core.menus().item(new ItemStack(icon == null || !icon.isItem() ? Material.CHEST : icon), name, lore);
     }
@@ -1426,8 +1424,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         long now = System.currentTimeMillis();
         Optional<UndoLedger.Offer> offer = undo.peek(viewer.getUniqueId(), now);
         if (offer.isEmpty()) {
-            return Optional.of(MenuButton.display(core.menus().icon(viewer, "state/off", core.menus().text(viewer, ID, "undo.idle.name"),
-                    core.menus().lines(viewer, ID, "undo.idle.lore"))));
+            return Optional.empty(); // owner 3 Nov 2026: no grey Undo tile all the time; it shows only after a buy
         }
         UndoLedger.Offer o = offer.get();
         int seconds = o.secondsLeft(now);

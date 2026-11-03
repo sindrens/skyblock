@@ -63,11 +63,11 @@ class ShopGridTest {
     }
 
     @Test
-    void fullRowsFirstAndOnlyTheLastRowIsCentred() {
+    void rowsFillLeftToRightWithoutHoles() {
         List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 3)), new ShopCatalog.Group("b", ids("b", 6)));
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
         assertEquals(1, pages.size());
-        assertArrayEquals(Centered.grid(7, 2), pages.get(0).slots(), "3 + 6 = one full row and 2 centred, no zigzag");
+        assertArrayEquals(new int[]{10, 11, 12, 13, 14, 15, 16, 19, 20}, pages.get(0).slots(), "3 + 6 = one full row, then 2 from the left");
         assertEquals("a0", pages.get(0).items().get(0).id(), "group order kept");
         assertEquals("b0", pages.get(0).items().get(3).id());
     }
@@ -88,7 +88,7 @@ class ShopGridTest {
         assertEquals(2, pages.size());
         assertEquals(21, pages.get(0).items().size());
         assertEquals(3, pages.get(0).rows());
-        assertArrayEquals(new int[]{13}, pages.get(1).slots());
+        assertArrayEquals(new int[]{10}, pages.get(1).slots());
     }
 
     @Test

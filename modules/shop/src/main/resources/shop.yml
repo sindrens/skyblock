@@ -245,7 +245,7 @@ categories:
       prismarine_crystals: auto
   # Concrete, stained glass and terracotta in all 16 colours (2 pages). Wool, carpets and dyes are crafted.
   colors:
-    icon: light_blue_stained_glass
+    icon: light_blue_concrete
     groups:
       concrete: [white_concrete, orange_concrete, magenta_concrete, light_blue_concrete, yellow_concrete, lime_concrete, pink_concrete, gray_concrete, light_gray_concrete, cyan_concrete, purple_concrete, blue_concrete, brown_concrete, green_concrete, red_concrete, black_concrete]
       extras: [glass, terracotta, white_wool, tinted_glass]
