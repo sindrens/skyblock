@@ -65,8 +65,9 @@ public final class MenuConfig extends ModuleConfig {
             + "(menus, scoreboard, tab); everyone sees the plain chest. Bedrock never sees glyphs.")
     public boolean fontEnabled = true;
 
-    @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off.")
-    public boolean fontPanels = true;
+    @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off "
+            + "(owner 3 Nov 2026: menus are the plain vanilla chest).")
+    public boolean fontPanels = false;
 
     @Setting(path = "gui.font.titles", desc = "Plaque with the cartoon title letters (needs panels). false = the panel shows the plain title text.")
     public boolean fontTitles = true;
@@ -86,15 +87,20 @@ public final class MenuConfig extends ModuleConfig {
         return new net.skybornmc.skyblock.common.frame.FrameSwitches(fontEnabled, fontPanels, fontTitles, fontTiles, fontLogo);
     }
 
-    /** Version 2 (owner 2 Nov 2026: "a full improvement on all the GUIs"): the frame layer is on unless switched off by hand. */
+    /**
+     * Version 2 (owner 2 Nov 2026: "a full improvement on all the GUIs"): the frame layer is on unless switched off by hand.
+     * Version 3 (owner 3 Nov 2026: "it's red, but it's supposed to be VANILLA"): menus are the plain chest again (no panel,
+     * plaque or tiles); the scoreboard and tab logo stay.
+     */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("gui.font.enabled", ValueChange.of(false, true)));
+        return java.util.Map.of(2, java.util.Map.of("gui.font.enabled", ValueChange.of(false, true)),
+                3, java.util.Map.of("gui.font.panels", ValueChange.of(true, false)));
     }
 
     @Override
