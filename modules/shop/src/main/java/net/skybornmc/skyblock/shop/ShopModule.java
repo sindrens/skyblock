@@ -579,7 +579,7 @@ public final class ShopModule implements SkyblockModule, Listener {
                 .orElseThrow(() -> new CommandFailure(ID, "unknown-category", Msg.p("input", raw),
                         Msg.p("categories", String.join(", ", categoryIds())))), Suggest.of(this::categoryIds));
         // Owner 3 Nov 2026: /shop <text> finds items ("/shop stone", "/shop spaw"); a tab name still opens that tab.
-        Arg<String> query = Arg.word("item or tab", (sender, raw) -> raw, Suggest.of(this::searchSuggestions));
+        Arg<String> query = Arg.word("item-or-tab", (sender, raw) -> raw, Suggest.of(this::searchSuggestions));
         core.commands().register(CommandSpec.command("shop")
                 .description("Buy and sell blocks, decoration, spawners and more; /shop <item> finds an item")
                 .category("Economy")
