@@ -125,7 +125,9 @@ final class IslandGrowth implements Listener {
     void tick() {
         long now = System.currentTimeMillis();
         int budget = m.config().growthBudget;
-        while (!queue.isEmpty() && queue.peek().at() <= now && budget-- > 0) {
+        long deadline = System.nanoTime() + 2_000_000L; // at most 2 ms per run; the rest waits half a second
+        pausedCache.clear();
+        while (!queue.isEmpty() && queue.peek().at() <= now && budget-- > 0 && System.nanoTime() < deadline) {
             Due d = queue.poll();
             byKey.remove(d.key());
             World w = Bukkit.getWorld(d.world());
@@ -156,19 +158,21 @@ final class IslandGrowth implements Listener {
         labels();
     }
 
+    /** Chunk → its island paused, for one run (one island lookup per chunk instead of per crop). */
+    private final java.util.Map<Long, Boolean> pausedCache = new java.util.HashMap<>();
+
     private boolean paused(Block b) {
-        return m.islands().map(i -> i.islandAt(b.getLocation()).map(info -> i.islandProductionPaused(info.id())).orElse(false))
-                .orElse(false);
+        long area = ((long) (b.getX() >> 4) << 32) ^ ((b.getZ() >> 4) & 0xffffffffL);
+        return pausedCache.computeIfAbsent(area, k -> m.islands()
+                .map(i -> i.islandAt(b.getLocation()).map(info -> i.islandProductionPaused(info.id())).orElse(false))
+                .orElse(false));
     }
 
     /** A stage step: a small puff (and the ripe cue on the last one) and a soft, rate-limited sound for players nearby. */
     private void effects(Block b, boolean ripe) {
         Location at = b.getLocation().add(0.5, 0.5, 0.5);
         double r = m.config().cueFar;
-        for (Player p : at.getWorld().getPlayers()) {
-            if (p.getLocation().distanceSquared(at) > r * r) {
-                continue;
-            }
+        for (Player p : at.getNearbyPlayers(r)) { // chunk lookup, not every player in the world
             p.spawnParticle(Particle.HAPPY_VILLAGER, at, ripe ? 5 : 1, 0.2, 0.2, 0.2, 0);
             if (m.config().growthSound) {
                 long now = System.currentTimeMillis();

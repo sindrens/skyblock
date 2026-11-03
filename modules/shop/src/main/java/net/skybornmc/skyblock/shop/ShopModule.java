@@ -1302,8 +1302,31 @@ public final class ShopModule implements SkyblockModule, Listener {
     public void onShopCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
         String m = event.getMessage();
         String lower = m.toLowerCase(Locale.ROOT);
-        if (lower.equals("/shop") || lower.startsWith("/shop ")) {
-            event.setMessage("/phoenixskyblock:shop" + m.substring(5));
+        if (!(lower.equals("/shop") || lower.startsWith("/shop "))) {
+            return;
+        }
+        // Opened right here (no command lookup at all): something on the live server kept answering /shop with the
+        // store link even after the redirect. /store stays the store.
+        event.setCancelled(true);
+        Player player = event.getPlayer();
+        String text = m.length() > 5 ? m.substring(6).trim() : "";
+        if (!player.hasPermission(PERM_USE)) {
+            player.performCommand("phoenixskyblock:shop"); // the framework explains the missing permission
+            return;
+        }
+        try {
+            if (text.isEmpty()) {
+                open(player, null);
+                return;
+            }
+            Optional<ShopCatalog.Category> tab = tabOf(text);
+            if (tab.isPresent()) {
+                open(player, tab.get());
+            } else {
+                search(player, text);
+            }
+        } catch (net.skybornmc.skyblock.common.command.CommandFailure failure) {
+            player.performCommand("phoenixskyblock:shop" + (text.isEmpty() ? "" : " " + text)); // same message path as the command
         }
     }
 
