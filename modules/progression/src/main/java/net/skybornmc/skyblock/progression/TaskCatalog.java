@@ -231,6 +231,13 @@ final class TaskCatalog {
         if (!errors.isEmpty()) {
             return null;
         }
+        // Owner 3 Nov 2026 ("make rewards less weird, even numbers"): counted targets and rewards are shown and paid as
+        // nice numbers (27 → 25, 123 → 120), also for a live file written before; levels stay exact.
+        if (type.counted()) {
+            amount = Math.max(1, net.skybornmc.skyblock.common.util.NiceNumbers.nice(amount));
+        }
+        crystals = net.skybornmc.skyblock.common.util.NiceNumbers.nice(crystals);
+        pillarXp = net.skybornmc.skyblock.common.util.NiceNumbers.nice(pillarXp);
         TaskInfo info = new TaskInfo(id.toLowerCase(Locale.ROOT), type, target, amount, tier, unlocks, crystals, pillar, pillarXp);
         return new TaskDef(info, icon.isEmpty() ? null : icon, name.isEmpty() ? null : name);
     }

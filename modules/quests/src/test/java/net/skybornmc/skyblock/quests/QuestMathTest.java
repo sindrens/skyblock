@@ -48,12 +48,12 @@ class QuestMathTest {
     @Test
     void rewards() {
         // P10-21: 3 minutes of REF at tier 1 = 2,481; P10-22: 8 minutes at tier 6 = 110,936.
-        assertEquals(2481, QuestMath.money(REF, 1, 3));
-        assertEquals(110_936, QuestMath.money(REF, 6, 8));
+        assertEquals(2_500, QuestMath.money(REF, 1, 3));
+        assertEquals(110_000, QuestMath.money(REF, 6, 8));
         assertEquals(0, QuestMath.money(REF, 6, 0));
         // Crystal Pouch S = 20 x 1.3^(t-1): tier 1 = 20, tier 3 = 33.8 -> 34.
         assertEquals(20, QuestMath.crystals(20, 1, 1.3));
-        assertEquals(34, QuestMath.crystals(20, 3, 1.3));
+        assertEquals(35, QuestMath.crystals(20, 3, 1.3));
         assertEquals(0, QuestMath.crystals(0, 5, 1.3));
     }
 

@@ -85,15 +85,16 @@ final class QuestMath {
 
     /** Money reward: {@code minutes} of REF(t) per minute at the stage tier. */
     static long money(long[] refPerMinute, int stageTier, double minutes) {
-        return Math.max(0, Math.round(at(refPerMinute, stageTier) * Math.max(0, minutes)));
+        // Owner 3 Nov 2026: round rewards ($2,500 instead of $2,481).
+        return Math.max(0, net.skybornmc.skyblock.common.util.NiceNumbers.nice(at(refPerMinute, stageTier) * Math.max(0, minutes)));
     }
 
-    /** Crystal reward: base x growth^(tier-1), rounded. */
+    /** Crystal reward: base x growth^(tier-1), rounded to a nice number (25, 35, 45 ...). */
     static long crystals(long base, int tier, double growth) {
         if (base <= 0) {
             return 0;
         }
-        return Math.max(1, Math.round(base * Math.pow(Math.max(1, growth), Math.max(0, tier - 1))));
+        return Math.max(1, net.skybornmc.skyblock.common.util.NiceNumbers.nice(base * Math.pow(Math.max(1, growth), Math.max(0, tier - 1))));
     }
 
     /** Tier (1-based) for a skill level: the number of unlock levels at or below it (levels sorted ascending). */
