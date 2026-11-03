@@ -55,10 +55,6 @@ final class GrindAreas extends CommandGroup implements Listener {
     static final int MINE_DEPTH = 6;
     static final int DUNGEON_HALF = 20;
 
-    private static final List<Material> ORES = List.of(Material.STONE, Material.STONE, Material.STONE, Material.STONE,
-            Material.STONE, Material.STONE, Material.COAL_ORE, Material.COAL_ORE, Material.COPPER_ORE, Material.IRON_ORE,
-            Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE, Material.LAPIS_ORE, Material.DIAMOND_ORE,
-            Material.EMERALD_ORE);
     /** Farm crops in unlock order: block, item it drops, wheat broken in total to unlock it (feedback 3 Nov 2026). */
     record Crop(Material block, Material item, long unlockAt) {
     }
@@ -118,11 +114,14 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
+            stoneMine(); // the real mine is stone; ores are per player (an older build had real random ores)
             // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
             core.scheduler().repeat("essentials:grind-view", 200L, 200L, () -> {
                 for (Player p : world.getPlayers()) {
                     if (Math.abs(p.getLocation().getBlockX() - FARM_X) <= FARM_HALF + 40) {
                         sendFarm(p);
+                    } else if (Math.abs(p.getLocation().getBlockX() - MINE_X) <= MINE_HALF + 40) {
+                        sendMine(p);
                     }
                 }
             });
@@ -169,7 +168,7 @@ final class GrindAreas extends CommandGroup implements Listener {
         for (int x = -MINE_HALF; x <= MINE_HALF; x++) {
             for (int z = -MINE_HALF; z <= MINE_HALF; z++) {
                 for (int d = 0; d < MINE_DEPTH; d++) {
-                    world.getBlockAt(MINE_X + x, base - d, z).setType(randomOre(), false);
+                    world.getBlockAt(MINE_X + x, base - d, z).setType(Material.STONE, false);
                 }
                 world.getBlockAt(MINE_X + x, base - MINE_DEPTH, z).setType(Material.BEDROCK, false);
             }
@@ -188,8 +187,17 @@ final class GrindAreas extends CommandGroup implements Listener {
         core.plugin().getLogger().info("Essentials: built the farm, mine and dungeon in " + world.getName());
     }
 
-    private static Material randomOre() {
-        return ORES.get(ThreadLocalRandom.current().nextInt(ORES.size()));
+    private void stoneMine() {
+        for (int x = -MINE_HALF; x <= MINE_HALF; x++) {
+            for (int z = -MINE_HALF; z <= MINE_HALF; z++) {
+                for (int d = 0; d < MINE_DEPTH; d++) {
+                    Block b = world.getBlockAt(MINE_X + x, base - d, z);
+                    if (b.getType() != Material.STONE) {
+                        b.setType(Material.STONE, false);
+                    }
+                }
+            }
+        }
     }
 
     private static void ripe(Block crop) {
@@ -223,12 +231,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             Crop before = cropFor(farmed - 1);
             Crop crop = cropFor(farmed);
             p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
-            if (before != Crop_WHEAT() || crop != Crop_WHEAT()) {
-                event.setDropItems(false);
-                int amount = 1 + ThreadLocalRandom.current().nextInt(2);
-                p.getInventory().addItem(new ItemStack(crop.item(), amount)).values()
-                        .forEach(rest -> p.getWorld().dropItemNaturally(p.getLocation(), rest));
-            }
+            // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
             if (crop != before) {
                 msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
                 core.sounds().play(p, "unlock");
@@ -251,14 +254,160 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() != Material.BEDROCK) {
+            Player p = event.getPlayer();
+            Ore before = oreTier(mined(p));
+            long mined = mined(p) + 1;
+            p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
+            Ore tier = oreTier(mined);
+            if (tier != before) {
+                msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.drop())));
+                core.sounds().play(p, "unlock");
+                sendMine(p);
+            } else if (mined % 50 == 0) {
+                Ore next = ORE_TIERS.stream().filter(o -> o.unlockAt() > mined).findFirst().orElse(null);
+                if (next != null) {
+                    msg.actionBar(p, "grind.progress-ore", net.skybornmc.skyblock.common.text.Msg.number("have", mined),
+                            net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
+                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(next.drop())));
+                }
+            }
             core.scheduler().later("essentials:grind-regen", config.grindMineRegenSeconds * 20L, () -> {
                 if (b.getType().isAir()) {
-                    b.setType(randomOre(), false);
+                    b.setType(Material.STONE, false);
+                    for (Player near : b.getLocation().getNearbyPlayers(64)) {
+                        Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(near));
+                        if (view != Material.STONE) {
+                            near.sendBlockChange(b.getLocation(), view.createBlockData());
+                        }
+                    }
                 }
             });
             return;
         }
         event.setCancelled(true);
+    }
+
+    // ------------------------------------------------------------------ mine: ores per player
+
+    /** One ore: the block a player sees, what it drops, mined blocks in total to unlock it, share per 1,000 blocks. */
+    record Ore(Material block, Material drop, int amount, long unlockAt, int perMille) {
+    }
+
+    /** Feedback 3 Nov 2026: the same as the farm, for ores. Real blocks are stone; each player sees their unlocked ores. */
+    static final List<Ore> ORE_TIERS = List.of(
+            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 90),
+            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 0, 60),
+            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 300, 55),
+            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 35),
+            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 1_500, 35),
+            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 5_000, 25),
+            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 5_000, 12),
+            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 15_000, 8));
+    private static final org.bukkit.NamespacedKey MINED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_mined");
+
+    private static long mined(Player p) {
+        Long v = p.getPersistentDataContainer().get(MINED, PersistentDataType.LONG);
+        return v == null ? 0 : v;
+    }
+
+    /** Pure: the newest ore unlocked at {@code mined} blocks. */
+    static Ore oreTier(long mined) {
+        Ore out = ORE_TIERS.getFirst();
+        for (Ore o : ORE_TIERS) {
+            if (mined >= o.unlockAt()) {
+                out = o;
+            }
+        }
+        return out;
+    }
+
+    /** Pure: what a player who mined {@code mined} blocks sees at x/y/z (stable per position, so view and drop agree). */
+    static Material oreAt(int x, int y, int z, long mined) {
+        long h = (x * 73_856_093L) ^ (y * 19_349_663L) ^ (z * 83_492_791L);
+        int roll = (int) Math.floorMod(h * 0x9E3779B97F4A7C15L >>> 20, 1000);
+        int acc = 0;
+        for (Ore o : ORE_TIERS) {
+            if (mined >= o.unlockAt()) {
+                acc += o.perMille();
+                if (roll < acc) {
+                    return o.block();
+                }
+            }
+        }
+        return Material.STONE;
+    }
+
+    private static Ore oreOf(Material block) {
+        return ORE_TIERS.stream().filter(o -> o.block() == block).findFirst().orElse(null);
+    }
+
+    /** The mine as the player sees it: their unlocked ores on the real stone (client side only). */
+    private void sendMine(Player p) {
+        if (world == null || !p.getWorld().equals(world)) {
+            return;
+        }
+        long mined = mined(p);
+        List<org.bukkit.block.BlockState> states = new ArrayList<>();
+        for (int x = -MINE_HALF; x <= MINE_HALF; x++) {
+            for (int z = -MINE_HALF; z <= MINE_HALF; z++) {
+                for (int d = 0; d < MINE_DEPTH; d++) {
+                    Block b = world.getBlockAt(MINE_X + x, base - d, z);
+                    if (b.getType() != Material.STONE) {
+                        continue;
+                    }
+                    Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined);
+                    if (view != Material.STONE) {
+                        org.bukkit.block.BlockState st = b.getState();
+                        st.setBlockData(view.createBlockData());
+                        states.add(st);
+                    }
+                }
+            }
+        }
+        p.sendBlockChanges(states);
+    }
+
+    /** Drops follow what the player sees: their crop at the farm, their ore at the mine. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onDrop(org.bukkit.event.block.BlockDropItemEvent event) {
+        Block b = event.getBlock();
+        if (world == null || !b.getWorld().equals(world)) {
+            return;
+        }
+        Player p = event.getPlayer();
+        if (in(b, FARM_X, FARM_HALF) && event.getBlockState().getType() == Material.WHEAT) {
+            Crop crop = cropFor(farmed(p));
+            if (crop == Crop_WHEAT()) {
+                return;
+            }
+            for (var it = event.getItems().iterator(); it.hasNext(); ) {
+                org.bukkit.entity.Item item = it.next();
+                Material t = item.getItemStack().getType();
+                if (t == Material.WHEAT) {
+                    item.setItemStack(new ItemStack(crop.item(), 1 + ThreadLocalRandom.current().nextInt(2)));
+                } else {
+                    it.remove(); // seeds
+                }
+            }
+            return;
+        }
+        if (in(b, MINE_X, MINE_HALF) && event.getBlockState().getType() == Material.STONE) {
+            Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(p));
+            Ore ore = oreOf(view);
+            if (ore == null) {
+                return; // plain stone: vanilla cobblestone
+            }
+            boolean first = true;
+            for (var it = event.getItems().iterator(); it.hasNext(); ) {
+                org.bukkit.entity.Item item = it.next();
+                if (first) {
+                    item.setItemStack(new ItemStack(ore.drop(), ore.amount()));
+                    first = false;
+                } else {
+                    it.remove();
+                }
+            }
+        }
     }
 
     private static Crop Crop_WHEAT() {
@@ -318,14 +467,14 @@ final class GrindAreas extends CommandGroup implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player p = event.getPlayer();
-        core.scheduler().later("essentials:grind-view", 20L, () -> sendFarm(p));
-        core.scheduler().later("essentials:grind-view", 60L, () -> sendFarm(p));
+        core.scheduler().later("essentials:grind-view", 20L, () -> { sendFarm(p); sendMine(p); });
+        core.scheduler().later("essentials:grind-view", 60L, () -> { sendFarm(p); sendMine(p); });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoinGrind(PlayerJoinEvent event) {
         Player p = event.getPlayer();
-        core.scheduler().later("essentials:grind-view", 40L, () -> sendFarm(p));
+        core.scheduler().later("essentials:grind-view", 40L, () -> { sendFarm(p); sendMine(p); });
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
