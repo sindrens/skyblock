@@ -311,3 +311,8 @@ settings:
   shop-big-buy:
     name: "<c:value>Shop: confirm big buys"
     lore: ["<c:text>Buys over half your money", "<c:text>need a second click."]
+
+# Owner 3 Nov 2026: /shop <text> finds items. <query>
+search:
+  crumb: "\"<query>\""
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>No shop item called <c:value><query></c:value><c:text>. Try a shorter word, or <click:run_command:'/shop'><c:action>browse the shop</c:action></click><c:text>."

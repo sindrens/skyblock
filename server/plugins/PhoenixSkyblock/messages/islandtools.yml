@@ -29,6 +29,7 @@ item:
 
 effect:
   magnet: "Drops into your bag"
+  auto-sell: "Drops are sold"
 
 starter:
   given: "<prefix><c:success><sym:check></c:success> <c:text>Your island tools are in your bag: pickaxe, axe, hoe and sword. Upgrade them in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
@@ -133,6 +134,7 @@ upgrade:
   row: {name: "Row", icon: wheat, lore: ["<c:muted>Harvests a whole row of ripe", "<c:muted>crops at once."]}
   storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the hoe storage."]}
   looting: {name: "Looting", icon: rotten_flesh, lore: ["<c:muted>More mob drops."]}
+  auto_sell: {name: "Auto-Sell", icon: hopper, lore: ["<c:muted>Sells the drops as you break", "<c:muted>them (a little under the price)."]}
   shard_finder: {name: "Shard Finder", icon: prismarine_shard, lore: ["<c:muted>A better chance to find shards", "<c:muted>while you grind."]}
   sweeping: {name: "Sweeping Edge", icon: iron_sword, lore: ["<c:muted>Stronger sweep attacks."]}
   fire_aspect: {name: "Fire Aspect", icon: blaze_powder, lore: ["<c:muted>Sets mobs on fire."]}

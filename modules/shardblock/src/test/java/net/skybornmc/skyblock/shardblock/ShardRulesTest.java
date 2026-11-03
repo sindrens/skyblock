@@ -27,9 +27,9 @@ class ShardRulesTest {
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertEquals(5, r.maxLevel(ShardRules.Kind.RESPAWN));
         assertEquals(5, r.maxLevel(ShardRules.Kind.DOUBLE));
-        assertEquals(1800, r.respawnSeconds(0), "30 min at level 0");
-        assertEquals(420, r.respawnSeconds(5), "7 min at the top");
-        assertEquals(420, r.respawnSeconds(99), "clamped");
+        assertEquals(300, r.respawnSeconds(0), "owner 3 Nov 2026: 5 min at level 0");
+        assertEquals(60, r.respawnSeconds(5), "1 min at the top");
+        assertEquals(60, r.respawnSeconds(99), "clamped");
         assertEquals(0.0, r.doublePercent(0));
         assertEquals(25.0, r.doublePercent(5));
     }
@@ -37,9 +37,9 @@ class ShardRulesTest {
     @Test
     void costsPerLevelAndNothingPastTheTop() {
         ShardRules r = defaults(new ArrayList<>());
-        assertEquals(new ShardRules.Cost(Currency.CRYSTALS, 100), r.cost(ShardRules.Kind.RESPAWN, 1));
-        assertEquals(new ShardRules.Cost(Currency.CRYSTALS, 8100), r.cost(ShardRules.Kind.RESPAWN, 5));
-        assertEquals(new ShardRules.Cost(Currency.SHARDS, 10), r.cost(ShardRules.Kind.DOUBLE, 1));
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 2000), r.cost(ShardRules.Kind.RESPAWN, 1), "owner 3 Nov 2026: money, not shards");
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 250000), r.cost(ShardRules.Kind.RESPAWN, 5));
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 1500), r.cost(ShardRules.Kind.DOUBLE, 1));
         assertNull(r.cost(ShardRules.Kind.RESPAWN, 6), "maxed");
         assertNull(r.cost(ShardRules.Kind.DOUBLE, 0));
     }

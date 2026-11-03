@@ -31,7 +31,8 @@ import java.util.Optional;
  * <pre>
  *  0 ..................................... 35   free space (4 rows)
  *  36 ─────────── divider ───────────── 44
- *  45 Back  46 Sell inventory  47 Total  48 Info  49 Close  50 Help  51 Your sell bonus  52/53 SELL
+ *  45 Back  46 Sell inventory  47 Total  49 Close  51 Your sell bonus  52 Tips  53 SELL
+ *  (owner 3 Nov 2026 "the /sell menu looks weird": one SELL button in the corner, the same three tiles on each side)
  * </pre>
  *
  * <p><b>Item safety.</b></p>
@@ -59,10 +60,11 @@ final class SellMenu extends Menu {
     static final int SLOT_SELL_INVENTORY = 46;
     static final int SLOT_TOTAL = 47;
     /** A4: Market Tips button. */
-    static final int SLOT_TIPS = 48;
+    static final int SLOT_TIPS = 52;
     static final int SLOT_BONUS = 51;
-    static final int SLOT_SELL = 52;
-    static final int SLOT_SELL_2 = 53;
+    static final int SLOT_SELL = 53;
+    /** One SELL button now (was 52 and 53). */
+    static final int SLOT_SELL_2 = SLOT_SELL;
     static final int DIVIDER_FIRST = 36;
     static final int DIVIDER_LAST = 44;
 

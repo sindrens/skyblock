@@ -578,14 +578,56 @@ public final class ShopModule implements SkyblockModule, Listener {
         Arg<ShopCatalog.Category> category = Arg.word("category", (sender, raw) -> tabOf(raw)
                 .orElseThrow(() -> new CommandFailure(ID, "unknown-category", Msg.p("input", raw),
                         Msg.p("categories", String.join(", ", categoryIds())))), Suggest.of(this::categoryIds));
+        // Owner 3 Nov 2026: /shop <text> finds items ("/shop stone", "/shop spaw"); a tab name still opens that tab.
+        Arg<String> query = Arg.word("item or tab", (sender, raw) -> raw, Suggest.of(this::searchSuggestions));
         core.commands().register(CommandSpec.command("shop")
-                .description("Buy and sell blocks, decoration, spawners and more")
+                .description("Buy and sell blocks, decoration, spawners and more; /shop <item> finds an item")
                 .category("Economy")
                 .permission(PERM_USE)
                 .playerOnly()
-                .optional(category)
-                .example("shop wood")
-                .executes(ctx -> open(ctx.player(), ctx.getOr(category, null))));
+                .optional(query)
+                .example("shop stone")
+                .executes(ctx -> {
+                    if (!ctx.has(query)) {
+                        open(ctx.player(), null);
+                        return;
+                    }
+                    String text = ctx.get(query);
+                    Optional<ShopCatalog.Category> tab = tabOf(text);
+                    if (tab.isPresent()) {
+                        open(ctx.player(), tab.get());
+                        return;
+                    }
+                    search(ctx.player(), text);
+                }));
+    }
+
+    /** Tab names and item ids for /shop tab completion. */
+    private List<String> searchSuggestions() {
+        List<String> out = new java.util.ArrayList<>(categoryIds());
+        catalog.items().stream().filter(ShopCatalog.Item::enabled).map(ShopCatalog.Item::id).forEach(out::add);
+        return out;
+    }
+
+    /** One clear match opens its buy screen; several open the results; none explains how to browse. */
+    void search(Player player, String text) {
+        List<ShopCatalog.Item> visible = catalog.items().stream().filter(ShopCatalog.Item::enabled)
+                .filter(i -> !(i.spawner() && !settings.spawnersEnabled)).toList();
+        List<ShopSearch.Hit> hits = ShopSearch.search(text, visible, 28);
+        if (hits.isEmpty()) {
+            msg.send(player, "search.none", Msg.p("query", text));
+            core.sounds().play(player, "error");
+            return;
+        }
+        boolean clear = hits.size() == 1 || hits.get(0).score() == 100 && hits.get(1).score() < 100;
+        if (clear) {
+            ShopCatalog.Item item = hits.get(0).item();
+            if (!refuse(player, item)) {
+                core.menus().open(player, new BuyMenu(this, item, item.category()));
+            }
+            return;
+        }
+        core.menus().open(player, new ShopSearchMenu(this, text, hits.stream().map(ShopSearch.Hit::item).toList()));
     }
 
     /** A tab by id; the old v1 category ids ({@code utility}, {@code glass-colors} ...) still find their new tab. */

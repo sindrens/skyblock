@@ -560,10 +560,32 @@ bank:
       - "<c:text>You get: <net>"
   menu:
     title: "Bank"
+    crumb-personal: "Personal"
+    crumb-island: "Island"
     info:
-      - "<c:text>Left: your own bank (this profile)."
-      - "<c:text>Right: your island's shared bank."
+      - "<c:text>Chest: your own bank."
+      - "<c:text>Ender chest: your island's bank."
       - "<c:text>Both earn interest every 8 hours."
+    # Owner 3 Nov 2026: the overview. <balance> <tier> <island> <money>
+    overview:
+      personal:
+        name: "<c:value><bold>Personal Bank"
+        lore:
+          - "<c:text>Balance: <balance>"
+          - "<c:muted>Only you. Safe if you leave."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      island:
+        name: "<c:value><bold>Island Bank"
+        lore:
+          - "<c:text>Balance: <balance>"
+          - "<c:muted>Shared by <island>."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      wallet:
+        name: "<c:value>Your money"
+        lore:
+          - "<c:text>In your pocket: <money>"
     personal:
       name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
       lore:

@@ -218,6 +218,10 @@ final class ToolListener implements Listener {
             if (mult > 1.0) {
                 stack.setAmount(Math.max(1, Math.min(stack.getMaxStackSize() * 4, ToolRules.roll(stack.getAmount() * mult, rnd.nextDouble()))));
             }
+            if (m.autoSell(p, rec, stack)) {
+                it.remove(); // Auto-Sell: sold in the next batch
+                continue;
+            }
             if (pd.crop()) {
                 long stored = m.storage().add(p, stack.getType().getKey().getKey(), stack.getAmount());
                 if (stored >= stack.getAmount()) {

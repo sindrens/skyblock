@@ -68,6 +68,8 @@ public final class IslandToolsModule implements SkyblockModule {
     private final Map<UUID, Map<Kind, Long>> taskProgress = new ConcurrentHashMap<>();
     /** Task progress not written yet. */
     private final Map<UUID, Map<Kind, Long>> taskDelta = new ConcurrentHashMap<>();
+    /** Auto-Sell: drops waiting for their sale, per player (owner 3 Nov 2026). */
+    private final Map<UUID, Map<org.bukkit.Material, Integer>> autoSell = new ConcurrentHashMap<>();
     /** Shards found and not paid yet, per profile. */
     private final Map<UUID, Long> pendingShards = new ConcurrentHashMap<>();
 
@@ -111,6 +113,8 @@ public final class IslandToolsModule implements SkyblockModule {
         tasks.add(core.scheduler().repeat("islandtools:tasks", 200L, 200L, this::flushTasks));
         long shardTicks = Math.max(1, config.shardPayoutSeconds) * 20L;
         tasks.add(core.scheduler().repeat("islandtools:shards", shardTicks, shardTicks, this::payShards));
+        long sellTicks = Math.max(1, config.autoSellSeconds) * 20L;
+        tasks.add(core.scheduler().repeat("islandtools:auto-sell", sellTicks, sellTicks, this::flushAutoSell));
         registerCommands();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
@@ -491,6 +495,50 @@ public final class IslandToolsModule implements SkyblockModule {
         } + effectLevel(rec, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel;
         if (java.util.concurrent.ThreadLocalRandom.current().nextDouble(100) < chance) {
             pendingShards.merge(profile, 1L, Long::sum);
+        }
+    }
+
+    /** True when this drop is taken by Auto-Sell (the tool has it and the item can be sold); it is then counted here. */
+    boolean autoSell(Player p, ToolStore.Rec rec, ItemStack stack) {
+        if (effectLevel(rec, Upgrades.Effect.AUTOSELL) <= 0) {
+            return false;
+        }
+        var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class).orElse(null);
+        if (sell == null || !sell.sellable(stack)) {
+            return false;
+        }
+        autoSell.computeIfAbsent(p.getUniqueId(), k -> new ConcurrentHashMap<>()).merge(stack.getType(), stack.getAmount(), Integer::sum);
+        return true;
+    }
+
+    /** Sells what Auto-Sell collected, one sale per player; what can't be sold goes back to the player (or /box). */
+    private void flushAutoSell() {
+        var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class).orElse(null);
+        for (UUID id : new java.util.ArrayList<>(autoSell.keySet())) {
+            Map<org.bukkit.Material, Integer> items = autoSell.remove(id);
+            Player p = Bukkit.getPlayer(id);
+            if (items == null || items.isEmpty() || p == null) {
+                continue; // a player who left: their few seconds of drops are gone, like drops left on the ground
+            }
+            List<ItemStack> stacks = new java.util.ArrayList<>();
+            items.forEach((mat, n) -> {
+                for (int left = n; left > 0; left -= mat.getMaxStackSize()) {
+                    stacks.add(new ItemStack(mat, Math.min(left, mat.getMaxStackSize())));
+                }
+            });
+            if (sell == null) {
+                giveAll(p, stacks);
+                continue;
+            }
+            double bonus = sell.bonusPercent(p) - (100 - config.autoSellPercent);
+            var request = new net.skybornmc.skyblock.common.sell.SellRequest(p.getUniqueId(), p.getName(), profile(p), stacks, bonus,
+                    "auto_sell", Actor.player(p));
+            sell.sell(request).whenComplete((result, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                List<ItemStack> back = error != null || result == null ? stacks : result.giveBack();
+                if (back != null && !back.isEmpty() && p.isOnline()) {
+                    giveAll(p, back);
+                }
+            }));
         }
     }
 

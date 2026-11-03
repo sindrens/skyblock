@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### v5 batch 5: economy
+- **Every shop item can be sold**: 126 shop items that had no price (logs, stones, leaves, flowers, saplings, glass, concrete, terracotta, decoration ...) get one at their shop price / 8 (`sell.yml roots`), always under the shop's 7.5x rule; crafted items are still capped at their recipe price, so nothing can be bought, crafted and sold for profit.
+- **/shop search**: `/shop stone`, `/shop string`, `/shop spaw` (spawners), `/shop oak log`, one typo allowed; one clear match opens its buy screen, several open a results page (best first). Tab completion lists tabs and items.
+- **Auto-Sell**: a one-level island tool upgrade (pickaxe, axe, hoe; 300 shards) that sells drops as you break them at 90% (`auto-sell.*`), one sale every 3 s.
+- **Shard blocks v2**: regrow in 5 min (was 30) down to 1 min, upgrades paid with money instead of crystals and shards (config v2 moves untouched files).
+- **/bank**: a 3-row overview with a chest (Personal Bank) on the left and an ender chest (Island Bank) on the right; each opens its own 4-row screen: balance on top, then Deposit, History, Interest, Tiers (or the withdraw limit) and Withdraw in one centred row.
+- **/sell**: one SELL button in the corner instead of two, a full and even bottom row.
 ### v5 batch 4: island farming
 - **Every crop grows on the island's clock**: wheat, carrots, potatoes, beetroot, nether wart, cocoa, sweet berries, melon and pumpkin stems, torchflower and pitcher crops grow one stage every few seconds (the island's crop-growth upgrade sets the full time: 60 s down to 15 s, split over the stages) instead of vanilla's random growth, with a small puff and a soft sound for players nearby (`islandtools.yml growth.*`). Crops join the clock when planted or when they would have grown; only loaded chunks are touched, with a budget per run. Melon/pumpkin fruits, sugar cane, cactus and bamboo stay vanilla.
 - **Look at a crop** on an island: a small text over it shows its stage and the seconds to the next one (only you see it).

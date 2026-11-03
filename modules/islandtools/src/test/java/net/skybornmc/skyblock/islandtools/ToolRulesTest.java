@@ -28,7 +28,7 @@ class ToolRulesTest {
         Upgrades u = Upgrades.parse(new IslandToolsConfig().upgrades, problems::add);
         assertEquals(List.of(), problems);
         for (Kind k : Kind.values()) {
-            assertEquals(8, u.of(k).size(), "D4 + owner 3 Nov 2026 Shard Finder: 8 upgrades for " + k);
+            assertEquals(k == Kind.SWORD ? 8 : 9, u.of(k).size(), "D4 + owner 3 Nov 2026 Shard Finder (+ Auto-Sell): upgrades for " + k);
         }
         assertTrue(u.get(Kind.HOE, "row").isPresent());
         assertTrue(u.get(Kind.HOE, "storage").isPresent());

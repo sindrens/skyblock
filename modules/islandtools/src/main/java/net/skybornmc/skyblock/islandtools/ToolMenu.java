@@ -141,6 +141,7 @@ final class ToolMenu extends Menu {
             case ROW -> ToolRules.row(lv, c.rowLengths) + " crops";
             case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storageFactor)) + " items";
             case SHARDS -> "+" + Format.number(lv * c.shardFinderPerLevel) + "% shards";
+            case AUTOSELL -> lv == 0 ? "-" : m.raw("effect.auto-sell");
         };
     }
 

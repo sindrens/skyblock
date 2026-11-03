@@ -38,6 +38,12 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "shards.finder-per-level", desc = "Extra shard chance (percent points) per level of the Shard Finder upgrade.", min = 0, max = 20)
     public double shardFinderPerLevel = 0.5;
 
+    @Setting(path = "auto-sell.price-percent", desc = "Owner 3 Nov 2026: Auto-Sell sells drops as you break them at this percent of the sell price (the other selling bonuses apply too).", min = 1, max = 100)
+    public double autoSellPercent = 90;
+
+    @Setting(path = "auto-sell.batch-seconds", desc = "Auto-sold drops are paid in one sale this often.", min = 1, max = 60)
+    public int autoSellSeconds = 3;
+
     @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
     public int shardPayoutSeconds = 3;
 
@@ -87,17 +93,17 @@ public final class IslandToolsConfig extends ModuleConfig {
     public List<String> putAwayWorlds = List.of("depths");
 
     @Setting(path = "upgrades", desc = "Upgrades per tool, 'kind:id:effect:max:base-cost:growth' (owner 3 Nov 2026: costs are shards). Effects: enchant=<id>, haste, magnet, "
-            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe), shards (Shard Finder). Cost of level n+1 = base x growth^n.")
+            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe), shards (Shard Finder), autosell (Auto-Sell). Cost of level n+1 = base x growth^n.")
     public List<String> upgrades = List.of(
             "pickaxe:efficiency:enchant=efficiency:5:10:2", "pickaxe:fortune:enchant=fortune:3:25:2.5", "pickaxe:haste:haste:2:40:3",
             "pickaxe:magnet:magnet:1:60:1", "pickaxe:smelter:smelt:5:15:2", "pickaxe:extra_drops:drops:5:20:2.2",
-            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2",
+            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2", "pickaxe:auto_sell:autosell:1:300:1",
             "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
             "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
-            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2",
+            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2", "axe:auto_sell:autosell:1:300:1",
             "hoe:row:row:4:20:3", "hoe:storage:storage:5:15:2.5", "hoe:fortune:enchant=fortune:3:25:2.5",
             "hoe:extra_drops:drops:5:20:2.2", "hoe:magnet:magnet:1:60:1", "hoe:efficiency:enchant=efficiency:3:10:2",
-            "hoe:haste:haste:2:40:3", "hoe:shard_finder:shards:5:25:2.2",
+            "hoe:haste:haste:2:40:3", "hoe:shard_finder:shards:5:25:2.2", "hoe:auto_sell:autosell:1:300:1",
             "sword:sharpness:enchant=sharpness:5:15:2.2", "sword:looting:enchant=looting:3:25:2.5",
             "sword:sweeping:enchant=sweeping_edge:3:20:2.4", "sword:fire_aspect:enchant=fire_aspect:2:30:2.8",
             "sword:knockback:enchant=knockback:2:10:2.5", "sword:extra_drops:drops:5:20:2.2", "sword:lifesteal:lifesteal:3:40:2.5",

@@ -34,24 +34,26 @@ import java.util.concurrent.CompletableFuture;
  */
 final class BankMenu extends Menu {
 
-    static final int SLOT_PERSONAL = 11;
-    static final int SLOT_ISLAND = 15;
-    static final int SLOT_P_DEPOSIT = 19;
-    static final int SLOT_P_WITHDRAW = 20;
-    static final int SLOT_P_TIERS = 21;
-    static final int SLOT_I_DEPOSIT = 23;
-    static final int SLOT_I_WITHDRAW = 24;
-    static final int SLOT_I_HISTORY = 25;
-    static final int SLOT_P_INTEREST = 29;
-    static final int SLOT_I_INTEREST = 33;
-    static final int SLOT_P_HISTORY = 38;
-    static final int SLOT_I_LIMIT = 42;
-    static final int[] DIVIDER = {13, 22, 31, 40};
-    /** Every content slot, for the layout test. */
-    static final List<Integer> CONTENT = List.of(SLOT_PERSONAL, SLOT_ISLAND, SLOT_P_DEPOSIT, SLOT_P_WITHDRAW, SLOT_P_TIERS,
-            SLOT_I_DEPOSIT, SLOT_I_WITHDRAW, SLOT_I_HISTORY, SLOT_P_INTEREST, SLOT_I_INTEREST, SLOT_P_HISTORY, SLOT_I_LIMIT);
+    /** Every slot one bank's screen uses (owner 3 Nov 2026 layout). */
+    static final List<Integer> CONTENT = List.of(4, 20, 21, 22, 23, 24);
+
+    /** Owner 3 Nov 2026: null = the overview (chest = personal, ender chest = island); else one bank's own screen. */
+    enum Side { PERSONAL, ISLAND }
+
+    /** Overview (3 rows): personal bank left, island bank right, your money in the middle. */
+    static final int SLOT_O_PERSONAL = 11;
+    static final int SLOT_O_WALLET = 13;
+    static final int SLOT_O_ISLAND = 15;
+    /** One bank (4 rows): its balance on top, then deposit, history, interest, tiers / limit, withdraw. */
+    static final int SLOT_D_BALANCE = 4;
+    static final int SLOT_D_DEPOSIT = 20;
+    static final int SLOT_D_HISTORY = 21;
+    static final int SLOT_D_INTEREST = 22;
+    static final int SLOT_D_EXTRA = 23;
+    static final int SLOT_D_WITHDRAW = 24;
 
     private final BankFeature bank;
+    private final Side side;
     private UUID profileKey;
     private BankFeature.IslandAccess access;
     private BankFeature.Account personal;
@@ -62,17 +64,25 @@ final class BankMenu extends Menu {
     private boolean failed;
 
     BankMenu(BankFeature bank) {
+        this(bank, null);
+    }
+
+    BankMenu(BankFeature bank, Side side) {
         this.bank = bank;
+        this.side = side;
     }
 
     @Override
     public int rows() {
-        return 6;
+        return side == null ? 3 : 4;
     }
 
     @Override
     public Component title() {
-        return service.title(viewer, text("bank.menu.title"));
+        if (side == null) {
+            return service.title(viewer, text("bank.menu.title"));
+        }
+        return service.title(viewer, text("bank.menu.title"), text(side == Side.PERSONAL ? "bank.menu.crumb-personal" : "bank.menu.crumb-island"));
     }
 
     @Override
@@ -104,32 +114,51 @@ final class BankMenu extends Menu {
             reload(); // a payout time passed while the menu was open
             return;
         }
-        set(SLOT_P_INTEREST, interestItem(personal));
-        if (island != null) {
-            set(SLOT_I_INTEREST, interestItem(island));
+        if (side == Side.PERSONAL) {
+            set(SLOT_D_INTEREST, interestItem(personal));
+        } else if (side == Side.ISLAND && island != null) {
+            set(SLOT_D_INTEREST, interestItem(island));
         }
     }
 
     @Override
     protected void build() {
         navBar();
-        ItemStack divider = service.filler(Material.BLACK_STAINED_GLASS_PANE);
-        for (int slot : DIVIDER) {
-            set(slot, divider);
-        }
+        int a = side == null ? SLOT_O_PERSONAL : SLOT_D_BALANCE;
+        int b = side == null ? SLOT_O_ISLAND : SLOT_D_INTEREST;
         if (personal == null) {
             if (failed) {
-                set(SLOT_PERSONAL, service.errorItem(viewer, null));
-                set(SLOT_ISLAND, service.errorItem(viewer, null));
+                set(a, service.errorItem(viewer, null));
+                set(b, service.errorItem(viewer, null));
                 return;
             }
-            set(SLOT_PERSONAL, service.loadingItem(viewer));
-            set(SLOT_ISLAND, service.loadingItem(viewer));
+            set(a, service.loadingItem(viewer));
+            set(b, service.loadingItem(viewer));
             load();
             return;
         }
-        buildPersonal();
-        buildIsland();
+        if (side == null) {
+            buildOverview();
+        } else if (side == Side.PERSONAL) {
+            buildPersonal();
+        } else {
+            buildIsland();
+        }
+    }
+
+    /** Owner 3 Nov 2026: a chest for your own bank, an ender chest for the island's, your money between them. */
+    private void buildOverview() {
+        BankFeature.Account a = personal;
+        set(SLOT_O_PERSONAL, MenuButton.of(item(Material.CHEST, "bank.menu.overview.personal", amount("balance", a.balance()),
+                Msg.number("tier", a.tier())), click -> openChild(new BankMenu(bank, Side.PERSONAL))));
+        set(SLOT_O_WALLET, MenuButton.display(item(Material.GOLD_INGOT, "bank.menu.overview.wallet",
+                amount("money", bank.module.cachedMoney(viewer)))));
+        if (access == null || island == null) {
+            set(SLOT_O_ISLAND, MenuButton.display(item(Material.ENDER_CHEST, "bank.menu.no-island")));
+            return;
+        }
+        set(SLOT_O_ISLAND, MenuButton.of(item(Material.ENDER_CHEST, "bank.menu.overview.island", amount("balance", island.balance()),
+                Msg.p("island", access.island().name())), click -> openChild(new BankMenu(bank, Side.ISLAND))));
     }
 
     // ------------------------------------------------------------------------------------------------ loading
@@ -173,7 +202,7 @@ final class BankMenu extends Menu {
 
     /** Opens a fresh copy of this menu (after an action: shows the new balances). */
     private void reopen(Player player) {
-        BankMenu fresh = new BankMenu(bank);
+        BankMenu fresh = new BankMenu(bank, side);
         if (parent() != null) {
             fresh.parent(parent());
         }
@@ -187,15 +216,15 @@ final class BankMenu extends Menu {
         long cap = a.terms().capacity();
         TagResolver[] p = {amount("balance", a.balance()), amount("capacity", cap), amount("room", BankRules.room(cap, a.balance())),
                 Msg.number("tier", a.tier()), Msg.number("max", bank.tiers().maxTier())};
-        set(SLOT_PERSONAL, MenuButton.display(item(Material.GOLD_BLOCK, "bank.menu.personal", p)));
+        set(SLOT_D_BALANCE, MenuButton.display(item(Material.CHEST, "bank.menu.personal", p)));
         long purse = bank.module.cachedMoney(viewer);
         long maxDeposit = BankRules.maxDeposit(purse, cap, a.balance());
-        set(SLOT_P_DEPOSIT, depositButton(a, maxDeposit));
-        set(SLOT_P_WITHDRAW, withdrawButton(a, a.balance(), null));
-        set(SLOT_P_TIERS, MenuButton.of(item(Material.EXPERIENCE_BOTTLE, "bank.menu.tiers", p),
+        set(SLOT_D_DEPOSIT, depositButton(a, maxDeposit));
+        set(SLOT_D_WITHDRAW, withdrawButton(a, a.balance(), null));
+        set(SLOT_D_EXTRA, MenuButton.of(item(Material.EXPERIENCE_BOTTLE, "bank.menu.tiers", p),
                 click -> openChild(new BankTierMenu(bank, profileKey, a.tier()))));
-        set(SLOT_P_INTEREST, interestItem(a));
-        set(SLOT_P_HISTORY, MenuButton.of(item(Material.BOOK, "bank.menu.history-personal"),
+        set(SLOT_D_INTEREST, interestItem(a));
+        set(SLOT_D_HISTORY, MenuButton.of(item(Material.BOOK, "bank.menu.history-personal"),
                 click -> openChild(new BankHistoryMenu(bank, a.ref(), text("bank.menu.history-personal.crumb")))));
     }
 
@@ -203,37 +232,37 @@ final class BankMenu extends Menu {
 
     private void buildIsland() {
         if (access == null || island == null) {
-            set(SLOT_ISLAND, MenuButton.display(item(Material.BARRIER, "bank.menu.no-island")));
+            set(SLOT_D_BALANCE, MenuButton.display(item(Material.BARRIER, "bank.menu.no-island")));
             return;
         }
         BankFeature.Account a = island;
         long cap = a.terms().capacity();
         TagResolver[] p = {amount("balance", a.balance()), amount("capacity", cap), amount("room", BankRules.room(cap, a.balance())),
                 Msg.p("island", access.island().name()), Msg.c("role", text("bank.roles." + access.role().name().toLowerCase(Locale.ROOT)))};
-        set(SLOT_ISLAND, MenuButton.display(item(Material.ENDER_CHEST, "bank.menu.island", p)));
+        set(SLOT_D_BALANCE, MenuButton.display(item(Material.ENDER_CHEST, "bank.menu.island", p)));
         if (access.deposit()) {
-            set(SLOT_I_DEPOSIT, depositButton(a, BankRules.maxDeposit(bank.module.cachedMoney(viewer), cap, a.balance())));
+            set(SLOT_D_DEPOSIT, depositButton(a, BankRules.maxDeposit(bank.module.cachedMoney(viewer), cap, a.balance())));
         } else {
-            set(SLOT_I_DEPOSIT, locked(Material.HOPPER, "bank.menu.deposit"));
+            set(SLOT_D_DEPOSIT, locked(Material.HOPPER, "bank.menu.deposit"));
         }
         long remaining = BankRules.remainingToday(cap, access.limitPercent(), withdrawnToday);
         if (access.withdraw()) {
             BankOps.Limit limit = new BankOps.Limit(access.island().islandId(), profileKey,
                     InterestMath.percentOf(cap, access.limitPercent()));
-            set(SLOT_I_WITHDRAW, withdrawButton(a, BankRules.maxWithdraw(a.balance(), remaining), limit));
+            set(SLOT_D_WITHDRAW, withdrawButton(a, BankRules.maxWithdraw(a.balance(), remaining), limit));
         } else {
-            set(SLOT_I_WITHDRAW, locked(Material.DROPPER, "bank.menu.withdraw"));
+            set(SLOT_D_WITHDRAW, locked(Material.DROPPER, "bank.menu.withdraw"));
         }
         if (access.history()) {
-            set(SLOT_I_HISTORY, MenuButton.of(item(Material.KNOWLEDGE_BOOK, "bank.menu.history-island"),
+            set(SLOT_D_HISTORY, MenuButton.of(item(Material.KNOWLEDGE_BOOK, "bank.menu.history-island"),
                     click -> openChild(new BankHistoryMenu(bank, a.ref(), text("bank.menu.history-island.crumb")))));
         } else {
-            set(SLOT_I_HISTORY, locked(Material.KNOWLEDGE_BOOK, "bank.menu.history-island"));
+            set(SLOT_D_HISTORY, locked(Material.KNOWLEDGE_BOOK, "bank.menu.history-island"));
         }
-        set(SLOT_I_INTEREST, interestItem(a));
+        set(SLOT_D_INTEREST, interestItem(a));
         String limitKey = !access.withdraw() ? "bank.menu.limit.none"
                 : remaining == Long.MAX_VALUE ? "bank.menu.limit.unlimited" : "bank.menu.limit.limited";
-        set(SLOT_I_LIMIT, MenuButton.display(item(Material.PAPER, limitKey,
+        set(SLOT_D_EXTRA, MenuButton.display(item(Material.PAPER, limitKey,
                 amount("left", remaining == Long.MAX_VALUE ? 0 : remaining), Msg.number("percent", Math.max(0, access.limitPercent())))));
     }
 
@@ -281,7 +310,7 @@ final class BankMenu extends Menu {
         long fee = bank.ops().feeNow(value, feePercent);
         TagResolver[] p = {amount("amount", value), amount("fee", fee), amount("net", value - fee),
                 Msg.p("percent", percent(feePercent)), Msg.c("discount", discount(bank.fees(), level))};
-        BankMenu fresh = new BankMenu(bank);
+        BankMenu fresh = new BankMenu(bank, side);
         if (parent() != null) {
             fresh.parent(parent());
         }

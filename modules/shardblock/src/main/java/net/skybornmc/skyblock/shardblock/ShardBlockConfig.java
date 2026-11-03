@@ -36,7 +36,12 @@ public final class ShardBlockConfig extends ModuleConfig {
     public String capZone = "Europe/Oslo";
 
     @Setting(path = "levels.respawn-seconds", desc = "Regrow time in seconds per respawn level (level 0 first).", level = Setting.Level.OWNER)
-    public List<String> respawnSeconds = List.of("1800", "1500", "1200", "900", "600", "420");
+    public List<String> respawnSeconds = List.of("300", "240", "180", "120", "90", "60");
+
+    /** Before owner 3 Nov 2026 ("faster, upgraded with something else than shards"). */
+    static final List<String> RESPAWN_SECONDS_V1 = List.of("1800", "1500", "1200", "900", "600", "420");
+    static final List<String> RESPAWN_COSTS_V1 = List.of("crystals:100", "crystals:300", "crystals:900", "crystals:2700", "crystals:8100");
+    static final List<String> DOUBLE_COSTS_V1 = List.of("shards:10", "shards:25", "shards:50", "shards:100", "shards:200");
 
     @Setting(path = "levels.double-percent", desc = "Chance in % to get double shards per double level (level 0 first).",
             level = Setting.Level.OWNER)
@@ -44,11 +49,11 @@ public final class ShardBlockConfig extends ModuleConfig {
 
     @Setting(path = "upgrades.respawn", desc = "Cost of each respawn level after 0, as currency:amount (crystals, shards, money). "
             + "One entry per level above 0.", level = Setting.Level.OWNER)
-    public List<String> respawnCosts = List.of("crystals:100", "crystals:300", "crystals:900", "crystals:2700", "crystals:8100");
+    public List<String> respawnCosts = List.of("money:2000", "money:8000", "money:25000", "money:80000", "money:250000");
 
     @Setting(path = "upgrades.double", desc = "Cost of each double-chance level after 0, as currency:amount. One entry per level above 0.",
             level = Setting.Level.OWNER)
-    public List<String> doubleCosts = List.of("shards:10", "shards:25", "shards:50", "shards:100", "shards:200");
+    public List<String> doubleCosts = List.of("money:1500", "money:5000", "money:15000", "money:50000", "money:150000");
 
     @Setting(path = "interaction.break-gap-ms", desc = "Shortest time between two shard block breaks of one player (anti auto-click).",
             min = 0, max = 10000)
@@ -101,6 +106,21 @@ public final class ShardBlockConfig extends ModuleConfig {
             }
         }
         return fallback;
+    }
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (owner 3 Nov 2026): regrow in 5 min down to 1 min, upgrades paid with money (shards come from island tools). */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        ShardBlockConfig d = new ShardBlockConfig();
+        return java.util.Map.of(2, java.util.Map.of(
+                "levels.respawn-seconds", ValueChange.of(RESPAWN_SECONDS_V1, d.respawnSeconds),
+                "upgrades.respawn", ValueChange.of(RESPAWN_COSTS_V1, d.respawnCosts),
+                "upgrades.double", ValueChange.of(DOUBLE_COSTS_V1, d.doubleCosts)));
     }
 
     @Override
