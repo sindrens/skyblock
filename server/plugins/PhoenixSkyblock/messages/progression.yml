@@ -622,20 +622,26 @@ upgrades:
     name-blocked: "<c:error><upgrade> <level>"
     name-maxed: "<c:value><upgrade> <c:muted>(max)"
     name-soon: "<c:muted><upgrade>"
+    # Lore format of the item mockup (owner 3 Nov 2026): muted subtitle, then | Stats, | Tasks, | Price sections.
     level:
-      - "<c:bar>|</c:bar> <c:text>Level <c:value><current></c:value><c:muted>/<max>"
+      - "<c:muted>Level <current>/<max>"
+      - ""
+      - "<c:bar>|</c:bar> <bold><c:header>Stats</c:header></bold>"
     now:
       - "<c:bar>|</c:bar> <c:text>Now: <c:value><now>"
     next:
       - "<c:bar>|</c:bar> <c:text>Next: <c:success><next>"
     tasks-header:
-      - "<c:bar>|</c:bar> <c:header>Tasks"
+      - ""
+      - "<c:bar>|</c:bar> <bold><c:header>Tasks</c:header></bold>"
     no-tasks:
       - "  <c:muted>No tasks for this level"
     island-level:
       - "<c:bar>|</c:bar> <c:text>Needs island level <c:value><island-level>"
     cost:
-      - "<c:bar>|</c:bar> <c:text>Cost: <c:success><cost></c:success> <c:muted>(island bank)"
+      - ""
+      - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
+      - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost></c:money> <c:muted>(island bank)"
     soon:
       - "<c:muted>Coming soon"
     click:
@@ -671,7 +677,9 @@ upgrades:
       name-later: "<c:muted>Level <level>"
       lore:
         - "<c:text><effect>"
-        - "<c:bar>|</c:bar> <c:text>Cost: <c:value><cost>"
+        - ""
+        - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
+        - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost>"
         - "<c:bar>|</c:bar> <c:text>Task tier: <c:value><tier>"
       island-level:
         - "<c:bar>|</c:bar> <c:text>Island level: <c:value><island-level>"
@@ -785,7 +793,9 @@ masteries:
       name-later: "<c:muted>Rank <level>"
       lore:
         - "<c:text><effect>"
-        - "<c:bar>|</c:bar> <c:text>Cost: <c:value><cost>"
+        - ""
+        - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
+        - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost>"
   # Ascension: endless levels once everything is maxed (owner P5-24). <level> next level, <current> bought,
   # <cost> next price, <points> island level points per level
   ascension:
