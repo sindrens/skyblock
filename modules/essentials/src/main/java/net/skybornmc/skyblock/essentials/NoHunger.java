@@ -19,7 +19,8 @@ final class NoHunger implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onFood(FoodLevelChangeEvent event) {
-        if (config.hungerDisabled && event.getEntity() instanceof Player p && event.getFoodLevel() < p.getFoodLevel()) {
+        if (config.hungerDisabled && event.getEntity() instanceof Player p && event.getFoodLevel() < p.getFoodLevel()
+                && !hungerWorld(p)) {
             event.setCancelled(true);
         }
     }
@@ -35,8 +36,20 @@ final class NoHunger implements Listener {
         fill(event.getPlayer());
     }
 
+    /** PvP worlds keep hunger ({@code hunger.pvp-worlds}). */
+    private boolean hungerWorld(Player player) {
+        String world = player.getWorld().getName();
+        return config.hungerWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(world));
+    }
+
+    /** Leaving a PvP world: the food bar is full again. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWorld(org.bukkit.event.player.PlayerChangedWorldEvent event) {
+        fill(event.getPlayer());
+    }
+
     private void fill(Player player) {
-        if (config.hungerDisabled) {
+        if (config.hungerDisabled && !hungerWorld(player)) {
             player.setFoodLevel(20);
             player.setSaturation(20f);
         }

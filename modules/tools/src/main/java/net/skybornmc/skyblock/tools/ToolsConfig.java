@@ -126,7 +126,14 @@ public final class ToolsConfig extends ModuleConfig {
     public List<String> worldToolsDepthsWorlds = List.of("depths");
 
     @Setting(path = "world-inventory.depths-items", desc = "Items of a profile's first Depths inventory, 'MATERIAL amount action'. Action satchel = opens /satchel, dungeon = opens /dungeon, - = a plain item. Names: tools messages world-inventory.item.<action>.")
-    public List<String> worldInventoryDepthsItems = List.of("LEATHER 1 satchel", "RECOVERY_COMPASS 1 dungeon", "TORCH 16 -");
+    public List<String> worldInventoryDepthsItems = List.of("LEATHER 1 satchel");
+
+    /** The first Depths kit of the 3 Nov 2026 release (replaced in version 2: "no torches and useless things, simple 3/4 items"). */
+    static final List<String> DEPTHS_ITEMS_V1 = List.of("LEATHER 1 satchel", "RECOVERY_COMPASS 1 dungeon", "TORCH 16 -");
+
+    @Setting(path = "world-inventory.depths-tools", desc = "Tier 1 tool types a profile's first Depths inventory gets (owner 3 Nov 2026: "
+            + "pickaxe, axe and sword, plus the satchel = 4 items).")
+    public List<String> worldInventoryDepthsTools = List.of("pickaxe", "axe", "sword");
 
     @Setting(path = "world-tools.auto-starter", desc = "The first Depths inventory of a profile also gets the starter tools (once per profile, see starter-kit.once).")
     public boolean worldToolsAutoStarter = true;
@@ -217,11 +224,30 @@ public final class ToolsConfig extends ModuleConfig {
     }
 
     List<ToolKind> starterKinds() {
+        return kinds(starterKinds);
+    }
+
+    List<ToolKind> depthsKinds() {
+        return kinds(worldInventoryDepthsTools);
+    }
+
+    private static List<ToolKind> kinds(List<String> ids) {
         List<ToolKind> out = new ArrayList<>();
-        for (String s : starterKinds) {
+        for (String s : ids) {
             ToolKind.byId(s).filter(k -> !out.contains(k)).ifPresent(out::add);
         }
         return out;
+    }
+
+    /** Version 2 (owner 3 Nov 2026): the first Depths kit is just the satchel and three tools (untouched lists only). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("world-inventory.depths-items", ValueChange.of(DEPTHS_ITEMS_V1, List.of("LEATHER 1 satchel"))));
     }
 
     /** Dead-key rule (REVIEW3 §6): NPC places come from the applied builds now (npcs module); the old keys are deleted on load. */

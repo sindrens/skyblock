@@ -507,7 +507,7 @@ final class Forge {
      * given right away. Once per profile because it only runs when the profile's Depths set is created. No claim row.
      */
     void giveDepthsStarter(Player player) {
-        List<ToolKind> missing = StarterKit.missing(module.config().starterKinds(), kindsOwned(player)).stream()
+        List<ToolKind> missing = StarterKit.missing(module.config().depthsKinds(), kindsOwned(player)).stream()
                 .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
         if (!missing.isEmpty()) {
             giveStarter(player, missing, "starter.depths-given");

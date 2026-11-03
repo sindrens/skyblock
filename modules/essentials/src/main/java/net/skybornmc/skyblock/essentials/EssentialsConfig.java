@@ -9,6 +9,9 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "hunger.disabled", desc = "Owner 3 Nov 2026: no hunger anywhere (the food bar stays full).")
     public boolean hungerDisabled = true;
 
+    @Setting(path = "hunger.pvp-worlds", desc = "Worlds where hunger still works (owner 3 Nov 2026: only PvP; off in dungeons too).")
+    public java.util.List<String> hungerWorlds = java.util.List.of("warzone");
+
     @Setting(path = "spawn.world", desc = "World that /spawn teleports to (its spawn point is set by worlds.yml).")
     public String spawnWorld = "spawn";
 
