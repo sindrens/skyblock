@@ -76,7 +76,7 @@ public final class ConfigManager {
             }
             Object raw = yaml.get(path);
             try {
-                Object value = convert(field.getType(), raw, path);
+                Object value = convert(field, raw, path);
                 checkRange(setting, value, path);
                 write(field, config, value);
             } catch (IllegalArgumentException e) {
@@ -137,7 +137,7 @@ public final class ConfigManager {
         for (Field field : settingFields(config)) {
             Setting setting = field.getAnnotation(Setting.class);
             if (pathOf(field, setting).equals(path)) {
-                Object value = convert(field.getType(), rawValue, path);
+                Object value = convert(field, rawValue, path);
                 checkRange(setting, value, path);
                 write(field, config, value);
                 return;
@@ -238,6 +238,38 @@ public final class ConfigManager {
             return setting.path();
         }
         return field.getName().replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * {@link #convert(Class, Object, String)} for a setting field. A list of numbers ({@code List<Integer>},
+     * {@code List<Long>}, {@code List<Double>}) gets number elements: before 3 Nov 2026 every list was loaded as text, so
+     * reading such a list crashed (the island tool menu).
+     */
+    static Object convert(Field field, Object raw, String path) {
+        Class<?> element = listElement(field);
+        if (element == null || element == String.class || !(raw instanceof List<?> list)) {
+            return convert(field.getType(), raw, path);
+        }
+        List<Object> out = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            try {
+                out.add(convert(element, list.get(i), path));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("entry " + (i + 1) + ": " + e.getMessage());
+            }
+        }
+        return List.copyOf(out);
+    }
+
+    /** The element class of a {@code List<X>} field, or null when the field is no list (or the type is not plain). */
+    static Class<?> listElement(Field field) {
+        if (!List.class.isAssignableFrom(field.getType())
+                || !(field.getGenericType() instanceof java.lang.reflect.ParameterizedType pt)
+                || pt.getActualTypeArguments().length != 1
+                || !(pt.getActualTypeArguments()[0] instanceof Class<?> c)) {
+            return null;
+        }
+        return c;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

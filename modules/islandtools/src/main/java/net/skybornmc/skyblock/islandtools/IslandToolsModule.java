@@ -613,9 +613,28 @@ public final class IslandToolsModule implements SkyblockModule {
         if (r == null || r.tier() >= ToolRules.TIERS.size() - 1 || r.tier() >= config.tierCosts.size()) {
             return null;
         }
-        long money = r.tier() < config.tierMoney.size() ? config.tierMoney.get(r.tier()) : 0;
-        return new Purchase(kind, null, config.tierCosts.get(r.tier()), r, r.with(r.tier() + 1, r.upgrades()), money, 0,
+        long money = r.tier() < config.tierMoney.size() ? number(config.tierMoney, r.tier()) : 0;
+        return new Purchase(kind, null, number(config.tierCosts, r.tier()), r, r.with(r.tier() + 1, r.upgrades()), money, 0,
                 islandOf(profile(p)));
+    }
+
+    /**
+     * One entry of a number list from the config. A list edited by hand or in /admin can hold text ("1500", "1,500"), and
+     * generics don't stop that at load time; reading it as an Integer then crashed the tool menu (3 Nov 2026). Bad entry = 0.
+     */
+    static long number(List<?> list, int index) {
+        Object v = list.get(index);
+        if (v instanceof Number n) {
+            return n.longValue();
+        }
+        if (v == null) {
+            return 0;
+        }
+        try {
+            return Long.parseLong(v.toString().trim().replace(",", "").replace("_", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     /** The next level of an upgrade, or null at max. */
