@@ -1,6 +1,47 @@
 # Changelog
 
 ## [Unreleased]
+### v5 evening batch (3 Nov 2026, owner + Cubed feedback)
+**Islands**
+- Invites work for players alone on their own island (a new player's starter island); accepting asks to replace it.
+- Joining an island by replacing your solo island resets your profile (inventory and ender chest emptied, staff backup) and you start with $1,000 (`islands.yml lifecycle.profile-reset.on-join`, `join-money`).
+- `/is create`; right-click island obsidian with an empty bucket for lava back (Break right, 2 s cooldown, 120/h).
+- Island crops grow a stage every 3 s (`growth.stage-seconds`, faster with Crop Growth), bone meal works (1-3 stages), no hologram over crops; crop growth is cheaper on the server (2 ms cap per run).
+- A new island's starter chest is emptied before it is filled.
+- The name above a head shows the level of the island the player stands on.
+
+**Tools**
+- Personal tools only (the island tools); island upgrades boost every member's tools. They work everywhere, and exactly like on an island at /farm and /mine (`islandtools.yml tool-worlds`).
+- The hoe earns shards from the start (3%), Auto-Sell costs 20 shards, Extra Drops / Shard Finder / Storage have 10 cheap levels.
+- The tool upgrade menu opens again (number lists in configs were read as text).
+- One inventory everywhere: the separate Depths inventory is off; stored Depths sets and put-away tools come back on join.
+
+**Farm and Mine (replace the Depths)**
+- `/farm`: ripe wheat that grows back in 2 s; crops unlock per player (carrots at 500 harvested, potatoes at 2,500, beetroot at 8,000), each player sees and harvests their own crop.
+- `/mine`: stone that refills in 3 s; ores unlock per player (iron at 300 mined, gold and redstone at 1,500, lapis and diamond at 5,000, emerald at 15,000), view and drop per player.
+- Both pay a money bonus per harvest and ore (`essentials.yml grind.bonus-percent`).
+- The Depths module no longer starts; players in its world go to spawn; Depths portals, the /menu Play button and Travel lead to the Farm and the Mine; Depths delivery tasks ask for /mine items. `/dungeon` removed.
+
+**Economy and shop**
+- `/shop` works again (the shop module failed to start) and opens directly.
+- Self-farming crops sell low (cactus $5, cane $4, melon slice $2, pumpkin $10, cocoa $8, berries $6, nether wart $30); hoe crops a bit higher (wheat $12, carrot/potato $15, beetroot $20).
+- Seeds and crops cost $1,500-4,000 in the shop (shop.yml v6; owner prices stay).
+- Shop layout: tabs in one row, item rows fill from the left, Undo only after a buy, lore in the mockup format, buttons side by side, vanilla tab icons.
+- `/sell all` sells the hotbar too. `/keys` lists your crate keys.
+- Spawner mobs stand fully still, never hurt players and drop their own vanilla item (rotten flesh, blaze rods, iron ingots ...) at the modelled income.
+- Reward numbers are rounded (quest money and crystals, task crystals and pillar XP).
+
+**Look and feel**
+- Plain vanilla menus (no red frame panel), vanilla icons in /menu and Travel.
+- Scoreboard: Phoenix gradient title, Shards on the island board.
+- Island upgrades and /is masteries lore: subtitle, | Stats, | Tasks, | Price, action last.
+
+**Other**
+- No fall damage anywhere; hunger only in the PvP world; 5 s between profile switches; no AFK chat broadcast.
+- Staff: `/profiles info <player>`, `/profiles reset <player> [slot]` (offline, confirm, audited).
+- WorldEdit wand is a warped fungus on a stick (`//wand`).
+- Deploys: no plugin downloads unless `UPDATE=1`, `QUICK=1` skips the restart warning, a failed `stop` closes the server session so it restarts with the new jar.
+
 ### v5 owner fixes (3 Nov 09:17)
 - **The Depths has its own inventory**: the island and spawn share one inventory, the Depths has another. Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island and island items never reach the Depths (`tools.yml world-tools.*`, table `world_inventory`). The first Depths visit of a profile starts with a Satchel (right-click opens /satchel), a Dungeon Map (opens /dungeon), 16 torches (`world-inventory.depths-items`) and the starter tools. Island tools are still put away at spawn and come back on the island. Profiles can't be switched inside the Depths (profiles config v2).
 - **Hunger is off everywhere** (`essentials.yml hunger.disabled`).
