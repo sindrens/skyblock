@@ -111,7 +111,20 @@ final class Display {
     String key(Player player, RankView rank) {
         String nick = hasNick(player) ? PlainTextComponentSerializer.plainText().serialize(player.displayName())
                 + player.displayName().hashCode() : "";
-        return key(rank, nick, afk(player), hookText(player, "title"), hookText(player, "tag"));
+        return key(rank, nick, afk(player), hookText(player, "title"), hookText(player, "tag")) + '\u0000' + islandLevelHere(player);
+    }
+
+    /** The level of the island whose slot the player stands in (islands world), or -1 elsewhere / when off. Cheap (memory). */
+    int islandLevelHere(Player player) {
+        if (config.get().nametagIslandLevel == null || config.get().nametagIslandLevel.isBlank()) {
+            return -1;
+        }
+        var islands = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class);
+        var progression = core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class);
+        if (islands.isEmpty() || progression.isEmpty() || !player.getWorld().getName().equals(islands.get().worldName())) {
+            return -1;
+        }
+        return islands.get().islandInSlot(player.getLocation()).map(i -> progression.get().islandLevel(i.id())).orElse(-1);
     }
 
     /** The fingerprint itself (pure, unit-tested). */
@@ -218,6 +231,14 @@ final class Display {
 
     Component afkSuffix(Player player) {
         return afk(player) ? fixed(Audience.empty(), config.get().afkPart) : Component.empty();
+    }
+
+    /** The nametag suffix: the island level part (on an island), then the AFK marker. */
+    Component nametagSuffix(Player player) {
+        int level = islandLevelHere(player);
+        Component out = level < 0 ? Component.empty()
+                : core.messages().parse(Audience.empty(), config.get().nametagIslandLevel.replace("<level>", String.valueOf(level)));
+        return out.append(afkSuffix(player));
     }
 
     /** Chat-line placeholders for one viewer. */

@@ -394,7 +394,7 @@ final class TabService implements Listener {
         }
         // The rank badge is drawn per board in apply().
         Entry entry = new Entry(key, teamName(rank.weight(), p.getName()), Component.empty(),
-                display.afkSuffix(p), Display.teamColor(rank), rank);
+                display.nametagSuffix(p), Display.teamColor(rank), rank);
         entries.put(id, entry);
         p.playerListName(display.tabEntry(p, rank));
         String staleTeam = old != null && !old.team().equals(entry.team()) ? old.team() : null;

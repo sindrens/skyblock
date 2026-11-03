@@ -45,6 +45,10 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "format.nametag", desc = "Show the rank prefix above heads (scoreboard teams).")
     public boolean nametagPrefix = true;
 
+    @Setting(path = "format.nametag-island-level", desc = "Owner 3 Nov 2026: after the name above a head, the level of the island "
+            + "the player is standing on (<level>). Empty = off. Shown only on islands.")
+    public String nametagIslandLevel = " <c:muted>[</c:muted><c:value>Lv <level></c:value><c:muted>]</c:muted>";
+
     // ---------------------------------------------------------------- rank badges
 
     @Setting(path = "ranks.looks", desc = "How each rank word looks (no brackets) in chat, tab, nametags, /list and the sidebar. A '&l' in the Bedrock part makes the Java word bold too. "
