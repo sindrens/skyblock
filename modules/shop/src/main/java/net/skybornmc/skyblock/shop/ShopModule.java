@@ -1310,6 +1310,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         event.setCancelled(true);
         Player player = event.getPlayer();
         String text = m.length() > 5 ? m.substring(6).trim() : "";
+        core.plugin().getLogger().info("Shop: /shop" + (text.isEmpty() ? "" : " " + text) + " opened the Phoenix Skyblock shop for " + player.getName());
         if (!player.hasPermission(PERM_USE)) {
             player.performCommand("phoenixskyblock:shop"); // the framework explains the missing permission
             return;

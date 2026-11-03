@@ -10,8 +10,5 @@
 
 command-block-overrides: []
 ignore-vanilla-permissions: false
-# Owner 3 Nov 2026: another plugin (the Tebex store) also registers /shop and showed the store link. Server aliases win
-# over plugin commands, so /shop (with its arguments) always opens the Phoenix Skyblock shop. The store stays /store.
-aliases:
-  shop:
-  - phoenixskyblock:shop $1-
+# /shop is opened by the shop module itself as soon as it is typed (ShopModule.onShopCommand), so no alias here.
+aliases: {}
