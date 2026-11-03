@@ -25,7 +25,7 @@ hub:
   # Play (lime)
   home:      {slot: 10, group: play,  icon: feature/home,      command: "is home",   service: IslandService}
   island:    {slot: 12, group: play,  icon: feature/island,    command: "is",        service: IslandService}
-  depths:    {slot: 14, group: play,  icon: feature/depths,    command: "dungeon",   service: Depths}
+  depths:    {slot: 14, group: play,  icon: wheat,             command: "farm"}   # 3 Nov 2026: the Depths are gone; /farm and /mine
   travel:    {slot: 16, group: play,  icon: feature/travel,    action: travel}
   # Money (green)
   sell:      {slot: 19, group: money, icon: feature/sell,      command: "sell",      service: SellService}
@@ -79,7 +79,8 @@ you:
 travel:
   spawn:         {icon: travel/spawn,       target: "command spawn"}
   my-island:     {icon: feature/island,     target: "command is home"}
-  depths-gate:   {icon: feature/depths,     target: "location depths 7.5 100 14.5 165 0", reason: dungeon}
+  depths-gate:   {icon: wheat,              target: "command farm"}   # 3 Nov 2026: the Farm replaces the Depths Gate
+  mine:          {icon: iron_pickaxe,       target: "command mine"}
   crate-yard:    {icon: travel/crate_yard,  target: "location spawn 46.5 100 -35.5 -90 0"}
   market:        {icon: travel/market,      target: "location spawn 0.5 99 33.5 0 0"}
   forge-quarter: {icon: feature/forge,      target: "point entries forge_road"}
@@ -90,8 +91,8 @@ travel:
 # catalogue key: our lit picture for Java with the pack, its base item for everyone else). Clicks do the same as always.
 # To switch a rule off set its step to none (deleted rules come back from the defaults on the next start).
 highlights:
-  hub-depths:  {target: "hub.depths",         step: depths, icon: feature/depths_lit}
-  gate-depths: {target: "travel.depths-gate", step: depths, icon: feature/depths_lit}
+  hub-depths:  {target: "hub.depths",         step: none, icon: feature/depths_lit}
+  gate-depths: {target: "travel.depths-gate", step: none, icon: feature/depths_lit}
 
 # /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.
 staff-entries:

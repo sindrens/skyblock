@@ -75,8 +75,7 @@ final class GrindAreas extends CommandGroup implements Listener {
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "farm")));
         core.commands().register(CommandSpec.command("mine").description("Teleport to the mine").category("Teleport")
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "mine")));
-        core.commands().register(CommandSpec.command("dungeon").description("Teleport to the dungeon arena").category("Teleport")
-                .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "dungeon")));
+        // Owner 3 Nov 2026 23:05: no dungeon (the arena stays built but has no command and no monsters).
     }
 
     /** After enable: the world (created by the worlds module from worlds.yml), the areas built once, the dungeon spawner. */
@@ -95,7 +94,6 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
-            core.scheduler().repeat("essentials:grind-dungeon", 100L, 100L, this::dungeonTick);
         });
     }
 

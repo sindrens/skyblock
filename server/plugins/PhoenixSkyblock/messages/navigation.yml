@@ -60,8 +60,8 @@ hub:
       name: "<area:home><bold>Island"
       lore: ["<c:text>Manage your island."]
     depths:
-      name: "<area:home><bold>The Depths"
-      lore: ["<c:text>Mine, chop and fight for loot."]
+      name: "<area:home><bold>The Farm"
+      lore: ["<c:text>Harvest crops that grow back", "<c:text>in seconds. Also: /mine"]
       action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
     travel:
       name: "<area:home><bold>Travel"
@@ -265,8 +265,11 @@ travel:
       name: "<c:success><bold>My Island"
       lore: ["<c:text>Your island home."]
     depths-gate:
-      name: "<c:info><bold>Depths Gate"
-      lore: ["<c:text>Mine, chop and fight", "<c:text>from here."]
+      name: "<c:info><bold>The Farm"
+      lore: ["<c:text>Crops that grow back", "<c:text>in seconds."]
+    mine:
+      name: "<c:info><bold>The Mine"
+      lore: ["<c:text>Ores that come back", "<c:text>in seconds."]
     crate-yard:
       name: "<c:brand><bold>Crate Yard"
       lore: ["<c:text>Open your crates."]

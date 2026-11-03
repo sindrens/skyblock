@@ -116,7 +116,7 @@ worlds:
     create: true
     biome: plains
     difficulty: normal
-    spawn: { x: 0.5, y: 100, z: -40.5, yaw: 0 }
+    spawn: { x: 0.5, y: 100, z: -33.5, yaw: 0 }   # on the Farm landing pad
     border: 6000
     time: 6000
     gamerules:
@@ -165,7 +165,7 @@ portals:
   # portal=target entries replacing the metadata target (targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>).
   target-overrides: []
   # target=world entries: which world a target name leads to.
-  world-targets: [spawn=spawn, depths=depths, warzone=warzone]
+  world-targets: [spawn=spawn, depths=grind, warzone=warzone]   # 3 Nov 2026: Depths portals lead to the farm and mine world
   # Worlds whose portals open only once a build of that world is applied.
   need-build: [warzone]
   # After a portal teleport, portals ignore the player this long (no bouncing back).
