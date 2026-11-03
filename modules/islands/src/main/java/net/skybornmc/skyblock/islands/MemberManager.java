@@ -171,7 +171,9 @@ final class MemberManager {
             return;
         }
         Optional<Island> theirs = islands.islandOfPlayer(islands.key(target));
-        if (theirs.isPresent()) {
+        // Feedback 3 Nov 2026: a player alone on their own island (e.g. a new player's starter island) can still be
+        // invited; accepting asks them to replace it (MemberManager.confirmReplace).
+        if (theirs.isPresent() && (theirs.get() == island || theirs.get().memberCount() > 1)) {
             islands.fail(player, theirs.get() == island ? "invite.already-member" : "invite.has-island", Msg.p("player", target.getName()));
             return;
         }

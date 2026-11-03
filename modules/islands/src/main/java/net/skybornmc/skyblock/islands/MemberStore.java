@@ -340,7 +340,13 @@ final class MemberStore {
         }
         Optional<UUID> current = islandOf(c, target);
         if (current.isPresent()) {
-            return current.get().equals(islandId) ? new InviteResult.AlreadyMember() : new InviteResult.HasIsland();
+            if (current.get().equals(islandId)) {
+                return new InviteResult.AlreadyMember();
+            }
+            if (memberCount(c, current.get()) > 1) {
+                return new InviteResult.HasIsland(); // a team island: leave it first
+            }
+            // alone on a solo island: the invite is sent; accepting asks to replace that island
         }
         if (otherOwnProfileOn(c, islandId, target, targetPlayer)) {
             return new InviteResult.OwnProfile();
