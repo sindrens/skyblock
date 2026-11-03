@@ -10,6 +10,10 @@
 - **The island hoe leaves unripe crops alone** (an action bar says so).
 - **/shop opens the island shop again** (a command redirect wins over the store plugin's /shop).
 - Crates: a tiered crate with no draws can't break an open any more.
+- **Depths inventory is crash-safe**: the side you just left stays in your player file until the database has it, so a crash, a database error or quitting right after a swap can't lose it; writes that finish out of order can't bring back an old set.
+- **Players from the previous release keep their Depths tools**: the first Depths inventory takes the Depths tools you carry and the ones the previous release put away (`tool_stash`), and only gives the starter tool types you are missing.
+- **The Quartermaster's free starter kit is gone** from the Forge menu; tier 1 tools come only with the first Depths visit (given right away, no claim that can be spent on the island). The Forge's tier 1 slot says so.
+- Hunger stays off after a profile switch; a kit item in both hands runs once; a failed inventory load retries instead of blocking island tools.
 ### v5 batch 5: economy
 - **Every shop item can be sold**: 126 shop items that had no price (logs, stones, leaves, flowers, saplings, glass, concrete, terracotta, decoration ...) get one at their shop price / 8 (`sell.yml roots`), always under the shop's 7.5x rule; crafted items are still capped at their recipe price, so nothing can be bought, crafted and sold for profit.
 - **/shop search**: `/shop stone`, `/shop string`, `/shop spaw` (spawners), `/shop oak log`, one typo allowed; one clear match opens its buy screen, several open a results page (best first). Tab completion lists tabs and items.

@@ -104,11 +104,13 @@ final class ForgeMenu extends Menu {
             ToolCatalog.TierDef def = tiers.get(i);
             set(TIER_SLOTS[i], tierItem(def), click -> clicked(def));
         }
-        set(SLOT_STARTER, service.item(Material.CHEST, viewer, ToolsModule.ID, "forge.menu.starter",
-                Msg.p("hours", module.config().starterCooldownHours)), click -> {
-            click.player().closeInventory();
-            module.forge().claimStarter(click.player());
-        });
+        if (!module.config().starterOnce) { // owner 3 Nov 2026: no free starter kit; tier 1 comes with the first Depths visit
+            set(SLOT_STARTER, service.item(Material.CHEST, viewer, ToolsModule.ID, "forge.menu.starter",
+                    Msg.p("hours", module.config().starterCooldownHours)), click -> {
+                click.player().closeInventory();
+                module.forge().claimStarter(click.player());
+            });
+        }
         set(SLOT_BLUEPRINTS, service.item(Material.PAPER, viewer, ToolsModule.ID, "forge.menu.blueprints",
                 Msg.p("count", Forge.blueprints(viewer.getInventory()).size())), click -> openChild(new BlueprintMenu(module)));
     }

@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.essentials;
 
+import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,9 +26,19 @@ final class NoHunger implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
+        fill(event.getPlayer());
+    }
+
+    /** A profile switch restores that profile's saved food level, which may be from before hunger was turned off. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfile(ProfileSwitchedEvent event) {
+        fill(event.getPlayer());
+    }
+
+    private void fill(Player player) {
         if (config.hungerDisabled) {
-            event.getPlayer().setFoodLevel(20);
-            event.getPlayer().setSaturation(20f);
+            player.setFoodLevel(20);
+            player.setSaturation(20f);
         }
     }
 }

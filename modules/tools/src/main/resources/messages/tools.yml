@@ -376,7 +376,7 @@ forge:
       needs-skill: ["<c:error><sym:cross> <c:text>Locked: skill too low"]
       needs-materials: ["<c:error><sym:cross> <c:text>Locked: materials missing"]
       needs-money: ["<c:error><sym:cross> <c:text>Locked: not enough money"]
-      starter: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim the starter kit"]
+      starter: ["<c:text>Tier 1 comes with your first visit to the Depths."]
   confirm:
     crumb: "Forge"
     details: ["<c:text>Upgrades <tool> <c:text>(Lv <level>)", "<c:text>to <to>", "<c:text>Keeps level, perks and stats", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]
@@ -402,6 +402,8 @@ starter:
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You can claim the starter kit again in <c:value><time></c:value>."
   have-all: "<prefix><c:text>You already have all starter tools."
   used: "<prefix><c:error><sym:cross></c:error> <c:text>The starter tools are only given once. Forge or buy new tools at the smith."
+  depths-only: "<prefix><c:error><sym:cross></c:error> <c:text>There is no free starter kit. Your first visit to the Depths gives you tier 1 tools; after that, forge or buy them."
+  depths-given: "<prefix><c:success><sym:check></c:success> <c:text>Your Depths tools: <c:value><count></c:value> starter tool(s) for this inventory."
 
 # Staff: /tool give, /blueprint give, /skin give. <tool> <blueprint> <skin> <player> <tier> <tiers>
 admin:

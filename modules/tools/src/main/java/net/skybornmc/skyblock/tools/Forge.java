@@ -502,7 +502,24 @@ final class Forge {
 
     // ------------------------------------------------------------------ starter kit
 
+    /**
+     * First visit to the Depths (world inventory): the starter tool types the player's new Depths set is still missing,
+     * given right away. Once per profile because it only runs when the profile's Depths set is created. No claim row.
+     */
+    void giveDepthsStarter(Player player) {
+        List<ToolKind> missing = StarterKit.missing(module.config().starterKinds(), kindsOwned(player)).stream()
+                .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
+        if (!missing.isEmpty()) {
+            giveStarter(player, missing, "starter.depths-given");
+        }
+    }
+
     void claimStarter(Player player) {
+        if (module.config().starterOnce) {
+            // Owner 3 Nov 2026 ("remove free kit starter"): the starter tools only come with the first Depths visit.
+            fail(player, "starter.depths-only");
+            return;
+        }
         List<ToolKind> missing = StarterKit.missing(module.config().starterKinds(), kindsOwned(player)).stream()
                 .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
         if (missing.isEmpty()) {
@@ -548,14 +565,14 @@ final class Forge {
                     module.core.database().run(c -> module.repository().unclaim(c, claimKey, previous));
                     return;
                 }
-                giveStarter(p, StarterKit.missing(missing, kindsOwned(p)));
+                giveStarter(p, StarterKit.missing(missing, kindsOwned(p)), "starter.claimed");
             } finally {
                 busy.remove(playerId);
             }
         }));
     }
 
-    private void giveStarter(Player player, List<ToolKind> kinds) {
+    private void giveStarter(Player player, List<ToolKind> kinds, String messageKey) {
         List<String> given = new ArrayList<>();
         int season = module.config().seasonId;
         for (ToolKind kind : kinds) {
@@ -571,7 +588,10 @@ final class Forge {
                         return null;
                     });
         }
-        module.msg().send(player, "starter.claimed", Msg.p("count", given.size()), Msg.p("hours", module.config().starterCooldownHours));
+        if (given.isEmpty()) {
+            return;
+        }
+        module.msg().send(player, messageKey, Msg.p("count", given.size()), Msg.p("hours", module.config().starterCooldownHours));
         sound(player, "success");
         module.core.audit().logPlayer(AuditCategory.ITEM, "starter_kit", Actor.player(player), player.getUniqueId(), player.getName(),
                 (long) given.size(), player.getLocation(), Map.of("pieces", given));
