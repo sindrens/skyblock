@@ -303,7 +303,7 @@ final class ToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
-        if (module.config().starterOnFirstJoin && !event.getPlayer().hasPlayedBefore()) {
+        if (module.config().starterOnFirstJoin && !module.config().starterOnce && !event.getPlayer().hasPlayedBefore()) {
             Player player = event.getPlayer();
             module.core.scheduler().later("tools-first-join", 40, () -> {
                 if (player.isOnline()) {

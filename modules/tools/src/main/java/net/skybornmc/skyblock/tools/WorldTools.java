@@ -369,6 +369,7 @@ final class WorldTools implements Listener {
         player.closeInventory(); // the cursor item goes back into the inventory first
         PlayerInventory inv = player.getInventory();
         ItemStack[] leaving = inv.getContents();
+        int leavingCount = countItems(leaving);
         byte[] in = cached.rows().get(target);
         boolean fresh = in == null;
 
@@ -408,7 +409,10 @@ final class WorldTools implements Listener {
             }
         }
         for (ItemStack s : carriedOver) {
-            module.forge().give(player, s);
+            // The new Depths set is empty: free slots first, so nothing reaches /box before the player file is saved.
+            for (ItemStack rest : inv.addItem(s).values()) {
+                module.forge().give(player, rest);
+            }
         }
         Pending other = pendingAny(player);
         if (other != null && !other.profile().equals(profile)) {
@@ -430,7 +434,7 @@ final class WorldTools implements Listener {
 
         UUID id = player.getUniqueId();
         String name = player.getName();
-        module.core.audit().logPlayer(AuditCategory.ITEM, "inventory_swap", Actor.SYSTEM, id, name, (long) countItems(leaving),
+        module.core.audit().logPlayer(AuditCategory.ITEM, "inventory_swap", Actor.SYSTEM, id, name, (long) leavingCount,
                 null, Map.of("profile", profile.toString(), "from", live, "to", target, "fresh", String.valueOf(fresh),
                         "carried_over", String.valueOf(carriedOver.size())));
 
