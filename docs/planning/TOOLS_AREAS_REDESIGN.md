@@ -713,6 +713,13 @@ Each has the default the plan uses.
 6. **GUIs stay vanilla** (no glass panes, no pack frame), simple and clean; icons revamped; lore in the PNG format
    (`| Header` sections, `» CLICK to ...` last).
 
-Still to do, in order: per-player ore tiers at /mine; more and cheaper hoe levels (psychology: frequent small wins);
+Done since: per-player ores at /mine (`GrindAreas.ORE_TIERS`: coal and copper, iron at 300 mined, gold and redstone at
+1,500, lapis and diamond at 5,000, emerald at 15,000; real blocks stone, view and drop per player); hoe rework (Auto-Sell
+20 shards, extra drops / shard finder / storage 10 levels with small steps, islandtools config v5); plain vanilla icons
+in /menu and Travel (Travel: Farm instead of Depths Gate, Mine instead of Forge Quarter). The shop grid already fills
+full rows of 7 (no zigzag) since the v5 batch; the shop was invisible on the live server because the module failed to
+start (fixed: argument name).
+
+Still to do, in order:
 higher but balanced economy numbers; Depths module deletion (after the inventory merge ran for everyone); GUI revamp
 (/menu icons, shop layout incl. the zigzag, island upgrades and /is masteries in the lore format).
