@@ -31,12 +31,13 @@
 scoreboard:
   # Everywhere else: like your own island.
   default:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
       - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <c:bar>|</c:bar> <c:text>Shards:</c:text> <c:value><ph:shards_formatted>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       - " <bold><c:header>| Island</c:header></bold>"
@@ -48,7 +49,7 @@ scoreboard:
 
   # Your own island: level and place, progress to the next level, then the newest open note or a timer.
   island:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -66,7 +67,7 @@ scoreboard:
 
   # Someone else's island: whose island you are on.
   island-visit:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -80,7 +81,7 @@ scoreboard:
 
   # Spawn (owner 2 Nov 2026: "add more, make it better"): you, your island at a glance, then the server.
   spawn:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"
       - " <bold><c:header>| You</c:header></bold>"
@@ -101,7 +102,7 @@ scoreboard:
 
   # The Depths, Mine wing and causeways: the zone is the section name; tier, Mining level and progress ("Next:" takes the progress row during the tutorial).
   depths:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -116,7 +117,7 @@ scoreboard:
 
   # Forest wing: foraging instead of mining.
   depths-forest:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -131,7 +132,7 @@ scoreboard:
 
   # Combat wing: combat instead of mining.
   depths-combat:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -146,7 +147,7 @@ scoreboard:
 
   # The Gate (Depths hub): the three skills that unlock the wings.
   depths-gate:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
@@ -160,7 +161,7 @@ scoreboard:
 
   # Warzone: placeholder until the warzone is built (kills, bounty and the event timer come with it).
   warzone:
-    title: "<bold><c:sky_blue>SKYBORN</c:sky_blue> <c:ember>SKYBLOCK</c:ember></bold>"
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
       - " <bold><c:header>| You</c:header></bold>"
