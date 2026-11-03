@@ -70,6 +70,10 @@ public final class IslandsConfig extends ModuleConfig {
             min = -180, max = 360)
     public double homeYaw = 180;
 
+    @Setting(path = "starter-chest.clear-before-fill", desc = "Empty the starter chest before filling it, so a new island's chest "
+            + "(also after a disband on a reused slot, or a rebuild) holds exactly the starter contents (feedback 31 Oct 2026).")
+    public boolean starterChestClearBeforeFill = true;
+
     @Setting(path = "starter-chest.items", desc = "Starter chest contents as material:amount (plan open question 2).")
     public List<String> starterItems = List.of(
             "lava_bucket:1", "ice:1", "bone_meal:2", "bread:16", "oak_sapling:2", "sugar_cane:1", "cactus:1",

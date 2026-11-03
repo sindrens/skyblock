@@ -322,6 +322,11 @@ final class IslandBuilder {
      * list. Returns what was added ("material:amount"), empty if no chest.
      */
     private List<String> fillChest(Block block, java.util.UUID ownerProfile) {
+        if (config.starterChestClearBeforeFill && block != null && block.getState() instanceof Chest old) {
+            // A reused slot or a rebuild can leave a chest that still holds items: the new island starts with exactly the
+            // starter contents (the whole chest, both halves of a double chest).
+            old.getInventory().clear();
+        }
         java.util.Optional<net.skybornmc.skyblock.common.tutorial.StarterContents> custom =
                 core.services().optional(net.skybornmc.skyblock.common.tutorial.StarterContents.class);
         if (custom.isPresent()) {
