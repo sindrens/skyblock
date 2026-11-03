@@ -115,6 +115,13 @@ final class ToolListener implements Listener {
             return;
         }
         Block block = event.getBlock();
+        // Owner 3 Nov 2026: the island hoe never breaks a crop that is not fully grown.
+        if (rec.kind() == Kind.HOE && IslandGrowth.CROPS.contains(block.getType())
+                && block.getBlockData() instanceof org.bukkit.block.data.Ageable age && age.getAge() < age.getMaximumAge()) {
+            event.setCancelled(true);
+            m.msg().actionBar(p, "hoe.not-ripe");
+            return;
+        }
         int xp = m.effectLevel(rec, Upgrades.Effect.EXPERIENCE);
         if (xp > 0 && event.getExpToDrop() > 0) {
             event.setExpToDrop((int) Math.round(event.getExpToDrop() * (1 + xp * m.config().experiencePerLevel / 100.0)));

@@ -1282,6 +1282,19 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     // ================================================================== events
 
+    /**
+     * Owner 3 Nov 2026: another plugin (the store) also claims /shop and answered with the store link. /shop is always
+     * this shop: the typed command is pointed at ours before any plugin sees it. /store stays the store.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onShopCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        String m = event.getMessage();
+        String lower = m.toLowerCase(Locale.ROOT);
+        if (lower.equals("/shop") || lower.startsWith("/shop ")) {
+            event.setMessage("/phoenixskyblock:shop" + m.substring(5));
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();

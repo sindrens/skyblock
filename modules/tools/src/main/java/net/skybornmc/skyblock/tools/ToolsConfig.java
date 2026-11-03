@@ -15,8 +15,14 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ levels (ECONOMY_BALANCE §3.5)
 
-    @Setting(path = "forge.tutorial-free", desc = "Owner 3 Nov 2026: during the tutorial's forge step the first tier (tier 2) is forged for free (no skill, money or materials), once per account.")
-    public boolean tutorialFreeForge = true;
+    @Setting(path = "forge.tutorial-free", desc = "During the tutorial's forge step the first tier is forged for free. Owner 3 Nov 2026: off, the forge needs its real requirements.")
+    public boolean tutorialFreeForge = false; // owner 3 Nov 2026: the tutorial forge needs the real requirements
+
+    @Setting(path = "forge.money-percent", desc = "Owner 3 Nov 2026 balance: Forge prices in percent of the tier table (15 = a sixth or so; progression is faster now).", min = 1, max = 1000)
+    public double forgeMoneyPercent = 15;
+
+    @Setting(path = "forge.materials-percent", desc = "Forge material amounts in percent of the tier table (25 = a quarter: 64 coal for copper).", min = 1, max = 1000)
+    public double forgeMaterialsPercent = 25;
 
     @Setting(path = "curve.base", desc = "XP from tool level 1 to 2. Each next level costs curve.growth times more.", min = 1, max = 1_000_000, level = Setting.Level.OWNER)
     public double curveBase = 400;
@@ -124,6 +130,9 @@ public final class ToolsConfig extends ModuleConfig {
 
     @Setting(path = "starter-kit.cooldown-hours", desc = "Hours between two starter kit claims (owner: 24). Only missing pieces are given.", min = 0, max = 720)
     public int starterCooldownHours = 24;
+
+    @Setting(path = "starter-kit.once", desc = "Owner 3 Nov 2026 (\"remove the free starter kit\"): the starter tools are given once per profile (on the first visit to the Depths), never again for free.")
+    public boolean starterOnce = true;
 
     @Setting(path = "starter-kit.kinds", desc = "Tool types in the starter kit (tier 1 of each).")
     public List<String> starterKinds = List.of("pickaxe", "axe", "hoe", "sword", "rod");

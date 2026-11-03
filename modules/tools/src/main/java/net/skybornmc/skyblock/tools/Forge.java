@@ -516,7 +516,8 @@ final class Forge {
         UUID playerId = player.getUniqueId();
         // Per profile: a new profile starts with an empty inventory, so it gets its own starter kit timer.
         UUID claimKey = ProfileService.of(module.core.services()).profileKey(player);
-        long cooldown = Duration.ofHours(module.config().starterCooldownHours).toMillis();
+        long cooldown = module.config().starterOnce ? Duration.ofDays(36_500).toMillis()
+                : Duration.ofHours(module.config().starterCooldownHours).toMillis();
         long now = System.currentTimeMillis();
         module.core.database().transaction(c -> {
             Long previous = module.repository().lastClaim(c, claimKey).orElse(null);
@@ -534,7 +535,11 @@ final class Forge {
                 }
                 if (res[0] > 0) {
                     if (p != null) {
-                        fail(p, "starter.cooldown", Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMillis(res[0]))));
+                        if (module.config().starterOnce) {
+                            fail(p, "starter.used");
+                        } else {
+                            fail(p, "starter.cooldown", Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMillis(res[0]))));
+                        }
                     }
                     return;
                 }

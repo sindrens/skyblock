@@ -40,6 +40,7 @@ tool:
   no-drop: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools can't be dropped."
 
 hoe:
+  not-ripe: "<c:muted>Not ripe yet. The hoe only harvests fully grown crops."
   burst: "<bold><grad:flame>GROWTH BURST!</grad></bold> <c:text>The whole row is ripe again."
   storage-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your hoe storage is full. Empty it in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
 

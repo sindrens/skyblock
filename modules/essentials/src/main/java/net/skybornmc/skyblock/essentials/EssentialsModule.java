@@ -59,6 +59,7 @@ public final class EssentialsModule implements SkyblockModule {
         dropGuard = new DropGuard(core, config, msg, settings);
         autoRefill = new AutoRefill(core, config, settings);
         commandHints = new CommandHints(core, config, msg);
+        noHunger = new NoHunger(config);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
             group.register();
@@ -74,8 +75,11 @@ public final class EssentialsModule implements SkyblockModule {
         core.scheduler().later("essentials:settings", 1L, settings::register);
     }
 
+    private NoHunger noHunger;
+
     private List<Listener> listeners() {
-        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints);
+        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints,
+                noHunger);
     }
 
     @Override

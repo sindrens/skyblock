@@ -330,8 +330,20 @@ final class ToolCatalog {
                 wing, Math.max(1, s.getInt("drop.min-tier", 1)), chance, recipe(s.get("money"), mats, where, problems));
     }
 
+    /** Owner 3 Nov 2026 balance: Forge money and material amounts in percent of the table (tools.yml forge.*-percent). */
+    static volatile double moneyPercent = 100;
+    static volatile double materialPercent = 100;
+
+    /** Pure: an amount scaled by a percent, at least 1 when the original was above 0. */
+    static long scaled(long amount, double percent) {
+        if (amount <= 0) {
+            return 0;
+        }
+        return Math.max(1, Math.round(amount * percent / 100.0));
+    }
+
     private static Recipe recipe(Object money, Object materials, String where, Consumer<String> problems) {
-        long cost = (long) Math.max(0, num(money, 0));
+        long cost = scaled((long) Math.max(0, num(money, 0)), moneyPercent);
         Map<String, Integer> mats = new LinkedHashMap<>();
         Map<?, ?> raw = materials instanceof Map<?, ?> map ? map
                 : materials instanceof ConfigurationSection section ? section.getValues(false) : Map.of();
@@ -342,7 +354,7 @@ final class ToolCatalog {
                 problems.accept(where + ".materials." + k + ": needs an item id and an amount above 0; skipped");
                 return;
             }
-            mats.put(id, amount);
+            mats.put(id, (int) scaled(amount, materialPercent));
         });
         return new Recipe(cost, mats);
     }

@@ -253,6 +253,8 @@ public final class ToolsModule implements SkyblockModule {
 
     /** Reads the catalog sections of tools.yml; missing sections are copied from tools-defaults.yml first. */
     private ToolCatalog loadCatalog() {
+        ToolCatalog.moneyPercent = config.forgeMoneyPercent;
+        ToolCatalog.materialPercent = config.forgeMaterialsPercent;
         File file = new File(core.plugin().getDataFolder(), config.fileName());
         YamlConfiguration yaml = new YamlConfiguration();
         try {
