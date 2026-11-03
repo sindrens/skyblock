@@ -56,11 +56,12 @@ final class GrindAreas extends CommandGroup implements Listener {
     static final int DUNGEON_HALF = 20;
 
     /** Farm crops in unlock order: block, item it drops, wheat broken in total to unlock it (feedback 3 Nov 2026). */
-    record Crop(Material block, Material item, long unlockAt) {
+    record Crop(Material block, Material item, long unlockAt, long bonus) {
     }
 
-    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0), new Crop(Material.CARROTS, Material.CARROT, 500),
-            new Crop(Material.POTATOES, Material.POTATO, 2_500), new Crop(Material.BEETROOTS, Material.BEETROOT, 8_000));
+    /** {@code bonus}: money paid per harvest on top of the crop (the Farm pays better than an island farm). */
+    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 6), new Crop(Material.CARROTS, Material.CARROT, 500, 9),
+            new Crop(Material.POTATOES, Material.POTATO, 2_500, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 8_000, 16));
     private static final org.bukkit.NamespacedKey FARMED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_farmed");
 
     /** Pure: the crop a player with {@code farmed} harvests has unlocked. */
@@ -77,6 +78,8 @@ final class GrindAreas extends CommandGroup implements Listener {
     private static final List<EntityType> MOBS = List.of(EntityType.ZOMBIE, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER);
 
     private final TeleportService teleports;
+    /** Bonus money waiting to be paid (main thread); paid every 3 s in one transaction per player. */
+    private final java.util.Map<java.util.UUID, Long> pendingBonus = new java.util.HashMap<>();
     private World world;
     private int base; // y of the ground surface
     private boolean spawningOurs;
@@ -115,6 +118,7 @@ final class GrindAreas extends CommandGroup implements Listener {
                 build();
             }
             stoneMine(); // the real mine is stone; ores are per player (an older build had real random ores)
+            core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
             // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
             core.scheduler().repeat("essentials:grind-view", 200L, 200L, () -> {
                 for (Player p : world.getPlayers()) {
@@ -231,6 +235,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             Crop before = cropFor(farmed - 1);
             Crop crop = cropFor(farmed);
             p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
+            addBonus(p, crop.bonus());
             // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
             if (crop != before) {
                 msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
@@ -259,6 +264,10 @@ final class GrindAreas extends CommandGroup implements Listener {
             long mined = mined(p) + 1;
             p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
             Ore tier = oreTier(mined);
+            Ore seen = oreOf(oreAt(b.getX(), b.getY(), b.getZ(), mined - 1));
+            if (seen != null) {
+                addBonus(p, seen.bonus());
+            }
             if (tier != before) {
                 msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.drop())));
                 core.sounds().play(p, "unlock");
@@ -290,19 +299,19 @@ final class GrindAreas extends CommandGroup implements Listener {
     // ------------------------------------------------------------------ mine: ores per player
 
     /** One ore: the block a player sees, what it drops, mined blocks in total to unlock it, share per 1,000 blocks. */
-    record Ore(Material block, Material drop, int amount, long unlockAt, int perMille) {
+    record Ore(Material block, Material drop, int amount, long unlockAt, int perMille, long bonus) {
     }
 
     /** Feedback 3 Nov 2026: the same as the farm, for ores. Real blocks are stone; each player sees their unlocked ores. */
     static final List<Ore> ORE_TIERS = List.of(
-            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 90),
-            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 0, 60),
-            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 300, 55),
-            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 35),
-            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 1_500, 35),
-            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 5_000, 25),
-            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 5_000, 12),
-            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 15_000, 8));
+            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 90, 4),
+            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 0, 60, 5),
+            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 300, 55, 8),
+            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 35, 14),
+            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 1_500, 35, 12),
+            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 5_000, 25, 20),
+            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 5_000, 12, 45),
+            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 15_000, 8, 70));
     private static final org.bukkit.NamespacedKey MINED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_mined");
 
     private static long mined(Player p) {
@@ -408,6 +417,39 @@ final class GrindAreas extends CommandGroup implements Listener {
                 }
             }
         }
+    }
+
+    private void addBonus(Player p, long amount) {
+        long scaled = Math.round(amount * config.grindBonusPercent / 100.0);
+        if (scaled > 0) {
+            pendingBonus.merge(p.getUniqueId(), scaled, Long::sum);
+        }
+    }
+
+    private void payBonus() {
+        if (pendingBonus.isEmpty()) {
+            return;
+        }
+        var economy = core.services().optional(net.skybornmc.skyblock.common.economy.EconomyService.class).orElse(null);
+        var profiles = net.skybornmc.skyblock.common.profile.ProfileService.of(core.services());
+        java.util.Map<java.util.UUID, Long> due = new java.util.HashMap<>(pendingBonus);
+        pendingBonus.clear();
+        if (economy == null) {
+            return;
+        }
+        due.forEach((id, amount) -> {
+            Player p = Bukkit.getPlayer(id);
+            if (p == null) {
+                return;
+            }
+            var account = net.skybornmc.skyblock.common.economy.AccountRef.player(profiles.profileKey(p));
+            economy.execute(net.skybornmc.skyblock.common.economy.Transaction.deposit(account,
+                            net.skybornmc.skyblock.common.economy.Currency.MONEY, amount, "grind_bonus")
+                    .actor(net.skybornmc.skyblock.common.audit.Actor.system("grind")).reference("farm/mine bonus")
+                    .idempotencyKey("grind_bonus:" + java.util.UUID.randomUUID()));
+            msg.actionBar(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
+                    net.skybornmc.skyblock.common.util.Format.money(amount)));
+        });
     }
 
     private static Crop Crop_WHEAT() {
