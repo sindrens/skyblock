@@ -14,10 +14,10 @@ public final class SkillsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ curve (ECONOMY_BALANCE §1.2 / §3.4)
 
     @Setting(path = "curve.base", desc = "XP from level 0 to 1. Each next level costs more (see the growth settings).", min = 1, max = 1_000_000, level = Setting.Level.OWNER)
-    public double curveBase = 300;
+    public double curveBase = 6; // owner 3 Nov 2026: Mining 5 (Depths tier 2) after about 50 blocks
 
     @Setting(path = "curve.early-growth", desc = "Cost growth per level up to curve.break-level (1.2 = each level costs 20% more).", min = 1.0, max = 3.0, level = Setting.Level.OWNER)
-    public double curveEarlyGrowth = 1.15;
+    public double curveEarlyGrowth = 1.24;
 
     @Setting(path = "curve.late-growth", desc = "Cost growth per level after curve.break-level (flatter, because late tiers are further apart).", min = 1.0, max = 3.0, level = Setting.Level.OWNER)
     public double curveLateGrowth = 1.13;
@@ -79,12 +79,15 @@ public final class SkillsConfig extends ModuleConfig {
     /** Version 2 (owner 2 Nov 2026: "Depths requirements are super slow"): a cheaper start (600 to 300) and flatter early levels (1.2 to 1.15); level 35 needs about a sixth of the XP. Owner-edited values stay. */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("curve.base", ValueChange.of(600, 300), "curve.early-growth", ValueChange.of(1.2, 1.15)));
+        // v3 (owner 3 Nov 2026 "depths mine tier 2 after 50 blocks, way less to progress"): level 5 at ~48 XP (was ~2,000),
+        // level 35 at ~46k XP (was ~264k); the late growth is unchanged.
+        return java.util.Map.of(2, java.util.Map.of("curve.base", ValueChange.of(600, 300), "curve.early-growth", ValueChange.of(1.2, 1.15)),
+                3, java.util.Map.of("curve.base", ValueChange.of(300, 6), "curve.early-growth", ValueChange.of(1.15, 1.24)));
     }
 
     @Override

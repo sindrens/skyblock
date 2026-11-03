@@ -140,7 +140,7 @@ final class ToolMenu extends Menu {
             case LIFESTEAL -> Format.number(Math.round(lv * c.lifestealPerLevel)) + "%";
             case ROW -> ToolRules.row(lv, c.rowLengths) + " crops";
             case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storageFactor)) + " items";
-            case SHARDS -> "+" + Format.number(lv * c.shardFinderPerLevel) + "% shards";
+            case SHARDS -> "+" + String.format(java.util.Locale.ROOT, "%.1f", lv * c.shardFinderPerLevel) + "% shards";
             case AUTOSELL -> lv == 0 ? "-" : m.raw("effect.auto-sell");
         };
     }

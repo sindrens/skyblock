@@ -191,7 +191,7 @@ final class WorldTools implements Listener {
                 return;
             }
             // Saved first, rows deleted second: a crash in between leaves a row whose tool is carried (skipped next time).
-            net.skybornmc.skyblock.common.player.PlayerSaves.save(p);
+            net.skybornmc.skyblock.common.player.PlayerSaves.save(p, "Depths tools given back");
             module.core.database().run(c -> {
                 for (UUID tool : done) {
                     Sql.update(c, "DELETE FROM tool_stash WHERE profile_key = ? AND tool_id = ?", profile, tool);

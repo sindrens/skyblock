@@ -126,7 +126,7 @@ class CameraSafetyTest {
         assertFalse(v3.get("cameras.spawn").matches(List.of("spawn:0,120,0 look=spawn:0,100,-20 ticks=40")), "owner lines stay");
         assertEquals(c.cameraSpawn, v3.get("cameras.spawn").to());
         assertTrue(v3.get("cameras.island").matches(TutorialConfig.OLD_ISLAND));
-        assertEquals(5, c.version());
+        assertEquals(7, c.version(), "v6, v7: owner 3 Nov 2026 island start");
         Map<String, net.skybornmc.skyblock.common.config.ModuleConfig.ValueChange> v5 = c.valueChanges().get(5);
         assertTrue(v5.get("cameras.spawn").matches(new ArrayList<>(TutorialConfig.V3_SPAWN)), "the roof shot is replaced");
         assertTrue(v5.get("cameras.depths").matches(new ArrayList<>(TutorialConfig.V1_DEPTHS)));
