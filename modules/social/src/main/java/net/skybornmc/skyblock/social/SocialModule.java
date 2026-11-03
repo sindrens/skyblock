@@ -154,8 +154,10 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
         service.register(new SettingToggle(ID, SETTING_PMS, SettingCategory.CHAT, Material.WRITABLE_BOOK, true, null,
                 "navigation", "settings.toggles." + SETTING_PMS, false));
-        service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
-                "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        if (config.afkBroadcast) { // off (owner 3 Nov 2026): no announcements, so no switch that does nothing
+            service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
+                    "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        }
         service.register(new SettingToggle(ID, SETTING_HIDE_IGNORED, SettingCategory.CHAT, Material.GRAY_DYE,
                 config.hideIgnoredChatDefault, null, ID, "settings." + SETTING_HIDE_IGNORED, false));
         settings = service;

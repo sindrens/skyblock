@@ -9,6 +9,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
+| `/is create` | Same as `/is` when you have no island (the create confirm menu); with an island it says so and links the island menu (feedback 31 Oct 2026) | `skyblock.island` | ✅ |
 | `/is home [name]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). With a name: one of the island's **shared homes** (M5.5 Homestead, owner P5-21 / R3-17), for every member. Tab: the island's home names. Personal member homes and `/is setmyhome` stay removed (owner answer 247) | `skyblock.island` | ✅ |
 | `/home [name]` · `/sethome [name]` | Owner answer 347: same as `/is home [name]` and `/is sethome [name]` (staff homes are `/shome`). Tab: home names | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |

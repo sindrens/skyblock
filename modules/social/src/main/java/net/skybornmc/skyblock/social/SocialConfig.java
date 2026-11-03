@@ -54,6 +54,17 @@ public final class SocialConfig extends ModuleConfig {
         return java.util.Map.of("links.vote", "M10.5: /vote is the vote menu of the rewards module (votes.yml -> votes.page-url)");
     }
 
+    /** Version 2 (feedback 31 Oct 2026, "remove chat message [name] is AFK"): announcements off (untouched value only). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("afk.broadcast", ValueChange.of(true, false)));
+    }
+
     @Override
     public String fileName() {
         return "social.yml";

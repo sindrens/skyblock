@@ -981,6 +981,15 @@ final class IslandManager implements IslandService {
         core.menus().open(player, confirmMenu(player));
     }
 
+    /** {@code /is create}: the create confirm menu; with an island already, says so (no teleport, nothing opens). */
+    void createCommand(Player player) {
+        if (islandOfPlayer(key(player)).isPresent()) {
+            fail(player, "create.already");
+            return;
+        }
+        openOrCreate(player);
+    }
+
     private ConfirmMenu confirmMenu(Player player) {
         int size = config.startSize();
         return new ConfirmMenu(
