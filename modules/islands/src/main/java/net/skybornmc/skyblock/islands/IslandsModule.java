@@ -84,6 +84,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandEnvironment environment;
     private IslandFly fly;
     private IslandAutoPickup autoPickup;
+    private ObsidianBucket obsidianBucket;
     private IslandAdmin admin;
     private IslandNotes notes;
     private IslandChat chat;
@@ -136,6 +137,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         environment = new IslandEnvironment(this, manager);
         fly = new IslandFly(this, manager);
         autoPickup = new IslandAutoPickup(this, manager);
+        obsidianBucket = new ObsidianBucket(this, manager);
         notes = new IslandNotes(this, manager, new IslandNoteStore(core.database()), name -> admin == null ? null : admin.find(name));
         chat = new IslandChat(this, manager, new IslandChatStore(core.database()));
         chat.loadConfig();
@@ -160,6 +162,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Bukkit.getPluginManager().registerEvents(environment, core.plugin());
         Bukkit.getPluginManager().registerEvents(fly, core.plugin());
         Bukkit.getPluginManager().registerEvents(autoPickup, core.plugin());
+        Bukkit.getPluginManager().registerEvents(obsidianBucket, core.plugin());
         Bukkit.getPluginManager().registerEvents(homes, core.plugin());
         environment.start();
         fly.start();
@@ -267,6 +270,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         if (members != null) {
             members.stopSweep();
+        }
+        if (obsidianBucket != null) {
+            HandlerList.unregisterAll(obsidianBucket);
         }
         if (protection != null) {
             protection.clearBypass();

@@ -1999,3 +1999,8 @@ stats:
 # QUICK1 island auto-pickup: shown (rate-limited) when the inventory is full and drops stay on the ground.
 auto-pickup:
   full: "<c:warning><sym:dot></c:warning> <c:text>Inventory full: drops stay on the ground. <c:muted>/sell</c:muted>"
+# Obsidian back to lava with an empty bucket (feedback 31 Oct 2026). Action bar.
+obsidian:
+  done: "<c:success><sym:check></c:success> <c:text>The obsidian melted back into a lava bucket."
+  cooldown: "<c:error><sym:cross></c:error> <c:text>Wait a moment before the next one."
+  limit: "<c:error><sym:cross></c:error> <c:text>That's enough lava for this hour. Try again later."

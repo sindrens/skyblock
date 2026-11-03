@@ -724,6 +724,16 @@ public final class IslandsConfig extends ModuleConfig {
         return problems;
     }
 
+    @Setting(path = "obsidian-bucket.enabled", desc = "Right-click obsidian on an island with an empty bucket to get a lava bucket back "
+            + "(needs the Break right on that island; feedback 31 Oct 2026).")
+    public boolean obsidianBucketEnabled = true;
+
+    @Setting(path = "obsidian-bucket.cooldown-seconds", desc = "Seconds between two obsidian-to-lava clicks of one player.", min = 0, max = 60)
+    public int obsidianBucketCooldownSeconds = 2;
+
+    @Setting(path = "obsidian-bucket.max-per-hour", desc = "Most obsidian-to-lava clicks per player per hour (0 = no limit).", min = 0, max = 10_000)
+    public int obsidianBucketMaxPerHour = 120;
+
     static int odd(int value) {
         int v = Math.max(1, Math.min(IslandGrid.MAX_POSSIBLE_CHUNKS, value));
         return v % 2 == 0 ? v - 1 : v;
