@@ -240,23 +240,9 @@ final class EnchanterConfig extends ModuleConfig {
     @Setting(path = "gathering.max-blocks-per-second", desc = "Hard cap of the speed family: no speed burst (Momentum, Haste) applies while a player breaks this many blocks a second.",
             min = 1, max = 40, level = Setting.Level.OWNER)
     public int maxBlocksPerSecond = 6;
-    @Setting(path = "gathering.geode-min-crystals", desc = "Least crystals a Crystal Geode / Amber Resin gives (when the tier gives few crystals).", min = 0, max = 1_000_000, level = Setting.Level.OWNER)
-    public long geodeMinCrystals = 5;
     @Setting(path = "gathering.proc-message-interval-ms", desc = "Shortest time between two action bar lines for gathering and sword procs.", min = 0, max = 60_000)
     public int gatherMessageIntervalMs = 1000;
 
-    @Setting(path = "area.max-blocks-per-proc", desc = "Most blocks one area proc (Vein Rend, Dragonfire Blast, Treefeller, Wildfire, Worldbreaker, Ashen Grove) breaks.",
-            min = 1, max = 256, level = Setting.Level.OWNER)
-    public int areaMaxBlocks = 80;
-    @Setting(path = "area.max-blocks-per-second", desc = "Most extra area blocks per player per second (refilling budget, up to max-blocks-per-proc at once).",
-            min = 1, max = 1000, level = Setting.Level.OWNER)
-    public int areaMaxPerSecond = 40;
-    @Setting(path = "area.tree-max-logs", desc = "Most logs that count as one tree (Treefeller, Wildfire, Ashen Grove).", min = 1, max = 256)
-    public int areaTreeMaxLogs = 64;
-    @Setting(path = "area.tree-scan-down", desc = "Wildfire / Ashen Grove look for other trees this many blocks below the cut log.", min = 0, max = 16)
-    public int areaScanDown = 4;
-    @Setting(path = "area.tree-scan-up", desc = "Wildfire / Ashen Grove look for other trees this many blocks above the cut log.", min = 0, max = 32)
-    public int areaScanUp = 12;
 
     // ------------------------------------------------------------------ Depths sword effects (§6.5, E2)
 
@@ -310,8 +296,6 @@ final class EnchanterConfig extends ModuleConfig {
     public String soundError = "error";
     @Setting(path = "sounds.drop-book", desc = "Sound when a book drops in The Depths.")
     public String soundDropBook = "unlock";
-    @Setting(path = "sounds.area-proc", desc = "Sound when an area enchant breaks extra blocks.")
-    public String soundAreaProc = "notify";
     @Setting(path = "sounds.gather-proc", desc = "Sound for a Crystal Geode, Amber Resin, Gilded drop or a speed burst.")
     public String soundGatherProc = "notify";
     @Setting(path = "sounds.nova", desc = "Sound when Phoenix Wrath's fire nova goes off.")
@@ -320,6 +304,14 @@ final class EnchanterConfig extends ModuleConfig {
     @Override
     public String fileName() {
         return "enchanter.yml";
+    }
+
+    @Override
+    public Map<String, String> removedKeys() {
+        return Map.of(
+                "gathering.geode-min-crystals", "the Depths gathering enchants were retired with the Depths (owner 3 Nov 2026)",
+                "area", "the Depths area enchants were retired with the Depths (owner 3 Nov 2026)",
+                "sounds.area-proc", "the Depths area enchants were retired with the Depths (owner 3 Nov 2026)");
     }
 
     @Override

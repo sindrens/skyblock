@@ -326,7 +326,7 @@ final class Leveling implements Listener {
         }
         Player player = event.getPlayer();
         switch (event.getSource()) {
-            case "depths_block" -> gain(player, SetXp.Action.DEPTHS_ORE, 1);
+            case "depths_block", "grind_block" -> gain(player, SetXp.Action.DEPTHS_ORE, 1); // grind_block: /mine ores
             case "depths_log" -> gain(player, SetXp.Action.DEPTHS_LOG, 1);
             case "mob_kill" -> {
                 if (module.config().combatWorld(player.getWorld().getName())) {

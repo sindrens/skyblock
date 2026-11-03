@@ -4,7 +4,6 @@ import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.db.Database;
-import net.skybornmc.skyblock.common.depths.DepthsZones;
 import net.skybornmc.skyblock.common.economy.BankDepositEvent;
 import net.skybornmc.skyblock.common.economy.BankService;
 import net.skybornmc.skyblock.common.island.IslandJoinedEvent;
@@ -485,7 +484,6 @@ final class LevelManager implements Listener {
             return;
         }
         SkillService skills = core.services().optional(SkillService.class).orElse(null);
-        DepthsZones depths = core.services().optional(DepthsZones.class).orElse(null);
         List<Map<SkillType, Integer>> memberLevels = new ArrayList<>(memberXp.size());
         for (Map<SkillType, Double> xp : memberXp) {
             Map<SkillType, Integer> levels = new EnumMap<>(SkillType.class);
@@ -495,8 +493,8 @@ final class LevelManager implements Listener {
             memberLevels.add(levels);
         }
         List<Integer> totals = LevelRules.skillTotals(memberLevels);
-        Map<SkillType, Integer> best = LevelRules.bestTiers(memberLevels,
-                (skill, level) -> depths == null ? 0 : depths.unlockedTiers(skill, level));
+        // LevelSource.DEPTHS: the Depths were removed (owner 3 Nov 2026), so no wing tiers: the source gives 0.
+        Map<SkillType, Integer> best = LevelRules.bestTiers(memberLevels, (skill, level) -> 0);
 
         BankSamples samples = banks.computeIfAbsent(islandId, k -> new BankSamples());
         if (balance.isPresent() && samples.add(now, balance.getAsLong(), config.bankSampleMinutes * 60_000L)) {

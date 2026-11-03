@@ -68,7 +68,6 @@ public final class ToolsModule implements SkyblockModule {
     private WorldTools worldTools;
     private BlueprintDrops drops;
     private ToolsListener listener;
-    private DepthsHooks depthsHooks;
     private Harvester harvester;
     private Scheduler.Task saveTask;
 
@@ -99,7 +98,6 @@ public final class ToolsModule implements SkyblockModule {
         harvester = new Harvester(this);
         harvester.apply();
         Bukkit.getPluginManager().registerEvents(harvester, core.plugin());
-        registerDepthsHooks();
         worldTools = new WorldTools(this);
         worldTools.start();
         registerCommands();
@@ -134,10 +132,6 @@ public final class ToolsModule implements SkyblockModule {
         if (harvester != null) {
             HandlerList.unregisterAll(harvester);
             harvester = null;
-        }
-        if (depthsHooks != null) {
-            HandlerList.unregisterAll(depthsHooks);
-            depthsHooks = null;
         }
         if (tracker != null) {
             Bukkit.getOnlinePlayers().forEach(tracker::renderAll);
@@ -216,11 +210,6 @@ public final class ToolsModule implements SkyblockModule {
         return catalog.kinds().stream().filter(this::forgeOpen).toList();
     }
 
-    /** The Depths bridge, or null when the depths module is not in this build. */
-    ToolsListener.Depths depths() {
-        return depthsHooks;
-    }
-
     // ------------------------------------------------------------------ setup
 
     private ToolCurve buildCurve() {
@@ -229,17 +218,6 @@ public final class ToolsModule implements SkyblockModule {
         } catch (IllegalArgumentException e) {
             core.plugin().getLogger().warning("tools.yml curve: " + e.getMessage() + "; using 400 / 1.21 / 50");
             return new ToolCurve(400, 1.21, 50);
-        }
-    }
-
-    /** Depths XP and blueprint drops only if the depths classes are in the jar (see {@link DepthsHooks}). */
-    private void registerDepthsHooks() {
-        try {
-            depthsHooks = new DepthsHooks(this);
-            Bukkit.getPluginManager().registerEvents(depthsHooks, core.plugin());
-        } catch (NoClassDefFoundError e) {
-            depthsHooks = null;
-            core.plugin().getLogger().info("Tools: the depths module is not in this build; Depths tool XP and blueprint drops are off.");
         }
     }
 

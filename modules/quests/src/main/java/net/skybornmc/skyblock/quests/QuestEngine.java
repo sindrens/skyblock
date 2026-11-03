@@ -26,7 +26,7 @@ import java.util.logging.Level;
  *   <li><b>Sets</b> are loaded for the active profile on join and profile switch (daily + weekly) and for its island
  *       (missions). A window without a set is rolled from the pool on the main thread (eligibility needs the live player)
  *       and stored in one transaction; if another roll stored one first, that one wins.</li>
- *   <li><b>Progress</b> comes only from server events ({@link QuestSources}, {@link DepthsQuestListener}) and is kept in
+ *   <li><b>Progress</b> comes only from server events ({@link QuestSources}) and is kept in
  *       memory, saved every {@code save.seconds} (only the difference, never lowering it). A crash loses at most that much
  *       progress, never a reward.</li>
  *   <li><b>Completion</b> pays at once ({@link Payouts}: one transaction, idempotent per quest instance), then hands out

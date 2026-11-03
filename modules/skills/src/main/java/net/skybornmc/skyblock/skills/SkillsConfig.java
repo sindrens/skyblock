@@ -48,6 +48,9 @@ public final class SkillsConfig extends ModuleConfig {
     @Setting(path = "combat.depths-sources", desc = "R3-24: XP sources that still give Combat XP with combat.only-in-depths (depths_mob = Depths combat zone kills and mini-bosses).")
     public List<String> combatDepthsSources = List.of("depths_mob");
 
+    @Setting(path = "grind.farm-xp", desc = "Farming XP per crop harvested at /farm (only while the Farming skill is open). Mining XP at /mine uses the xp.mining table (the ore you saw).", min = 0, max = 1000)
+    public double grindFarmXp = 1.0;
+
     // ------------------------------------------------------------------ feedback
 
     @Setting(path = "action-bar.enabled", desc = "Show XP gains in the action bar ('+12 Mining XP (68%)'). Players can turn it off in /settings.")

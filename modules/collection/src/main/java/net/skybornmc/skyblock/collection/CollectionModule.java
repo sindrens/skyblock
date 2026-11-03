@@ -71,7 +71,6 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
     private final Recorder recorder;
     private final Grants grants;
     private final Notices notices;
-    private DepthsHooks depthsHooks;
     private Executor main;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
 
@@ -107,13 +106,6 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         core.services().register(ID, CollectionLog.class, this);
         core.services().optional(ProgressionService.class).ifPresent(p -> p.levelPointsProvider(LevelSource.COLLECTIONS, recorder::islandPoints));
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
-        try {
-            depthsHooks = new DepthsHooks(this);
-            Bukkit.getPluginManager().registerEvents(depthsHooks, core.plugin());
-        } catch (LinkageError e) {
-            depthsHooks = null;
-            core.plugin().getLogger().warning("Collection: the Depths module is missing, Depths finds are not recorded");
-        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             recorder.load(p);
         }
@@ -139,10 +131,6 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
-        if (depthsHooks != null) {
-            HandlerList.unregisterAll(depthsHooks);
-            depthsHooks = null;
-        }
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
         refresh.invalidate();

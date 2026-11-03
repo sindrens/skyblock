@@ -29,7 +29,6 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [collection](commands/collection.md) | Collection (`modules/collection`) |
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |
 | [crates](commands/crates.md) | Crates (`modules/crates`) |
-| [depths](commands/depths.md) | Depths commands |
 | [economy](commands/economy.md) | Economy (`modules/economy`) |
 | [enchants](commands/enchants.md) | Enchants module (`modules/enchants`): E1 |
 | [essentials](commands/essentials.md) | Essentials (module `essentials`) |

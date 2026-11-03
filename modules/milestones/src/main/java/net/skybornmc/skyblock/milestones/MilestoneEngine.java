@@ -2,7 +2,6 @@ package net.skybornmc.skyblock.milestones;
 
 import net.skybornmc.skyblock.common.afk.AfkPool;
 import net.skybornmc.skyblock.common.db.Database;
-import net.skybornmc.skyblock.common.depths.DepthsZones;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
@@ -166,7 +165,7 @@ final class MilestoneEngine implements Listener {
             return;
         }
         UUID profile = profiles.map(ps -> ps.profileKey(p)).orElse(p.getUniqueId());
-        boolean depths = m.core().services().optional(DepthsZones.class).map(z -> z.inDepths(at)).orElse(false);
+        boolean depths = false; // the Depths were removed (owner 3 Nov 2026): DEPTHS chains never count
         Optional<IslandService> islands = m.islands();
         UUID islandHere = depths ? null : islands.flatMap(i -> i.islandAt(at)).map(IslandService.IslandInfo::id).orElse(null);
         UUID ownIsland = islands.flatMap(i -> i.islandOf(p.getUniqueId())).map(IslandService.IslandInfo::id).orElse(null);

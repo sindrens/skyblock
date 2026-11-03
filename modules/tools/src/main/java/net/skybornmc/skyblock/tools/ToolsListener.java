@@ -2,9 +2,7 @@ package net.skybornmc.skyblock.tools;
 
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.skybornmc.skyblock.common.tools.ToolKind;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Item;
@@ -39,14 +37,6 @@ import java.util.Optional;
  * the Auto-smelt and Lifesteal abilities, first-join starter kit and saving on quit.
  */
 final class ToolsListener implements Listener {
-
-    /** What the listener needs from The Depths (implemented by {@link DepthsHooks}; absent without the depths module). */
-    interface Depths {
-        boolean inDepths(World world);
-
-        /** Combat tier of the zone at a location, 0 outside combat zones. */
-        int combatTier(Location location);
-    }
 
     private final ToolsModule module;
     /** R3-24 Soul Reaper: sword XP percent of a stacked hit, for the dying mob's own kill XP in the same tick. */
@@ -147,16 +137,12 @@ final class ToolsListener implements Listener {
 
     // ------------------------------------------------------------------ island XP and abilities
 
-    /** Blocks broken outside The Depths (Depths breaks are cancelled by the engine and handled in {@link DepthsHooks}). */
+    /** Blocks broken anywhere (the Depths were removed, owner 3 Nov 2026). */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Optional<ToolData> tool = ToolItems.read(player.getInventory().getItemInMainHand());
         if (tool.isEmpty()) {
-            return;
-        }
-        Depths depths = module.depths();
-        if (depths != null && depths.inDepths(event.getBlock().getWorld())) {
             return;
         }
         Material type = event.getBlock().getType();
@@ -217,23 +203,11 @@ final class ToolsListener implements Listener {
             return;
         }
         Optional<ToolData> tool = ToolItems.read(killer.getInventory().getItemInMainHand());
-        Depths depths = module.depths();
-        int combatTier = depths == null ? 0 : depths.combatTier(entity.getLocation());
         if (tool.isPresent() && tool.get().kind() == ToolKind.SWORD) {
-            double xp;
-            if (combatTier > 0) {
-                xp = module.config().tierXp(combatTier) * module.config().killMultiplier;
-            } else if (depths != null && depths.inDepths(entity.getWorld())) {
-                xp = 0; // ambient mobs in the mine/forest give no tool XP
-            } else {
-                xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor;
-            }
+            double xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor;
             if (xp > 0) {
-                module.tracker().gain(killer, xp, ToolData.STAT_KILLS, 1, combatTier > 0 ? 0 : soulPercentNow(killer));
+                module.tracker().gain(killer, xp, ToolData.STAT_KILLS, 1, soulPercentNow(killer));
             }
-        }
-        if (combatTier > 0) {
-            module.drops().roll(killer, "combat", combatTier, entity.getLocation());
         }
     }
 
@@ -264,10 +238,6 @@ final class ToolsListener implements Listener {
         }
         Optional<ToolData> tool = ToolItems.read(killer.getInventory().getItemInMainHand());
         if (tool.isEmpty() || tool.get().kind() != ToolKind.SWORD) {
-            return;
-        }
-        Depths depths = module.depths();
-        if (depths != null && depths.inDepths(event.location().getWorld())) {
             return;
         }
         double xp = module.config().tierXp(1) * module.config().killMultiplier * module.config().islandFactor * event.extraKills();

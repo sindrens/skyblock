@@ -11,7 +11,6 @@ import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.crate.CrateKeys;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.db.Migrations;
-import net.skybornmc.skyblock.common.depths.DepthsZones;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.enchant.EnchantService;
 import net.skybornmc.skyblock.common.island.IslandService;
@@ -85,7 +84,6 @@ public final class QuestsModule implements SkyblockModule, Listener {
     private final QuestText text;
     private Executor main;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
-    private boolean depthsHooked;
 
     // Parsed from the settings (replaced as a whole on reload).
     private volatile Map<QuestKind, List<QuestPool.Entry>> pools = Map.of();
@@ -132,13 +130,6 @@ public final class QuestsModule implements SkyblockModule, Listener {
         core.placeholders().registerText(ID, PLACEHOLDER_NEXT, text::nextLine);
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         Bukkit.getPluginManager().registerEvents(new QuestSources(this), core.plugin());
-        try {
-            Bukkit.getPluginManager().registerEvents(new DepthsQuestListener(this), core.plugin());
-            depthsHooked = true;
-        } catch (NoClassDefFoundError e) {
-            depthsHooked = false;
-            core.plugin().getLogger().info("Quests: the depths module is not in this jar; mine, chop and kill quests are left out.");
-        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             engine.load(p);
         }
@@ -350,13 +341,10 @@ public final class QuestsModule implements SkyblockModule, Listener {
 
     /** What the player has unlocked right now, from the live services. Main thread. */
     QuestPool.Unlocks unlocks(Player player) {
-        boolean depths = depthsHooked && gate(player, Gates.DEPTHS);
+        // The Depths are gone (owner 3 Nov 2026): mine, chop and kill quests are never offered (no wing tiers).
         boolean islands = islands().isPresent() && gate(player, Gates.ISLAND_TEAM);
         boolean tool = holdsTool(player);
-        return new QuestPool.Unlocks(depths,
-                depths ? unlockedTiers(player, SkillType.MINING) : 0,
-                depths ? unlockedTiers(player, SkillType.FORAGING) : 0,
-                depths ? unlockedTiers(player, SkillType.COMBAT) : 0,
+        return new QuestPool.Unlocks(false, 0, 0, 0,
                 core.services().optional(SellService.class).isPresent(), tool,
                 core.services().optional(EnchantService.class).isPresent(), islands,
                 playtimeMinutes(player) >= settings.likeMinPlaytimeMinutes, farming(player));
@@ -389,15 +377,9 @@ public final class QuestsModule implements SkyblockModule, Listener {
         return core.players().get(player.getUniqueId()).map(d -> d.playtimeMillis()).orElse(0L) / 60_000L;
     }
 
-    /** Open tiers of a Depths wing for this player (0 = none or no Depths). */
+    /** Open tiers of a Depths wing: always 0 since the Depths were removed (mine, chop and kill quests are unreachable). */
     int unlockedTiers(Player player, SkillType skill) {
-        Optional<DepthsZones> zones = core.services().optional(DepthsZones.class);
-        Optional<SkillService> skills = core.services().optional(SkillService.class);
-        if (zones.isEmpty() || skill == null) {
-            return 0;
-        }
-        int level = skills.filter(s -> s.available(skill)).map(s -> s.level(player, skill)).orElse(0);
-        return zones.get().unlockedTiers(skill, level);
+        return 0;
     }
 
     /** The player's stage tier: the highest level of the stage skills (same rule as crates, the calendar and the AFK pool). */

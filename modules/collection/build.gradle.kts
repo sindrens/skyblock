@@ -3,10 +3,6 @@
 // level ("Collections" source); a full page and the whole log pay titles and keys through crash-safe grant rows.
 dependencies {
     implementation(project(":common"))
-    // Only for the Depths hooks (DepthsDropEvent, DepthsMobKillEvent). compileOnly: the plugin jar shades depths anyway, and
-    // the log keeps working (without Depths finds) if depths is missing. Depths never depends on the collection log.
-    compileOnly(project(":modules:depths"))
-    testImplementation(project(":modules:depths"))
     // Unit tests run the real SQL against a throw-away H2 database (MySQL mode, like the local test server).
     testImplementation("com.h2database:h2:2.5.252")
     testImplementation("org.slf4j:slf4j-api:2.0.17")

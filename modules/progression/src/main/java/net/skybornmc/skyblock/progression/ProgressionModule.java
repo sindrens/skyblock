@@ -56,7 +56,6 @@ public final class ProgressionModule implements SkyblockModule {
     private TopBoards boards;
     private TaskManager tasks;
     private TaskSources taskSources;
-    private DepthsTaskListener depthsTasks;
     private UpgradeManager upgrades;
     private MasteryManager masteries;
 
@@ -122,7 +121,6 @@ public final class ProgressionModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(tasks, core.plugin());
         taskSources = new TaskSources(core, tasks);
         Bukkit.getPluginManager().registerEvents(taskSources, core.plugin());
-        registerDepthsTasks();
         core.services().register(ID, TaskService.class, tasks);
         // M5.4 island upgrades: /is upgrade (sub-command of the islands module), paid from the island bank.
         upgrades = new UpgradeManager(core, upgradesConfig, msg, levels, tasks, config.seasonId);
@@ -193,9 +191,6 @@ public final class ProgressionModule implements SkyblockModule {
             if (taskSources != null) {
                 HandlerList.unregisterAll(taskSources);
             }
-            if (depthsTasks != null) {
-                HandlerList.unregisterAll(depthsTasks);
-            }
             tasks.shutdown();
         }
         if (sources != null) {
@@ -215,17 +210,6 @@ public final class ProgressionModule implements SkyblockModule {
         }
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         pillars.shutdown();
-    }
-
-    /** Depths mine/chop task progress only if the depths classes are in the jar (see {@link DepthsTaskListener}). */
-    private void registerDepthsTasks() {
-        try {
-            depthsTasks = new DepthsTaskListener(taskSources, tasks);
-            Bukkit.getPluginManager().registerEvents(depthsTasks, core.plugin());
-        } catch (NoClassDefFoundError e) {
-            depthsTasks = null;
-            core.plugin().getLogger().info("Progression: the depths module is not in this build; Depths task progress is off.");
-        }
     }
 
     private Optional<UUID> islandOf(Player player) {

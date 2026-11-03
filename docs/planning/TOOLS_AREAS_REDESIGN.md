@@ -736,3 +736,30 @@ higher but balanced economy numbers; Depths module deletion (after the inventory
   pumpkin $10, cocoa $8, berries $6; wheat $12, carrot/potato $15, beetroot $20, nether wart $30); seeds and crops in the
   shop cost $1,500-4,000 (shop.yml v6 patch); /farm and /mine pay a bonus per harvest/ore (`grind.bonus-percent`).
 
+- **`modules/depths` deleted** (4 Nov 2026): gradle include/dependency lines (plugin, skills, collection, progression, quests,
+  tools, enchants), `server/permissions/depths.txt`, `docs/commands/depths.md` (+ index line), the live
+  `messages/depths.yml`; `common/satchel/SatchelService`. Owner decisions D1-D7 applied with these defaults:
+  - D1 `/farm` and `/mine` count: new `common/grind/GrindBreakEvent` (area farm|mine, the block the player saw, drop,
+    amount), fired by `GrindAreas` on every accepted harvest/break. Listeners: skills (Mining XP from the `xp.mining` table
+    of the ore you saw, deepslate entry as fallback for diamond/emerald; Farming XP `skills.yml grind.farm-xp`, only while
+    the Farming skill is open; source `grind_block`/`grind_crop`), wardrobe (`grind_block` counts like a Depths ore),
+    island tasks (farm/mine counters with the block id, e.g. `carrots`, `iron_ore`, counted for the own island), quests
+    (farm harvests count for harvest quests). Vanilla BlockBreakEvent listeners in skills/tasks only counted the island
+    world, so nothing is counted twice. **Not re-pointed:** collection log (its pages are Depths drop items
+    `depths_*` that nobody can find any more; the pages stay empty until new pages are defined), milestones
+    (`world: depths` chains never count; ANY chains already count vanilla breaks at /mine through BlockBreakEvent).
+  - D2 the Depths gathering/area enchants and activity book drops (`enchants/DepthsEnchants`) are retired; their
+    `enchanter.yml` keys (`gathering.geode-min-crystals`, `area.*`, `sounds.area-proc`) are removed on load. Enchant
+    definitions in enchants.yml stay (they simply never proc).
+  - D3 quest types mine/chop/kill stay in the code but are never offered (no wing tiers: `QuestsModule.unlockedTiers` = 0).
+  - D4 blueprint drops stop (they were only rolled by `tools/DepthsHooks`); Forge recipes untouched. Forge takes its
+    materials from the inventory only (no satchel). Sword kills give island tool XP everywhere.
+  - D5 Deep Pockets mastery: no effect any more (satchel gone); still listed so bought levels are not lost.
+  - D6 `server/builds/depths_*` and the worlds module's optional Depths layout wiring (`DepthsLayoutHook`) are kept.
+  - D7 `LevelSource.DEPTHS` kept (stored rows) and contributes 0 (no wing tiers).
+  - Decision ledger entries for `depths.yml` are `check: false` (history only).
+  - Inert, left for a later cleanup: hud `places.depths` (world `depths` no longer exists), menu ids `depths`/`depths-gate`
+    (now Farm), `BoxSource.DEPTHS`, `TxReason`/ledger reasons, `IslandGatherEvent.tier()` naming, skills
+    `combat.only-in-depths` (Combat XP stays off as before).
+  - Help: the "The Depths" category and the `depths`/`satchel` topics are replaced by "Farm & Mine" (topic `grind`,
+    aliases farm, mine, depths, dungeon).

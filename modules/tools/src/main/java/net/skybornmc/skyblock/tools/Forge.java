@@ -10,7 +10,6 @@ import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.profile.ProfileService;
-import net.skybornmc.skyblock.common.satchel.SatchelService;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.tools.ToolKind;
@@ -93,49 +92,24 @@ final class Forge {
         return out;
     }
 
-    /**
-     * How many of each recipe material the player has: inventory plus the Depths satchel (M4.4; Forge materials are
-     * Depths drops, so they mostly sit in the satchel).
-     */
+    /** How many of each recipe material the player has in the inventory (the Depths satchel was removed). */
     Map<String, Integer> count(Player player, Set<String> ids) {
-        Map<String, Integer> out = count(player.getInventory(), ids);
-        Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
-        if (satchel.isPresent() && satchel.get().loaded(player)) {
-            for (String id : ids) {
-                long held = satchel.get().amount(player, id);
-                if (held > 0) {
-                    out.merge(id, (int) Math.min(Integer.MAX_VALUE, held), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
-                }
-            }
-        }
-        return out;
+        return count(player.getInventory(), ids);
     }
 
     /**
-     * Takes the recipe materials: from the inventory first, the rest from the satchel (all or nothing). Returns false and
-     * takes nothing if they are not all there any more (call it right after {@link #count(Player, Set)} in the same tick).
+     * Takes the recipe materials from the inventory (all or nothing). Returns false and takes nothing if they are not all
+     * there any more (call it right after {@link #count(Player, Set)} in the same tick).
      */
     boolean takeMaterials(Player player, Map<String, Integer> materials) {
         PlayerInventory inv = player.getInventory();
         Map<String, Integer> inInventory = count(inv, materials.keySet());
-        Map<String, Integer> fromInventory = new LinkedHashMap<>();
-        Map<String, Integer> fromSatchel = new LinkedHashMap<>();
-        materials.forEach((id, need) -> {
-            int inv0 = Math.min(need, inInventory.getOrDefault(id, 0));
-            if (inv0 > 0) {
-                fromInventory.put(id, inv0);
-            }
-            if (need - inv0 > 0) {
-                fromSatchel.put(id, need - inv0);
-            }
-        });
-        if (!fromSatchel.isEmpty()) {
-            Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
-            if (satchel.isEmpty() || !satchel.get().consume(player, fromSatchel, "forge", Actor.player(player))) {
+        for (Map.Entry<String, Integer> e : materials.entrySet()) {
+            if (inInventory.getOrDefault(e.getKey(), 0) < e.getValue()) {
                 return false;
             }
         }
-        take(inv, fromInventory);
+        take(inv, new LinkedHashMap<>(materials));
         return true;
     }
 

@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.essentials;
 
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.command.CommandSpec;
+import net.skybornmc.skyblock.common.grind.GrindBreakEvent;
 import net.skybornmc.skyblock.common.teleport.TeleportOptions;
 import net.skybornmc.skyblock.common.teleport.TeleportReason;
 import net.skybornmc.skyblock.common.teleport.TeleportService;
@@ -236,6 +237,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             Crop crop = cropFor(farmed);
             p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
             addBonus(p, crop.bonus());
+            Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FARM, crop.block(), crop.item(), 1, b.getLocation()));
             // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
             if (crop != before) {
                 msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
@@ -268,6 +270,9 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (seen != null) {
                 addBonus(p, seen.bonus());
             }
+            Bukkit.getPluginManager().callEvent(seen != null
+                    ? new GrindBreakEvent(p, GrindBreakEvent.MINE, seen.block(), seen.drop(), seen.amount(), b.getLocation())
+                    : new GrindBreakEvent(p, GrindBreakEvent.MINE, Material.STONE, Material.COBBLESTONE, 1, b.getLocation()));
             if (tier != before) {
                 msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.drop())));
                 core.sounds().play(p, "unlock");

@@ -34,7 +34,7 @@ import java.util.logging.Level;
  * {@link EnchantService}. E3: the stacked-mob enchants ({@link StackEnchants}: Slaughter, Bloodlust, Plunder and Soul Reaper per
  * mob, Reaper's Sweep, Phoenix Wrath on stacks, island stack books) as the published {@link StackKillProvider}. E2: Depths
  * book drops with first finds and pity ({@link BookDrops}), gathering and area enchants through the per-player block
- * engine ({@link DepthsEnchants}), speed bursts ({@link SpeedBursts}) and sword effects ({@link SwordEffects}).
+ * engine (retired with the Depths, owner 3 Nov 2026), speed bursts ({@link SpeedBursts}) and sword effects ({@link SwordEffects}).
  *
  * <p>Settings: {@code enchanter.yml}; texts: {@code messages/enchants.yml}; data: {@code db/enchants}.</p>
  */
@@ -64,7 +64,6 @@ public final class EnchantsModule implements SkyblockModule {
     private IslandBooks islandBooks;
     private SwordEffects swords;
     private ArmorEffects armor;
-    private Object depthsHooks;
     private StackPerf effectsPerf;
 
     public EnchantsModule(Core core) {
@@ -146,7 +145,6 @@ public final class EnchantsModule implements SkyblockModule {
         armor = new ArmorEffects(this);
         Bukkit.getPluginManager().registerEvents(armor, core.plugin());
         armor.start();
-        registerDepthsHooks();
         perfTask = core.scheduler().repeat("enchants-stack-perf", 1200L, 1200L, () -> {
             stacks.perf().report();
             effectsPerf.report();
@@ -189,10 +187,6 @@ public final class EnchantsModule implements SkyblockModule {
             perfTask.cancel();
             perfTask = null;
         }
-        if (depthsHooks instanceof org.bukkit.event.Listener hooks) {
-            HandlerList.unregisterAll(hooks);
-            depthsHooks = null;
-        }
         if (swords != null) {
             HandlerList.unregisterAll(swords);
         }
@@ -227,18 +221,6 @@ public final class EnchantsModule implements SkyblockModule {
             core.plugin().getLogger().warning(problem);
         }
         costs = config.costs();
-    }
-
-    /** Depths book drops and gathering/area effects only if the depths classes are in the jar (see {@link DepthsEnchants}). */
-    private void registerDepthsHooks() {
-        try {
-            DepthsEnchants hooks = new DepthsEnchants(this, drops, bursts, procBar, effectsPerf);
-            Bukkit.getPluginManager().registerEvents(hooks, core.plugin());
-            depthsHooks = hooks;
-        } catch (NoClassDefFoundError e) {
-            depthsHooks = null;
-            core.plugin().getLogger().info("Enchants: the depths module is not in this build; Depths book drops and gathering enchants are off.");
-        }
     }
 
     // ------------------------------------------------------------------ registry
