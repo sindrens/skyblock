@@ -185,7 +185,7 @@ class ShopCatalogTest {
         String text = Files.readString(Path.of(ShopCatalogTest.class.getClassLoader().getResource("shop.yml").toURI()));
         assertTrue(text.contains("THE OWNER APPROVES THESE PRICES BEFORE LAUNCH"));
         assertEquals(ShopCatalogMigration.VERSION, bundled().getInt("config-version"));
-        assertEquals(5, ShopCatalogMigration.VERSION);
+        assertEquals(6, ShopCatalogMigration.VERSION);
         assertEquals(4, v4().getInt("config-version"), "the frozen v4 file stays version 4");
         assertEquals(2, v2().getInt("config-version"), "the frozen v2 file stays version 2");
         assertEquals(3, v3().getInt("config-version"), "the frozen v3 file stays version 3");

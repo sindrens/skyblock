@@ -45,7 +45,7 @@
 # time (backup shop.yml.before-v<N>, shop-migration-v<N>.log): your prices, enabled: false, requires and own items stay;
 # default items the new file drops move to worth-only.
 # Reload: /skyblock reload shop
-config-version: 5
+config-version: 6
 
 categories:
   # Wood, stone, earth, Nether, End and ocean blocks, sorted by type. Polished, brick and plank variants are crafted.
@@ -193,17 +193,18 @@ categories:
       crops: [carrot, potato, sugar_cane, cocoa_beans, cactus, sweet_berries]
       trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
     items:
-      wheat_seeds: 10
-      beetroot_seeds: 15
-      melon_seeds: 40
-      pumpkin_seeds: 40
+      # Owner 3 Nov 2026: seeds and crops cost a lot: buy one, regrow it and grow the farm instead of buying many.
+      wheat_seeds: 1500
+      beetroot_seeds: 2500
+      melon_seeds: 4000
+      pumpkin_seeds: 4000
       bone_meal: 30
-      carrot: 120
-      potato: 120
-      sugar_cane: 200
-      cocoa_beans: 350
-      cactus: 475
-      sweet_berries: 650
+      carrot: 2500
+      potato: 2500
+      sugar_cane: 3000
+      cocoa_beans: 3500
+      cactus: 3500
+      sweet_berries: 4000
       oak_sapling: 25
       spruce_sapling: 25
       birch_sapling: 25

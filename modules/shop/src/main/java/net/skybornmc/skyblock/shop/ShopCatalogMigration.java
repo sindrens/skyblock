@@ -40,7 +40,50 @@ final class ShopCatalogMigration {
     /** Owner 2 Nov 2026: tabs Building Blocks, Nature, Farming, Mob Drops, Colors, Decoration, Essentials, Redstone, Spawners. */
     static final int V5 = 5;
     /** The current version (what a fresh install writes). */
-    static final int VERSION = V5;
+    static final int V6 = 6;
+    static final int VERSION = V6;
+
+    /**
+     * v5 &rarr; v6 (owner 3 Nov 2026, "make the buy prices for the crops SUPER HIGH, so they buy 1 and regrow"): seeds and
+     * crops cost a lot. Only prices that are still the old default change; owner prices stay. id -> {old, new}.
+     */
+    static final Map<String, long[]> V6_PRICES = Map.of(
+            "wheat_seeds", new long[]{10, 1500}, "beetroot_seeds", new long[]{15, 2500}, "melon_seeds", new long[]{40, 4000},
+            "pumpkin_seeds", new long[]{40, 4000}, "carrot", new long[]{120, 2500}, "potato", new long[]{120, 2500},
+            "sugar_cane", new long[]{200, 3000}, "cocoa_beans", new long[]{350, 3500}, "cactus", new long[]{475, 3500},
+            "sweet_berries", new long[]{650, 4000});
+
+    /** v5 -> v6: the {@link #V6_PRICES} patch on the live file (in place), or empty when it is v6 already. */
+    static Optional<Result> pricesV6(YamlConfiguration live) {
+        if (version(live) >= V6) {
+            return Optional.empty();
+        }
+        List<String> changes = new ArrayList<>();
+        ConfigurationSection tabs = live.getConfigurationSection(ShopCatalog.ROOT);
+        if (tabs != null) {
+            for (String tab : tabs.getKeys(false)) {
+                ConfigurationSection items = tabs.getConfigurationSection(tab + ".items");
+                if (items == null) {
+                    continue;
+                }
+                for (String id : items.getKeys(false)) {
+                    long[] change = V6_PRICES.get(id);
+                    Object raw = items.get(id);
+                    if (change == null || ShopCatalog.priceOf(plain(raw)) != change[0]) {
+                        continue;
+                    }
+                    if (raw instanceof ConfigurationSection section) {
+                        section.set("price", change[1]);
+                    } else {
+                        items.set(id, change[1]);
+                    }
+                    changes.add(id + ": $" + change[0] + " -> $" + change[1]);
+                }
+            }
+        }
+        live.set("config-version", V6);
+        return Optional.of(new Result(live, changes));
+    }
 
     /** {@code /shop <old tab>} still finds the tab its items moved to. */
     static final Map<String, String> TAB_ALIASES = Map.of(

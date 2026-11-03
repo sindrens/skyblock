@@ -38,17 +38,19 @@ categories:
 
   # Island crops by Farming unlock tier (ECONOMY_BALANCE §4.1).
   crops:
-    wheat: 10
-    carrot: 14
-    potato: 14
-    beetroot: 18
-    sugar_cane: 25
-    melon_slice: 33
-    pumpkin: 33
-    cocoa_beans: 45
-    cactus: 61
-    sweet_berries: 82
-    nether_wart: 180
+    # Owner 3 Nov 2026: crops you harvest with the hoe pay better per item than crops that farm themselves
+    # (cactus, cane, melon, pumpkin, cocoa, berries: big automatic farms must not be OP). /farm pays a bonus on top.
+    wheat: 12
+    carrot: 15
+    potato: 15
+    beetroot: 20
+    sugar_cane: 4
+    melon_slice: 2
+    pumpkin: 10
+    cocoa_beans: 8
+    cactus: 5
+    sweet_berries: 6
+    nether_wart: 30
     torchflower: 396
     pitcher_plant: 870
 

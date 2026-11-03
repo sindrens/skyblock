@@ -99,7 +99,7 @@ class ShopListRulesTest {
         assertEquals(5_000, c.item("hopper").orElseThrow().price());
         assertEquals(10, c.item("oak_leaves").orElseThrow().price());
         assertEquals(2_000_000, c.item("spawner_blaze").orElseThrow().price());
-        assertEquals(950, c.item("cactus").orElseThrow().price(), "475 x 2");
+        assertEquals(7_000, c.item("cactus").orElseThrow().price(), "3,500 x 2");
         assertEquals(2_500, c.worth("hopper").orElseThrow(), "block worth stays at the base price");
         ShopCatalog.Pricing odd = new ShopCatalog.Pricing(base.sellBase(), 10, 1.3);
         assertEquals(620, odd.scale(475), "617.5 -> 2 significant figures");

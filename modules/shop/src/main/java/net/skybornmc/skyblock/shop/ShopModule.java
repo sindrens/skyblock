@@ -304,6 +304,11 @@ public final class ShopModule implements SkyblockModule, Listener {
                     yaml = v5.get().yaml();
                     writeMigration(file, yaml, v5.get().changes(), ShopCatalogMigration.V5);
                 }
+                Optional<ShopCatalogMigration.Result> v6 = ShopCatalogMigration.pricesV6(yaml);
+                if (v6.isPresent()) {
+                    yaml = v6.get().yaml();
+                    writeMigration(file, yaml, v6.get().changes(), ShopCatalogMigration.V6);
+                }
                 if (addMissing(yaml, bundled)) {
                     yaml.save(file);
                 }
