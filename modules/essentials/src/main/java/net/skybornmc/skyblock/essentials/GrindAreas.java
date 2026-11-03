@@ -24,8 +24,13 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -54,6 +59,25 @@ final class GrindAreas extends CommandGroup implements Listener {
             Material.STONE, Material.STONE, Material.COAL_ORE, Material.COAL_ORE, Material.COPPER_ORE, Material.IRON_ORE,
             Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE, Material.LAPIS_ORE, Material.DIAMOND_ORE,
             Material.EMERALD_ORE);
+    /** Farm crops in unlock order: block, item it drops, wheat broken in total to unlock it (feedback 3 Nov 2026). */
+    record Crop(Material block, Material item, long unlockAt) {
+    }
+
+    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0), new Crop(Material.CARROTS, Material.CARROT, 500),
+            new Crop(Material.POTATOES, Material.POTATO, 2_500), new Crop(Material.BEETROOTS, Material.BEETROOT, 8_000));
+    private static final org.bukkit.NamespacedKey FARMED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_farmed");
+
+    /** Pure: the crop a player with {@code farmed} harvests has unlocked. */
+    static Crop cropFor(long farmed) {
+        Crop out = CROPS.getFirst();
+        for (Crop c : CROPS) {
+            if (farmed >= c.unlockAt()) {
+                out = c;
+            }
+        }
+        return out;
+    }
+
     private static final List<EntityType> MOBS = List.of(EntityType.ZOMBIE, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER);
 
     private final TeleportService teleports;
@@ -94,6 +118,14 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
+            // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
+            core.scheduler().repeat("essentials:grind-view", 200L, 200L, () -> {
+                for (Player p : world.getPlayers()) {
+                    if (Math.abs(p.getLocation().getBlockX() - FARM_X) <= FARM_HALF + 40) {
+                        sendFarm(p);
+                    }
+                }
+            });
         });
     }
 
@@ -185,9 +217,35 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         if (in(b, FARM_X, FARM_HALF) && b.getY() == base + 1 && b.getType() == Material.WHEAT) {
+            Player p = event.getPlayer();
+            // The player's own crop: carrots, potatoes ... drop instead of wheat once unlocked (per player).
+            long farmed = farmed(p) + 1;
+            Crop before = cropFor(farmed - 1);
+            Crop crop = cropFor(farmed);
+            p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
+            if (before != Crop_WHEAT() || crop != Crop_WHEAT()) {
+                event.setDropItems(false);
+                int amount = 1 + ThreadLocalRandom.current().nextInt(2);
+                p.getInventory().addItem(new ItemStack(crop.item(), amount)).values()
+                        .forEach(rest -> p.getWorld().dropItemNaturally(p.getLocation(), rest));
+            }
+            if (crop != before) {
+                msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
+                core.sounds().play(p, "unlock");
+                sendFarm(p);
+            } else if (crop.unlockAt() < CROPS.getLast().unlockAt()) {
+                Crop next = CROPS.get(CROPS.indexOf(crop) + 1);
+                if (farmed % 50 == 0) {
+                    msg.actionBar(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
+                            net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
+                            net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item())));
+                }
+            }
             core.scheduler().later("essentials:grind-regrow", config.grindFarmRegrowSeconds * 20L, () -> {
-                if (b.getType().isAir() && b.getRelative(0, -1, 0).getType() == Material.FARMLAND) {
+                // Also a crop the hoe replanted (age 0): it would never grow here (no random ticks).
+                if ((b.getType().isAir() || b.getType() == Material.WHEAT) && b.getRelative(0, -1, 0).getType() == Material.FARMLAND) {
                     ripe(b);
+                    showCrop(b);
                 }
             });
             return;
@@ -201,6 +259,73 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         event.setCancelled(true);
+    }
+
+    private static Crop Crop_WHEAT() {
+        return CROPS.getFirst();
+    }
+
+    private static long farmed(Player p) {
+        Long v = p.getPersistentDataContainer().get(FARMED, PersistentDataType.LONG);
+        return v == null ? 0 : v;
+    }
+
+    private static String name(Material m) {
+        String id = m.getKey().getKey().replace('_', ' ');
+        return Character.toUpperCase(id.charAt(0)) + id.substring(1);
+    }
+
+    private static org.bukkit.block.data.BlockData ripeData(Material block) {
+        org.bukkit.block.data.BlockData d = block.createBlockData();
+        if (d instanceof Ageable a) {
+            a.setAge(a.getMaximumAge());
+        }
+        return d;
+    }
+
+    /** The whole farm in the player's own crop (client side only; the real blocks stay wheat). */
+    private void sendFarm(Player p) {
+        Crop crop = cropFor(farmed(p));
+        if (world == null || !p.getWorld().equals(world) || crop == Crop_WHEAT()) {
+            return;
+        }
+        org.bukkit.block.data.BlockData data = ripeData(crop.block());
+        List<org.bukkit.block.BlockState> states = new ArrayList<>();
+        for (int x = -FARM_HALF; x <= FARM_HALF; x++) {
+            for (int z = -FARM_HALF; z <= FARM_HALF; z++) {
+                Block b = world.getBlockAt(FARM_X + x, base + 1, z);
+                if (b.getType() == Material.WHEAT) {
+                    org.bukkit.block.BlockState st = b.getState();
+                    st.setBlockData(data);
+                    states.add(st);
+                }
+            }
+        }
+        p.sendBlockChanges(states);
+    }
+
+    /** One regrown crop, shown in each nearby player's own crop. */
+    private void showCrop(Block b) {
+        for (Player p : b.getLocation().getNearbyPlayers(64)) {
+            Crop crop = cropFor(farmed(p));
+            if (crop != Crop_WHEAT()) {
+                p.sendBlockChange(b.getLocation(), ripeData(crop.block()));
+            }
+        }
+    }
+
+    /** Arriving in the farm world (teleport, portal, join): the farm in your crop, again after the chunks loaded. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+        Player p = event.getPlayer();
+        core.scheduler().later("essentials:grind-view", 20L, () -> sendFarm(p));
+        core.scheduler().later("essentials:grind-view", 60L, () -> sendFarm(p));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoinGrind(PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+        core.scheduler().later("essentials:grind-view", 40L, () -> sendFarm(p));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

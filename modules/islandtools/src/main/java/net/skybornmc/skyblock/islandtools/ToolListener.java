@@ -80,7 +80,9 @@ final class ToolListener implements Listener {
     }
 
     private boolean onIslandWorld(Player p) {
-        return m.islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(false);
+        // Owner 3 Nov 2026: the tools work, level up and use their perks the same at /farm and /mine (tool-worlds).
+        return m.islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(false)
+                || m.config().toolWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
     }
 
     /** The tool in hand when it is a usable copy; removes stale copies. Null for anything else. */

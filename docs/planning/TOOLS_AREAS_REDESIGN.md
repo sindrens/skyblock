@@ -691,3 +691,28 @@ Each has the default the plan uses.
 5. Vanilla crop prices vs Farm prices (Q21) and the seed prices (Q22).
 6. Farm unlock numbers and crop order (Q19, Q20).
 7. Which gates stay without the tutorial (Q5).
+
+---
+
+## Owner decisions (3 Nov 2026, 23:05-23:17) - these override the defaults above
+
+1. **Personal tools only.** The island tools (`modules/islandtools`, one record per profile) are *the* tools. Their perks get
+   better on an island: island upgrades boost the tool perks of every member (the shared island levels already do this).
+   There are no Depths tools any more (`modules/tools` Forge/Depths tools are retired; code may be reused).
+2. **The Depths and the dungeon are removed.** Players get `/farm` and `/mine` (one world `grind`, essentials `GrindAreas`).
+   Depths code is reused where it fits (per-player blocks, drops), the rest is deleted later; every removal is noted here.
+   Done in this step: menu Play button and Travel place point to the Farm and the Mine; build portals with target `depths`
+   lead to the `grind` world (`worlds.yml portals.world-targets`); `/dungeon` removed; the Depths tier map is `/tiers` until
+   the module is deleted.
+3. **Tools work the same at /farm and /mine** as on the island (level up, perks, shards): `islandtools.yml tool-worlds`.
+4. **Per-player crops at /farm**: the real blocks are wheat; each player sees and harvests their own unlocked crop
+   (wheat -> carrots at 500 harvested -> potatoes at 2,500 -> beetroot at 8,000, `GrindAreas.CROPS`, counter in the player
+   data). The same for ores at /mine is next.
+5. **Joining an island**: inventory and ender chest emptied (backup), money topped up to $1,000
+   (`islands.yml lifecycle.profile-reset.on-join`, `join-money`).
+6. **GUIs stay vanilla** (no glass panes, no pack frame), simple and clean; icons revamped; lore in the PNG format
+   (`| Header` sections, `» CLICK to ...` last).
+
+Still to do, in order: per-player ore tiers at /mine; more and cheaper hoe levels (psychology: frequent small wins);
+higher but balanced economy numbers; Depths module deletion (after the inventory merge ran for everyone); GUI revamp
+(/menu icons, shop layout incl. the zigzag, island upgrades and /is masteries in the lore format).

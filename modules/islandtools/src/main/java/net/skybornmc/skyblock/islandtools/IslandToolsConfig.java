@@ -96,6 +96,10 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "only-on-island", desc = "Owner 3 Nov 2026: island tools exist only in the island world; in every other world (spawn, the Depths, events) they are put away and come back in the same slot on the island. Off = only the put-away-worlds below.")
     public boolean onlyOnIsland = false; // owner 3 Nov 2026 20:31: island tools everywhere
 
+    @Setting(path = "tool-worlds", desc = "Owner 3 Nov 2026: worlds besides the islands where the tools work exactly like on an island "
+            + "(level up, perks, shards): the /farm and /mine world.")
+    public List<String> toolWorlds = List.of("grind");
+
     @Setting(path = "own-inventory-worlds", desc = "Owner 3 Nov 2026: worlds with their own inventory (tools.yml world-tools: the Depths). Island tools are never in that inventory, so nothing is put away or given back there.")
     public List<String> ownInventoryWorlds = List.of();
 
