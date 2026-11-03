@@ -6,6 +6,13 @@ error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Not
 loading: "<prefix><c:error><sym:cross></c:error> <c:text>Crates are still loading. Try again in a moment."
 frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates while frozen."
 staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates in staff mode."
+# /keys (feedback 31 Oct 2026). <key> <keys> <tradeable> <crate>
+keys:
+  header: "<c:header><bold>| Your keys"
+  line: "<c:bar>|</c:bar> <key> <c:muted>x</c:muted><c:value><keys></c:value> <click:run_command:'/crates <crate>'><hover:show_text:'<c:text>Open this crate'><c:action>[Open]</c:action></hover></click>"
+  line-tradeable: "<c:bar>|</c:bar> <key> <c:muted>x</c:muted><c:value><keys></c:value> <c:muted>(<tradeable> tradeable)</c:muted> <click:run_command:'/crates <crate>'><hover:show_text:'<c:text>Open this crate'><c:action>[Open]</c:action></hover></click>"
+  none: "<prefix><c:text>You have no keys yet. Get them from voting, quests, the AFK pool and daily rewards. <click:run_command:'/crates'><hover:show_text:'<c:text>See every crate'><c:action>[Crates]</c:action></hover></click>"
+  footer: "<c:muted>All crates and rewards:</c:muted> <click:run_command:'/crates'><hover:show_text:'<c:text>Open the crates menu'><c:action>[Crates]</c:action></hover></click>"
 switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
 unknown-crate: "<prefix><c:error><sym:cross></c:error> <c:text>No crate <c:value><input></c:value><c:text>. Try: <c:value><crates>"
 coming-soon: "<prefix><c:error><sym:cross></c:error> <c:text>This crate is coming soon."

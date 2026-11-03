@@ -375,6 +375,55 @@ public final class CratesModule implements SkyblockModule, Listener {
                 .example("crates ember")
                 .executes(ctx -> open(ctx.player(), ctx.getOr(crate, null)))
                 .sub(new CratesAdmin(this).spec()));
+        core.commands().register(CommandSpec.command("keys")
+                .description("List your crate keys in chat")
+                .category("Rewards")
+                .permission(PERM_USE)
+                .playerOnly()
+                .aliases("key")
+                .example("keys")
+                .executes(ctx -> keys(ctx.player())));
+    }
+
+    /** {@code /keys} (feedback 31 Oct 2026): every visible crate you have keys for, in chat. */
+    void keys(Player player) {
+        Optional<String> problem = problem(player);
+        if (problem.isPresent()) {
+            throw new CommandFailure(ID, problem.get());
+        }
+        UUID profile = profiles().profileKey(player);
+        ProfileView cached = view(profile);
+        if (cached != null) {
+            printKeys(player, cached);
+            return;
+        }
+        UUID id = player.getUniqueId();
+        loadView(profile).whenComplete((v, e) -> {
+            Player p = org.bukkit.Bukkit.getPlayer(id);
+            if (p == null) {
+                return;
+            }
+            if (e != null || v == null) {
+                msg.send(p, "loading");
+                return;
+            }
+            printKeys(p, v);
+        });
+    }
+
+    private void printKeys(Player player, ProfileView view) {
+        msg.send(player, "keys.header");
+        int shown = 0;
+        for (CrateCatalog.Crate crate : catalog.visible()) {
+            CrateStore.Keys k = view.keys(crate.id());
+            if (k.total() <= 0) {
+                continue;
+            }
+            msg.send(player, k.tradeable() > 0 ? "keys.line-tradeable" : "keys.line", Msg.mm("key", keyMini(crate.id())),
+                    Msg.number("keys", k.total()), Msg.number("tradeable", k.tradeable()), Msg.p("crate", crate.id()));
+            shown++;
+        }
+        msg.send(player, shown == 0 ? "keys.none" : "keys.footer");
     }
 
     List<String> visibleIds() {
