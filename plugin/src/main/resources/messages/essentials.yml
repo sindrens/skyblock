@@ -258,3 +258,11 @@ command-hints:
   did-you-mean: "<prefix><c:error><sym:cross></c:error> <c:text>Unknown command <c:value>/<command></c:value>. Did you mean <c:action><suggestion></c:action><c:text>?"
   hover: "<c:text>Click to type <c:value><suggestion>"
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>Unknown command <c:value>/<command></c:value>. See <c:action>/help</c:action><c:text>."
+
+# Temporary grind areas: /farm, /mine, /dungeon (owner 3 Nov 2026).
+grind:
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>The farm, mine and dungeon are not ready yet. Tell staff."
+  arrived:
+    farm: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Farm</c:value><c:text>. Break ripe wheat, it grows back in seconds. Sell it with <c:value>/sell</c:value><c:text>."
+    mine: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Mine</c:value><c:text>. Every block comes back a few seconds after you mine it."
+    dungeon: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Dungeon</c:value><c:text>. Monsters keep coming while you're inside. Good luck!"

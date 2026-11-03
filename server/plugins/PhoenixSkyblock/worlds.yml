@@ -112,6 +112,19 @@ worlds:
       spawn_monsters: false
       pvp: true
       random_tick_speed: 0
+  grind:                       # temporary /farm, /mine, /dungeon areas (essentials GrindAreas, owner 3 Nov 2026)
+    create: true
+    biome: plains
+    difficulty: normal
+    spawn: { x: 0.5, y: 100, z: -40.5, yaw: 0 }
+    border: 6000
+    time: 6000
+    gamerules:
+      advance_time: false
+      advance_weather: false
+      spawn_mobs: false
+      spawn_monsters: false
+      random_tick_speed: 0
 
 # Finished builds (/skyblock builds, owner/admin): .schem + .yml per build from the builders (BUILDER_BRIEF §3.5/3.6).
 builds:

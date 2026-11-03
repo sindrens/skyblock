@@ -68,7 +68,7 @@ tiers:
   # Action bar when a locked zone blocks you (walking, teleport, pearl, mining).
   locked: "<c:error><sym:cross></c:error> <c:text>Needs <skill> <c:value><required></c:value> <c:muted>(<level>/<required>) <sym:dot> <wing> <c:muted>Tier <tier>"
   kicked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> <c:value><name></c:value> <c:text>needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Sent back to <c:value>The Gate</c:value>."
-  unlocked: "<prefix><c:success><sym:star></c:success> <c:text>Unlocked <wing> <c:value>Tier <tier></c:value> <c:value><name></c:value>! <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Teleport]</c:action></hover></click>"
+  unlocked: "<prefix><c:success><sym:star></c:success> <c:text>Unlocked <wing> <c:value>Tier <tier></c:value> <c:value><name></c:value>! <click:run_command:'/tiers'><hover:show_text:'<c:text>Open /tiers'><c:action>[Teleport]</c:action></hover></click>"
   first-visit:
     title: "<c:value><name>"
     subtitle: "<wing> <c:muted><sym:dot></c:muted> <c:text>Tier <tier>"
@@ -119,7 +119,7 @@ dungeon:
   arrived: "<c:ember><sym:pickaxe></c:ember> <wing> <c:value>Tier <tier></c:value> <c:muted><sym:dot></c:muted> <c:text><name>"
   locked: "<prefix><c:error><sym:cross></c:error> <wing> <c:text>Tier <tier> needs <skill> <c:value><required></c:value> <c:muted>(you: <level>)</c:muted><c:text>. Level up in <click:run_command:'/skills'><hover:show_text:'<c:text>Open /skills'><c:action>[Skills]</c:action></hover></click>"
   # Owner answer 346: a /tpahere (or other teleport) into a tier the traveller has not unlocked.
-  teleport-locked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't go there: that Depths tier is still locked for you. See <click:run_command:'/dungeon'><hover:show_text:'<c:text>Open /dungeon'><c:action>[Tiers]</c:action></hover></click>"
+  teleport-locked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't go there: that Depths tier is still locked for you. See <click:run_command:'/tiers'><hover:show_text:'<c:text>Open /tiers'><c:action>[Tiers]</c:action></hover></click>"
   # Satchel button (M4.4). <used> <max>
   satchel:
     name: "<c:flame>Satchel"

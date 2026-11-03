@@ -9,6 +9,24 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "hunger.disabled", desc = "Owner 3 Nov 2026: no hunger anywhere (the food bar stays full).")
     public boolean hungerDisabled = true;
 
+    @Setting(path = "grind.enabled", desc = "Temporary /farm, /mine and /dungeon areas in one world (owner 3 Nov 2026), until the grind areas redesign.")
+    public boolean grindEnabled = true;
+
+    @Setting(path = "grind.world", desc = "World of the temporary areas (must be in worlds.yml).")
+    public String grindWorld = "grind";
+
+    @Setting(path = "grind.y", desc = "Ground height of the areas in that world.", min = -60, max = 300)
+    public int grindY = 99;
+
+    @Setting(path = "grind.farm-regrow-seconds", desc = "A broken wheat crop at /farm is ripe again after this many seconds.", min = 1, max = 600)
+    public int grindFarmRegrowSeconds = 2;
+
+    @Setting(path = "grind.mine-regen-seconds", desc = "A mined block at /mine comes back after this many seconds.", min = 1, max = 600)
+    public int grindMineRegenSeconds = 3;
+
+    @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
+    public int grindDungeonMobs = 12;
+
     @Setting(path = "hunger.pvp-worlds", desc = "Worlds where hunger still works (owner 3 Nov 2026: only PvP; off in dungeons too).")
     public java.util.List<String> hungerWorlds = java.util.List.of("warzone");
 

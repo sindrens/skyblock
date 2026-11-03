@@ -228,9 +228,10 @@ public final class DepthsModule implements SkyblockModule {
                         .description("Teleport to The Gate, a tier zone or the boss arena (ignores locks)")
                         .permission(DepthsPerms.TP).playerOnly().arg(tpTarget).example("depths tp mine_t01")
                         .executes(ctx -> zoneCommands.teleport(ctx.player(), ctx.get(tpTarget)))));
-        core.commands().register(CommandSpec.command("dungeon")
+        // 3 Nov 2026: /dungeon is the new grind area (essentials GrindAreas); the Depths tier map is /tiers.
+        core.commands().register(CommandSpec.command("tiers")
                 .description("Teleport to your unlocked Depths tiers; see what the locked ones need").category("Depths")
-                .permission(DepthsPerms.DUNGEON).playerOnly().example("dungeon")
+                .permission(DepthsPerms.DUNGEON).playerOnly().example("tiers")
                 .executes(ctx -> dungeon.open(ctx.player())));
         // ECON-SELL-SHOP-AH D3: /satchel opens the same menu as /dungeon > Satchel; status and take for chat users.
         Arg<String> satchelItem = Args.word("item", net.skybornmc.skyblock.common.command.Suggest.bySender(

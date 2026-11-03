@@ -60,8 +60,9 @@ public final class EssentialsModule implements SkyblockModule {
         autoRefill = new AutoRefill(core, config, settings);
         commandHints = new CommandHints(core, config, msg);
         noHunger = new NoHunger(config);
+        grind = new GrindAreas(core, config, msg, core.services().get(TeleportService.class));
 
-        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
+        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind)) {
             group.register();
         }
         for (Listener listener : listeners()) {
@@ -69,6 +70,7 @@ public final class EssentialsModule implements SkyblockModule {
         }
         teleportCommands.start();
         powers.start();
+        grind.start();
         // DEPTHSPROT: /build mode also lifts the worlds module's protection flags in the protected worlds (spawn).
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class)
                 .ifPresent(flags -> flags.addBypass(id(), protection::buildModeIn));
@@ -76,10 +78,11 @@ public final class EssentialsModule implements SkyblockModule {
     }
 
     private NoHunger noHunger;
+    private GrindAreas grind;
 
     private List<Listener> listeners() {
         return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints,
-                noHunger);
+                noHunger, grind);
     }
 
     @Override
