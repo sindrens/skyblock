@@ -246,6 +246,10 @@ final class WorldTools implements Listener {
 
     /** Reads both rows of the player's profile once (plus a pending copy from the player file); then puts the right set in place. */
     private void load(Player player, boolean placeAfter) {
+        if (!module.config().worldToolsEnabled) {
+            mergeBack(player);
+            return;
+        }
         if (!active(player)) {
             return;
         }
@@ -286,6 +290,66 @@ final class WorldTools implements Listener {
             cache.put(id, new Cached(profile, rows, loaded.stash()));
             if (placeAfter) {
                 place(p);
+            }
+        }));
+    }
+
+    /**
+     * Owner 3 Nov 2026 20:31 (one inventory everywhere): the separate Depths inventory is off, so the stored set of the
+     * side that is not live (and the pending copy, and old tool_stash rows) comes back into the inventory, overflow to
+     * /box. Rows are deleted first and the player file is saved right after (PlayerSaves rule 2: a crash can lose, never
+     * duplicate).
+     */
+    private void mergeBack(Player player) {
+        UUID id = player.getUniqueId();
+        UUID profile = profile(player);
+        String live = liveSide(marker(player), profile);
+        Pending pending = pending(player, profile);
+        module.core.database().transaction(c -> {
+            Loaded l = rows(c, profile);
+            List<ItemStack> stash = new ArrayList<>();
+            for (byte[] b : Sql.query(c, "SELECT item FROM tool_stash WHERE profile_key = ?", rs -> rs.getBytes("item"), profile)) {
+                stash.add(ItemStack.deserializeBytes(b));
+            }
+            Sql.update(c, "DELETE FROM world_inventory WHERE profile_key = ?", profile);
+            Sql.update(c, "DELETE FROM tool_stash WHERE profile_key = ?", profile);
+            return new Loaded(l.rows(), stash);
+        }).whenComplete((loaded, error) -> module.core.scheduler().main("tools-world-merge", () -> {
+            Player p = Bukkit.getPlayer(id);
+            if (error != null || p == null) {
+                if (error != null) {
+                    module.core.plugin().getLogger().log(Level.WARNING, "Tools: could not merge the Depths inventory of " + id, Database.cause(error));
+                }
+                return;
+            }
+            Map<String, byte[]> rows = loaded.rows();
+            if (pending != null) {
+                rows.put(pending.side(), pending.items());
+            }
+            int given = 0;
+            for (Map.Entry<String, byte[]> e : rows.entrySet()) {
+                if (e.getKey().equals(live)) {
+                    continue; // the live side is what the player carries now
+                }
+                for (ItemStack s : ItemStack.deserializeItemsFromBytes(e.getValue())) {
+                    if (s != null && !s.isEmpty()) {
+                        module.forge().give(p, s);
+                        given++;
+                    }
+                }
+            }
+            for (ItemStack s : loaded.stash()) {
+                if (s != null && !s.isEmpty()) {
+                    module.forge().give(p, s);
+                    given++;
+                }
+            }
+            p.getPersistentDataContainer().remove(SIDE);
+            clearPending(p);
+            PlayerSaves.save(p, "Depths inventory merged back");
+            if (given > 0) {
+                module.core.audit().logPlayer(AuditCategory.ITEM, "inventory_merge", Actor.SYSTEM, id, p.getName(), (long) given,
+                        null, Map.of("profile", profile.toString()));
             }
         }));
     }

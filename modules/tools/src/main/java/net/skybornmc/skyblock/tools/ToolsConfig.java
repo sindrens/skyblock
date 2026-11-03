@@ -120,7 +120,7 @@ public final class ToolsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ starter kit, forge, menu
 
     @Setting(path = "world-tools.enabled", desc = "Owner 3 Nov 2026: the Depths has its own inventory (island and spawn share the other one). Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island.")
-    public boolean worldToolsEnabled = true;
+    public boolean worldToolsEnabled = false; // owner 3 Nov 2026 20:31: one inventory everywhere (stored Depths sets come back on join)
 
     @Setting(path = "world-tools.depths-worlds", desc = "Worlds where Depths tools are carried (everywhere else they are put away).")
     public List<String> worldToolsDepthsWorlds = List.of("depths");
@@ -242,12 +242,13 @@ public final class ToolsConfig extends ModuleConfig {
     /** Version 2 (owner 3 Nov 2026): the first Depths kit is just the satchel and three tools (untouched lists only). */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("world-inventory.depths-items", ValueChange.of(DEPTHS_ITEMS_V1, List.of("LEATHER 1 satchel"))));
+        return java.util.Map.of(2, java.util.Map.of("world-inventory.depths-items", ValueChange.of(DEPTHS_ITEMS_V1, List.of("LEATHER 1 satchel"))),
+                3, java.util.Map.of("world-tools.enabled", ValueChange.of(true, false)));
     }
 
     /** Dead-key rule (REVIEW3 §6): NPC places come from the applied builds now (npcs module); the old keys are deleted on load. */

@@ -87,13 +87,13 @@ public final class IslandToolsConfig extends ModuleConfig {
     public boolean farmlandAlwaysWet = true;
 
     @Setting(path = "only-on-island", desc = "Owner 3 Nov 2026: island tools exist only in the island world; in every other world (spawn, the Depths, events) they are put away and come back in the same slot on the island. Off = only the put-away-worlds below.")
-    public boolean onlyOnIsland = true;
+    public boolean onlyOnIsland = false; // owner 3 Nov 2026 20:31: island tools everywhere
 
     @Setting(path = "own-inventory-worlds", desc = "Owner 3 Nov 2026: worlds with their own inventory (tools.yml world-tools: the Depths). Island tools are never in that inventory, so nothing is put away or given back there.")
-    public List<String> ownInventoryWorlds = List.of("depths");
+    public List<String> ownInventoryWorlds = List.of();
 
     @Setting(path = "put-away-worlds", desc = "T1/D1: worlds where island tools are put away (and given back on the island in the same slot).")
-    public List<String> putAwayWorlds = List.of("depths");
+    public List<String> putAwayWorlds = List.of();
 
     @Setting(path = "upgrades", desc = "Upgrades per tool, 'kind:id:effect:max:base-cost:growth' (owner 3 Nov 2026: costs are shards). Effects: enchant=<id>, haste, magnet, "
             + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe), shards (Shard Finder), autosell (Auto-Sell). Cost of level n+1 = base x growth^n.")
@@ -185,7 +185,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
@@ -193,7 +193,11 @@ public final class IslandToolsConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         IslandToolsConfig d = new IslandToolsConfig();
         return java.util.Map.of(2, java.util.Map.of("tier-costs", ValueChange.of(TIER_COSTS_V1, d.tierCosts),
-                "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)));
+                "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)),
+                // v3 (owner 3 Nov 2026 20:31, "island tools everywhere, including the Depths")
+                3, java.util.Map.of("only-on-island", ValueChange.of(true, false),
+                        "own-inventory-worlds", ValueChange.of(List.of("depths"), List.of()),
+                        "put-away-worlds", ValueChange.of(List.of("depths"), List.of())));
     }
 
     @Override
