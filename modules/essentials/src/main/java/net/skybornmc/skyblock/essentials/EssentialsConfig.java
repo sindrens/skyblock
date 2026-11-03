@@ -24,6 +24,10 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "grind.mine-regen-seconds", desc = "A mined block at /mine comes back after this many seconds.", min = 1, max = 600)
     public int grindMineRegenSeconds = 3;
 
+    @Setting(path = "grind.removed-world", desc = "Owner 3 Nov 2026: the Depths world is gone for players; anyone logging in there "
+            + "is sent to spawn. Empty = off.")
+    public String removedWorld = "depths";
+
     @Setting(path = "grind.bonus-percent", desc = "Money bonus per /farm harvest and /mine ore, in percent of the built-in amounts "
             + "(wheat $6 ... beetroot $16, coal $4 ... emerald $70). 0 = no bonus.", min = 0, max = 1000)
     public int grindBonusPercent = 100;

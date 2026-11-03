@@ -723,3 +723,16 @@ start (fixed: argument name).
 Still to do, in order:
 higher but balanced economy numbers; Depths module deletion (after the inventory merge ran for everyone); GUI revamp
 (/menu icons, shop layout incl. the zigzag, island upgrades and /is masteries in the lore format).
+
+### Depths removal log (3 Nov 2026)
+- `SkyblockPlugin`: `DepthsModule` is no longer registered, so no Depths commands (`/depths`, `/tiers`, `/satchel`), zones,
+  drops, satchel or Depths HUD run. Its code stays compiled because collection, enchants, progression, quests, skills and
+  tools compile against its classes; those references are removed module by module, then `modules/depths` is deleted.
+- Players who log in inside the old `depths` world are sent to spawn (`essentials.yml grind.removed-world`).
+- Island tasks that delivered Depths items (`custom:depths_*`, one per tier) now ask for the matching /mine item
+  (`TaskCatalog.DEPTHS_ITEMS`, applied on load so the live tasks.yml needs no edit).
+- Depths tools: the separate Depths inventory is off and its stored sets come back on join (`WorldTools.mergeBack`).
+- Economy: crops rebalanced (hoe crops pay more per item than self-farming crops: cactus $5, cane $4, melon slice $2,
+  pumpkin $10, cocoa $8, berries $6; wheat $12, carrot/potato $15, beetroot $20, nether wart $30); seeds and crops in the
+  shop cost $1,500-4,000 (shop.yml v6 patch); /farm and /mine pay a bonus per harvest/ore (`grind.bonus-percent`).
+

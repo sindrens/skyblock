@@ -516,6 +516,13 @@ final class GrindAreas extends CommandGroup implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoinGrind(PlayerJoinEvent event) {
         Player p = event.getPlayer();
+        // The Depths are gone: someone who logged out down there comes back at spawn.
+        if (p.getWorld().getName().equalsIgnoreCase(config.removedWorld)) {
+            World spawn = Bukkit.getWorld(config.spawnWorld);
+            if (spawn != null) {
+                core.scheduler().later("essentials:grind-out", 5L, () -> p.teleport(spawn.getSpawnLocation().toCenterLocation()));
+            }
+        }
         core.scheduler().later("essentials:grind-view", 40L, () -> { sendFarm(p); sendMine(p); });
     }
 

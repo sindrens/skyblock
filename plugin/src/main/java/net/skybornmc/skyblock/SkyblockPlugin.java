@@ -285,7 +285,10 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new net.skybornmc.skyblock.logs.LogsModule(core));
         modules.register(new net.skybornmc.skyblock.cosmetics.CosmeticsModule(core));
-        modules.register(new net.skybornmc.skyblock.depths.DepthsModule(core));
+        // Owner 3 Nov 2026: the Depths are removed (replaced by /farm and /mine, essentials GrindAreas). The module no
+        // longer starts; its code stays until the modules that compile against it no longer use its classes
+        // (docs/planning/TOOLS_AREAS_REDESIGN.md, "Owner decisions").
+        // modules.register(new net.skybornmc.skyblock.depths.DepthsModule(core));
         modules.register(new net.skybornmc.skyblock.islands.IslandsModule(core));
         modules.register(new net.skybornmc.skyblock.economy.EconomyModule(core));
         modules.register(new net.skybornmc.skyblock.skills.SkillsModule(core));
