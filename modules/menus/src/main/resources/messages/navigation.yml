@@ -267,9 +267,6 @@ travel:
     depths-gate:
       name: "<c:info><bold>The Farm"
       lore: ["<c:text>Crops that grow back", "<c:text>in seconds."]
-    mine:
-      name: "<c:info><bold>The Mine"
-      lore: ["<c:text>Ores that come back", "<c:text>in seconds."]
     crate-yard:
       name: "<c:brand><bold>Crate Yard"
       lore: ["<c:text>Open your crates."]
@@ -277,8 +274,8 @@ travel:
       name: "<c:flame><bold>Market"
       lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]
     forge-quarter:
-      name: "<c:enchant><bold>Forge Quarter"
-      lore: ["<c:text>Blacksmith and Enchanter."]
+      name: "<c:info><bold>The Mine"
+      lore: ["<c:text>Ores that come back", "<c:text>in seconds."]
     visit-islands:
       name: "<c:success><bold>Visit Islands"
       lore: ["<c:text>See the islands of", "<c:text>other players."]

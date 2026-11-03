@@ -23,25 +23,25 @@
 hub:
   you:       {slot: 4,  action: you,      icon: player_head}
   # Play (lime)
-  home:      {slot: 10, group: play,  icon: feature/home,      command: "is home",   service: IslandService}
-  island:    {slot: 12, group: play,  icon: feature/island,    command: "is",        service: IslandService}
+  home:      {slot: 10, group: play,  icon: red_bed,      command: "is home",   service: IslandService}
+  island:    {slot: 12, group: play,  icon: grass_block,    command: "is",        service: IslandService}
   depths:    {slot: 14, group: play,  icon: wheat,             command: "farm"}   # 3 Nov 2026: the Depths are gone; /farm and /mine
-  travel:    {slot: 16, group: play,  icon: feature/travel,    action: travel}
+  travel:    {slot: 16, group: play,  icon: compass,    action: travel}
   # Money (green)
-  sell:      {slot: 19, group: money, icon: feature/sell,      command: "sell",      service: SellService}
-  shop:      {slot: 21, group: money, icon: feature/shop,      command: "shop",      service: ShopPrices}
-  bank:      {slot: 23, group: money, icon: feature/bank,      command: "bank",      service: BankService}
-  auction:   {slot: 25, group: money, icon: feature/auction,   command: "ah"}
+  sell:      {slot: 19, group: money, icon: gold_ingot,      command: "sell",      service: SellService}
+  shop:      {slot: 21, group: money, icon: emerald,      command: "shop",      service: ShopPrices}
+  bank:      {slot: 23, group: money, icon: gold_block,      command: "bank",      service: BankService}
+  auction:   {slot: 25, group: money, icon: oak_sign,   command: "ah"}
   # Power (violet)
-  forge:     {slot: 28, group: power, icon: feature/forge,     command: "forge",     service: ToolService}
-  skills:    {slot: 30, group: power, icon: feature/skills,    command: "skills",    service: SkillService}
-  enchanter: {slot: 32, group: power, icon: feature/enchanter, command: "enchanter", service: EnchantService}
-  wardrobe:  {slot: 34, group: power, icon: feature/wardrobe,  command: "wardrobe",  service: WardrobeService}
+  forge:     {slot: 28, group: power, icon: anvil,     command: "forge",     service: ToolService}
+  skills:    {slot: 30, group: power, icon: experience_bottle,    command: "skills",    service: SkillService}
+  enchanter: {slot: 32, group: power, icon: enchanting_table, command: "enchanter", service: EnchantService}
+  wardrobe:  {slot: 34, group: power, icon: leather_chestplate,  command: "wardrobe",  service: WardrobeService}
   # More (flame gold)
-  rewards:   {slot: 39, group: more,  icon: feature/rewards,   action: rewards, command: "daily", service: RewardsService}
-  top:       {slot: 41, group: more,  icon: feature/top,       action: top,      service: IslandService}
+  rewards:   {slot: 39, group: more,  icon: chest,   action: rewards, command: "daily", service: RewardsService}
+  top:       {slot: 41, group: more,  icon: diamond,       action: top,      service: IslandService}
   # Staff tile (G9): only players with the permission see it (hidden, not locked)
-  staff:     {slot: 8, icon: feature/staff, action: staff, command: "staff", permission: "skyblock.staff.hub", show-locked: false}
+  staff:     {slot: 8, icon: shield, action: staff, command: "staff", permission: "skyblock.staff.hub", show-locked: false}
 
 # The four hub groups, in order. A row is a group by its spacing; `color` = the area colour (style.yml → area) its
 # fallback names take (G9). The old marker panes (`mark`) are gone.
@@ -55,18 +55,18 @@ hub-groups:
 # 9 to 14 in two rows of a 4-row menu; nine = 5 + 4). Hidden entries leave no hole. Same keys as the hub (no group, no slot).
 # Texts: messages/navigation.yml → you.buttons.<id>.
 you:
-  profiles:     {icon: feature/profiles,     command: "profiles",     service: ProfileService}
-  titles:       {icon: feature/titles,       command: "tags",         service: Cosmetics}
-  achievements: {icon: feature/achievements, command: "achievements", service: AchievementService}
-  quests:       {icon: feature/quests,       command: "quests",       service: QuestService}
-  collection:   {icon: feature/collection,   command: "collection",   service: CollectionLog}
-  settings:     {icon: feature/settings,     action: settings}
-  rules:        {icon: feature/rules,        command: "rules"}
+  profiles:     {icon: armor_stand,     command: "profiles",     service: ProfileService}
+  titles:       {icon: paper,       command: "tags",         service: Cosmetics}
+  achievements: {icon: nether_star, command: "achievements", service: AchievementService}
+  quests:       {icon: map,       command: "quests",       service: QuestService}
+  collection:   {icon: bundle,   command: "collection",   service: CollectionLog}
+  settings:     {icon: repeater,     action: settings}
+  rules:        {icon: book,        command: "rules"}
   # Ranks V2: donor ranks only (a player without the node never sees it).
   rank-rewards: {icon: chest,                command: "rankrewards",  permission: "skyblock.rank.kit", show-locked: false}
-  store:        {icon: feature/store,        command: "store"}
+  store:        {icon: emerald_block,        command: "store"}
   # Card C1: your credits, bought and earned (/credit bal). Same base item as the Store (diamond, I9 section 9).
-  credits:      {icon: currency/credits,     command: "credit bal",   service: EconomyService}
+  credits:      {icon: sunflower,     command: "credit bal",   service: EconomyService}
 
 # /menu → Travel (G9 v3; replaces the UX3 warps menu). 3 rows, up to 7 places centred on the middle row in file order
 # (no slots). One click teleports with the /spawn warmup (reason: dungeon = the /dungeon warmup); locked places explain
@@ -77,22 +77,21 @@ you:
 #         "point <category> <id>"                      a spot of the applied builds (build-points.yml), e.g. road entries
 #         "location <world> <x> <y> <z> [yaw] [pitch]" a fixed position (feet)
 travel:
-  spawn:         {icon: travel/spawn,       target: "command spawn"}
-  my-island:     {icon: feature/island,     target: "command is home"}
-  depths-gate:   {icon: wheat,              target: "command farm"}   # 3 Nov 2026: the Farm replaces the Depths Gate
-  mine:          {icon: iron_pickaxe,       target: "command mine"}
-  crate-yard:    {icon: travel/crate_yard,  target: "location spawn 46.5 100 -35.5 -90 0"}
-  market:        {icon: travel/market,      target: "location spawn 0.5 99 33.5 0 0"}
-  forge-quarter: {icon: feature/forge,      target: "point entries forge_road"}
-  visit-islands: {icon: travel/visit,       target: "command is visit"}
+  spawn:         {icon: lodestone,       target: "command spawn"}
+  my-island:     {icon: grass_block,     target: "command is home"}
+  depths-gate:   {icon: wheat,              target: "command farm", reason: dungeon}   # 3 Nov 2026: the Farm replaces the Depths Gate
+  crate-yard:    {icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
+  market:        {icon: barrel,      target: "location spawn 0.5 99 33.5 0 0"}
+  forge-quarter: {icon: iron_pickaxe,       target: "command mine"}   # 3 Nov 2026: the Mine (the Depths Forge is retired)
+  visit-islands: {icon: ender_pearl,       target: "command is visit"}
 
 # Tutorial highlights (GUI-ICONS-FINAL): while the tutorial's current step is `step`, the tile `target` (hub.<button id>
 # or travel.<place id>) glints, shows "● Start here" (messages/navigation.yml → hub.highlight) and uses `icon` (an icon
 # catalogue key: our lit picture for Java with the pack, its base item for everyone else). Clicks do the same as always.
 # To switch a rule off set its step to none (deleted rules come back from the defaults on the next start).
 highlights:
-  hub-depths:  {target: "hub.depths",         step: none, icon: feature/depths_lit}
-  gate-depths: {target: "travel.depths-gate", step: none, icon: feature/depths_lit}
+  hub-depths:  {target: "hub.depths",         step: none, icon: wheat}
+  gate-depths: {target: "travel.depths-gate", step: none, icon: wheat}
 
 # /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.
 staff-entries:
