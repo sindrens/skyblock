@@ -97,8 +97,7 @@ final class ToolListener implements Listener {
             return null;
         }
         if (!onIslandWorld(p)) {
-            event.setCancelled(true);
-            warn(p, "tool.only-island");
+            // Owner 3 Nov 2026 20:37: island tools work everywhere as normal tools (island upgrades only on islands).
             return null;
         }
         return m.rec(p, ToolItems.kindOf(hand));
