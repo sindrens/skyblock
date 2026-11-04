@@ -26,12 +26,11 @@ enum UpgradeEffect {
     /** +% sell prices for members (BonusService SELL family). */
     SELL_BONUS("sell-bonus", true),
     /**
-     * +% extra drops in the Depths mine for members (EXTRA_DROPS, activity mining). Not live yet: the Depths drop roll
-     * uses only the tool's own fortune while the tools module is loaded (ToolService#dropMultiplier), so the upgrade
-     * would do nothing. The bonus source already answers it; switch to live once the roll asks with the player.
+     * +% ores for members (owner 4 Nov 2026): read by the island tools for everything the island pickaxe mines (on the
+     * island and at /mine), from the island the player is a member of. Much stronger than the pickaxe's own perks.
      */
-    MINE_FORTUNE("mine-fortune", false),
-    /** +% extra logs in the Depths forest for members (EXTRA_DROPS, activity foraging). Not live yet: see MINE_FORTUNE. */
+    MINE_FORTUNE("mine-fortune", true),
+    /** +% extra logs in the Depths forest for members (EXTRA_DROPS, activity foraging). Not live: the Depths are gone. */
     LUMBERJACK("lumberjack", false),
     /** +% skill XP for members (SKILL_XP family). Not live yet: the skills module does not read SKILL_XP for skill gains. */
     XP_BOOST("xp-boost", false),
@@ -41,10 +40,13 @@ enum UpgradeEffect {
     SPAWNER_RATE("spawner-rate", true),
     /** +% spawner drops: no hook in the stacking module yet. */
     MOB_LOOT("mob-loot", false),
-    /** +% crop growth on the island (Phase 7 M7.3): live while farming is on ({@link FarmingFeature}). */
-    CROP_GROWTH("crop-growth", false),
-    /** +% chance of extra crops per ripe harvest (Phase 7 M7.3): live while farming is on ({@link FarmingFeature}). */
-    HARVEST_YIELD("harvest-yield", false),
+    /** +% crop growth on the island: the island tools' crop clock reads it (owner 4 Nov 2026), and farming when it is on. */
+    CROP_GROWTH("crop-growth", true),
+    /**
+     * +% crops for members (owner 4 Nov 2026): read by the island tools for everything the island hoe harvests (on the
+     * island and at /farm); also the extra-crop chance of production farming when that is on.
+     */
+    HARVEST_YIELD("harvest-yield", true),
     /** Generator level (Phase 7 M7.2): live while custom generators are on ({@link GeneratorFeature}). */
     GENERATOR("generator", false),
     /** Island Fuel tank size (Phase 7): live while Island Fuel is on ({@link IslandFuelFeature}). */

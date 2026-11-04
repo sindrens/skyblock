@@ -22,9 +22,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The island hoe on crops (T9-T13): a ripe crop broken with the hoe harvests the whole row in front of the player (Row
- * upgrade), the crops replant themselves and are ripe again after the regrow time (60 s, faster with the island's
- * crop-growth upgrade, 15 s at the top; perks can push it to the floor), now and then a Growth Burst makes the row ripe
+ * The island hoe on crops (T9-T13): a ripe crop broken with the hoe (and the crops its Sweep perk takes along, owner
+ * 4 Nov 2026) replant themselves and are ripe again after the regrow time (60 s, faster with the island's
+ * crop-growth upgrade, 15 s at the top; perks can push it to the floor), now and then a Growth Burst makes the crop ripe
  * at once (T12), and a ripe crop shows a cue: subtle from afar, stronger close by (T13). Regrowing crops are kept in
  * memory only: after a restart they simply grow the vanilla way.
  */

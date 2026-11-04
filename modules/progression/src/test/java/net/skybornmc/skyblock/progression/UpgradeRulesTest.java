@@ -88,7 +88,7 @@ class UpgradeRulesTest {
         assertEquals(50, UpgradeRules.whole(catalog, Map.of("entity_limits", 1), UpgradeEffect.ENTITY_LIMITS));
         assertEquals(10, UpgradeRules.whole(catalog, Map.of("bank_interest", 10), UpgradeEffect.BANK_INTEREST));
         assertEquals(60, UpgradeRules.bonusPercent(catalog, Map.of("sell_multiplier", 12), UpgradeEffect.SELL_BONUS), 1e-9);
-        assertEquals(6, UpgradeRules.bonusPercent(catalog, Map.of("mine_fortune", 3), UpgradeEffect.MINE_FORTUNE), 1e-9);
+        assertEquals(36, UpgradeRules.bonusPercent(catalog, Map.of("mine_fortune", 3), UpgradeEffect.MINE_FORTUNE), 1e-9);
         assertEquals(0, UpgradeRules.bonusPercent(catalog, Map.of("mine_fortune", 3), UpgradeEffect.LUMBERJACK), 1e-9);
         assertEquals(24, UpgradeRules.bonusPercent(catalog, Map.of("xp_boost", 12), UpgradeEffect.XP_BOOST), 1e-9);
         // member slots count the leader: 4 + leader at the start (5), 8 + leader after 4 levels (owner 242)

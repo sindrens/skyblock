@@ -6,16 +6,25 @@ import net.skybornmc.skyblock.common.db.Sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 
-/** Database of the island tools and the hoe storage. All async; the guard methods run inside a caller's transaction. */
+/**
+ * Database of the island tools (owner 4 Nov 2026: the tools belong to the island) and the hoe storage. All async; the
+ * guard methods run inside a caller's transaction.
+ */
 final class ToolStore {
 
-    /** One tool of one profile. */
-    record Rec(UUID profile, Kind kind, int tier, String upgrades, String itemId, int slot, boolean stored) {
+    /** One island tool: XP in this prestige, prestige, perk levels and the purchase guard version. */
+    record Prog(long xp, int prestige, String upgrades, long version) {
+
+        static final Prog EMPTY = new Prog(0, 0, "", 0);
 
         Map<String, Integer> levels() {
             return Upgrades.decode(upgrades);
@@ -25,16 +34,16 @@ final class ToolStore {
             return levels().getOrDefault(upgrade, 0);
         }
 
-        Rec with(int newTier, String newUpgrades) {
-            return new Rec(profile, kind, newTier, newUpgrades, itemId, slot, stored);
+        Prog withXp(long newXp) {
+            return new Prog(newXp, prestige, upgrades, version);
         }
 
-        Rec withItem(String newItem) {
-            return new Rec(profile, kind, tier, upgrades, newItem, slot, stored);
+        Prog withUpgrades(String newUpgrades) {
+            return new Prog(xp, prestige, newUpgrades, version + 1);
         }
 
-        Rec withStored(boolean s, int newSlot) {
-            return new Rec(profile, kind, tier, upgrades, itemId, newSlot, s);
+        Prog prestiged() {
+            return new Prog(0, prestige + 1, "", version + 1);
         }
     }
 
@@ -44,150 +53,111 @@ final class ToolStore {
         this.db = db;
     }
 
-    CompletableFuture<Map<Kind, Rec>> load(UUID profile) {
-        return db.async(c -> {
-            Map<Kind, Rec> out = new EnumMap<>(Kind.class);
-            for (Rec r : Sql.query(c, "SELECT kind, tier, upgrades, item_id, slot, stored FROM island_tools WHERE profile_key = ?",
-                    rs -> {
-                        Kind k = Kind.of(rs.getString("kind")).orElse(null);
-                        return k == null ? null : new Rec(profile, k, rs.getInt("tier"), rs.getString("upgrades"),
-                                rs.getString("item_id"), rs.getInt("slot"), rs.getBoolean("stored"));
-                    }, Sql.toBytes(profile))) {
-                if (r != null) {
-                    out.put(r.kind(), r);
+    /**
+     * The island's tools, created on first use. A new row starts from the island's old shared levels (V002
+     * {@code island_tool_levels}) through {@code migrate} (kind, old upgrades → new upgrades); the old tier is dropped.
+     */
+    CompletableFuture<Map<Kind, Prog>> loadIsland(UUID island, BiFunction<Kind, String, String> migrate) {
+        return db.transaction(c -> {
+            Map<Kind, Prog> out = new EnumMap<>(Kind.class);
+            long now = System.currentTimeMillis();
+            for (Kind kind : Kind.values()) {
+                Optional<Prog> row = Sql.queryOne(c, "SELECT xp, prestige, upgrades, version FROM island_tool_progress WHERE island_id = ? "
+                                + "AND kind = ? FOR UPDATE", rs -> new Prog(rs.getLong(1), rs.getInt(2), rs.getString(3), rs.getLong(4)),
+                        Sql.toBytes(island), kind.id());
+                if (row.isPresent()) {
+                    out.put(kind, row.get());
+                    continue;
                 }
+                String old = Sql.queryOne(c, "SELECT upgrades FROM island_tool_levels WHERE island_id = ? AND kind = ?",
+                        rs -> rs.getString(1), Sql.toBytes(island), kind.id()).orElse("");
+                String seeded = old.isEmpty() ? "" : migrate.apply(kind, old);
+                Sql.update(c, "INSERT INTO island_tool_progress (island_id, kind, xp, prestige, upgrades, version, updated_at) "
+                        + "VALUES (?, ?, 0, 0, ?, 0, ?)", Sql.toBytes(island), kind.id(), seeded, now);
+                out.put(kind, new Prog(0, 0, seeded, 0));
             }
             return out;
         });
     }
 
-    /** Creates the missing tools (first join, D12). Existing rows are never changed. */
-    CompletableFuture<Void> createMissing(Map<Kind, Rec> fresh) {
+    /** Adds tool XP (write-behind of the in-memory counters; never touches the version). */
+    CompletableFuture<Void> addXp(Map<UUID, Map<Kind, Long>> deltas) {
         return db.transaction(c -> {
             long now = System.currentTimeMillis();
-            for (Rec r : fresh.values()) {
-                boolean exists = Sql.queryOne(c, "SELECT 1 FROM island_tools WHERE profile_key = ? AND kind = ?", rs -> 1,
-                        Sql.toBytes(r.profile()), r.kind().id()).isPresent();
-                if (!exists) {
-                    Sql.update(c, "INSERT INTO island_tools (profile_key, kind, tier, upgrades, item_id, slot, stored, updated_at) "
-                                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Sql.toBytes(r.profile()), r.kind().id(), r.tier(), r.upgrades(),
-                            r.itemId(), r.slot(), r.stored(), now);
+            for (Map.Entry<UUID, Map<Kind, Long>> island : deltas.entrySet()) {
+                for (Map.Entry<Kind, Long> e : island.getValue().entrySet()) {
+                    if (e.getValue() > 0) {
+                        Sql.update(c, "UPDATE island_tool_progress SET xp = xp + ?, updated_at = ? WHERE island_id = ? AND kind = ?",
+                                e.getValue(), now, Sql.toBytes(island.getKey()), e.getKey().id());
+                    }
                 }
             }
             return null;
         });
     }
 
-    /** Guard: changes tier and upgrades only while they are still what the menu showed (no double purchase). */
-    static boolean change(Connection c, Rec before, Rec after) throws SQLException {
-        return Sql.update(c, "UPDATE island_tools SET tier = ?, upgrades = ?, updated_at = ? WHERE profile_key = ? AND kind = ? "
-                        + "AND tier = ? AND upgrades = ?", after.tier(), after.upgrades(), System.currentTimeMillis(),
-                Sql.toBytes(before.profile()), before.kind().id(), before.tier(), before.upgrades()) == 1;
+    /** Guard of a perk purchase: the tool is still at {@code version} (else another member was faster). */
+    static boolean buy(Connection c, UUID island, Kind kind, long version, String upgrades) throws SQLException {
+        return Sql.update(c, "UPDATE island_tool_progress SET upgrades = ?, version = version + 1, updated_at = ? WHERE island_id = ? "
+                + "AND kind = ? AND version = ?", upgrades, System.currentTimeMillis(), Sql.toBytes(island), kind.id(), version) == 1;
     }
 
-    CompletableFuture<Void> saveItem(Rec r) {
-        return db.run(c -> Sql.update(c, "UPDATE island_tools SET item_id = ?, updated_at = ? WHERE profile_key = ? AND kind = ?",
-                r.itemId(), System.currentTimeMillis(), Sql.toBytes(r.profile()), r.kind().id()));
+    /**
+     * Guard of a prestige: the tool is unchanged since the menu ({@code version}, {@code prestige}) and its XP (plus the
+     * {@code pending} XP not written yet) reaches the max level ({@code xpToMax}). Resets XP and perks, prestige + 1.
+     */
+    static boolean prestige(Connection c, UUID island, Kind kind, Prog before, long pending, long xpToMax) throws SQLException {
+        Optional<Prog> now = Sql.queryOne(c, "SELECT xp, prestige, upgrades, version FROM island_tool_progress WHERE island_id = ? AND kind = ? "
+                + "FOR UPDATE", rs -> new Prog(rs.getLong(1), rs.getInt(2), rs.getString(3), rs.getLong(4)), Sql.toBytes(island), kind.id());
+        if (now.isEmpty() || now.get().version() != before.version() || now.get().prestige() != before.prestige()
+                || now.get().xp() + Math.max(0, pending) < xpToMax) {
+            return false;
+        }
+        return Sql.update(c, "UPDATE island_tool_progress SET xp = 0, prestige = prestige + 1, upgrades = '', version = version + 1, "
+                + "updated_at = ? WHERE island_id = ? AND kind = ? AND version = ?", System.currentTimeMillis(), Sql.toBytes(island),
+                kind.id(), before.version()) == 1;
     }
 
-    CompletableFuture<Void> saveStored(Rec r) {
-        return db.run(c -> Sql.update(c, "UPDATE island_tools SET stored = ?, slot = ?, updated_at = ? WHERE profile_key = ? AND kind = ?",
-                r.stored(), r.slot(), System.currentTimeMillis(), Sql.toBytes(r.profile()), r.kind().id()));
+    /** Staff: the island's tools back to level 1, prestige 0, no perks. */
+    CompletableFuture<Void> resetIsland(UUID island) {
+        return db.run(c -> Sql.update(c, "UPDATE island_tool_progress SET xp = 0, prestige = 0, upgrades = '', version = version + 1, "
+                + "updated_at = ? WHERE island_id = ?", System.currentTimeMillis(), Sql.toBytes(island)));
     }
 
+    // ------------------------------------------------------------------ handles given (V001 island_tools: item_id = the island)
+
+    /** The kinds whose handle this profile already got for {@code island} (the first handle comes by itself, once). */
+    CompletableFuture<Set<Kind>> given(UUID profile, UUID island) {
+        return db.async(c -> {
+            Set<Kind> out = EnumSet.noneOf(Kind.class);
+            for (String k : Sql.query(c, "SELECT kind FROM island_tools WHERE profile_key = ? AND item_id = ?", rs -> rs.getString(1),
+                    Sql.toBytes(profile), island.toString())) {
+                Kind.of(k).ifPresent(out::add);
+            }
+            return out;
+        });
+    }
+
+    /** Remembers that the profile got the handles of {@code kinds} for {@code island}. */
+    CompletableFuture<Void> markGiven(UUID profile, UUID island, Set<Kind> kinds) {
+        return db.transaction(c -> {
+            long now = System.currentTimeMillis();
+            for (Kind kind : kinds) {
+                if (Sql.update(c, "UPDATE island_tools SET item_id = ?, tier = 4, updated_at = ? WHERE profile_key = ? AND kind = ?",
+                        island.toString(), now, Sql.toBytes(profile), kind.id()) == 0) {
+                    Sql.update(c, "INSERT INTO island_tools (profile_key, kind, tier, upgrades, item_id, slot, stored, updated_at) "
+                            + "VALUES (?, ?, 4, '', ?, -1, FALSE, ?)", Sql.toBytes(profile), kind.id(), island.toString(), now);
+                }
+            }
+            return null;
+        });
+    }
+
+    /** Staff reset of a profile: the handle markers and the hoe storage. */
     CompletableFuture<Void> reset(UUID profile) {
         return db.run(c -> {
             Sql.update(c, "DELETE FROM island_tools WHERE profile_key = ?", Sql.toBytes(profile));
             Sql.update(c, "DELETE FROM island_tool_storage WHERE profile_key = ?", Sql.toBytes(profile));
-        });
-    }
-
-    // ------------------------------------------------------------------ shared island levels (owner 3 Nov 2026)
-
-    /** An island's tier and upgrades of one tool kind. */
-    record Levels(int tier, String upgrades) {
-    }
-
-    /**
-     * Pure: the higher of two level sets (the tier and every upgrade level, never down). {@code a} may be null.
-     */
-    static Levels max(Levels a, Levels b) {
-        if (a == null) {
-            return b;
-        }
-        Map<String, Integer> out = new java.util.TreeMap<>(Upgrades.decode(a.upgrades()));
-        Upgrades.decode(b.upgrades()).forEach((k, v) -> out.merge(k, v, Math::max));
-        return new Levels(Math.max(a.tier(), b.tier()), Upgrades.encode(out));
-    }
-
-    /**
-     * Merges this profile's own tools into the island's shared levels (inserts missing rows, raises lower ones) and
-     * returns the island's levels and task progress per kind. One transaction.
-     */
-    CompletableFuture<Map<Kind, Object[]>> mergeIsland(UUID island, Map<Kind, Rec> own) {
-        return db.transaction(c -> {
-            Map<Kind, Object[]> out = new EnumMap<>(Kind.class);
-            long now = System.currentTimeMillis();
-            for (Kind kind : Kind.values()) {
-                Rec r = own.get(kind);
-                java.util.Optional<Levels> stored = Sql.queryOne(c, "SELECT tier, upgrades FROM island_tool_levels WHERE island_id = ? "
-                        + "AND kind = ? FOR UPDATE", rs -> new Levels(rs.getInt(1), rs.getString(2)), Sql.toBytes(island), kind.id());
-                Levels mine = r == null ? null : new Levels(r.tier(), r.upgrades());
-                Levels merged = stored.orElse(null);
-                if (mine != null) {
-                    merged = max(merged, mine);
-                }
-                if (merged == null) {
-                    continue;
-                }
-                if (stored.isEmpty()) {
-                    Sql.update(c, "INSERT INTO island_tool_levels (island_id, kind, tier, upgrades, updated_at) VALUES (?, ?, ?, ?, ?)",
-                            Sql.toBytes(island), kind.id(), merged.tier(), merged.upgrades(), now);
-                } else if (!merged.equals(stored.get())) {
-                    Sql.update(c, "UPDATE island_tool_levels SET tier = ?, upgrades = ?, updated_at = ? WHERE island_id = ? AND kind = ?",
-                            merged.tier(), merged.upgrades(), now, Sql.toBytes(island), kind.id());
-                }
-                long progress = Sql.queryOne(c, "SELECT progress FROM island_tool_tasks WHERE island_id = ? AND kind = ?",
-                        rs -> rs.getLong(1), Sql.toBytes(island), kind.id()).orElse(0L);
-                out.put(kind, new Object[]{merged, progress});
-            }
-            return out;
-        });
-    }
-
-    /**
-     * Guard of a shared purchase: the island's levels are still {@code before} (else another member was faster) and the
-     * task has at least {@code task} progress, which is used up. Changes the island row to {@code after}.
-     */
-    static boolean changeIsland(Connection c, UUID island, Kind kind, Levels before, Levels after, long task) throws SQLException {
-        if (Sql.update(c, "UPDATE island_tool_levels SET tier = ?, upgrades = ?, updated_at = ? WHERE island_id = ? AND kind = ? "
-                        + "AND tier = ? AND upgrades = ?", after.tier(), after.upgrades(), System.currentTimeMillis(), Sql.toBytes(island),
-                kind.id(), before.tier(), before.upgrades()) != 1) {
-            return false;
-        }
-        if (task <= 0) {
-            return true;
-        }
-        return Sql.update(c, "UPDATE island_tool_tasks SET progress = progress - ? WHERE island_id = ? AND kind = ? AND progress >= ?",
-                task, Sql.toBytes(island), kind.id(), task) == 1;
-    }
-
-    /** Adds task progress (write-behind of the in-memory counters). */
-    CompletableFuture<Void> addTasks(Map<UUID, Map<Kind, Long>> deltas) {
-        return db.transaction(c -> {
-            for (Map.Entry<UUID, Map<Kind, Long>> island : deltas.entrySet()) {
-                for (Map.Entry<Kind, Long> e : island.getValue().entrySet()) {
-                    if (e.getValue() <= 0) {
-                        continue;
-                    }
-                    if (Sql.update(c, "UPDATE island_tool_tasks SET progress = progress + ? WHERE island_id = ? AND kind = ?",
-                            e.getValue(), Sql.toBytes(island.getKey()), e.getKey().id()) == 0) {
-                        Sql.update(c, "INSERT INTO island_tool_tasks (island_id, kind, progress) VALUES (?, ?, ?)",
-                                Sql.toBytes(island.getKey()), e.getKey().id(), e.getValue());
-                    }
-                }
-            }
-            return null;
         });
     }
 

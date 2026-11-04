@@ -95,13 +95,15 @@ final class IslandGrowth implements Listener {
         return Math.max(floorMillis, Math.round(fullSeconds * 1000 / stages));
     }
 
-    /** Full growth seconds on the island at {@code loc} (the island's crop-growth upgrade; no player bonus here). */
+    /** Full growth seconds on the island at {@code loc} (the island's crop-growth upgrade and hoe Growth; no player bonus). */
     private double fullSeconds(Location loc) {
         IslandToolsConfig c = m.config();
         UUID island = m.islands().flatMap(i -> i.islandAt(loc)).map(IslandService.IslandInfo::id).orElse(null);
         double upgrade = island == null ? 0 : m.core().services().optional(ProgressionService.class)
                 .map(s -> s.upgradeEffectValue(island, c.regrowEffect)).orElse(0.0);
-        return ToolRules.regrowSeconds(upgrade, 0, c.regrowBase, c.regrowTop, c.regrowFullAt, c.regrowFloor);
+        // Owner 4 Nov 2026: the island hoe's Growth perk makes every crop on its island grow faster.
+        double hoe = island == null ? 0 : m.growthPercent(island);
+        return ToolRules.regrowSeconds(upgrade, hoe, c.regrowBase, c.regrowTop, c.regrowFullAt, c.regrowFloor);
     }
 
     /**

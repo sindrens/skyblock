@@ -65,6 +65,12 @@ public final class TxReason {
     /** Owner 3 Nov 2026: shards found while grinding with an island tool (and its Shard Finder upgrade); batched. */
     public static final String ISLAND_TOOL_SHARD = "island_tool_shard";
 
+    /**
+     * Owner 4 Nov 2026: an island tool was prestiged, so every member's shards of that tool's type are taken (Farming Shards
+     * for the hoe, Mining Shards for the pickaxe); a sink, in the same transaction as the prestige.
+     */
+    public static final String ISLAND_TOOL_PRESTIGE = "island_tool_prestige";
+
     /** Credits paid for an Eclipse key (owner F6/V5: the Eclipse credits purchase); a sink. */
     public static final String CRATE_KEY_PURCHASE = "crate_key_purchase";
 

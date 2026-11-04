@@ -3,13 +3,16 @@ package net.skybornmc.skyblock.islandtools;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.DatabaseConfig;
 import net.skybornmc.skyblock.common.db.Migrations;
+import net.skybornmc.skyblock.common.db.Sql;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -17,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Island tools against a real (H2) database: no double purchase, storage never goes below zero. */
+/** Island tools against a real (H2) database: island-owned progress, no double purchase or prestige, the storage guard. */
 class ToolStoreTest {
 
     @TempDir
@@ -26,6 +29,7 @@ class ToolStoreTest {
     private Database db;
     private ToolStore store;
     private final UUID profile = UUID.randomUUID();
+    private final UUID island = UUID.randomUUID();
 
     @BeforeEach
     void start() throws Exception {
@@ -48,15 +52,37 @@ class ToolStoreTest {
     }
 
     @Test
-    void starterSetOnceAndPurchasesNeverTwice() {
-        ToolStore.Rec wood = new ToolStore.Rec(profile, Kind.PICKAXE, 0, "", "copy-1", -1, false);
-        store.createMissing(Map.of(Kind.PICKAXE, wood)).join();
-        store.createMissing(Map.of(Kind.PICKAXE, wood.with(3, "x=1"))).join();
-        assertEquals(0, store.load(profile).join().get(Kind.PICKAXE).tier(), "an existing tool is never replaced");
-        ToolStore.Rec stone = wood.with(1, "");
-        assertTrue(db.<Boolean>transaction(c -> ToolStore.change(c, wood, stone)).join());
-        assertFalse(db.<Boolean>transaction(c -> ToolStore.change(c, wood, stone)).join(), "the second click sees the old row");
-        assertEquals(1, store.load(profile).join().get(Kind.PICKAXE).tier());
+    void oldIslandLevelsSeedTheNewRowOnce() {
+        db.run(c -> Sql.update(c, "INSERT INTO island_tool_levels (island_id, kind, tier, upgrades, updated_at) VALUES (?, ?, 2, ?, 0)",
+                Sql.toBytes(island), "hoe", "shard_finder=3,row=4")).join();
+        Upgrades perks = Upgrades.parse(new IslandToolsConfig().perks, w -> { });
+        Map<Kind, ToolStore.Prog> first = store.loadIsland(island, (k, old) -> Upgrades.encode(ToolRules.migrate(k, old, perks))).join();
+        assertEquals("shard_finder=300", first.get(Kind.HOE).upgrades(), "carried over, row dropped, tier gone");
+        assertEquals(ToolStore.Prog.EMPTY, first.get(Kind.PICKAXE));
+        Map<Kind, ToolStore.Prog> again = store.loadIsland(island, (k, old) -> "broken=1").join();
+        assertEquals("shard_finder=300", again.get(Kind.HOE).upgrades(), "seeded only once");
+    }
+
+    @Test
+    void purchasesAndPrestigeNeverTwice() {
+        store.loadIsland(island, (k, old) -> "").join();
+        assertTrue(db.<Boolean>transaction(c -> ToolStore.buy(c, island, Kind.HOE, 0, "fortune=1")).join());
+        assertFalse(db.<Boolean>transaction(c -> ToolStore.buy(c, island, Kind.HOE, 0, "fortune=2")).join(), "the second click sees the old version");
+        store.addXp(Map.of(island, Map.of(Kind.HOE, 40L))).join();
+        ToolStore.Prog now = store.loadIsland(island, (k, old) -> "").join().get(Kind.HOE);
+        assertEquals(new ToolStore.Prog(40, 0, "fortune=1", 1), now, "XP adds up without touching the version");
+        assertFalse(db.<Boolean>transaction(c -> ToolStore.prestige(c, island, Kind.HOE, now, 0, 48)).join(), "not at max yet");
+        assertTrue(db.<Boolean>transaction(c -> ToolStore.prestige(c, island, Kind.HOE, now, 8, 48)).join(), "pending XP counts");
+        assertFalse(db.<Boolean>transaction(c -> ToolStore.prestige(c, island, Kind.HOE, now, 8, 48)).join(), "never twice");
+        assertEquals(new ToolStore.Prog(0, 1, "", 2), store.loadIsland(island, (k, old) -> "").join().get(Kind.HOE));
+    }
+
+    @Test
+    void handlesAreGivenOncePerIsland() {
+        assertEquals(Set.of(), store.given(profile, island).join());
+        store.markGiven(profile, island, EnumSet.of(Kind.HOE)).join();
+        assertEquals(Set.of(Kind.HOE), store.given(profile, island).join());
+        assertEquals(Set.of(), store.given(profile, UUID.randomUUID()).join(), "a new island gives new handles");
     }
 
     @Test

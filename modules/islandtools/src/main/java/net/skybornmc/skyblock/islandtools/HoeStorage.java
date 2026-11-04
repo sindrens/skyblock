@@ -61,8 +61,7 @@ final class HoeStorage {
     }
 
     long capacity(Player p) {
-        ToolStore.Rec hoe = m.rec(p, Kind.HOE);
-        return ToolRules.storage(m.effectLevel(hoe, Upgrades.Effect.STORAGE), m.config().storageBase, m.config().storageFactor);
+        return ToolRules.storage(m.effect(m.island(p), Kind.HOE, Upgrades.Effect.STORAGE), m.config().storageBase, m.config().storagePerLevel);
     }
 
     long used(UUID profile) {
@@ -186,7 +185,7 @@ final class HoeStorage {
             return;
         }
         snapshot.forEach((item, n) -> box.amounts.merge(item, -n, Long::sum));
-        SellRequest request = new SellRequest(p.getUniqueId(), p.getName(), profile, stacks, sell.bonusPercent(p), "hoe_storage", Actor.player(p));
+        SellRequest request = new SellRequest(p.getUniqueId(), p.getName(), profile, stacks, sell.bonusPercent(p) + m.sellBonus(m.island(p), Kind.HOE), "hoe_storage", Actor.player(p));
         flush(profile, box).thenCompose(v -> sell.sell(request, c -> {
             for (Map.Entry<String, Long> e : snapshot.entrySet()) {
                 if (!ToolStore.take(c, profile, e.getKey(), e.getValue())) {

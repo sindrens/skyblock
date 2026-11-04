@@ -4,66 +4,165 @@ import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
 import java.util.List;
+import java.util.Map;
 
-/** Settings of the island tools ({@code islandtools.yml}); texts in messages/islandtools.yml. */
+/**
+ * Settings of the island tools ({@code islandtools.yml}); texts in messages/islandtools.yml. Owner 4 Nov 2026: two tools
+ * (harvester hoe and pickaxe), diamond from the start, owned by the island (level, XP, perks and prestige per island),
+ * perks unlocking at tool levels, Farming and Mining Shards.
+ */
 public final class IslandToolsConfig extends ModuleConfig {
 
-    @Setting(path = "enabled", desc = "Island tools on (owner D2/D12: every profile gets the wooden island set on first join).")
+    @Setting(path = "enabled", desc = "Island tools on (every island member gets the island's hoe and pickaxe).")
     public boolean enabled = true;
 
-    @Setting(path = "tier-costs", desc = "Shards for each tier-up, wood→stone, stone→iron, iron→gold, gold→diamond, diamond→netherite (owner 3 Nov 2026: island tools are paid with shards; plus tier-money).")
-    public List<Integer> tierCosts = List.of(5, 150, 500, 1500, 4000);
+    // ------------------------------------------------------------------ levels and prestige
 
-    @Setting(path = "tier-money", desc = "Money for each tier-up (same order as tier-costs). The first one is cheap so stone comes fast.")
-    public List<Integer> tierMoney = List.of(100, 5000, 25000, 100000, 400000);
+    @Setting(path = "levels.max", desc = "Owner 4 Nov 2026: highest tool level; at this level the island owner/co-owner can prestige the tool.", min = 2, max = 1000)
+    public int maxLevel = 50;
 
-    /** The v1 default (crystals). */
-    static final List<Integer> TIER_COSTS_V1 = List.of(500, 2500, 8000, 25000, 75000);
+    @Setting(path = "levels.xp-base", desc = "XP for level L to L+1 = xp-base x L^exponent x (1 + prestige-factor x prestige).", min = 0.01, max = 1_000_000)
+    public double xpBase = 12;
 
-    @Setting(path = "tasks.per-level", desc = "Owner 3 Nov 2026: island actions with that tool needed for each upgrade level (level 1, 2, 3 ...; the last one repeats). Pickaxe: ores and stone mined, axe: logs chopped, hoe: ripe crops harvested, sword: mobs killed. Any member counts; used up by the upgrade.")
-    public List<Integer> taskPerLevel = List.of(50, 200, 600, 1500, 4000);
+    @Setting(path = "levels.exponent", desc = "See levels.xp-base: how much slower every next level is (1.6 = the owner's sawtooth curve).", min = 0, max = 5)
+    public double xpExponent = 1.6;
 
-    @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 shard per relevant block mined with the island pickaxe.", min = 0, max = 100)
-    public double shardPickaxe = 2;
+    @Setting(path = "levels.prestige-factor", desc = "See levels.xp-base: every prestige makes the levels this much slower (0.35 = +35%).", min = 0, max = 10)
+    public double xpPrestigeFactor = 0.35;
 
-    @Setting(path = "shards.chance-axe", desc = "Percent chance of 1 shard per log chopped with the island axe.", min = 0, max = 100)
-    public double shardAxe = 2;
+    @Setting(path = "levels.xp-per-block", desc = "Tool XP per relevant block (a ripe crop for the hoe, a natural ore or stone for the pickaxe), before the bonuses.", min = 0, max = 1000)
+    public double xpPerBlock = 1;
 
-    @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 shard per ripe crop harvested with the island hoe.", min = 0, max = 100)
-    public double shardHoe = 3; // feedback 3 Nov 2026: the hoe earns shards from the start
+    @Setting(path = "levels.title", desc = "A title on screen for the player whose block levelled the tool up (the other members get an action bar line).")
+    public boolean levelTitle = true;
 
-    @Setting(path = "shards.chance-sword", desc = "Percent chance of 1 shard per mob killed with the island sword.", min = 0, max = 100)
-    public double shardSword = 4;
+    @Setting(path = "prestige.bonus-percent", desc = "Owner 4 Nov 2026: the island's permanent bonus per prestige on that tool: this much more tool XP and shards of its type.", min = 0, max = 100)
+    public double prestigeBonus = 5;
 
-    @Setting(path = "shards.finder-per-level", desc = "Extra shard chance (percent points) per level of the Shard Finder upgrade.", min = 0, max = 20)
-    public double shardFinderPerLevel = 0.5;
+    @Setting(path = "prestige.discount-percent", desc = "Perks of a prestiged tool are this much cheaper per prestige.", min = 0, max = 100)
+    public double prestigeDiscount = 5;
 
-    @Setting(path = "auto-sell.price-percent", desc = "Owner 3 Nov 2026: Auto-Sell sells drops as you break them at this percent of the sell price (the other selling bonuses apply too).", min = 1, max = 100)
+    @Setting(path = "prestige.price-floor-percent", desc = "Perk prices never drop under this share of the full price, however many prestiges.", min = 0, max = 100)
+    public double priceFloor = 50;
+
+    @Setting(path = "prestige.max-stars", desc = "Stars in the tool name up to this prestige (★★★★★); after it '★6', '★7' ...", min = 1, max = 10)
+    public int maxStars = 5;
+
+    @Setting(path = "prestige.roles", desc = "Island roles that may prestige a tool (owner: owner and co-owner = LEADER, ADMIN).")
+    public List<String> prestigeRoles = List.of("LEADER", "ADMIN");
+
+    // ------------------------------------------------------------------ shards
+
+    @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 Mining Shard per relevant block mined with the island pickaxe (over 100 = more than one).", min = 0, max = 1000)
+    public double shardPickaxe = 6;
+
+    @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
+    public double shardHoe = 8;
+
+    @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (owner 4 Nov 2026: tiny steps, 0.1% each).", min = 0, max = 20)
+    public double shardFinderPerLevel = 0.1;
+
+    @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
+    public int shardPayoutSeconds = 3;
+
+    @Setting(path = "auto-sell.price-percent", desc = "Auto-Sell sells drops as you break them at this percent of the sell price (the other selling bonuses apply too).", min = 1, max = 100)
     public double autoSellPercent = 90;
 
     @Setting(path = "auto-sell.batch-seconds", desc = "Auto-sold drops are paid in one sale this often.", min = 1, max = 60)
     public int autoSellSeconds = 3;
 
-    @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
-    public int shardPayoutSeconds = 3;
+    // ------------------------------------------------------------------ perks
 
-    @Setting(path = "confirm-above", desc = "T8: a confirm screen for an upgrade or tier-up costing at least this many crystals (0 = never).", min = 0, max = 100_000_000)
-    public long confirmAbove = 5000;
-
-    @Setting(path = "relevant.pickaxe", desc = "Owner 3 Nov 2026: blocks where the island pickaxe's extra drops, Smelter and shards work (block ids, * wildcard at the start or end). Blocks a player placed never count.")
+    @Setting(path = "relevant.pickaxe", desc = "Blocks where the island pickaxe earns XP, shards and its perks (block ids, * wildcard at the start or end). Blocks a player placed never count.")
     public List<String> relevantPickaxe = List.of("*_ore", "stone", "cobblestone", "deepslate", "cobbled_deepslate", "andesite",
             "diorite", "granite", "tuff", "calcite", "netherrack", "basalt", "blackstone", "end_stone", "obsidian", "ancient_debris",
             "amethyst_cluster", "raw_*_block");
 
-    @Setting(path = "relevant.axe", desc = "Blocks where the island axe's extra drops and shards work.")
-    public List<String> relevantAxe = List.of("*_log", "*_wood", "*_stem", "*_hyphae", "mangrove_roots", "bamboo_block", "*_mushroom_block");
-
-    @Setting(path = "relevant.hoe", desc = "Blocks where the island hoe's extra drops and shards work (ripe crops only, always).")
+    @Setting(path = "relevant.hoe", desc = "Blocks where the island hoe earns XP, shards and its perks (ripe crops only, always).")
     public List<String> relevantHoe = List.of("wheat", "carrots", "potatoes", "beetroots", "nether_wart", "cocoa", "melon", "pumpkin",
             "sweet_berry_bush", "sugar_cane", "cactus", "bamboo");
 
     @Setting(path = "placed.memory-hours", desc = "How long a block a player placed is remembered (so breaking it gives no bonus).", min = 1, max = 168)
     public int placedHours = 12;
+
+    @Setting(path = "perks", desc = "Owner 4 Nov 2026: perks per tool, 'kind:id:effect:max:unlock-level:costs[:prestige]'. costs 'base+step' = a long "
+            + "track (price of level L = base + step x L^prices.exponent, nice-rounded) or 'a/b/c' = the price of each level. Effects: "
+            + "enchant=<vanilla id>, haste, smelt, drops (Extra Drops), storage (hoe), shards (Shard Finder), autosell (Auto-Sell), growth "
+            + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds). "
+            + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
+    public List<String> perks = List.of(
+            "hoe:shard_finder:shards:1000:1:300+10", "hoe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
+            "hoe:extra_drops:drops:500:5:400+12", "hoe:fortune:enchant=fortune:3:5:5000/25000/100000",
+            "hoe:haste:haste:2:10:15000/75000", "hoe:wisdom:wisdom:100:10:500+25", "hoe:growth:growth:250:15:600+20",
+            "hoe:storage:storage:250:15:300+10", "hoe:auto_sell:autosell:1:25:50000", "hoe:sell_bonus:sell:500:30:800+20",
+            "hoe:lucky:lucky:500:35:1000+25", "hoe:sweep:sweep:100:45:5000+150:1",
+            "pickaxe:shard_finder:shards:1000:1:300+10", "pickaxe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
+            "pickaxe:extra_drops:drops:500:5:400+12", "pickaxe:fortune:enchant=fortune:3:5:5000/25000/100000",
+            "pickaxe:haste:haste:2:10:15000/75000", "pickaxe:wisdom:wisdom:100:10:500+25", "pickaxe:smelter:smelt:100:15:600+20",
+            "pickaxe:auto_sell:autosell:1:25:50000", "pickaxe:sell_bonus:sell:500:30:800+20", "pickaxe:lucky:lucky:500:35:1000+25",
+            "pickaxe:vein:sweep:100:45:5000+150:1");
+
+    @Setting(path = "prices.exponent", desc = "Exponent of the long-track price curve (owner 4 Nov 2026: 1.35).", min = 0, max = 4)
+    public double priceExponent = 1.35;
+
+    @Setting(path = "effects.drops-per-level", desc = "Extra Drops: percent more drops per level. Owner 4 Nov 2026: the island's own farm/mine boosts "
+            + "(island-boost.*) are much stronger than this.", min = 0, max = 100)
+    public double dropsPerLevel = 0.05;
+
+    @Setting(path = "effects.smelt-per-level", desc = "Smelter: auto-smelt chance percent per level.", min = 0, max = 100)
+    public double smeltPerLevel = 0.5;
+
+    @Setting(path = "effects.growth-per-level", desc = "Growth (hoe): percent faster growth of the crops on the island per level.", min = 0, max = 100)
+    public double growthPerLevel = 0.2;
+
+    @Setting(path = "effects.wisdom-per-level", desc = "Wisdom: percent more tool XP per level.", min = 0, max = 100)
+    public double wisdomPerLevel = 0.5;
+
+    @Setting(path = "effects.sell-per-level", desc = "Sell Bonus: percent more money per level when Auto-Sell or the hoe storage sells.", min = 0, max = 10)
+    public double sellPerLevel = 0.02;
+
+    @Setting(path = "effects.lucky-chance-per-level", desc = "Lucky: percent chance per relevant block and level of a Shard Pouch.", min = 0, max = 1)
+    public double luckyPerLevel = 0.002;
+
+    @Setting(path = "effects.lucky-min", desc = "Lucky: fewest shards in a Shard Pouch (the prestige bonus applies on top).", min = 1, max = 1_000_000)
+    public int luckyMin = 25;
+
+    @Setting(path = "effects.lucky-max", desc = "Lucky: most shards in a Shard Pouch.", min = 1, max = 1_000_000)
+    public int luckyMax = 250;
+
+    @Setting(path = "sweep.bands", desc = "Owner 4 Nov 2026: Sweep (hoe) and Vein (pickaxe) per prestige band, 'prestige:extra-blocks:chance-at-max-level'. "
+            + "Locked below the first band; the 100 levels raise the chance inside the current band.")
+    public List<String> sweepBands = List.of("1:2:10", "2:3:15", "3:4:20", "5:6:30");
+
+    @Setting(path = "sweep.radius", desc = "Sweep/Vein look this many blocks around the broken one for ripe crops / the same ore.", min = 1, max = 4)
+    public int sweepRadius = 2;
+
+    @Setting(path = "sweep.shards", desc = "Swept crops and veined ores also roll for shards and Shard Pouches (off: only normal drops and tool XP).")
+    public boolean sweepShards = false;
+
+    @Setting(path = "hoe.speed-level", desc = "Owner 4 Nov 2026: Speed while holding the island hoe at /farm and on islands (0 = off).", min = 0, max = 5)
+    public int speedLevel = 1;
+
+    @Setting(path = "hoe.swiftness-prestige", desc = "'Swiftness': from this hoe prestige on the Speed is one level higher (0 = never).", min = 0, max = 100)
+    public int swiftnessPrestige = 2;
+
+    @Setting(path = "hoe.storage-base", desc = "Hoe storage at Storage level 0 (items).", min = 1, max = 1_000_000)
+    public long storageBase = 2000;
+
+    @Setting(path = "hoe.storage-per-level", desc = "More hoe storage per Storage level (items).", min = 0, max = 100_000)
+    public long storagePerLevel = 200;
+
+    @Setting(path = "island-boost.hoe-effect", desc = "Owner 4 Nov 2026: the island upgrade (upgrades.yml effect) whose value is percent more crops for "
+            + "everything the island hoe harvests (on islands and at /farm), from the island the player is a member of.")
+    public String hoeBoostEffect = "harvest-yield";
+
+    @Setting(path = "island-boost.pickaxe-effect", desc = "The island upgrade whose value is percent more ores for the island pickaxe (on islands and at /mine).")
+    public String pickaxeBoostEffect = "mine-fortune";
+
+    @Setting(path = "tool-worlds", desc = "Worlds besides the islands where the tools work exactly like on an island (level up, perks, shards): the /farm and /mine world.")
+    public List<String> toolWorlds = List.of("grind");
+
+    // ------------------------------------------------------------------ island crops
 
     @Setting(path = "growth.enabled", desc = "Owner 3 Nov 2026: every crop on an island grows on the island's clock, one stage every few seconds (the regrow time below split over the crop's stages, faster with the crop-growth upgrade), with a puff and a soft sound.")
     public boolean growthEnabled = true;
@@ -98,91 +197,6 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Setting(path = "farmland.always-wet", desc = "Owner 3 Nov 2026: tilled dirt on islands is moist farmland at once and never dries, turns back to dirt or gets trampled (no water needed).")
     public boolean farmlandAlwaysWet = true;
-
-    @Setting(path = "only-on-island", desc = "Owner 3 Nov 2026: island tools exist only in the island world; in every other world (spawn, the Depths, events) they are put away and come back in the same slot on the island. Off = only the put-away-worlds below.")
-    public boolean onlyOnIsland = false; // owner 3 Nov 2026 20:31: island tools everywhere
-
-    @Setting(path = "tool-worlds", desc = "Owner 3 Nov 2026: worlds besides the islands where the tools work exactly like on an island "
-            + "(level up, perks, shards): the /farm and /mine world.")
-    public List<String> toolWorlds = List.of("grind");
-
-    @Setting(path = "own-inventory-worlds", desc = "Owner 3 Nov 2026: worlds with their own inventory (tools.yml world-tools: the Depths). Island tools are never in that inventory, so nothing is put away or given back there.")
-    public List<String> ownInventoryWorlds = List.of();
-
-    @Setting(path = "put-away-worlds", desc = "T1/D1: worlds where island tools are put away (and given back on the island in the same slot).")
-    public List<String> putAwayWorlds = List.of();
-
-    @Setting(path = "upgrades", desc = "Upgrades per tool, 'kind:id:effect:max:base-cost:growth' (owner 3 Nov 2026: costs are shards). Effects: enchant=<id>, haste, magnet, "
-            + "smelt, drops (EXTRA_DROPS bonus), timber, experience, lifesteal, row (hoe), storage (hoe), shards (Shard Finder), autosell (Auto-Sell). Cost of level n+1 = base x growth^n.")
-    public List<String> upgrades = List.of(
-            "pickaxe:efficiency:enchant=efficiency:5:10:2", "pickaxe:fortune:enchant=fortune:3:25:2.5", "pickaxe:haste:haste:2:40:3",
-            "pickaxe:magnet:magnet:1:60:1", "pickaxe:smelter:smelt:5:15:2", "pickaxe:extra_drops:drops:5:20:2.2",
-            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2", "pickaxe:auto_sell:autosell:1:300:1",
-            "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
-            "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
-            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2", "axe:auto_sell:autosell:1:300:1",
-            // Hoe (owner 3 Nov 2026: more levels, cheaper steps, Auto-Sell after ~2 minutes of farming)
-            "hoe:auto_sell:autosell:1:20:1", "hoe:row:row:4:15:2.2", "hoe:extra_drops:drops:10:10:1.55",
-            "hoe:shard_finder:shards:10:10:1.55", "hoe:storage:storage:10:10:1.6", "hoe:efficiency:enchant=efficiency:5:8:1.7",
-            "hoe:fortune:enchant=fortune:3:20:2.2", "hoe:magnet:magnet:1:30:1", "hoe:haste:haste:2:30:2.5",
-            "sword:sharpness:enchant=sharpness:5:15:2.2", "sword:looting:enchant=looting:3:25:2.5",
-            "sword:sweeping:enchant=sweeping_edge:3:20:2.4", "sword:fire_aspect:enchant=fire_aspect:2:30:2.8",
-            "sword:knockback:enchant=knockback:2:10:2.5", "sword:extra_drops:drops:5:20:2.2", "sword:lifesteal:lifesteal:3:40:2.5",
-            "sword:shard_finder:shards:5:25:2.2");
-
-    /** The v2-v4 default (before the 3 Nov 2026 hoe rework). */
-    static final List<String> UPGRADES_V2 = List.of(
-            "pickaxe:efficiency:enchant=efficiency:5:10:2", "pickaxe:fortune:enchant=fortune:3:25:2.5", "pickaxe:haste:haste:2:40:3",
-            "pickaxe:magnet:magnet:1:60:1", "pickaxe:smelter:smelt:5:15:2", "pickaxe:extra_drops:drops:5:20:2.2",
-            "pickaxe:experience:experience:5:10:2", "pickaxe:shard_finder:shards:5:25:2.2", "pickaxe:auto_sell:autosell:1:300:1",
-            "axe:efficiency:enchant=efficiency:5:10:2", "axe:extra_drops:drops:5:20:2.2", "axe:timber:timber:5:25:2.2",
-            "axe:haste:haste:2:40:3", "axe:magnet:magnet:1:60:1", "axe:sharpness:enchant=sharpness:3:15:2.4",
-            "axe:experience:experience:5:10:2", "axe:shard_finder:shards:5:25:2.2", "axe:auto_sell:autosell:1:300:1",
-            "hoe:row:row:4:20:3", "hoe:storage:storage:5:15:2.5", "hoe:fortune:enchant=fortune:3:25:2.5",
-            "hoe:extra_drops:drops:5:20:2.2", "hoe:magnet:magnet:1:60:1", "hoe:efficiency:enchant=efficiency:3:10:2",
-            "hoe:haste:haste:2:40:3", "hoe:shard_finder:shards:5:25:2.2", "hoe:auto_sell:autosell:1:300:1",
-            "sword:sharpness:enchant=sharpness:5:15:2.2", "sword:looting:enchant=looting:3:25:2.5",
-            "sword:sweeping:enchant=sweeping_edge:3:20:2.4", "sword:fire_aspect:enchant=fire_aspect:2:30:2.8",
-            "sword:knockback:enchant=knockback:2:10:2.5", "sword:extra_drops:drops:5:20:2.2", "sword:lifesteal:lifesteal:3:40:2.5",
-            "sword:shard_finder:shards:5:25:2.2");
-
-    /** The v1 default (crystal prices, no Shard Finder). */
-    static final List<String> UPGRADES_V1 = List.of("pickaxe:efficiency:enchant=efficiency:5:150:2.2", "pickaxe:fortune:enchant=fortune:3:400:2.8", "pickaxe:haste:haste:2:600:3",
-            "pickaxe:magnet:magnet:1:900:1", "pickaxe:smelter:smelt:5:250:2", "pickaxe:extra_drops:drops:5:300:2.2",
-            "pickaxe:experience:experience:5:200:2",
-            "axe:efficiency:enchant=efficiency:5:150:2.2", "axe:extra_drops:drops:5:300:2.2", "axe:timber:timber:5:400:2.3",
-            "axe:haste:haste:2:600:3", "axe:magnet:magnet:1:900:1", "axe:sharpness:enchant=sharpness:3:250:2.4",
-            "axe:experience:experience:5:200:2",
-            "hoe:row:row:4:300:3", "hoe:storage:storage:5:250:2.5", "hoe:fortune:enchant=fortune:3:400:2.8",
-            "hoe:extra_drops:drops:5:300:2.2", "hoe:magnet:magnet:1:900:1", "hoe:efficiency:enchant=efficiency:3:150:2.2",
-            "hoe:haste:haste:2:600:3",
-            "sword:sharpness:enchant=sharpness:5:200:2.2", "sword:looting:enchant=looting:3:400:2.8",
-            "sword:sweeping:enchant=sweeping_edge:3:300:2.4", "sword:fire_aspect:enchant=fire_aspect:2:500:2.8",
-            "sword:knockback:enchant=knockback:2:200:2.5", "sword:extra_drops:drops:5:300:2.2", "sword:lifesteal:lifesteal:3:600:2.5");
-
-    @Setting(path = "effects.drops-per-level", desc = "EXTRA_DROPS bonus percent per level of a 'drops' upgrade (the family cap applies on top).", min = 0, max = 100)
-    public double dropsPerLevel = 8;
-
-    @Setting(path = "effects.smelt-per-level", desc = "Auto-smelt chance percent per level of 'smelt'.", min = 0, max = 100)
-    public double smeltPerLevel = 20;
-
-    @Setting(path = "effects.timber-per-level", desc = "Logs above the broken one that fall too, per level of 'timber'.", min = 0, max = 10)
-    public int timberPerLevel = 2;
-
-    @Setting(path = "effects.experience-per-level", desc = "Extra block XP percent per level of 'experience'.", min = 0, max = 500)
-    public double experiencePerLevel = 25;
-
-    @Setting(path = "effects.lifesteal-per-level", desc = "Percent of damage dealt healed per level of 'lifesteal'.", min = 0, max = 50)
-    public double lifestealPerLevel = 3;
-
-    @Setting(path = "hoe.row-lengths", desc = "T9: hoe row length for Row level 0, 1, 2 ... (default 1, 3, 5, 7, 9).")
-    public List<Integer> rowLengths = List.of(1, 3, 5, 7, 9);
-
-    @Setting(path = "hoe.storage-base", desc = "T9: hoe storage at Storage level 0 (items).", min = 1, max = 1_000_000)
-    public long storageBase = 256;
-
-    @Setting(path = "hoe.storage-factor", desc = "T9: storage multiplier per Storage level (about x3).", min = 1, max = 10)
-    public double storageFactor = 3;
 
     @Setting(path = "regrow.enabled", desc = "T11: crops harvested with the island hoe replant themselves and are ripe again after the regrow time.")
     public boolean regrowEnabled = true;
@@ -219,23 +233,36 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
-    /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
+    /** Changed defaults (a value the owner chose is kept). */
     @Override
-    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+    public Map<Integer, Map<String, ValueChange>> valueChanges() {
         IslandToolsConfig d = new IslandToolsConfig();
-        return java.util.Map.of(2, java.util.Map.of("tier-costs", ValueChange.of(TIER_COSTS_V1, d.tierCosts),
-                "upgrades", ValueChange.of(UPGRADES_V1, d.upgrades)),
-                // v3 (owner 3 Nov 2026 20:31, "island tools everywhere, including the Depths")
-                4, java.util.Map.of("shards.chance-hoe", ValueChange.of(1.0, 3.0), "growth.label", ValueChange.of(true, false)),
-                5, java.util.Map.of("upgrades", ValueChange.of(UPGRADES_V2, d.upgrades)),
-                // v6 (feedback 4 Nov 2026, D18a): big fields grew slower than configured
-                6, java.util.Map.of("growth.budget", ValueChange.of(600, d.growthBudget)),
-                3, java.util.Map.of("only-on-island", ValueChange.of(true, false),
-                        "own-inventory-worlds", ValueChange.of(List.of("depths"), List.of()),
-                        "put-away-worlds", ValueChange.of(List.of("depths"), List.of())));
+        return Map.of(4, Map.of("growth.label", ValueChange.of(true, false)),
+                6, Map.of("growth.budget", ValueChange.of(600, d.growthBudget)),
+                // v7 (owner 4 Nov 2026, island tools rework): more shards, tiny perk steps, linear hoe storage
+                7, Map.of("shards.chance-hoe", ValueChange.of(3.0, d.shardHoe), "shards.chance-pickaxe", ValueChange.of(2.0, d.shardPickaxe),
+                        "shards.finder-per-level", ValueChange.of(0.5, d.shardFinderPerLevel),
+                        "effects.drops-per-level", ValueChange.of(8.0, d.dropsPerLevel),
+                        "effects.smelt-per-level", ValueChange.of(20.0, d.smeltPerLevel),
+                        "hoe.storage-base", ValueChange.of(256, d.storageBase)));
+    }
+
+    /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */
+    @Override
+    public Map<String, String> removedKeys() {
+        String gone = "island tools rework 4 Nov 2026";
+        return Map.ofEntries(Map.entry("tier-costs", gone + ": the tools start at diamond"), Map.entry("tier-money", gone + ": no tiers"),
+                Map.entry("tasks", gone + ": tool levels replace the island tasks"),
+                Map.entry("shards.chance-axe", gone + ": no island axe"), Map.entry("shards.chance-sword", gone + ": no island sword"),
+                Map.entry("relevant.axe", gone + ": no island axe"), Map.entry("confirm-above", gone + ": only prestige has a confirm screen"),
+                Map.entry("only-on-island", gone + ": the Depths are gone"), Map.entry("own-inventory-worlds", gone + ": the Depths are gone"),
+                Map.entry("put-away-worlds", gone + ": the Depths are gone"), Map.entry("upgrades", gone + ": replaced by 'perks'"),
+                Map.entry("effects.timber-per-level", gone + ": no island axe"), Map.entry("effects.experience-per-level", gone + ": Wisdom gives tool XP"),
+                Map.entry("effects.lifesteal-per-level", gone + ": no island sword"), Map.entry("hoe.row-lengths", gone + ": Row became Sweep"),
+                Map.entry("hoe.storage-factor", gone + ": the storage grows by hoe.storage-per-level"));
     }
 
     @Override
@@ -245,6 +272,6 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public String header() {
-        return "Island tools (Complete Developer Spec D1-D12, T1-T13). Texts: messages/islandtools.yml. Reload: /skyblock reload islandtools";
+        return "Island tools: the island's harvester hoe and pickaxe (owner 4 Nov 2026). Texts: messages/islandtools.yml. Reload: /skyblock reload islandtools";
     }
 }

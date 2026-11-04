@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.islandtools;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.menu.MenuButton;
+import net.skybornmc.skyblock.common.menu.MenuClick;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Material;
@@ -11,17 +13,26 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
- * One island tool: the tool (4), the next tier (13), its 7 upgrades with level dots, now/next effect and price (28-34,
- * centred), a new copy (49 area via 40). Upgrades are crystals only (T7); a confirm only above {@code confirm-above} (T8).
+ * One island tool (owner 4 Nov 2026: vanilla items, no glass, spacious, contiguous groups, mockup lore):
+ * <pre>
+ *  . . G . T . P . .      2 get your handle (only without one), 4 the tool (level, XP, prestige), 6 prestige
+ *  . . E E E E . . .      row 1: enchant-like perks and one-time unlocks, centred
+ *  . . . . . . . . .
+ *  . L L L L L L . .      rows 3-4: the long tracks, centred
+ *  . . L L L L L . .
+ *  nav bar
+ * </pre>
+ * Plain click buys 1 level, shift-click 10, right-click 100 (Java), at the summed price.
  */
 final class ToolMenu extends Menu {
 
+    static final int SLOT_HANDLE = 2;
     static final int SLOT_TOOL = 4;
-    static final int SLOT_TIER = 13;
-    static final int[] UPGRADE_SLOTS = {28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43};
-    static final int SLOT_COPY = 22;
+    static final int SLOT_PRESTIGE = 6;
 
     private final IslandToolsModule m;
     private final Kind kind;
@@ -56,103 +67,149 @@ final class ToolMenu extends Menu {
         return "tools";
     }
 
+    /** The first slot of {@code n} contiguous buttons centred in a row of 9 (pure). */
+    static int start(int n) {
+        return Math.max(0, (9 - Math.min(9, n)) / 2);
+    }
+
     @Override
     protected void build() {
         navBar();
-        ToolStore.Rec r = m.rec(viewer, kind);
-        if (r == null) {
+        UUID island = m.island(viewer);
+        ToolStore.Prog prog = m.prog(island, kind);
+        if (island == null || prog == null) {
             return;
         }
-        set(SLOT_TOOL, m.items().create(r));
-        IslandToolsModule.Purchase tier = m.tierUp(viewer, kind);
-        if (tier == null) {
-            set(SLOT_TIER, service.item(Material.NETHERITE_INGOT, viewer, IslandToolsModule.ID, "menu.tier-max"));
-        } else {
-            Material next = Material.matchMaterial(ToolRules.material(kind, r.tier() + 1));
-            set(SLOT_TIER, service.item(next == null ? Material.ANVIL : next, viewer, IslandToolsModule.ID, "menu.tier-next",
-                    Msg.p("from", m.raw("tier." + ToolRules.TIERS.get(r.tier()))),
-                    Msg.p("to", m.raw("tier." + ToolRules.TIERS.get(r.tier() + 1))), Msg.p("cost", Format.number(tier.cost())),
-                    Msg.p("money", Format.money(tier.money()))),
-                    click -> purchase(click.player(), tier));
-        }
-        set(SLOT_COPY, service.item(Material.NAME_TAG, viewer, IslandToolsModule.ID, "menu.copy"), click -> {
-            m.newCopy(click.player(), kind);
-            refresh();
-        });
-        List<Upgrades.Def> defs = m.upgrades().of(kind);
-        for (int i = 0; i < defs.size() && i < UPGRADE_SLOTS.length; i++) {
-            Upgrades.Def d = defs.get(i);
-            set(UPGRADE_SLOTS[i], upgradeItem(r, d), click -> {
-                IslandToolsModule.Purchase p = m.upgrade(click.player(), kind, d.id());
-                if (p != null) {
-                    purchase(click.player(), p);
-                }
+        ToolRules.Level lv = m.level(prog);
+        if (!m.carries(viewer, kind, island)) {
+            set(SLOT_HANDLE, service.item(Material.CHEST, viewer, IslandToolsModule.ID, "menu.handle",
+                    Msg.p("tool", m.raw("item.name." + kind.id()))), click -> {
+                m.giveHandle(click.player(), kind);
+                refreshIfOpen();
             });
         }
+        String stars = ToolRules.stars(prog.prestige(), m.config().maxStars);
+        List<Component> info = new ArrayList<>(service.lines(viewer, IslandToolsModule.ID, lv.maxed() ? "menu.tool-max" : "menu.tool",
+                Msg.number("level", lv.level()), Msg.number("max", m.config().maxLevel), Msg.number("xp", lv.into()),
+                Msg.number("need", lv.need()), Msg.number("percent", (long) Math.floor(lv.progress() * 100)),
+                Msg.number("prestige", prog.prestige()), Msg.p("stars", stars.isEmpty() ? "-" : stars),
+                Msg.p("bonus", pct(prog.prestige() * m.config().prestigeBonus)),
+                Msg.p("discount", pct(100 - 100 * m.priceFactor(prog))),
+                Msg.p("boost", pct(m.islandBoost(viewer, kind))), Msg.p("shards", m.raw("shards.name." + kind.id()))));
+        set(SLOT_TOOL, service.item(m.items().create(kind, island, m.profile(viewer)),
+                m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), info));
+        set(SLOT_PRESTIGE, prestigeButton(prog, lv), click -> prestige(click.player()));
+
+        List<Upgrades.Def> once = new ArrayList<>();
+        List<Upgrades.Def> tracks = new ArrayList<>();
+        for (Upgrades.Def d : m.upgrades().of(kind)) {
+            (d.track() && d.max() > 1 ? tracks : once).add(d);
+        }
+        place(once, 9, prog);
+        int top = (tracks.size() + 1) / 2;
+        place(tracks.subList(0, top), 27, prog);
+        place(tracks.subList(top, tracks.size()), 36, prog);
     }
 
-    private ItemStack upgradeItem(ToolStore.Rec r, Upgrades.Def d) {
-        int lv = r.level(d.id());
-        boolean max = lv >= d.max();
-        List<Component> lore = new ArrayList<>(service.lines(viewer, IslandToolsModule.ID, "upgrade." + d.id() + ".lore"));
-        StringBuilder dots = new StringBuilder();
-        for (int i = 1; i <= d.max(); i++) {
-            dots.append(i <= lv ? "<c:flame>●</c:flame>" : "<c:locked>●</c:locked>");
-        }
-        lore.add(m.msg().component(viewer, "menu.level-line", Msg.mm("dots", dots.toString()), Msg.number("level", lv), Msg.number("max", d.max())));
-        lore.add(m.msg().component(viewer, "menu.effect-line", Msg.p("now", effectText(d, lv)), Msg.p("next", max ? "-" : effectText(d, lv + 1))));
-        lore.add(Component.empty());
-        if (max) {
-            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-max"));
-        } else {
-            // Owner 3 Nov 2026: shards + the island's task for this tool.
-            long task = m.islandOf(m.profile(viewer)) == null ? 0 : m.taskTarget(lv);
-            long have = Math.min(task, m.taskProgress(viewer, kind));
-            if (task > 0) {
-                lore.addAll(service.lines(viewer, IslandToolsModule.ID, have >= task ? "menu.task-done" : "menu.task",
-                        Msg.p("action", m.raw("task." + kind.id())), Msg.p("have", Format.number(have)), Msg.p("task", Format.number(task)),
-                        Msg.mm("bar", bar(have, task))));
+    private void place(List<Upgrades.Def> defs, int rowStart, ToolStore.Prog prog) {
+        int first = start(defs.size());
+        for (int i = 0; i < defs.size() && i < 9; i++) {
+            Upgrades.Def d = defs.get(i);
+            MenuButton button = MenuButton.of(perkItem(prog, d), click -> buy(click, d, 1));
+            if (d.max() > 1 && d.track()) {
+                button = button.withShift(click -> buy(click, d, 10)).withRight(click -> buy(click, d, 100));
             }
-            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.upgrade-buy", Msg.p("cost", Format.number(d.cost(lv)))));
+            set(rowStart + first + i, button);
+        }
+    }
+
+    private void buy(MenuClick click, Upgrades.Def d, int count) {
+        m.buy(click.player(), kind, d.id(), count, this::refreshIfOpen);
+    }
+
+    private ItemStack perkItem(ToolStore.Prog prog, Upgrades.Def d) {
+        int lv = prog.level(d.id());
+        boolean max = lv >= d.max();
+        IslandToolsModule.Refusal no = m.refusal(viewer, kind, d);
+        List<Component> lore = new ArrayList<>(service.lines(viewer, IslandToolsModule.ID, "upgrade." + d.id() + ".lore"));
+        lore.add(Component.empty());
+        lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.perk-level", Msg.mm("level", lv == 0 ? "-" : m.levelText(d, lv)),
+                Msg.p("now", effectText(prog, d, lv))));
+        if (max) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.perk-max"));
+        } else if (no != null && (no.key().equals("buy.locked-level") || no.key().equals("buy.locked-prestige"))) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, no.key().equals("buy.locked-level") ? "menu.perk-locked-level"
+                    : "menu.perk-locked-prestige", Msg.number("level", d.unlock()), Msg.number("prestige", Math.max(1, d.prestige()))));
+        } else {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.perk-price",
+                    Msg.p("next", effectText(prog, d, lv + 1)), Msg.mm("cost", m.shardText(kind, m.price(prog, d, 1)))));
+            lore.add(Component.empty());
+            if (d.track() && d.max() > 1) {
+                lore.addAll(service.javaLines(viewer, IslandToolsModule.ID, "menu.perk-hint",
+                        Msg.mm("cost10", m.shardText(kind, m.price(prog, d, 10))), Msg.mm("cost100", m.shardText(kind, m.price(prog, d, 100)))));
+            }
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.perk-buy"));
         }
         Material icon = Material.matchMaterial(m.raw("upgrade." + d.id() + ".icon"));
-        return service.item(new ItemStack(icon == null || !icon.isItem() ? Material.ENCHANTED_BOOK : icon),
-                m.msg().component(viewer, "menu.upgrade-name", Msg.p("name", m.raw("upgrade." + d.id() + ".name"))), lore);
+        boolean locked = !max && no != null && no.key().startsWith("buy.locked");
+        ItemStack base = new ItemStack(locked ? Material.GRAY_DYE : icon == null || !icon.isItem() ? Material.ENCHANTED_BOOK : icon);
+        return service.item(base, m.msg().component(viewer, locked ? "menu.perk-name-locked" : "menu.perk-name",
+                Msg.p("name", m.raw("upgrade." + d.id() + ".name"))), lore);
     }
 
-    /** 10 dots (Bedrock-safe), filled up to have/task; MiniMessage. */
-    static String bar(long have, long task) {
-        int filled = task <= 0 ? 10 : (int) Math.min(10, have * 10 / task);
-        return "<c:flame>" + "●".repeat(filled) + "</c:flame><c:locked>" + "●".repeat(10 - filled) + "</c:locked>";
+    private ItemStack prestigeButton(ToolStore.Prog prog, ToolRules.Level lv) {
+        int next = prog.prestige() + 1;
+        String key = lv.maxed() ? "menu.prestige-ready" : "menu.prestige-locked";
+        return service.item(lv.maxed() ? Material.NETHER_STAR : Material.GRAY_DYE, viewer, IslandToolsModule.ID, key,
+                Msg.number("level", lv.level()), Msg.number("max", m.config().maxLevel), Msg.number("next", next),
+                Msg.p("stars", ToolRules.stars(next, m.config().maxStars)), Msg.p("bonus", pct(next * m.config().prestigeBonus)),
+                Msg.p("shards", m.raw("shards.name." + kind.id())));
+    }
+
+    private void prestige(Player p) {
+        IslandToolsModule.Refusal no = m.prestigeRefusal(p, kind);
+        if (no != null) {
+            m.msg().send(p, no.key(), no.tags());
+            m.core().sounds().play(p, "error");
+            return;
+        }
+        String tool = m.raw("item.name." + kind.id());
+        openChild(new ConfirmMenu(v -> service.text(v, IslandToolsModule.ID, "prestige.confirm-crumb"), null,
+                v -> service.lines(v, IslandToolsModule.ID, "prestige.confirm-details", Msg.p("tool", tool),
+                        Msg.p("shards", m.raw("shards.name." + kind.id()))),
+                pl -> m.prestige(pl, kind, () -> m.core().menus().open(pl, new ToolMenu(m, kind))), pl -> { }));
     }
 
     /** What a level does, in plain words (Bedrock-safe: everything in the lore). */
-    private String effectText(Upgrades.Def d, int lv) {
+    private String effectText(ToolStore.Prog prog, Upgrades.Def d, int lv) {
         IslandToolsConfig c = m.config();
+        if (lv <= 0) {
+            return "-";
+        }
         return switch (d.effect()) {
-            case ENCHANT -> lv == 0 ? "-" : m.raw("upgrade." + d.id() + ".name") + " " + lv;
-            case HASTE -> lv == 0 ? "-" : "Haste " + lv;
-            case MAGNET -> lv == 0 ? "-" : m.raw("effect.magnet");
-            case SMELT -> Format.number(Math.round(lv * c.smeltPerLevel)) + "%";
-            case DROPS -> "+" + Format.number(Math.round(lv * c.dropsPerLevel)) + "%";
-            case TIMBER -> "+" + (lv * c.timberPerLevel) + " logs";
-            case EXPERIENCE -> "+" + Format.number(Math.round(lv * c.experiencePerLevel)) + "% XP";
-            case LIFESTEAL -> Format.number(Math.round(lv * c.lifestealPerLevel)) + "%";
-            case ROW -> ToolRules.row(lv, c.rowLengths) + " crops";
-            case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storageFactor)) + " items";
-            case SHARDS -> "+" + String.format(java.util.Locale.ROOT, "%.1f", lv * c.shardFinderPerLevel) + "% shards";
-            case AUTOSELL -> lv == 0 ? "-" : m.raw("effect.auto-sell");
+            case ENCHANT, HASTE -> m.raw("upgrade." + d.id() + ".name") + " " + IslandToolsModule.roman(lv);
+            case SHARDS -> "+" + pct(lv * c.shardFinderPerLevel) + " " + m.raw("effect.shards");
+            case DROPS -> "+" + pct(lv * c.dropsPerLevel) + " " + m.raw("effect.drops");
+            case GROWTH -> "+" + pct(lv * c.growthPerLevel) + " " + m.raw("effect.growth");
+            case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storagePerLevel)) + " " + m.raw("effect.items");
+            case SMELT -> pct(lv * c.smeltPerLevel) + " " + m.raw("effect.smelt");
+            case WISDOM -> "+" + pct(lv * c.wisdomPerLevel) + " " + m.raw("effect.wisdom");
+            case SELL -> "+" + pct(lv * c.sellPerLevel) + " " + m.raw("effect.sell");
+            case LUCKY -> pct(lv * c.luckyPerLevel) + " " + m.raw("effect.lucky");
+            case AUTOSELL -> m.raw("effect.auto-sell");
+            case SWEEP -> {
+                ToolRules.Band band = m.band(m.island(viewer), kind);
+                yield band == null ? "-" : pct(ToolRules.sweepChance(band, lv, d.max())) + " " + m.raw("effect.sweep")
+                        .replace("{blocks}", String.valueOf(band.blocks()));
+            }
         };
     }
 
-    private void purchase(Player p, IslandToolsModule.Purchase purchase) {
-        if (ToolRules.needsConfirm(purchase.cost(), m.config().confirmAbove)) {
-            openChild(new ConfirmMenu(v -> service.text(v, IslandToolsModule.ID, "menu.confirm-crumb"), null,
-                    v -> service.lines(v, IslandToolsModule.ID, "menu.confirm-details", Msg.p("cost", Format.number(purchase.cost()))),
-                    pl -> m.buy(pl, purchase, () -> m.core().menus().open(pl, new ToolMenu(m, kind))), pl -> { }));
-            return;
-        }
-        m.buy(p, purchase, this::refreshIfOpen);
+    /** {@code 12.5%}: up to two decimals, no trailing zeros. */
+    static String pct(double v) {
+        String s = String.format(Locale.ROOT, "%.2f", Math.max(0, v));
+        s = s.replaceAll("0+$", "").replaceAll("\\.$", "");
+        return s + "%";
     }
 
     private void refreshIfOpen() {

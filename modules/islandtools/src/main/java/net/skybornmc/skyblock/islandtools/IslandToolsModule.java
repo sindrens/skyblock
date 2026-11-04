@@ -5,6 +5,8 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.bonus.BonusFamily;
 import net.skybornmc.skyblock.common.bonus.BonusService;
+import net.skybornmc.skyblock.common.command.Arg;
+import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandFailure;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.db.Migrations;
@@ -13,14 +15,18 @@ import net.skybornmc.skyblock.common.economy.BatchResult;
 import net.skybornmc.skyblock.common.economy.Currency;
 import net.skybornmc.skyblock.common.economy.EconomyService;
 import net.skybornmc.skyblock.common.economy.Transaction;
+import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
 import net.skybornmc.skyblock.common.profile.ProfileService;
+import net.skybornmc.skyblock.common.progression.ProgressionService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
+import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -28,19 +34,25 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 /**
- * Island tools (Complete Developer Spec decisions D1-D12, T1-T13): every profile gets a wooden pickaxe, axe, hoe and sword
- * on first join (D12); tiers wood to netherite and 7 upgrades per tool, bought with crystals in {@code /is tools} (D4, T3,
- * T7, T8); the tools only work on islands (D1), are put away in the Depths and come back on the island in the same slot
- * (T1/D6); the hoe harvests rows into its storage and the crops regrow (T9-T13, see {@link HoeFarming}).
+ * Island tools (owner 4 Nov 2026 rework): the island's harvester HOE and PICKAXE, diamond from the start. Level (1 to
+ * {@code levels.max}), XP, perks and prestige belong to the island ({@code island_tool_progress}, cached here, written
+ * behind); every member holds a handle item ({@link ToolItems}). Perks unlock at tool levels and are paid with the
+ * tool's own shards (Farming Shards for the hoe, Mining Shards for the pickaxe), which are personal per profile. At the
+ * max level the owner/co-owner can prestige a tool: it resets (level and perks), that shard type goes to 0 for every
+ * member, and the island keeps +5% XP and shards and 5% cheaper perks per prestige.
  */
 public final class IslandToolsModule implements SkyblockModule {
 
@@ -55,24 +67,28 @@ public final class IslandToolsModule implements SkyblockModule {
     private ToolStore store;
     private ToolItems items;
     private volatile Upgrades upgrades = Upgrades.parse(List.of(), w -> { });
+    private volatile List<ToolRules.Band> bands = List.of();
     private ToolListener listener;
     private HoeFarming farming;
     private IslandGrowth growth;
     private HoeStorage storage;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
-    /** Online profile → its tools. */
-    private final Map<UUID, Map<Kind, ToolStore.Rec>> records = new ConcurrentHashMap<>();
+    /** Island → its tools (XP here includes what is not written yet). Main thread. */
+    private final Map<UUID, Map<Kind, ToolStore.Prog>> progs = new ConcurrentHashMap<>();
+    /** Islands being loaded and what waits for them. */
+    private final Map<UUID, List<Runnable>> loading = new ConcurrentHashMap<>();
+    /** Tool XP not written yet. */
+    private final Map<UUID, Map<Kind, Long>> xpDelta = new ConcurrentHashMap<>();
+    /** Islands whose handles show an old level bar (re-rendered every 10 s). */
+    private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
     private final Set<UUID> busy = ConcurrentHashMap.newKeySet();
-    /** Owner 3 Nov 2026: shared levels per island and kind (loaded with a member). */
-    private final Map<UUID, Map<Kind, ToolStore.Levels>> islandLevels = new ConcurrentHashMap<>();
-    /** Task progress per island and kind (database value + what this server counted since). */
-    private final Map<UUID, Map<Kind, Long>> taskProgress = new ConcurrentHashMap<>();
-    /** Task progress not written yet. */
-    private final Map<UUID, Map<Kind, Long>> taskDelta = new ConcurrentHashMap<>();
-    /** Auto-Sell: drops waiting for their sale, per player (owner 3 Nov 2026). */
+    /** Islands whose tool is being prestiged right now. */
+    private final Set<String> prestiging = ConcurrentHashMap.newKeySet();
+    /** Auto-Sell: drops waiting for their sale, per player, and the Sell Bonus of the tool that collected them. */
     private final Map<UUID, Map<org.bukkit.Material, Integer>> autoSell = new ConcurrentHashMap<>();
-    /** Shards found and not paid yet, per profile. */
-    private final Map<UUID, Long> pendingShards = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> autoSellBonus = new ConcurrentHashMap<>();
+    /** Shards found and not paid yet, per profile and shard type. */
+    private final Map<UUID, Map<Currency, Long>> pendingShards = new ConcurrentHashMap<>();
 
     public IslandToolsModule(Core core) {
         this.core = core;
@@ -95,7 +111,7 @@ public final class IslandToolsModule implements SkyblockModule {
         msg = core.messages(ID);
         core.messages().load(ID);
         store = new ToolStore(core.database());
-        upgrades = Upgrades.parse(config.upgrades, w -> core.plugin().getLogger().warning(w));
+        parse();
         items = new ToolItems(this);
         items.register();
         storage = new HoeStorage(this);
@@ -107,11 +123,11 @@ public final class IslandToolsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(farming, core.plugin());
         core.services().optional(BonusService.class).ifPresent(b -> b.register("island_tool", (family, ctx) ->
                 family == BonusFamily.EXTRA_DROPS ? dropsBonus(ctx.item()) : 0));
-        tasks.add(core.scheduler().repeat("islandtools:haste", 40L, 40L, listener::hasteTick));
+        tasks.add(core.scheduler().repeat("islandtools:effects", 40L, 40L, listener::effectsTick));
         tasks.add(core.scheduler().repeat("islandtools:regrow", 20L, 10L, farming::tick));
         tasks.add(core.scheduler().repeat("islandtools:growth", 20L, 10L, growth::tick));
         tasks.add(core.scheduler().repeat("islandtools:storage", 200L, 200L, storage::flushAll));
-        tasks.add(core.scheduler().repeat("islandtools:tasks", 200L, 200L, this::flushTasks));
+        tasks.add(core.scheduler().repeat("islandtools:xp", 200L, 200L, this::flushXp));
         long shardTicks = Math.max(1, config.shardPayoutSeconds) * 20L;
         tasks.add(core.scheduler().repeat("islandtools:shards", shardTicks, shardTicks, this::payShards));
         long sellTicks = Math.max(1, config.autoSellSeconds) * 20L;
@@ -122,22 +138,30 @@ public final class IslandToolsModule implements SkyblockModule {
         }
     }
 
+    private void parse() {
+        upgrades = Upgrades.parse(config.perks, w -> core.plugin().getLogger().warning(w));
+        bands = ToolRules.bands(config.sweepBands);
+    }
+
     @Override
     public void reload() {
         core.configs().load(config);
         core.messages().load(ID);
-        upgrades = Upgrades.parse(config.upgrades, w -> core.plugin().getLogger().warning(w));
+        parse();
+        progs.keySet().forEach(island -> refreshHandles(island, null));
     }
 
     @Override
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        flushXp();
         if (storage != null) {
             storage.flushAllBlocking();
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
+            listener.clearEffects();
         }
         if (farming != null) {
             HandlerList.unregisterAll(farming);
@@ -204,178 +228,279 @@ public final class IslandToolsModule implements SkyblockModule {
         return core.services().optional(IslandService.class);
     }
 
-    /** The record of a player's tool (online, loaded), or null. */
-    ToolStore.Rec rec(Player p, Kind kind) {
-        Map<Kind, ToolStore.Rec> map = records.get(profile(p));
+    /** The island of a profile, or null (no island: no island tools). */
+    UUID islandOf(UUID profile) {
+        return islands().flatMap(i -> i.islandOfProfile(profile)).map(IslandService.IslandInfo::id).orElse(null);
+    }
+
+    /** The island the player is a member of right now (the boosts and tools follow it), or null. */
+    UUID island(Player p) {
+        return islandOf(profile(p));
+    }
+
+    /** The cached tool of an island (null while not loaded). */
+    ToolStore.Prog prog(UUID island, Kind kind) {
+        if (island == null || kind == null) {
+            return null;
+        }
+        Map<Kind, ToolStore.Prog> map = progs.get(island);
         return map == null ? null : map.get(kind);
     }
 
-    Map<Kind, ToolStore.Rec> recs(Player p) {
-        return records.getOrDefault(profile(p), Map.of());
+    /** The player's island's tool, or null. */
+    ToolStore.Prog prog(Player p, Kind kind) {
+        return prog(island(p), kind);
     }
 
     boolean loaded(Player p) {
-        return records.containsKey(profile(p));
+        UUID island = island(p);
+        return island != null && progs.containsKey(island);
     }
 
-    /** True when {@code stack} is this player's current copy of an island tool. */
-    boolean valid(Player p, ItemStack stack) {
-        Kind kind = ToolItems.kindOf(stack);
-        if (kind == null) {
-            return false;
+    ToolRules.Level level(ToolStore.Prog prog) {
+        return ToolRules.levelOf(prog.xp(), prog.prestige(), config.maxLevel, config.xpBase, config.xpExponent, config.xpPrestigeFactor);
+    }
+
+    long xpToMax(int prestige) {
+        return ToolRules.xpToMax(prestige, config.maxLevel, config.xpBase, config.xpExponent, config.xpPrestigeFactor);
+    }
+
+    /** Level of the first perk with this effect on the island's tool (0 = none). */
+    int effect(UUID island, Kind kind, Upgrades.Effect effect) {
+        ToolStore.Prog prog = prog(island, kind);
+        if (prog == null) {
+            return 0;
         }
-        ToolStore.Rec r = rec(p, kind);
-        return r != null && r.profile().equals(ToolItems.ownerOf(stack)) && r.itemId().equals(ToolItems.copyOf(stack));
+        return upgrades.byEffect(kind, effect).map(d -> prog.level(d.id())).orElse(0);
     }
 
+    double prestigeBonus(UUID island, Kind kind) {
+        ToolStore.Prog prog = prog(island, kind);
+        return ToolRules.prestigeBonus(prog == null ? 0 : prog.prestige(), config.prestigeBonus);
+    }
+
+    double priceFactor(ToolStore.Prog prog) {
+        return ToolRules.priceFactor(prog.prestige(), config.prestigeDiscount, config.priceFloor);
+    }
+
+    /** Sweep/Vein chance (percent) and blocks of the island's tool; null when locked. */
+    ToolRules.Band band(UUID island, Kind kind) {
+        ToolStore.Prog prog = prog(island, kind);
+        return prog == null ? null : ToolRules.band(bands, prog.prestige());
+    }
+
+    double sweepChance(UUID island, Kind kind) {
+        ToolRules.Band band = band(island, kind);
+        Upgrades.Def def = upgrades.byEffect(kind, Upgrades.Effect.SWEEP).orElse(null);
+        return def == null ? 0 : ToolRules.sweepChance(band, effect(island, kind, Upgrades.Effect.SWEEP), def.max());
+    }
+
+    /** Growth (hoe perk): percent faster crop growth on {@code island}. */
+    double growthPercent(UUID island) {
+        return effect(island, Kind.HOE, Upgrades.Effect.GROWTH) * config.growthPerLevel;
+    }
+
+    /** Sell Bonus (perk) in percent for sales made by the island's tool. */
+    double sellBonus(UUID island, Kind kind) {
+        return effect(island, kind, Upgrades.Effect.SELL) * config.sellPerLevel;
+    }
+
+    /**
+     * Owner 4 Nov 2026: the island's own farm/mine boost (island upgrade, much stronger than the tool perks), in percent:
+     * harvest-yield for the hoe, mine-fortune for the pickaxe, from the island the player is a member of now.
+     */
+    double islandBoost(Player p, Kind kind) {
+        UUID island = island(p);
+        if (island == null) {
+            return 0;
+        }
+        String effect = kind == Kind.HOE ? config.hoeBoostEffect : config.pickaxeBoostEffect;
+        return core.services().optional(ProgressionService.class).map(s -> s.upgradeEffectValue(island, effect)).orElse(0.0);
+    }
+
+    /** The tool's own Extra Drops (percent) for the bonus service, only for a handle of a loaded island. */
     private double dropsBonus(ItemStack item) {
         Kind kind = ToolItems.kindOf(item);
-        UUID owner = ToolItems.ownerOf(item);
-        if (kind == null || owner == null) {
-            return 0;
-        }
-        Map<Kind, ToolStore.Rec> map = records.get(owner);
-        ToolStore.Rec r = map == null ? null : map.get(kind);
-        if (r == null || !r.itemId().equals(ToolItems.copyOf(item))) {
-            return 0;
-        }
-        for (Upgrades.Def u : upgrades.of(kind)) {
-            if (u.effect() == Upgrades.Effect.DROPS) {
-                return r.level(u.id()) * config.dropsPerLevel;
-            }
-        }
-        return 0;
+        UUID island = ToolItems.islandOf(item);
+        return kind == null ? 0 : effect(island, kind, Upgrades.Effect.DROPS) * config.dropsPerLevel;
     }
 
-    /** Level of the first upgrade with this effect on the tool (0 = none). */
-    int effectLevel(ToolStore.Rec r, Upgrades.Effect effect) {
-        if (r == null) {
-            return 0;
+    /** The shown value of a perk level: roman numerals for enchant-like perks, "132/1000" for tracks. */
+    String levelText(Upgrades.Def def, int level) {
+        if (def.effect() == Upgrades.Effect.ENCHANT || def.effect() == Upgrades.Effect.HASTE) {
+            return roman(level);
         }
-        for (Upgrades.Def u : upgrades.of(r.kind())) {
-            if (u.effect() == effect) {
-                return r.level(u.id());
-            }
-        }
-        return 0;
+        return def.max() == 1 ? raw("menu.owned") : Format.number(level) + "<c:muted>/" + Format.number(def.max()) + "</c:muted>";
     }
 
-    // ------------------------------------------------------------------ loading, first join (D12), put away (T1)
+    static String roman(int n) {
+        String[] r = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+        return n >= 0 && n < r.length ? r[n] : String.valueOf(n);
+    }
 
+    /** {@code ✧ 1,500} in the colour of the tool's shards (MiniMessage). */
+    String shardText(Kind kind, long amount) {
+        String key = kind.shards().key();
+        String plain = core.services().optional(EconomyService.class).map(e -> e.format(kind.shards(), amount)).orElse(Format.number(amount));
+        return "<cur:" + key + ">" + plain + "</cur:" + key + ">";
+    }
+
+    // ------------------------------------------------------------------ loading
+
+    /** Runs {@code then} on the main thread once the island's tools are loaded (at once when they are). */
+    void ensure(UUID island, Runnable then) {
+        if (island == null) {
+            return;
+        }
+        if (progs.containsKey(island)) {
+            then.run();
+            return;
+        }
+        List<Runnable> waiting = loading.computeIfAbsent(island, k -> new ArrayList<>());
+        waiting.add(then);
+        if (waiting.size() > 1) {
+            return; // already loading
+        }
+        store.loadIsland(island, (kind, old) -> Upgrades.encode(ToolRules.migrate(kind, old, upgrades)))
+                .whenComplete((map, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                    List<Runnable> run = loading.remove(island);
+                    if (error != null) {
+                        core.plugin().getLogger().log(Level.WARNING, "Island tools: could not load the tools of island " + island, error);
+                        return;
+                    }
+                    Map<Kind, ToolStore.Prog> loaded = new EnumMap<>(Kind.class);
+                    Map<Kind, Long> pending = xpDelta.getOrDefault(island, Map.of());
+                    map.forEach((kind, prog) -> loaded.put(kind, prog.withXp(prog.xp() + pending.getOrDefault(kind, 0L))));
+                    progs.put(island, loaded);
+                    refreshHandles(island, null);
+                    if (run != null) {
+                        run.forEach(Runnable::run);
+                    }
+                }));
+    }
+
+    /** Join, profile switch, island change: the handles are checked and the first ones given. */
     void load(Player p) {
-        UUID profile = profile(p);
-        store.load(profile).whenComplete((map, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
-            if (error != null) {
-                core.plugin().getLogger().log(Level.WARNING, "Island tools: could not load " + p.getName(), error);
-                return;
-            }
+        UUID island = island(p);
+        if (island == null) {
+            check(p);
+            return;
+        }
+        ensure(island, () -> {
             if (!p.isOnline()) {
                 return;
             }
-            Map<Kind, ToolStore.Rec> recs = new EnumMap<>(map);
-            Map<Kind, ToolStore.Rec> fresh = new EnumMap<>(Kind.class);
-            if (config.enabled) {
-                for (Kind k : Kind.values()) {
-                    if (!recs.containsKey(k)) {
-                        ToolStore.Rec r = new ToolStore.Rec(profile, k, 0, "", UUID.randomUUID().toString(), -1, false);
-                        fresh.put(k, r);
-                    }
-                }
-            }
-            if (fresh.isEmpty()) {
-                records.put(profile, recs);
-                storage.load(profile);
-                placeForWorld(p);
-                share(p, profile);
-                return;
-            }
-            store.createMissing(fresh).whenComplete((v, e2) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
-                if (e2 != null) {
-                    core.plugin().getLogger().log(Level.WARNING, "Island tools: could not create the starter set of " + p.getName(), e2);
-                    return;
-                }
-                recs.putAll(fresh);
-                records.put(profile, recs);
-                storage.load(profile);
-                if (!p.isOnline()) {
-                    return;
-                }
-                List<ItemStack> give = new ArrayList<>();
-                for (ToolStore.Rec r : fresh.values()) {
-                    give.add(items.create(r));
-                }
-                giveAll(p, give);
-                share(p, profile);
-                msg.send(p, "starter.given");
-                core.audit().logPlayer(AuditCategory.ITEM, "island_tools_starter", Actor.SYSTEM, p.getUniqueId(), p.getName(), null,
-                        p.getLocation(), Map.of("profile", profile.toString()));
-                placeForWorld(p);
-            }));
-        }));
+            check(p);
+            storage.load(profile(p));
+            giveFirst(p, island);
+        });
     }
 
     void unload(Player p) {
-        unloadProfile(profile(p));
+        storage.unload(profile(p));
+        busy.remove(p.getUniqueId());
     }
 
     void unloadProfile(UUID profile) {
-        if (profile == null) {
-            return;
+        if (profile != null) {
+            storage.unload(profile);
         }
-        storage.unload(profile);
-        records.remove(profile);
     }
 
-    boolean putAwayWorld(Player p) {
-        if (config.onlyOnIsland) {
-            return !islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(true);
-        }
-        return config.putAwayWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
-    }
-
-    /** T1/D6: in a put-away world the tools leave the inventory (slot remembered); on the island they come back. */
-    void placeForWorld(Player p) {
-        if (!loaded(p) || !config.enabled || net.skybornmc.skyblock.common.player.InventorySwappedEvent.pending(p)
-                || config.ownInventoryWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()))) {
-            return; // the Depths set never holds island tools; a waiting swap calls this again when it is done
-        }
-        boolean away = putAwayWorld(p);
-        boolean onIsland = islands().map(i -> i.isIslandWorld(p.getWorld())).orElse(false);
+    /** The first handles of an island, once per profile and island (lost ones come from the tool menu or /tool). */
+    private void giveFirst(Player p, UUID island) {
         UUID profile = profile(p);
-        Map<Kind, ToolStore.Rec> map = records.get(profile);
+        store.given(profile, island).whenComplete((given, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+            if (error != null || !p.isOnline() || !island.equals(island(p)) || !config.enabled) {
+                return;
+            }
+            Set<Kind> missing = EnumSet.noneOf(Kind.class);
+            for (Kind kind : Kind.values()) {
+                if (!given.contains(kind) && !carries(p, kind, island)) {
+                    missing.add(kind);
+                }
+            }
+            Set<Kind> mark = EnumSet.allOf(Kind.class);
+            mark.removeAll(given);
+            if (!mark.isEmpty()) {
+                store.markGiven(profile, island, mark);
+            }
+            if (missing.isEmpty()) {
+                return;
+            }
+            List<ItemStack> give = new ArrayList<>();
+            for (Kind kind : missing) {
+                give.add(items.create(kind, island, profile));
+            }
+            giveAll(p, give);
+            msg.send(p, "starter.given");
+            core.audit().logPlayer(AuditCategory.ITEM, "island_tools_given", Actor.SYSTEM, p.getUniqueId(), p.getName(), null,
+                    p.getLocation(), Map.of("island", island.toString(), "kinds", missing.toString()));
+        }));
+    }
+
+    /** True when the player carries a handle of {@code island}'s {@code kind}. */
+    boolean carries(Player p, Kind kind, UUID island) {
         PlayerInventory inv = p.getInventory();
-        for (Kind kind : Kind.values()) {
-            ToolStore.Rec r = map.get(kind);
-            if (r == null) {
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (ToolItems.kindOf(s) == kind && island.equals(ToolItems.islandOf(s))) {
+                return true;
+            }
+        }
+        ItemStack cursor = p.getItemOnCursor();
+        return ToolItems.kindOf(cursor) == kind && island.equals(ToolItems.islandOf(cursor));
+    }
+
+    /**
+     * Owner 4 Nov 2026: tidies the player's island tool items. Removed (audit-logged): the island axe and sword, a handle
+     * of another island (or any handle without an island), and a second handle of the same kind. A hoe or pickaxe from
+     * before the handles becomes the island's handle in the same slot (diamond).
+     */
+    void check(Player p) {
+        UUID island = island(p);
+        UUID profile = profile(p);
+        PlayerInventory inv = p.getInventory();
+        Set<Kind> seen = EnumSet.noneOf(Kind.class);
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (!ToolItems.isTool(s)) {
                 continue;
             }
-            if (away && !r.stored()) {
-                int slot = -1;
-                for (int i = 0; i < inv.getSize(); i++) {
-                    ItemStack s = inv.getItem(i);
-                    if (ToolItems.kindOf(s) == kind && profile.equals(ToolItems.ownerOf(s))) {
-                        if (slot < 0) {
-                            slot = i;
-                        }
-                        inv.setItem(i, null);
-                    }
+            String raw = ToolItems.rawKind(s);
+            Kind kind = ToolItems.kindOf(s);
+            UUID of = ToolItems.islandOf(s);
+            String why;
+            if (kind == null) {
+                why = Kind.legacy(raw) ? "removed_tool" : "unknown_tool";
+            } else if (island == null) {
+                why = "no_island";
+            } else if (of == null) {
+                if (!progs.containsKey(island)) {
+                    continue; // not loaded yet: migrated once the island is (load calls this again)
                 }
-                if (slot >= 0) {
-                    ToolStore.Rec next = r.withStored(true, slot);
-                    map.put(kind, next);
-                    store.saveStored(next);
+                if (seen.add(kind)) {
+                    inv.setItem(i, items.create(kind, island, profile));
+                    core.audit().logPlayer(AuditCategory.ITEM, "island_tool_migrated", Actor.SYSTEM, p.getUniqueId(), p.getName(), null,
+                            p.getLocation(), Map.of("kind", kind.id(), "island", island.toString(), "slot", i));
+                    continue;
                 }
-            } else if (onIsland && r.stored()) {
-                ItemStack item = items.create(r);
-                int slot = r.slot();
-                if (slot >= 0 && slot < inv.getSize() && (inv.getItem(slot) == null || inv.getItem(slot).isEmpty())) {
-                    inv.setItem(slot, item);
-                } else {
-                    giveAll(p, List.of(item));
-                }
-                ToolStore.Rec next = r.withStored(false, -1);
-                map.put(kind, next);
-                store.saveStored(next);
+                why = "duplicate";
+            } else if (!of.equals(island)) {
+                why = "other_island";
+            } else if (!seen.add(kind)) {
+                why = "duplicate";
+            } else {
+                continue;
+            }
+            inv.setItem(i, null);
+            core.audit().logPlayer(AuditCategory.ITEM, "island_tool_removed", Actor.SYSTEM, p.getUniqueId(), p.getName(), null,
+                    p.getLocation(), Map.of("kind", raw == null ? "?" : raw, "reason", why, "slot", i,
+                            "island", of == null ? "-" : of.toString()));
+            if ("removed_tool".equals(why)) {
+                msg.send(p, "tool.removed-kind", Msg.p("tool", raw));
+            } else if ("other_island".equals(why) || "no_island".equals(why)) {
+                msg.send(p, "tool.other-island");
             }
         }
     }
@@ -387,122 +512,194 @@ public final class IslandToolsModule implements SkyblockModule {
                         .forEach(left -> p.getWorld().dropItemNaturally(p.getLocation(), left)));
     }
 
-    /** Replaces the player's copy of a tool in place (same slot) after a change; gives one when none is carried. */
-    void refreshItem(Player p, ToolStore.Rec r) {
-        if (r.stored()) {
-            return;
-        }
-        PlayerInventory inv = p.getInventory();
-        for (int i = 0; i < inv.getSize(); i++) {
-            ItemStack s = inv.getItem(i);
-            if (ToolItems.kindOf(s) == r.kind() && r.profile().equals(ToolItems.ownerOf(s))) {
-                inv.setItem(i, items.create(r));
-                return;
+    /** Re-renders the handles of an island (one kind, or both with null) in every online member's inventory. */
+    void refreshHandles(UUID island, Kind only) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!island.equals(island(p))) {
+                continue;
+            }
+            PlayerInventory inv = p.getInventory();
+            for (int i = 0; i < inv.getSize(); i++) {
+                ItemStack s = inv.getItem(i);
+                Kind kind = ToolItems.kindOf(s);
+                if (kind == null || (only != null && kind != only) || !island.equals(ToolItems.islandOf(s))) {
+                    continue;
+                }
+                ItemStack copy = s.clone();
+                items.applyEnchants(copy, kind, prog(island, kind));
+                core.items().render(copy);
+                inv.setItem(i, copy);
             }
         }
     }
 
-    // ------------------------------------------------------------------ shared levels (owner 3 Nov 2026)
-
-    /** The island of a profile, or null (no island: the tools are the profile's own). */
-    UUID islandOf(UUID profile) {
-        return islands().flatMap(i -> i.islandOfProfile(profile)).map(IslandService.IslandInfo::id).orElse(null);
+    /** "Get your hoe": a new handle when the player has none (never a second one). */
+    void giveHandle(Player p, Kind kind) {
+        UUID island = island(p);
+        if (island == null) {
+            msg.send(p, "buy.no-island");
+            return;
+        }
+        if (carries(p, kind, island)) {
+            msg.send(p, "copy.have", Msg.p("tool", raw("item.name." + kind.id())));
+            return;
+        }
+        if (p.getInventory().firstEmpty() < 0) {
+            msg.send(p, "copy.full");
+            return;
+        }
+        p.getInventory().addItem(items.create(kind, island, profile(p)));
+        msg.send(p, "copy.done", Msg.p("tool", raw("item.name." + kind.id())));
+        core.sounds().play(p, "success");
+        core.audit().logPlayer(AuditCategory.ITEM, "island_tool_handle", Actor.player(p), p.getUniqueId(), p.getName(), null,
+                p.getLocation(), Map.of("kind", kind.id(), "island", island.toString()));
     }
+
+    // ------------------------------------------------------------------ XP, shards, finds
 
     /**
-     * Loads the island's shared levels (raising them with this member's own, never down) and puts them on the member's
-     * tools; their carried copies are re-rendered. Main thread in, main thread out.
+     * One relevant block with the island's tool (a ripe crop for the hoe, a natural ore/stone for the pickaxe): tool XP
+     * for the island, and (unless {@code swept}) a shard roll and a Lucky roll for the player.
      */
-    void share(Player p, UUID profile) {
-        UUID island = islandOf(profile);
-        Map<Kind, ToolStore.Rec> own = records.get(profile);
-        if (island == null || own == null) {
+    void action(Player p, Kind kind, boolean swept) {
+        UUID island = island(p);
+        ToolStore.Prog prog = prog(island, kind);
+        if (prog == null) {
             return;
         }
-        store.mergeIsland(island, new EnumMap<>(own)).whenComplete((merged, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
-            if (error != null) {
-                core.plugin().getLogger().log(Level.WARNING, "Island tools: could not load the shared levels of island " + island, error);
-                return;
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        double bonus = prestigeBonus(island, kind);
+        ToolRules.Level before = level(prog);
+        if (!before.maxed()) {
+            double wisdom = 1 + effect(island, kind, Upgrades.Effect.WISDOM) * config.wisdomPerLevel / 100.0;
+            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom, rnd.nextDouble());
+            if (xp > 0) {
+                ToolStore.Prog next = prog.withXp(prog.xp() + xp);
+                progs.get(island).put(kind, next);
+                xpDelta.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(kind, xp, Long::sum);
+                dirty.add(island);
+                ToolRules.Level after = level(next);
+                if (after.level() > before.level()) {
+                    levelUp(p, island, kind, after);
+                }
             }
-            Map<Kind, ToolStore.Levels> levels = new EnumMap<>(Kind.class);
-            Map<Kind, Long> progress = new EnumMap<>(Kind.class);
-            merged.forEach((kind, v) -> {
-                levels.put(kind, (ToolStore.Levels) v[0]);
-                long unsaved = taskDelta.getOrDefault(island, Map.of()).getOrDefault(kind, 0L);
-                progress.put(kind, (Long) v[1] + unsaved);
-            });
-            islandLevels.put(island, levels);
-            taskProgress.put(island, progress);
-            if (p.isOnline()) {
-                apply(p, profile, levels);
-            }
-        }));
+        }
+        if (swept && !config.sweepShards) {
+            return;
+        }
+        double chance = (kind == Kind.HOE ? config.shardHoe : config.shardPickaxe) / 100.0;
+        double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
+        int shards = ToolRules.roll(chance * finder * bonus, rnd.nextDouble());
+        int lucky = effect(island, kind, Upgrades.Effect.LUCKY);
+        if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
+            int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);
+            shards += pouch;
+            msg.title(p, "lucky.found", Msg.mm("amount", shardText(kind, pouch)), Msg.p("shards", raw("shards.name." + kind.id())));
+            core.sounds().play(p, "tool-lucky");
+            core.audit().logPlayer(AuditCategory.ECONOMY, "island_tool_lucky", Actor.SYSTEM, p.getUniqueId(), p.getName(), (long) pouch,
+                    p.getLocation(), Map.of("kind", kind.id(), "currency", kind.shards().key()));
+        }
+        if (shards > 0) {
+            pendingShards.computeIfAbsent(profile(p), k -> new ConcurrentHashMap<>()).merge(kind.shards(), (long) shards, Long::sum);
+        }
     }
 
-    /** Puts island levels on one member's records and refreshes their carried copies. */
-    private void apply(Player p, UUID profile, Map<Kind, ToolStore.Levels> levels) {
-        Map<Kind, ToolStore.Rec> map = records.get(profile);
-        if (map == null) {
+    private void levelUp(Player p, UUID island, Kind kind, ToolRules.Level after) {
+        String tool = raw("item.name." + kind.id());
+        boolean max = after.maxed();
+        if (config.levelTitle) {
+            msg.title(p, max ? "level.max" : "level.up", Msg.p("tool", tool), Msg.number("level", after.level()));
+        }
+        core.sounds().play(p, max ? "tool-max" : "tool-level-up");
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other != p && island.equals(island(other))) {
+                msg.actionBar(other, "level.island", Msg.p("tool", tool), Msg.number("level", after.level()));
+            }
+        }
+        if (max) {
+            msg.send(p, "level.can-prestige", Msg.p("tool", tool));
+        }
+        refreshHandles(island, kind);
+    }
+
+    /** Staff: adds tool XP to an island's tool (testing the levels and prestige). */
+    void addXp(UUID island, Kind kind, long xp) {
+        ToolStore.Prog prog = prog(island, kind);
+        if (prog == null || xp <= 0) {
             return;
         }
-        levels.forEach((kind, lv) -> {
-            ToolStore.Rec r = map.get(kind);
-            if (r != null && (r.tier() != lv.tier() || !r.upgrades().equals(lv.upgrades()))) {
-                ToolStore.Rec next = r.with(lv.tier(), lv.upgrades());
-                map.put(kind, next);
-                refreshItem(p, next);
+        progs.get(island).put(kind, prog.withXp(prog.xp() + xp));
+        xpDelta.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(kind, xp, Long::sum);
+        refreshHandles(island, kind);
+    }
+
+    private void flushXp() {
+        for (UUID island : List.copyOf(dirty)) {
+            dirty.remove(island);
+            if (progs.containsKey(island)) {
+                refreshHandles(island, null);
+            }
+        }
+        if (xpDelta.isEmpty() || store == null) {
+            return;
+        }
+        Map<UUID, Map<Kind, Long>> batch = new HashMap<>();
+        for (UUID island : List.copyOf(xpDelta.keySet())) {
+            Map<Kind, Long> d = xpDelta.remove(island);
+            if (d != null && !d.isEmpty()) {
+                batch.put(island, new EnumMap<>(d));
+            }
+        }
+        if (batch.isEmpty()) {
+            return;
+        }
+        store.addXp(batch).whenComplete((v, e) -> {
+            if (e != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Island tools: tool XP not saved (kept for the next try)", e);
+                batch.forEach((island, d) -> d.forEach((k, n) ->
+                        xpDelta.computeIfAbsent(island, x -> new ConcurrentHashMap<>()).merge(k, n, Long::sum)));
             }
         });
     }
 
-    /** After a shared purchase: every online member's tool changes at once. */
-    private void applyToIsland(UUID island, Kind kind, ToolStore.Levels after) {
-        islandLevels.computeIfAbsent(island, k -> new EnumMap<>(Kind.class)).put(kind, after);
-        for (Player other : Bukkit.getOnlinePlayers()) {
-            UUID prof = profile(other);
-            if (island.equals(islandOf(prof))) {
-                apply(other, prof, Map.of(kind, after));
+    /** Pays the found shards in one ledger row per profile and shard type (one action bar line). */
+    private void payShards() {
+        EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
+        if (economy == null || pendingShards.isEmpty()) {
+            return;
+        }
+        for (UUID profile : List.copyOf(pendingShards.keySet())) {
+            Map<Currency, Long> due = pendingShards.remove(profile);
+            if (due == null) {
+                continue;
             }
+            due.forEach((currency, n) -> {
+                if (n == null || n <= 0) {
+                    return;
+                }
+                UUID batch = UUID.randomUUID();
+                Transaction tx = Transaction.deposit(AccountRef.player(profile), currency, n, TxReason.ISLAND_TOOL_SHARD)
+                        .actor(Actor.SYSTEM).reference("island_tool_shard:" + batch).idempotencyKey("island_tool_shard:" + batch);
+                economy.execute(tx).whenComplete((result, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                    if (error != null || result == null || !result.ok()) {
+                        pendingShards.computeIfAbsent(profile, k -> new ConcurrentHashMap<>()).merge(currency, n, Long::sum);
+                        return;
+                    }
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        if (profile.equals(profile(p))) {
+                            msg.actionBar(p, "shards.found." + currency.key(), Msg.number("amount", n));
+                            core.sounds().play(p, "shard");
+                        }
+                    }
+                }));
+            });
         }
     }
 
-    /** Task target for buying level {@code level + 1} of an upgrade ({@code tasks.per-level}, the last repeats). */
-    long taskTarget(int level) {
-        java.util.List<Integer> list = config.taskPerLevel;
-        return list.isEmpty() ? 0 : list.get(Math.min(Math.max(0, level), list.size() - 1));
-    }
-
-    /** The island's task progress for a tool kind (0 without an island). */
-    long taskProgress(Player p, Kind kind) {
-        UUID island = islandOf(profile(p));
-        return island == null ? 0 : taskProgress.getOrDefault(island, Map.of()).getOrDefault(kind, 0L);
-    }
-
-    /**
-     * One relevant action with an island tool (a natural ore or stone mined, a log chopped, a ripe crop harvested, a mob
-     * killed): counts for the island's task and rolls for a shard (base chance + Shard Finder).
-     */
-    void action(Player p, ToolStore.Rec rec) {
-        UUID profile = profile(p);
-        UUID island = islandOf(profile);
-        if (island != null) {
-            taskProgress.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(rec.kind(), 1L, Long::sum);
-            taskDelta.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(rec.kind(), 1L, Long::sum);
-        }
-        double chance = switch (rec.kind()) {
-            case PICKAXE -> config.shardPickaxe;
-            case AXE -> config.shardAxe;
-            case HOE -> config.shardHoe;
-            case SWORD -> config.shardSword;
-        } + effectLevel(rec, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel;
-        if (java.util.concurrent.ThreadLocalRandom.current().nextDouble(100) < chance) {
-            pendingShards.merge(profile, 1L, Long::sum);
-        }
-    }
-
-    /** True when this drop is taken by Auto-Sell (the tool has it and the item can be sold); it is then counted here. */
-    boolean autoSell(Player p, ToolStore.Rec rec, ItemStack stack) {
-        if (effectLevel(rec, Upgrades.Effect.AUTOSELL) <= 0) {
+    /** True when this drop is taken by Auto-Sell (the island's tool has it and the item can be sold). */
+    boolean autoSell(Player p, Kind kind, ItemStack stack) {
+        UUID island = island(p);
+        if (effect(island, kind, Upgrades.Effect.AUTOSELL) <= 0) {
             return false;
         }
         var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class).orElse(null);
@@ -510,20 +707,22 @@ public final class IslandToolsModule implements SkyblockModule {
             return false;
         }
         autoSell.computeIfAbsent(p.getUniqueId(), k -> new ConcurrentHashMap<>()).merge(stack.getType(), stack.getAmount(), Integer::sum);
+        autoSellBonus.put(p.getUniqueId(), sellBonus(island, kind));
         return true;
     }
 
     /** Sells what Auto-Sell collected, one sale per player; what can't be sold goes back to the player (or /box). */
     private void flushAutoSell() {
         var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class).orElse(null);
-        for (UUID id : new java.util.ArrayList<>(autoSell.keySet())) {
-            Map<org.bukkit.Material, Integer> items = autoSell.remove(id);
+        for (UUID id : List.copyOf(autoSell.keySet())) {
+            Map<org.bukkit.Material, Integer> found = autoSell.remove(id);
+            double toolBonus = Optional.ofNullable(autoSellBonus.remove(id)).orElse(0.0);
             Player p = Bukkit.getPlayer(id);
-            if (items == null || items.isEmpty() || p == null) {
+            if (found == null || found.isEmpty() || p == null) {
                 continue; // a player who left: their few seconds of drops are gone, like drops left on the ground
             }
-            List<ItemStack> stacks = new java.util.ArrayList<>();
-            items.forEach((mat, n) -> {
+            List<ItemStack> stacks = new ArrayList<>();
+            found.forEach((mat, n) -> {
                 for (int left = n; left > 0; left -= mat.getMaxStackSize()) {
                     stacks.add(new ItemStack(mat, Math.min(left, mat.getMaxStackSize())));
                 }
@@ -532,7 +731,7 @@ public final class IslandToolsModule implements SkyblockModule {
                 giveAll(p, stacks);
                 continue;
             }
-            double bonus = sell.bonusPercent(p) - (100 - config.autoSellPercent);
+            double bonus = sell.bonusPercent(p) + toolBonus - (100 - config.autoSellPercent);
             var request = new net.skybornmc.skyblock.common.sell.SellRequest(p.getUniqueId(), p.getName(), profile(p), stacks, bonus,
                     "auto_sell", Actor.player(p));
             sell.sell(request).whenComplete((result, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
@@ -544,227 +743,317 @@ public final class IslandToolsModule implements SkyblockModule {
         }
     }
 
-    private void flushTasks() {
-        if (taskDelta.isEmpty()) {
-            return;
-        }
-        Map<UUID, Map<Kind, Long>> batch = new java.util.HashMap<>();
-        for (UUID island : new java.util.ArrayList<>(taskDelta.keySet())) {
-            Map<Kind, Long> d = taskDelta.remove(island);
-            if (d != null && !d.isEmpty()) {
-                batch.put(island, new EnumMap<>(d));
-            }
-        }
-        if (batch.isEmpty()) {
-            return;
-        }
-        store.addTasks(batch).whenComplete((v, e) -> {
-            if (e != null) {
-                core.plugin().getLogger().log(Level.WARNING, "Island tools: task progress not saved (kept for the next try)", e);
-                batch.forEach((island, d) -> d.forEach((k, n) ->
-                        taskDelta.computeIfAbsent(island, x -> new ConcurrentHashMap<>()).merge(k, n, Long::sum)));
-            }
-        });
+    // ------------------------------------------------------------------ perk purchases
+
+    /** Why a perk can't be bought right now (null = it can); the message key with its placeholders. */
+    record Refusal(String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[] tags) {
     }
 
-    /** Pays the found shards in one ledger row per profile ("+2 shards" on the action bar). */
-    private void payShards() {
+    /** The first reason a perk level can't be bought (owner 4 Nov 2026: one specific message per failure). */
+    Refusal refusal(Player p, Kind kind, Upgrades.Def def) {
+        UUID island = island(p);
+        if (!config.enabled) {
+            return new Refusal("disabled", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0]);
+        }
+        if (island == null) {
+            return new Refusal("buy.no-island", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0]);
+        }
+        ToolStore.Prog prog = prog(island, kind);
+        if (prog == null) {
+            return new Refusal("loading", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0]);
+        }
+        ToolRules.Level lv = level(prog);
+        String perk = raw("upgrade." + def.id() + ".name");
+        if (lv.level() < def.unlock()) {
+            return new Refusal("buy.locked-level", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{
+                    Msg.p("perk", perk), Msg.number("level", def.unlock()), Msg.number("have", lv.level())});
+        }
+        if (prog.prestige() < def.prestige() || (def.effect() == Upgrades.Effect.SWEEP && band(island, kind) == null)) {
+            return new Refusal("buy.locked-prestige", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{
+                    Msg.p("perk", perk), Msg.number("prestige", Math.max(1, def.prestige()))});
+        }
+        if (prog.level(def.id()) >= def.max()) {
+            return new Refusal("buy.maxed", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{Msg.p("perk", perk)});
+        }
+        return null;
+    }
+
+    /** Price of the next {@code count} levels (with the prestige discount). */
+    long price(ToolStore.Prog prog, Upgrades.Def def, int count) {
+        return def.sumCost(prog.level(def.id()), count, config.priceExponent, priceFactor(prog));
+    }
+
+    /** Buys up to {@code count} levels of a perk: one shard payment and the island row change in one transaction. */
+    void buy(Player p, Kind kind, String perkId, int count, Runnable done) {
         EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
-        if (economy == null || pendingShards.isEmpty()) {
+        Upgrades.Def def = upgrades.get(kind, perkId).orElse(null);
+        if (def == null) {
             return;
         }
-        for (UUID profile : new java.util.ArrayList<>(pendingShards.keySet())) {
-            Long n = pendingShards.remove(profile);
-            if (n == null || n <= 0) {
-                continue;
-            }
-            UUID batch = UUID.randomUUID();
-            Transaction tx = Transaction.deposit(AccountRef.player(profile), Currency.SHARDS, n,
-                            net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_SHARD)
-                    .actor(Actor.SYSTEM).reference("island_tool_shard:" + batch).idempotencyKey("island_tool_shard:" + batch);
-            economy.executeBatch(List.of(tx), c -> true).whenComplete((result, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
-                if (error != null || result == null || !result.ok()) {
-                    pendingShards.merge(profile, n, Long::sum); // paid next time
-                    return;
-                }
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    if (profile.equals(profile(p))) {
-                        msg.actionBar(p, "shards.found", Msg.number("amount", n));
-                        core.sounds().play(p, "shard");
-                    }
-                }
-            }));
-        }
-    }
-
-    // ------------------------------------------------------------------ purchases (owner 3 Nov 2026: shards + task, tiers also money)
-
-    /** What a purchase is: a tier-up (upgrade null) or one upgrade level. */
-    record Purchase(Kind kind, String upgrade, long cost, ToolStore.Rec before, ToolStore.Rec after, long money, long task, UUID island) {
-
-        /** True when the island's task for this upgrade is done (tiers have no task). */
-        boolean taskDone(long progress) {
-            return task <= 0 || progress >= task;
-        }
-    }
-
-    /** The next tier-up, or null at netherite. */
-    Purchase tierUp(Player p, Kind kind) {
-        ToolStore.Rec r = rec(p, kind);
-        if (r == null || r.tier() >= ToolRules.TIERS.size() - 1 || r.tier() >= config.tierCosts.size()) {
-            return null;
-        }
-        long money = r.tier() < config.tierMoney.size() ? number(config.tierMoney, r.tier()) : 0;
-        return new Purchase(kind, null, number(config.tierCosts, r.tier()), r, r.with(r.tier() + 1, r.upgrades()), money, 0,
-                islandOf(profile(p)));
-    }
-
-    /**
-     * One entry of a number list from the config. A list edited by hand or in /admin can hold text ("1500", "1,500"), and
-     * generics don't stop that at load time; reading it as an Integer then crashed the tool menu (3 Nov 2026). Bad entry = 0.
-     */
-    static long number(List<?> list, int index) {
-        Object v = list.get(index);
-        if (v instanceof Number n) {
-            return n.longValue();
-        }
-        if (v == null) {
-            return 0;
-        }
-        try {
-            return Long.parseLong(v.toString().trim().replace(",", "").replace("_", ""));
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    /** The next level of an upgrade, or null at max. */
-    Purchase upgrade(Player p, Kind kind, String id) {
-        ToolStore.Rec r = rec(p, kind);
-        Upgrades.Def def = upgrades.get(kind, id).orElse(null);
-        if (r == null || def == null) {
-            return null;
-        }
-        int lv = r.level(id);
-        if (lv >= def.max()) {
-            return null;
-        }
-        Map<String, Integer> next = new java.util.LinkedHashMap<>(r.levels());
-        next.put(id, lv + 1);
-        UUID island = islandOf(profile(p));
-        return new Purchase(kind, id, def.cost(lv), r, r.with(r.tier(), Upgrades.encode(next)), 0, island == null ? 0 : taskTarget(lv), island);
-    }
-
-    /** One crystal payment and the row change in one transaction (the row must still be as shown). */
-    void buy(Player p, Purchase purchase, Runnable after) {
-        EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
-        if (economy == null || purchase == null || !busy.add(p.getUniqueId())) {
-            return;
-        }
-        UUID profile = profile(p);
-        if (!purchase.taskDone(taskProgress(p, purchase.kind()))) {
-            busy.remove(p.getUniqueId());
-            msg.send(p, "buy.task", Msg.number("progress", taskProgress(p, purchase.kind())), Msg.number("task", purchase.task()),
-                    Msg.p("action", raw("task." + purchase.kind().id())));
+        Refusal no = economy == null ? new Refusal("buy.no-economy", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0])
+                : refusal(p, kind, def);
+        if (no != null) {
+            msg.send(p, no.key(), no.tags());
             core.sounds().play(p, "error");
             return;
         }
+        if (!busy.add(p.getUniqueId())) {
+            msg.actionBar(p, "buy.busy");
+            return;
+        }
+        UUID island = island(p);
+        UUID profile = profile(p);
+        ToolStore.Prog before = prog(island, kind);
+        int have = before.level(def.id());
+        int n = def.buyable(have, count);
+        long cost = price(before, def, n);
+        long balance = economy.cached(p.getUniqueId(), kind.shards()).orElse(Long.MAX_VALUE);
+        if (balance < cost) {
+            busy.remove(p.getUniqueId());
+            poor(p, kind, cost, balance);
+            return;
+        }
+        Map<String, Integer> levels = new java.util.TreeMap<>(before.levels());
+        levels.put(def.id(), have + n);
+        String newLevels = Upgrades.encode(levels);
         UUID batch = UUID.randomUUID();
-        List<Transaction> txs = new java.util.ArrayList<>();
-        if (purchase.cost() > 0) {
-            txs.add(Transaction.withdraw(AccountRef.player(profile), Currency.SHARDS, purchase.cost(), net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_UPGRADE)
-                    .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch)
-                    .detail("kind", purchase.kind().id()).detail("upgrade", purchase.upgrade() == null ? "tier" : purchase.upgrade()));
-        }
-        if (purchase.money() > 0) {
-            txs.add(Transaction.withdraw(AccountRef.player(profile), Currency.MONEY, purchase.money(), net.skybornmc.skyblock.common.economy.TxReason.ISLAND_TOOL_UPGRADE)
-                    .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch + ":money")
-                    .detail("kind", purchase.kind().id()).detail("upgrade", "tier"));
-        }
-        UUID island = purchase.island();
-        ToolStore.Levels levelsBefore = new ToolStore.Levels(purchase.before().tier(), purchase.before().upgrades());
-        ToolStore.Levels levelsAfter = new ToolStore.Levels(purchase.after().tier(), purchase.after().upgrades());
-        economy.executeBatch(txs, c -> island == null ? ToolStore.change(c, purchase.before(), purchase.after())
-                        : ToolStore.changeIsland(c, island, purchase.kind(), levelsBefore, levelsAfter, purchase.task()))
+        Transaction tx = Transaction.withdraw(AccountRef.player(profile), kind.shards(), cost, TxReason.ISLAND_TOOL_UPGRADE)
+                .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch)
+                .detail("kind", kind.id()).detail("upgrade", def.id()).detail("levels", n);
+        economy.executeBatch(List.of(tx), c -> ToolStore.buy(c, island, kind, before.version(), newLevels))
                 .whenComplete((BatchResult result, Throwable error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
                     busy.remove(p.getUniqueId());
                     if (error != null || result == null || !result.ok()) {
-                        boolean poor = result != null && result.status() == TxResult.Status.INSUFFICIENT_FUNDS;
-                        msg.send(p, poor ? "buy.poor" : "buy.failed", Msg.number("cost", purchase.cost()));
-                        core.sounds().play(p, "error");
+                        failed(p, kind, cost, result == null ? null : result.status(), error);
                     } else {
-                        Map<Kind, ToolStore.Rec> map = records.get(profile);
-                        if (map != null) {
-                            map.put(purchase.kind(), purchase.after());
-                        }
-                        refreshItem(p, purchase.after());
-                        if (island != null) {
-                            Map<Kind, Long> prog = taskProgress.get(island);
-                            if (prog != null && purchase.task() > 0) {
-                                prog.merge(purchase.kind(), -purchase.task(), Long::sum);
-                            }
-                            applyToIsland(island, purchase.kind(), levelsAfter);
-                            String what0 = purchase.upgrade() == null ? raw("tier." + ToolRules.TIERS.get(purchase.after().tier()))
-                                    : raw("upgrade." + purchase.upgrade() + ".name") + " " + purchase.after().level(purchase.upgrade());
-                            for (Player other : Bukkit.getOnlinePlayers()) {
-                                if (other != p && island.equals(islandOf(profile(other)))) {
-                                    msg.send(other, "buy.island", Msg.p("player", p.getName()), Msg.p("what", what0),
-                                            Msg.p("tool", raw("item.name." + purchase.kind().id())));
-                                    core.sounds().play(other, "unlock");
-                                }
-                            }
-                        }
-                        String what = purchase.upgrade() == null ? raw("tier." + ToolRules.TIERS.get(purchase.after().tier()))
-                                : raw("upgrade." + purchase.upgrade() + ".name") + " " + purchase.after().level(purchase.upgrade());
-                        msg.send(p, "buy.done", Msg.p("what", what), Msg.p("tool", raw("item.name." + purchase.kind().id())),
-                                Msg.number("cost", purchase.cost()));
-                        core.sounds().play(p, purchase.upgrade() == null ? "level-up" : "unlock");
-                        core.audit().logPlayer(AuditCategory.ITEM, "island_tool_upgrade", Actor.player(p), p.getUniqueId(), p.getName(),
-                                purchase.cost(), p.getLocation(), Map.of("kind", purchase.kind().id(),
-                                        "upgrade", purchase.upgrade() == null ? "tier" : purchase.upgrade(),
-                                        "tier", purchase.after().tier(), "levels", purchase.after().upgrades()));
+                        bought(p, island, kind, def, have, n, cost, newLevels);
                     }
-                    if (after != null) {
-                        after.run();
+                    if (done != null && p.isOnline()) {
+                        done.run();
                     }
                 }));
     }
 
-    /** A new copy (lost or broken tool): older copies stop working. */
-    void newCopy(Player p, Kind kind) {
-        ToolStore.Rec r = rec(p, kind);
-        if (r == null) {
+    /** "Not enough Farming Shards: this costs X, you have Y." */
+    private void poor(Player p, Kind kind, long cost, long balance) {
+        msg.send(p, "buy.poor", Msg.mm("cost", shardText(kind, cost)), Msg.mm("have", shardText(kind, Math.max(0, balance))),
+                Msg.p("shards", raw("shards.name." + kind.id())));
+        core.sounds().play(p, "error");
+    }
+
+    /** A specific message for each way a payment can fail (owner 4 Nov 2026). */
+    private void failed(Player p, Kind kind, long cost, TxResult.Status status, Throwable error) {
+        if (!p.isOnline()) {
             return;
         }
-        ToolStore.Rec next = r.withItem(UUID.randomUUID().toString()).withStored(false, -1);
-        records.get(profile(p)).put(kind, next);
-        store.saveItem(next);
-        store.saveStored(next);
-        PlayerInventory inv = p.getInventory();
-        for (int i = 0; i < inv.getSize(); i++) {
-            if (ToolItems.kindOf(inv.getItem(i)) == kind) {
-                inv.setItem(i, null);
+        if (status == TxResult.Status.INSUFFICIENT_FUNDS) {
+            core.services().optional(EconomyService.class).ifPresent(e -> e.balance(AccountRef.player(profile(p)), kind.shards())
+                    .whenComplete((have, err) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+                        if (p.isOnline()) {
+                            poor(p, kind, cost, have == null ? 0 : have);
+                        }
+                    })));
+            return;
+        }
+        if (status == TxResult.Status.DUPLICATE) {
+            msg.send(p, "buy.changed", Msg.p("tool", raw("item.name." + kind.id())));
+        } else {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Island tools: a perk purchase of " + p.getName() + " failed", error);
+            }
+            msg.send(p, "buy.error");
+        }
+        core.sounds().play(p, "error");
+    }
+
+    private void bought(Player p, UUID island, Kind kind, Upgrades.Def def, int have, int n, long cost, String newLevels) {
+        Map<Kind, ToolStore.Prog> map = progs.get(island);
+        ToolStore.Prog now = map == null ? null : map.get(kind);
+        if (map != null && now != null) {
+            map.put(kind, now.withUpgrades(newLevels));
+        }
+        refreshHandles(island, kind);
+        String perk = raw("upgrade." + def.id() + ".name");
+        String tool = raw("item.name." + kind.id());
+        String level = levelText(def, have + n);
+        msg.send(p, "buy.done", Msg.p("perk", perk), Msg.mm("level", level), Msg.p("tool", tool), Msg.mm("cost", shardText(kind, cost)));
+        core.sounds().play(p, "unlock");
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other != p && island.equals(island(other))) {
+                msg.send(other, "buy.island", Msg.p("player", p.getName()), Msg.p("perk", perk), Msg.mm("level", level), Msg.p("tool", tool));
             }
         }
-        giveAll(p, List.of(items.create(next)));
-        msg.send(p, "copy.done", Msg.p("tool", raw("item.name." + kind.id())));
-        core.audit().logPlayer(AuditCategory.ITEM, "island_tool_copy", Actor.player(p), p.getUniqueId(), p.getName(), null,
-                p.getLocation(), Map.of("kind", kind.id()));
+        core.audit().logPlayer(AuditCategory.ITEM, "island_tool_upgrade", Actor.player(p), p.getUniqueId(), p.getName(), cost,
+                p.getLocation(), Map.of("kind", kind.id(), "upgrade", def.id(), "from", have, "to", have + n, "island", island.toString(),
+                        "currency", kind.shards().key()));
+    }
+
+    // ------------------------------------------------------------------ prestige
+
+    /** Why the player can't prestige the tool right now (null = they can). */
+    Refusal prestigeRefusal(Player p, Kind kind) {
+        UUID island = island(p);
+        net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[] none = new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0];
+        if (island == null) {
+            return new Refusal("buy.no-island", none);
+        }
+        ToolStore.Prog prog = prog(island, kind);
+        if (prog == null) {
+            return new Refusal("loading", none);
+        }
+        String tool = raw("item.name." + kind.id());
+        IslandService.Role role = islands().flatMap(i -> i.role(island, p.getUniqueId())).orElse(null);
+        if (role == null || config.prestigeRoles.stream().noneMatch(r -> r.equalsIgnoreCase(role.name()))) {
+            return new Refusal("prestige.not-owner", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{Msg.p("tool", tool)});
+        }
+        ToolRules.Level lv = level(prog);
+        if (!lv.maxed()) {
+            return new Refusal("prestige.not-max", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{Msg.p("tool", tool),
+                    Msg.number("level", lv.level()), Msg.number("max", config.maxLevel)});
+        }
+        if (prestiging.contains(island + ":" + kind.id())) {
+            return new Refusal("prestige.busy", none);
+        }
+        return null;
+    }
+
+    /**
+     * Prestige (after the confirm screen): resets the island's tool (XP and perks), prestige + 1, and takes every member's
+     * shards of that type (online and offline) in the same database transaction.
+     */
+    void prestige(Player p, Kind kind, Runnable done) {
+        Refusal no = prestigeRefusal(p, kind);
+        EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
+        if (no == null && economy == null) {
+            no = new Refusal("buy.no-economy", new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[0]);
+        }
+        if (no != null) {
+            msg.send(p, no.key(), no.tags());
+            core.sounds().play(p, "error");
+            return;
+        }
+        UUID island = island(p);
+        String key = island + ":" + kind.id();
+        if (!prestiging.add(key)) {
+            return;
+        }
+        ToolStore.Prog before = prog(island, kind);
+        Map<Kind, Long> deltas = xpDelta.get(island);
+        Long removed = deltas == null ? null : deltas.remove(kind);
+        long pending = removed == null ? 0 : removed;
+        List<UUID> members = new ArrayList<>(islands().map(i -> i.members(island).keySet()).orElse(Set.of()));
+        for (UUID member : members) {
+            Map<Currency, Long> unpaid = pendingShards.get(member);
+            if (unpaid != null) {
+                unpaid.remove(kind.shards()); // found in the last seconds: gone with the rest
+            }
+        }
+        attemptPrestige(p, economy, island, kind, before, pending, members, 0, done);
+    }
+
+    private void attemptPrestige(Player p, EconomyService economy, UUID island, Kind kind, ToolStore.Prog before, long pending,
+                                 List<UUID> members, int tries, Runnable done) {
+        Currency currency = kind.shards();
+        List<CompletableFuture<Long>> reads = new ArrayList<>();
+        for (UUID member : members) {
+            reads.add(economy.balance(AccountRef.player(member), currency));
+        }
+        CompletableFuture.allOf(reads.toArray(new CompletableFuture[0])).thenCompose(v -> {
+            UUID batch = UUID.randomUUID();
+            List<Transaction> txs = new ArrayList<>();
+            Map<String, Object> taken = new java.util.TreeMap<>();
+            for (int i = 0; i < members.size(); i++) {
+                long have = reads.get(i).join();
+                if (have > 0) {
+                    txs.add(Transaction.withdraw(AccountRef.player(members.get(i)), currency, have, TxReason.ISLAND_TOOL_PRESTIGE)
+                            .actor(Actor.player(p)).reference("island_tool_prestige:" + batch)
+                            .idempotencyKey("island_tool_prestige:" + batch + ":" + i).detail("kind", kind.id()));
+                    taken.put(members.get(i).toString(), have);
+                }
+            }
+            long need = xpToMax(before.prestige());
+            return economy.executeBatch(txs, c -> ToolStore.prestige(c, island, kind, before, pending, need))
+                    .thenApply(result -> Map.entry(result, taken));
+        }).whenComplete((entry, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+            BatchResult result = entry == null ? null : entry.getKey();
+            if (error == null && result != null && result.ok()) {
+                prestiging.remove(island + ":" + kind.id());
+                prestiged(p, island, kind, before, entry.getValue());
+            } else if (error == null && result != null && result.status() == TxResult.Status.INSUFFICIENT_FUNDS && tries < 2) {
+                attemptPrestige(p, economy, island, kind, before, pending, members, tries + 1, done); // someone spent meanwhile
+                return;
+            } else {
+                prestiging.remove(island + ":" + kind.id());
+                if (pending > 0) {
+                    xpDelta.computeIfAbsent(island, k -> new ConcurrentHashMap<>()).merge(kind, pending, Long::sum);
+                }
+                if (error != null) {
+                    core.plugin().getLogger().log(Level.WARNING, "Island tools: a prestige of island " + island + " failed", error);
+                }
+                if (p.isOnline()) {
+                    msg.send(p, result != null && result.status() == TxResult.Status.DUPLICATE ? "prestige.changed" : "prestige.error");
+                    core.sounds().play(p, "error");
+                }
+            }
+            if (done != null && p.isOnline()) {
+                done.run();
+            }
+        }));
+    }
+
+    private void prestiged(Player p, UUID island, Kind kind, ToolStore.Prog before, Map<String, Object> taken) {
+        Map<Kind, ToolStore.Prog> map = progs.get(island);
+        if (map != null) {
+            Map<Kind, Long> deltas = xpDelta.get(island);
+            long since = deltas == null ? 0 : deltas.getOrDefault(kind, 0L); // XP after the click: written to the new prestige
+            ToolStore.Prog next = before.prestiged();
+            map.put(kind, next.withXp(since));
+        }
+        refreshHandles(island, kind);
+        int prestige = before.prestige() + 1;
+        String tool = raw("item.name." + kind.id());
+        String stars = ToolRules.stars(prestige, config.maxStars);
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (island.equals(island(other))) {
+                msg.title(other, "prestige.done", Msg.p("tool", tool), Msg.p("stars", stars), Msg.number("prestige", prestige));
+                msg.send(other, "prestige.chat", Msg.p("player", p.getName()), Msg.p("tool", tool), Msg.p("stars", stars),
+                        Msg.number("bonus", Math.round(prestige * config.prestigeBonus)), Msg.p("shards", raw("shards.name." + kind.id())));
+                core.sounds().play(other, "tool-prestige");
+            }
+        }
+        Map<String, Object> details = new java.util.HashMap<>(taken);
+        details.put("kind", kind.id());
+        details.put("island", island.toString());
+        details.put("prestige", prestige);
+        details.put("currency", kind.shards().key());
+        core.audit().logPlayer(AuditCategory.ITEM, "island_tool_prestige", Actor.player(p), p.getUniqueId(), p.getName(), null,
+                p.getLocation(), details);
     }
 
     // ------------------------------------------------------------------ commands
 
     private void registerCommands() {
-        core.commands().extend("is", CommandSpec.sub("tools").description("Your island tools: tiers, upgrades and the hoe storage")
+        core.commands().extend("is", CommandSpec.sub("tools").description("Your island's hoe and pickaxe: levels, perks, prestige and the hoe storage")
                 .permission(PERM).playerOnly().example("is tools")
                 .executes(ctx -> open(ctx.player())));
-        net.skybornmc.skyblock.common.command.Arg<Player> target = net.skybornmc.skyblock.common.command.Args.onlinePlayer("player");
-        core.commands().register(CommandSpec.command("islandtools").description("Island tools (staff: reset a player's set)")
+        Arg<Player> target = Args.onlinePlayer("player");
+        Arg<Kind> tool = Args.choice("tool", Kind.class);
+        Arg<Long> amount = Args.amount("amount");
+        core.commands().register(CommandSpec.command("islandtools").description("Island tools (staff: give, reset, XP)")
                 .category("Island").permission(PERM).playerOnly().aliases("itools").example("islandtools")
                 .executes(ctx -> open(ctx.player()))
-                .sub(CommandSpec.sub("reset").description("Staff: reset a player's island tools to the wooden set (and empty the hoe storage)")
+                .sub(CommandSpec.sub("reset").description("Staff: a player's island tool handles and hoe storage are reset (new handles on the next join)")
                         .permission(PERM_ADMIN).arg(target).example("islandtools reset Steve")
-                        .executes(ctx -> reset(ctx.sender(), ctx.get(target)))));
+                        .executes(ctx -> reset(ctx.sender(), ctx.get(target))))
+                .sub(CommandSpec.sub("resetisland").description("Staff: the tools of a player's island back to level 1 without perks or prestige")
+                        .permission(PERM_ADMIN).arg(target).example("islandtools resetisland Steve")
+                        .executes(ctx -> resetIsland(ctx.sender(), ctx.get(target))))
+                .sub(CommandSpec.sub("addxp").description("Staff: tool XP for a player's island tool (to test levels and prestige)")
+                        .permission(PERM_ADMIN).arg(target).arg(tool).arg(amount).example("islandtools addxp Steve hoe 5000")
+                        .executes(ctx -> addXp(ctx.sender(), ctx.get(target), ctx.get(tool), ctx.get(amount))))
+                .sub(CommandSpec.sub("give").description("Staff: give a player the handle of their island's tool (never a second one)")
+                        .permission(PERM_ADMIN).arg(target).arg(tool).example("islandtools give Steve pickaxe")
+                        .executes(ctx -> giveHandle(ctx.get(target), ctx.get(tool)))));
         // Feedback 4 Nov 2026 (B7): /tool opens the held tool's menu (Bedrock: a click in the air may not reach us). The
         // custom tools module owns /tool when it is on and asks HeldToolMenu for an island tool; else it is ours.
         core.services().register(ID, net.skybornmc.skyblock.common.item.HeldToolMenu.class, this::openHeld);
@@ -773,7 +1062,7 @@ public final class IslandToolsModule implements SkyblockModule {
                     .category("Island").permission(PERM_TOOL).playerOnly().example("tool")
                     .executes(ctx -> {
                         if (!openHeld(ctx.player())) {
-                            open(ctx.player()); // no island tool in hand: all island tools
+                            open(ctx.player()); // no island tool in hand: both island tools
                         }
                     }));
         }
@@ -782,15 +1071,19 @@ public final class IslandToolsModule implements SkyblockModule {
     /** The menu of the island tool in the main hand; false when the item in hand is not an island tool. */
     boolean openHeld(Player p) {
         ItemStack hand = p.getInventory().getItemInMainHand();
-        if (!ToolItems.isTool(hand)) {
+        Kind kind = ToolItems.kindOf(hand);
+        if (kind == null) {
             return false;
         }
         if (!config.enabled) {
             msg.send(p, "disabled");
+        } else if (island(p) == null) {
+            msg.send(p, "buy.no-island");
         } else if (!loaded(p)) {
             msg.send(p, "loading");
+            load(p);
         } else {
-            core.menus().open(p, new ToolMenu(this, ToolItems.kindOf(hand)));
+            core.menus().open(p, new ToolMenu(this, kind));
         }
         return true;
     }
@@ -799,7 +1092,11 @@ public final class IslandToolsModule implements SkyblockModule {
         if (!config.enabled) {
             throw new CommandFailure(ID, "disabled");
         }
+        if (island(p) == null) {
+            throw new CommandFailure(ID, "buy.no-island");
+        }
         if (!loaded(p)) {
+            load(p);
             throw new CommandFailure(ID, "loading");
         }
         core.menus().open(p, new ToolsMenu(this));
@@ -814,7 +1111,6 @@ public final class IslandToolsModule implements SkyblockModule {
             }
         }
         storage.unload(profile);
-        records.remove(profile);
         store.reset(profile).whenComplete((v, e) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
             if (target.isOnline()) {
                 load(target);
@@ -823,5 +1119,46 @@ public final class IslandToolsModule implements SkyblockModule {
         }));
         core.audit().logPlayer(AuditCategory.STAFF, "island_tools_reset", sender instanceof Player sp ? Actor.player(sp) : Actor.SYSTEM,
                 target.getUniqueId(), target.getName(), null, null, Map.of("profile", profile.toString()));
+    }
+
+    private void resetIsland(org.bukkit.command.CommandSender sender, Player target) {
+        UUID island = island(target);
+        if (island == null) {
+            msg.send(sender, "admin.no-island", Msg.p("player", target.getName()));
+            return;
+        }
+        xpDelta.remove(island);
+        store.resetIsland(island).whenComplete((v, e) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+            if (e != null) {
+                msg.send(sender, "buy.error");
+                return;
+            }
+            progs.remove(island);
+            ensure(island, () -> { });
+            msg.send(sender, "admin.reset-island", Msg.p("player", target.getName()));
+        }));
+        core.audit().logPlayer(AuditCategory.STAFF, "island_tools_reset_island", sender instanceof Player sp ? Actor.player(sp) : Actor.SYSTEM,
+                target.getUniqueId(), target.getName(), null, null, Map.of("island", island.toString()));
+    }
+
+    private void addXp(org.bukkit.command.CommandSender sender, Player target, Kind kind, long amount) {
+        UUID island = island(target);
+        if (island == null) {
+            msg.send(sender, "admin.no-island", Msg.p("player", target.getName()));
+            return;
+        }
+        ensure(island, () -> {
+            addXp(island, kind, amount);
+            ToolStore.Prog prog = prog(island, kind);
+            msg.send(sender, "admin.xp", Msg.p("player", target.getName()), Msg.p("tool", raw("item.name." + kind.id())),
+                    Msg.number("amount", amount), Msg.number("level", prog == null ? 1 : level(prog).level()));
+            core.audit().logPlayer(AuditCategory.STAFF, "island_tool_xp", sender instanceof Player sp ? Actor.player(sp) : Actor.SYSTEM,
+                    target.getUniqueId(), target.getName(), amount, null, Map.of("island", island.toString(), "kind", kind.id()));
+        });
+    }
+
+    /** Island locations for listeners: the island at a block (or null). */
+    UUID islandAt(Location loc) {
+        return islands().flatMap(i -> i.islandAt(loc)).map(IslandService.IslandInfo::id).orElse(null);
     }
 }
