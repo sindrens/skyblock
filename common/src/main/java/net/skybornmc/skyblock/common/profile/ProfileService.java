@@ -102,6 +102,15 @@ public interface ProfileService {
     /** True while a switch of this player runs (their inventory is being saved/loaded: refuse item actions). */
     boolean isSwitching(UUID player);
 
+    /**
+     * Playtime of one profile in milliseconds (owner P2: per profile), including the running session when it is an online
+     * player's active profile; from the database for other profiles. {@code -1} = unknown (no such profile, or the module
+     * is off). Any thread; completes off the main thread when the database is needed.
+     */
+    default CompletableFuture<Long> playtimeAsync(UUID profileKey) {
+        return CompletableFuture.completedFuture(-1L);
+    }
+
     // ------------------------------------------------------------------ guards and leaderboards
 
     /**

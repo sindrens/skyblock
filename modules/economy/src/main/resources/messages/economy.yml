@@ -58,6 +58,23 @@ pay:
   # Owner F1: <required> to earn first, <earned> so far, <missing> still to earn (income only, not money from players).
   send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
 
+# Owner 4 Nov 2026 (anti-boosting): a new profile (less than anti-boost.playtime-minutes of its own playtime) can receive and
+# send only a capped amount from/to other players. <player> = the new player, <room> = what still fits, <cap> = the cap,
+# <amount> = what was tried, <hours> = the playtime needed, <left> = their playtime still to go.
+anti-boost:
+  receiver:
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is new and can receive <room> <c:text>more until they have played <c:value><hours></c:value><c:text>. Nothing was sent."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You're new: you can receive <room> <c:text>more from other players until you have played <c:value><hours></c:value> <c:muted>(<left> to go)</c:muted><c:text>. Nothing was sent."
+  sender:
+    other: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is new and can send <room> <c:text>more until they have played <c:value><hours></c:value><c:text>. Nothing was sent."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You're new: you can send <room> <c:text>more to other players until you have played <c:value><hours></c:value> <c:muted>(<left> to go)</c:muted><c:text>. Nothing was sent."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't check the new-player money limit, so nothing was sent. Try again in a moment."
+  # Staff (skyblock.staff.economy.anomalies) after anti-boost.alert-refusals refusals within anti-boost.alert-minutes.
+  alert: "<c:error>[Eco]</c:error> <c:value><player></c:value> <c:text>hit the new-player <side> cap <c:value><count>x</c:value> <c:text>in <minutes> min <c:muted>(last: <path>, <amount><c:muted>)</c:muted> <click:run_command:'/logs player <player> economy'><hover:show_text:'<c:text>Runs /logs player <player> economy'><c:action>[Logs]</c:action></hover></click>"
+  side:
+    receiver: "receive"
+    sender: "send"
+
 eco:
   # A6: /eco sell price|reset|dump-recipes (staff).
   sell:
@@ -209,6 +226,8 @@ note:
   currency-not-allowed: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be made into notes. Money and shards can: <c:value>/withdraw 50k</c:value>"
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest note is <min><c:text>."
   above-maximum: "<prefix><c:error><sym:cross></c:error> <c:text>The largest note is <max><c:text>. Make several instead."
+  # Owner 4 Nov 2026: a note of another player counts as money received/sent (anti-boost); the note comes back.
+  anti-boost-back: "<prefix><c:muted>You got the note back."
   redeemed: "<prefix><c:success><sym:check></c:success> <c:text>Cashed a note of <amount> <c:muted>(signed by <c:value><signer></c:value>)<c:text>. <c:muted>Balance: </c:muted><balance>"
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. You got the note back."
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>This note is from your other profile, so it can't be cashed here. You got it back."

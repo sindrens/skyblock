@@ -102,6 +102,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
     private SendGateImpl sendGate;
+    private AntiBoostImpl antiBoost;
     private final EcoApprovals approvals = new EcoApprovals();
     private EcoTargets ecoTargets;
     private Scheduler.Task approvalTask;
@@ -140,6 +141,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // Owner F1: money can be sent away only after the profile earned send-gate.required itself (island members excepted).
         sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis);
         core.services().register(ID, net.skybornmc.skyblock.common.economy.SendGate.class, sendGate);
+        // Owner 4 Nov 2026: new profiles can receive/send only a capped amount from/to other players (pay, trade, auction, notes).
+        antiBoost = new AntiBoostImpl(core.database(), () -> config, profile -> profiles().playtimeAsync(profile),
+                System::currentTimeMillis, core.plugin().getLogger(), new AntiBoostNotices(this));
+        core.services().register(ID, net.skybornmc.skyblock.common.economy.AntiBoost.class, antiBoost);
         ecoTargets = new EcoTargets(core.database());
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
                 (createdBy, redeemer, actor) -> profiles().blockOwnTransfer(AuditCategory.ECONOMY, "note_redeem", createdBy, redeemer, actor)));
@@ -256,6 +261,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
     /** Owner F1: the send gate (also published as {@link net.skybornmc.skyblock.common.economy.SendGate}). */
     net.skybornmc.skyblock.common.economy.SendGate sendGate() {
         return sendGate;
+    }
+
+    /** Owner 4 Nov 2026: the new-player money caps (also published as {@link net.skybornmc.skyblock.common.economy.AntiBoost}). */
+    net.skybornmc.skyblock.common.economy.AntiBoost antiBoost() {
+        return antiBoost;
     }
 
     EcoApprovals approvals() {
@@ -1120,12 +1130,41 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         tellSendGate(payer, check, "pay.send-gate");
                         return;
                     }
-                    Transaction tx = Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency,
-                            amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
-                    then(payer, service.execute(tx), result -> payResult(payer, target, amount, currency, result));
+                    // Owner 4 Nov 2026: a new profile can receive/send only anti-boost.max-received/max-sent in total. The
+                    // preview tells the player; the guard re-checks and counts inside the payment's own transaction.
+                    List<net.skybornmc.skyblock.common.economy.AntiBoost.Transfer> moved = currency == Currency.MONEY
+                            ? List.of(new net.skybornmc.skyblock.common.economy.AntiBoost.Transfer(from, to, amount)) : List.of();
+                    then(payer, antiBoost.prepare(moved), guard -> {
+                        if (!guard.preview().allowed()) {
+                            antiBoostRefused(payer, target, from, guard.preview(), moved);
+                            return;
+                        }
+                        Transaction tx = Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency,
+                                amount, TxReason.PAY).actor(Actor.player(payer)).detail("target_name", target.name());
+                        then(payer, service.executeGuarded(tx, guard), result -> {
+                            if (result.status() == TxResult.Status.DUPLICATE && !guard.refused().allowed()) {
+                                antiBoostRefused(payer, target, from, guard.refused(), moved); // a parallel transfer used the room
+                                return;
+                            }
+                            payResult(payer, target, amount, currency, result);
+                        });
+                    });
                 });
             });
         });
+    }
+
+    /** A /pay the anti-boost caps refused: audit, and both sides are told (the receiver when online). */
+    private void antiBoostRefused(Player payer, Found target, UUID from,
+                                  net.skybornmc.skyblock.common.economy.AntiBoost.Check check,
+                                  List<net.skybornmc.skyblock.common.economy.AntiBoost.Transfer> moved) {
+        antiBoost.report(check, "pay", Actor.player(payer), moved);
+        String newName = check.profile() != null && check.profile().equals(from) ? payer.getName() : target.name();
+        antiBoost.tell(payer, check, newName);
+        Player online = Bukkit.getPlayer(target.uuid());
+        if (online != null && !check.error()) {
+            antiBoost.tell(online, check, newName);
+        }
     }
 
     private void payResult(Player payer, Found target, long amount, Currency currency, TxResult result) {

@@ -258,6 +258,32 @@ public final class EconomyConfig extends ModuleConfig {
             "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task",
             "quest_reward", "pass_reward");
 
+    // ------------------------------------------------------------------ anti-boosting (owner 4 Nov 2026, PLAN_4NOV phase 1)
+
+    @Setting(path = "anti-boost.enabled", desc = "New profiles (less than anti-boost.playtime-minutes of their own playtime) can "
+            + "receive and send only a capped amount of money in total from/to other players: /pay, money in /trade, auction "
+            + "sales (seller receives, buyer sends) and cashed money notes of another player.", level = Setting.Level.OWNER)
+    public boolean antiBoostEnabled = true;
+
+    @Setting(path = "anti-boost.playtime-minutes", desc = "Profile playtime (minutes, per profile) below which the caps apply. "
+            + "Once a profile played this long, its totals no longer matter.", min = 0, max = 100_000, level = Setting.Level.OWNER)
+    public int antiBoostPlaytimeMinutes = 180;
+
+    @Setting(path = "anti-boost.max-received", desc = "Most money a new profile can receive from other players in total. 0 = no "
+            + "receive cap.", min = 0, level = Setting.Level.OWNER)
+    public long antiBoostMaxReceived = 1_000_000;
+
+    @Setting(path = "anti-boost.max-sent", desc = "Most money a new profile can send to other players in total (stops alt farms "
+            + "feeding a main). 0 = no send cap.", min = 0, level = Setting.Level.OWNER)
+    public long antiBoostMaxSent = 250_000;
+
+    @Setting(path = "anti-boost.alert-refusals", desc = "Online staff (skyblock.staff.economy.anomalies) get a notice when the "
+            + "same new profile was refused this many times within anti-boost.alert-minutes. 0 = never.", min = 0, max = 100)
+    public int antiBoostAlertRefusals = 3;
+
+    @Setting(path = "anti-boost.alert-minutes", desc = "The window of anti-boost.alert-refusals.", min = 1, max = 1440)
+    public int antiBoostAlertMinutes = 10;
+
     @Setting(path = "notes.item.material", desc = "Material of the money note item (a vanilla item; "
             + "pick one that does nothing on right-click).", restart = true)
     public String noteMaterial = "PAPER";

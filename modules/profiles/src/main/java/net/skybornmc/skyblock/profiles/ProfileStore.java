@@ -117,6 +117,11 @@ final class ProfileStore {
         return Sql.queryOne(c, "SELECT active_profile FROM profile_accounts WHERE owner = ?", rs -> Sql.uuid(rs, "active_profile"), owner);
     }
 
+    /** Stored playtime of a profile (without a running session), or empty when there is no such profile. */
+    Optional<Long> playtime(Connection c, UUID profileId) throws SQLException {
+        return Sql.queryOne(c, "SELECT playtime_ms FROM profiles WHERE id = ?", rs -> rs.getLong(1), profileId);
+    }
+
     Optional<StoredState> state(Connection c, UUID profileId) throws SQLException {
         return Sql.queryOne(c, "SELECT inventory, ender_chest, data FROM profile_states WHERE profile_id = ?",
                 rs -> new StoredState(rs.getBytes("inventory"), rs.getBytes("ender_chest"), rs.getString("data")), profileId);

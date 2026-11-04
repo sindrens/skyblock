@@ -428,6 +428,22 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     }
 
     @Override
+    public CompletableFuture<Long> playtimeAsync(UUID profileKey) {
+        if (profileKey == null) {
+            return CompletableFuture.completedFuture(-1L);
+        }
+        UUID owner = ownerOf(profileKey);
+        Session s = owner == null ? null : sessions.get(owner);
+        if (s != null) {
+            Optional<Profile> known = s.profile(profileKey);
+            if (known.isPresent()) {
+                return CompletableFuture.completedFuture(playtime(owner, known.get()));
+            }
+        }
+        return core.database().async(c -> store.playtime(c, profileKey).orElse(-1L));
+    }
+
+    @Override
     public boolean isSwitching(UUID player) {
         Session s = sessions.get(player);
         return s != null && s.switching;
