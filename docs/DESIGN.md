@@ -240,6 +240,31 @@ Four connected systems. **All custom tools, blueprints and skins are tradeable**
 
 Tool tiers, recipes, XP curve, perk slots and abilities live in config (`tools.yml`) and are balanced in the balance sheet.
 
+### 5.1a Island tools (owner 4 Nov 2026; module `islandtools`, replaces the island tool set of 3 Nov)
+- **Two tools only:** the **Harvester Hoe** and the **Island Pickaxe**, both **diamond** from the start (no wood →
+  netherite tiers). The island axe and sword are gone (old items are removed from inventories and containers).
+- **Owned by the island:** level, XP, perks and prestige are stored per island and tool. Every member carries a handle
+  (one per tool, bound to the profile); its name and lore come from the island's data. A handle of another island stops
+  working and is removed. Lost handles come back from the tool menu or `/tool`.
+- **Shards:** **Farming Shards** (hoe: island crops and /farm; the old `shards` balance) and **Mining Shards** (pickaxe:
+  generator ores and /mine). Personal per profile. Hoe perks cost Farming Shards, pickaxe perks Mining Shards. Base
+  chance 8% per ripe crop / 6% per relevant ore (`islandtools.yml shards.*`).
+- **Levels and prestige (sawtooth):** XP per relevant natural block; level L needs `12 × L^1.6 × (1 + 0.35 × prestige)`;
+  max level **50**. At 50 the island owner or a co-owner can **prestige** (confirm screen): level and every perk reset,
+  that shard type goes to 0 for every member, and the island keeps **+5% XP and shards and 5% cheaper perks** per
+  prestige (★ in the name, ★6 after five). Title and sound for every online member.
+- **Perks unlock at tool levels** (1, 5, 10, 15, 25, 30, 35, 45): Shard Finder (1,000 levels, +0.1% each), Efficiency I-V,
+  Extra Drops (500, +0.05%), Fortune I-III, Haste I-II, Wisdom (tool XP), Growth (hoe, island crop growth, 250),
+  Smelter (pickaxe), Storage (250, +200 items), Auto-Sell, Sell Bonus (500), Lucky (Shard Pouch finds, 500), **Sweep**
+  (hoe) / **Vein** (pickaxe) from prestige 1 (prestige bands 2/3/4/6 blocks at 10/15/20/30%, 100 levels inside a band).
+  Long tracks cost `base + step × L^1.35` nice-rounded; enchant-like perks have fixed prices. x1 / x10 / x100 clicks.
+- **Built in:** Magnet (drops into the bag), Speed I while holding the hoe on islands and at /farm (Speed II from prestige
+  2). Loot goes to the bag first, then the tool's storage; at /farm and /mine it never lands on the ground.
+- **Island boosts follow the island:** the island upgrades Harvest Yield (hoe) and Mine Fortune (pickaxe) add their
+  percent to every drop of the tool, from the island the player is a member of; they are much stronger than the perks.
+- **/mine** tiers: the whole mine is one ore per tier for each player (coal → copper → iron → gold → redstone → lapis →
+  diamond → emerald, `essentials.yml grind.mine-unlocks`); the money bonus comes now and then and grows with the tier.
+
 ### 5.2 The Depths (one big shared area)
 - A single large area containing the **mine, the forest and the combat/dungeon zones**, each split into **tiers**.
 - **`/dungeon`** opens a GUI to teleport to any unlocked tier in any aspect (mining, foraging, combat), including going back to earlier tiers.

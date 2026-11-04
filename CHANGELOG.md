@@ -1,6 +1,16 @@
 # Changelog
 
 ## [Unreleased]
+### 4 Nov: island tools rework
+- **Two island tools:** the Harvester Hoe and the Island Pickaxe, both diamond from the start. The island axe and sword are removed (old items disappear from bags and chests, audit-logged); the wood → netherite tiers are gone.
+- **The tools belong to the island:** level, XP, perks and prestige are shared by every member; each member carries one handle (get a lost one in the tool menu or with `/tool`). A tool of another island stops working and is removed.
+- **Farming Shards and Mining Shards:** the hoe earns Farming Shards (your old shards), the pickaxe Mining Shards; each tool's perks cost its own shards. More shards per block (8% / 6%). Scoreboard shows both; `/eco ... mining_shards`.
+- **Levels 1-50 and prestige:** XP per ripe crop / ore, a little slower every level. At 50 the owner or a co-owner prestiges: the tool starts over, everyone's shards of that type go to 0, and the island keeps +5% XP and shards and 5% cheaper perks per prestige (★ in the name).
+- **Perks unlock at tool levels:** Shard Finder, Efficiency, Extra Drops, Fortune, Haste, Wisdom, Growth, Storage, Smelter, Auto-Sell, Sell Bonus, Lucky (Shard Pouches), and Sweep (hoe) / Vein (pickaxe) from prestige 1. Long tracks with tiny steps and higher prices; buy x1 / x10 (shift) / x100 (right-click). Every refused purchase says why (price and balance, unlock level, max, not the owner ...). Bought levels carry over proportionally.
+- **Built in:** Magnet; Speed while holding the hoe (Speed II from prestige 2). Loot goes to the bag, then the tool's storage (the pickaxe has one now); never on the ground at /farm and /mine. The storage is in the tool's menu.
+- **Island boosts:** Harvest Yield and Mine Fortune (island upgrades, now buyable; Mine Fortune is much stronger and moved to Production) boost everything the hoe and pickaxe get, from your current island.
+- **/mine:** tier 1 is all coal; mine enough to turn the whole mine into copper, then iron, gold, redstone, lapis, diamond and emerald. The /farm and /mine money bonus comes now and then and grows with your tier. No more wheat flash when a crop comes back.
+
 ### 4 Nov: island = profile (plan B section A)
 - **A profile is one island membership.** Leaving the island in any way wipes the profile: `/is leave`, a kick, a staff removal, a disband, a staff island delete/reset, replacing your solo island to join another one, `/profiles reset`. Coop never wipes.
 - **Wiped:** money, crystals, shards, personal bank, inventory, armor, offhand, ender chest, XP, tools, skills, quests, collection, milestones, storages, crate keys, boosters, auction listings, the /farm and /mine tier. **Kept:** credits, rank, store purchases, achievements, cosmetics, tags, account playtime.
