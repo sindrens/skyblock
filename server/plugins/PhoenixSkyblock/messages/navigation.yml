@@ -391,6 +391,22 @@ settings:
 help:
   title: "Help"
   all-commands: "Commands"
+  # /help start screen (plan 4 Nov C §1); the goal cards and buttons are in help.yml → goals.
+  goals:
+    title: "What do you want to do?"
+    # The Find my way text while there is no next step.
+    next-none: "Explore the main menu"
+    # Under every goal button: <command> = what it runs (/farm, /is upgrade ...).
+    button: ["<c:muted>Runs <command>"]
+    # Last lines of a card and a button: <action> from help.yml ("go to the farm").
+    action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to <action>"]
+  all-topics:
+    crumb: "All topics"
+    name: "<area:neutral><bold>All Topics"
+    lore:
+      - "<c:muted>Every guide, by category"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to browse"
   info:
     - "<c:text>Pick a category to read the guides."
     - "<c:text>Tip: /help <topic> opens one directly."

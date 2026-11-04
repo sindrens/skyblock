@@ -33,6 +33,8 @@ public final class MenusModule implements SkyblockModule {
     static final String ID = "menus";
     static final String PERM_MENU = "skyblock.menu";
     static final String PERM_HELP = "skyblock.help";
+    /** {@code /help topics}: the guide categories (All topics) instead of the goals. */
+    static final String ALL_TOPICS = "topics";
     static final String PERM_SETTINGS = "skyblock.settings";
     static final String PERM_STAFF = "skyblock.staff.menu";
     /** Shared sound groups (common Sounds): owned here because every module's menus and events use them. */
@@ -314,10 +316,11 @@ public final class MenusModule implements SkyblockModule {
         Arg<String> topic = Args.word("topic", Suggest.bySender(sender -> {
             List<String> ids = new ArrayList<>(nav.help.ids());
             ids.add("commands");
+            ids.add(ALL_TOPICS);
             return ids;
         }));
         commands.register(CommandSpec.command("help")
-                .description("Help menu: guides for every feature and all your commands").category("Info")
+                .description("Help: what do you want to do? (one click does it), all guides and your commands").category("Info")
                 .permission(PERM_HELP).aliases("guide")
                 .optional(topic).example("help settings")
                 .executes(ctx -> help(ctx.sender(), ctx.has(topic) ? ctx.get(topic) : null)));
@@ -345,6 +348,14 @@ public final class MenusModule implements SkyblockModule {
             return;
         }
         String key = id.toLowerCase(Locale.ROOT);
+        if (key.equals(ALL_TOPICS) && nav.help.topic(key).isEmpty() && nav.help.category(key).isEmpty()) {
+            if (player != null) {
+                core.menus().open(player, new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
+            } else {
+                HelpChat.categories(nav, sender);
+            }
+            return;
+        }
         if (key.equals("commands")) {
             if (player != null) {
                 openUnderHelp(player, new HelpCommandsMenu(nav, List.of(), nav.text(player, "help.all-commands")));
@@ -379,17 +390,17 @@ public final class MenusModule implements SkyblockModule {
         }
         nav.msg.send(sender, "help.unknown", Msg.p("topic", id));
         if (player != null) {
-            core.menus().open(player, new HelpMenu(nav));
+            core.menus().open(player, new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
         }
     }
 
     /**
      * Opens a help screen. From a menu (its "?" button) Back returns to that menu (GUI-1); typed in chat, Back leads to
-     * the help categories.
+     * All topics, and from there to "What do you want to do?".
      */
     private void openUnderHelp(Player player, Menu menu) {
         if (core.menus().openMenu(player) == null) {
-            menu.parent(new HelpMenu(nav));
+            menu.parent(new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
         }
         core.menus().open(player, menu);
     }

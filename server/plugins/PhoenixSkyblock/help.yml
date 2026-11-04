@@ -7,6 +7,80 @@
 # Command lists are generated automatically from the commands each player may use; never list commands by hand.
 # Reload: /skyblock reload menus
 
+# /help start screen "What do you want to do?" (plan 4 Nov C §1): one card per goal (at most 6, in file order) with
+# 1-2 buttons next to it that DO the thing. A button whose command doesn't exist on this server is left out; a click on
+# the card does what its first button does. "All topics" (the categories below) is on the bottom row.
+# Goal: icon (vanilla item), name (bold, area colour), subtitle (muted), lore (at most 3 lines, mockup format:
+#       "| Header" then "| " rows; <next> = the shared next step), buttons, show (false hides it),
+#       fallback-command (what a next-step button runs while there is no next step).
+# Button: icon, name, action ("» CLICK to <action>"), command (without /; next-step = the shared next step, the same
+#         as Kindle and the scoreboard Next line).
+goals:
+  make-money:
+    icon: gold_ingot
+    name: "<area:money><bold>Make Money"
+    subtitle: "<c:muted>Farm, mine and sell"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Harvest at <c:value>/farm</c:value> or <c:value>/mine"
+      - "<c:bar>| </c:bar><c:text>Sell it all with <c:value>/sell"
+    buttons:
+      - {icon: wheat, name: "<c:action>Take Me There", action: "go to the farm", command: "farm"}
+      - {icon: emerald, name: "<c:action>Open the Shop", action: "open the shop", command: "shop"}
+  upgrade-tools:
+    icon: diamond_pickaxe
+    name: "<area:skills><bold>Upgrade My Tools"
+    subtitle: "<c:muted>Your island hoe and pickaxe"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Hold the tool to upgrade"
+      - "<c:bar>| </c:bar><c:text>Spend shards on its perks"
+    buttons:
+      - {icon: smithing_table, name: "<c:action>Tool Menu", action: "open the tool in your hand", command: "tool"}
+  grow-island:
+    icon: grass_block
+    name: "<area:home><bold>Grow My Island"
+    subtitle: "<c:muted>Level, upgrades and Kindle"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Buy upgrades: <c:value>/is upgrade"
+      - "<c:bar>| </c:bar><c:text>Ask <c:value>Kindle</c:value> what to do next"
+    buttons:
+      - {icon: anvil, name: "<c:action>Island Upgrades", action: "open the upgrades", command: "is upgrade"}
+      - {icon: blaze_powder, name: "<c:action>Talk to Kindle", action: "open Kindle", command: "is guide"}
+  play-with-friends:
+    icon: cake
+    name: "<area:people><bold>Play With Friends"
+    subtitle: "<c:muted>Team up or pay a visit"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Invite: <c:value>/is invite (name)"
+      - "<c:bar>| </c:bar><c:text>Visit any island: <c:value>/is visit"
+    buttons:
+      - {icon: armor_stand, name: "<c:action>Island Members", action: "see your members", command: "is members"}
+      - {icon: ender_pearl, name: "<c:action>Visit Islands", action: "browse islands", command: "is visit"}
+  find-my-way:
+    icon: compass
+    name: "<area:move><bold>Find My Way"
+    subtitle: "<c:muted>Your next step"
+    fallback-command: "menu"
+    lore:
+      - "<bold><c:header>| Next</c:header></bold>"
+      - "<c:bar>| </c:bar><c:value><next>"
+    buttons:
+      - {icon: filled_map, name: "<c:action>Do It Now", action: "do your next step", command: "next-step"}
+  rules-support:
+    icon: lectern
+    name: "<area:neutral><bold>Rules & Support"
+    subtitle: "<c:muted>Play fair, get help"
+    lore:
+      - "<bold><c:header>| Help</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Ask staff on <c:value>/discord"
+      - "<c:bar>| </c:bar><c:text>Report: <c:value>/report (name)"
+    buttons:
+      - {icon: book, name: "<c:action>Rules", action: "read the rules", command: "rules"}
+      - {icon: bell, name: "<c:action>Discord", action: "get the Discord link", command: "discord"}
+
 categories:
   getting-started:
     icon: nether_star

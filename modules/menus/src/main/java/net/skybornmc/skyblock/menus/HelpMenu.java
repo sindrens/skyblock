@@ -1,16 +1,27 @@
 package net.skybornmc.skyblock.menus;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.nextstep.NextStep;
+import net.skybornmc.skyblock.common.nextstep.NextStepService;
+import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-/** {@code /help}: the category screen. Categories of features that aren't built yet are shown locked. */
+/**
+ * {@code /help}: "What do you want to do?" (plan 4 Nov C §1). One card per goal of {@code help.yml → goals} (Make
+ * money, Upgrade my tools, Grow my island, Play with friends, Find my way, Rules & support) with 1-2 buttons next to it
+ * that DO the thing (teleport with the usual warm-up, open the shop or a menu, run the shared next step). A button
+ * whose command does not exist on this server is left out; a click on the card does what its first button does.
+ * "All topics" (46) opens the old guide categories ({@link HelpTopicsMenu}). Layout: {@link HelpGoalLayout}.
+ */
 final class HelpMenu extends Menu {
-
-    /** Inner slots used for categories without an explicit slot in help.yml, in this order. */
 
     private final Nav nav;
 
@@ -18,34 +29,14 @@ final class HelpMenu extends Menu {
         this.nav = nav;
     }
 
-    /**
-     * Owner 3 Nov 2026 ("compact, symmetrical"): only open categories, in help.yml order, centred in even rows
-     * ({@link net.skybornmc.skyblock.common.menu.Centered#split}: 10 = 5 + 5), and only as many rows as they need.
-     * The {@code slot} of a category is no longer used. Coming-soon categories are hidden.
-     */
-    private List<HelpBook.Category> shown() {
-        List<HelpBook.Category> out = new ArrayList<>();
-        for (HelpBook.Category c : nav.help.categories()) {
-            if (c.status() != HelpBook.Status.COMING_SOON) {
-                out.add(c);
-            }
-        }
-        return out.size() > 28 ? out.subList(0, 28) : out;
-    }
-
-    /** Pure: rows per line of tiles for {@code n} categories (at most 4 lines of 7). */
-    static int[] lines(int n) {
-        return net.skybornmc.skyblock.common.menu.Centered.split(Math.min(28, Math.max(0, n)));
-    }
-
     @Override
     public int rows() {
-        return Math.max(3, lines(shown().size()).length + 2);
+        return HelpGoalLayout.ROWS;
     }
 
     @Override
     public Component title() {
-        return service.titleKeys(viewer, Nav.TEXTS, "help.title");
+        return service.titleKeys(viewer, Nav.TEXTS, "help.goals.title");
     }
 
     @Override
@@ -53,52 +44,84 @@ final class HelpMenu extends Menu {
         return Nav.TEXTS;
     }
 
-    @Override
-    public String infoKey() {
-        return "help.info";
-    }
-
-    @Override
-    public String helpTopic() {
-        return "help";
+    /** A goal button that works here: its command exists (or it is the next step). */
+    private record Action(HelpBook.GoalButton button, String command) {
     }
 
     @Override
     protected void build() {
         navBar();
-        List<HelpBook.Category> list = shown();
-        int[] slots = net.skybornmc.skyblock.common.menu.Centered.grid(lines(list.size()));
-        for (int i = 0; i < list.size() && i < slots.length; i++) {
-            place(slots[i], list.get(i));
-        }
-    }
-
-    private void place(int slot, HelpBook.Category category) {
-        Component name = nav.parse(viewer, category.name());
-        List<Component> description = nav.parse(viewer, category.lore());
-        if (category.status() == HelpBook.Status.COMING_SOON) {
-            set(slot, nav.comingSoon(viewer, category.icon(), name, description));
-            return;
-        }
-        List<Component> lore = new ArrayList<>(description);
-        if (!category.allCommands()) {
-            lore.add(Component.empty());
-            lore.addAll(nav.lines(viewer, "help.category-topics", net.skybornmc.skyblock.common.text.Msg.number("count", category.topics().size())));
-        }
-        lore.addAll(nav.lines(viewer, "help.open-action"));
-        set(slot, nav.item(category.icon(), name, lore), click -> {
-            if (category.allCommands()) {
-                openChild(new HelpCommandsMenu(nav, List.of(), name));
-            } else if (category.topics().size() == 1) {
-                nav.help.topic(category.topics().getFirst()).ifPresent(t -> openChild(new HelpTopicMenu(nav, t)));
+        List<HelpBook.Goal> goals = nav.help.goals();
+        int count = Math.min(HelpGoalLayout.MAX, goals.size());
+        Optional<NextStep> step = NextStepService.of(nav.core.services()).current(viewer);
+        String stepText = step.map(NextStep::text).orElseGet(() -> plain("help.goals.next-none"));
+        for (int i = 0; i < count; i++) {
+            HelpBook.Goal goal = goals.get(i);
+            List<Action> actions = actions(goal, step);
+            int card = HelpGoalLayout.card(i, count);
+            if (actions.isEmpty()) {
+                set(card, card(goal, actions, stepText));
             } else {
-                openChild(new HelpCategoryMenu(nav, category));
+                Action first = actions.getFirst();
+                set(card, card(goal, actions, stepText), click -> run(click.player(), first));
             }
-        });
+            for (int b = 0; b < actions.size(); b++) {
+                Action a = actions.get(b);
+                set(HelpGoalLayout.button(card, b), button(a, stepText), click -> run(click.player(), a));
+            }
+        }
+        if (goals.isEmpty()) {
+            setEmpty(Nav.TEXTS, "help.empty");
+        }
+        set(HelpGoalLayout.SLOT_ALL_TOPICS, nav.item(Material.BOOKSHELF, nav.text(viewer, "help.all-topics.name"),
+                nav.lines(viewer, "help.all-topics.lore")), click -> openChild(new HelpTopicsMenu(nav)));
     }
 
-    /** Fallback item for empty states etc. */
-    static Material icon() {
-        return Material.KNOWLEDGE_BOOK;
+    /** The buttons of a goal that work on this server, with the command each one runs now. */
+    private List<Action> actions(HelpBook.Goal goal, Optional<NextStep> step) {
+        List<Action> out = new ArrayList<>();
+        for (HelpBook.GoalButton button : goal.buttons()) {
+            String command = button.nextStep()
+                    ? step.filter(NextStep::hasAction).map(NextStep::command).orElse(goal.fallback())
+                    : button.command();
+            if (command != null && !command.isBlank() && HubLayout.commandExists(command)) {
+                out.add(new Action(button, command.strip()));
+            }
+        }
+        return out;
+    }
+
+    /** The card: bold name, muted subtitle, up to 3 lines, then {@code » CLICK to <first action>}. */
+    private ItemStack card(HelpBook.Goal goal, List<Action> actions, String stepText) {
+        TagResolver next = Msg.p("next", stepText);
+        List<Component> lore = new ArrayList<>();
+        if (!goal.subtitle().isBlank()) {
+            lore.add(nav.parse(viewer, goal.subtitle(), next));
+        }
+        if (!goal.lore().isEmpty()) {
+            lore.add(Component.empty());
+            lore.addAll(nav.parse(viewer, goal.lore(), next));
+        }
+        if (!actions.isEmpty()) {
+            lore.addAll(nav.lines(viewer, "help.goals.action", Msg.p("action", actions.getFirst().button().action())));
+        }
+        return nav.item(Nav.material(goal.icon(), Material.BOOK), nav.parse(viewer, goal.name()), lore);
+    }
+
+    private ItemStack button(Action a, String stepText) {
+        List<Component> lore = new ArrayList<>(nav.lines(viewer, "help.goals.button", Msg.p("command", "/" + a.command()),
+                Msg.p("next", stepText)));
+        lore.addAll(nav.lines(viewer, "help.goals.action", Msg.p("action", a.button().action())));
+        return nav.item(Nav.material(a.button().icon(), Material.COMPASS), nav.parse(viewer, a.button().name()), lore);
+    }
+
+    /** Runs the command; a menu it opens gets Back to /help, a teleport (with its warm-up) closes this menu. */
+    private void run(Player player, Action a) {
+        service.navigate(player, this, () -> player.performCommand(a.command()));
+    }
+
+    private String plain(String key) {
+        String raw = nav.core.messages().raw(Nav.TEXTS, key);
+        return raw == null ? "" : raw;
     }
 }
