@@ -14,21 +14,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** ECON-TABLES D (Part B): what the bundled shop sells, how auto prices and the buy multiplier work. */
 class ShopListRulesTest {
 
+    /** Feedback 5 Nov 2026: 19 of the 53 removed items (workstations, storage, redstone parts) are sold again. */
     static final List<String> REMOVED = List.of(
-            "crafting_table", "furnace", "smoker", "chest", "barrel", "composter", "grindstone", "ladder", "baked_potato",
+            "baked_potato",
             "oak_planks", "spruce_planks", "birch_planks", "jungle_planks", "acacia_planks", "dark_oak_planks", "mangrove_planks",
             "cherry_planks", "pale_oak_planks", "crimson_planks", "warped_planks", "bamboo_planks",
             "coarse_dirt", "sandstone", "stone_bricks", "mossy_stone_bricks", "mossy_cobblestone", "andesite", "polished_andesite",
             "polished_diorite", "polished_granite", "polished_deepslate", "deepslate_bricks",
             "polished_blackstone", "polished_blackstone_bricks", "end_stone_bricks", "quartz_bricks", "quartz_pillar", "packed_ice",
-            "blue_ice", "glass_pane", "painting", "armor_stand", "white_banner", "chiseled_bookshelf", "moss_carpet",
-            "redstone_torch", "repeater", "dropper", "lever", "stone_button", "oak_button", "stone_pressure_plate", "note_block");
+            "blue_ice", "white_banner", "chiseled_bookshelf", "moss_carpet");
 
     static final Set<String> OWNER_PRICES = Set.of("hopper", "bone_meal", "flint_and_steel");
 
     @Test
     void the53RemovedItemsAreBlockWorthOnly() throws Exception {
-        assertEquals(53, REMOVED.size());
+        assertEquals(34, REMOVED.size());
         ShopCatalog c = ShopCatalogTest.catalog();
         List<String> wrong = new ArrayList<>();
         for (String id : REMOVED) {

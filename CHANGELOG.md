@@ -8,6 +8,7 @@
 - Achievements: hovering the chat line shows what it was for and the goal of the tier.
 - Sell all (`/sell`, the shop's Sell all) shows the total big on screen (`economy.yml sell.all-title`).
 - Black Market: prices are in crystals now (shards are only for the island tools).
+- Shop: 19 items are back: crafting table, furnace, smoker, grindstone, chest, barrel, composter, ladder, glass pane, painting, armor stand, redstone torch, repeater, dropper, lever, buttons, stone pressure plate, note block.
 
 ### 4 Nov: tutorial
 - **`/tutorial` (`/quest`), the guided tour:** seven chapters (Welcome to Phoenix, Your Island, The Farm, The Mine, Money Matters, Growing Together, What's Next). Steps finish from real play: talking to NPCs, menus, harvesting at /farm, mining at /mine, selling, the bank, upgrades, invites, /daily. Rewards per chapter, once per account (a profile wipe never pays them again). `/tutorial skip` ends it without rewards.

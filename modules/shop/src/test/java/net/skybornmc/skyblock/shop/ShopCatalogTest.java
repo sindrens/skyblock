@@ -121,8 +121,8 @@ class ShopCatalogTest {
         ShopCatalog c = catalog();
         // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
         // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
-        assertEquals(274, c.size());
-        int[] expected = {57, 54, 20, 19, 52, 15, 17, 20, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
+        assertEquals(293, c.size()); // + 19 workstations, storage and redstone parts (feedback 5 Nov 2026)
+        int[] expected = {57, 54, 20, 19, 52, 15, 28, 28, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }

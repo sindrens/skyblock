@@ -11,7 +11,7 @@ Status: ⬜ open · 🔧 in progress · ✅ done. Worked in this order (quick fi
 - ✅ Q6 Sell all: show the result big on screen (title).
 - ✅ Q7 (already built: QOL3 auto-refill, on by default, /settings → Gameplay → Auto refill; items with plugin data are skipped) Hotbar refill: when a placed stack runs out, the same block moves from the inventory into that slot.
 - ✅ Q8 Black Market: priced in another currency (shards are only for tools) → crystals.
-- ⬜ Q9 Shop: many items missing (repeater etc.) → go through every craftable/useful block and item.
+- ✅ Q9 Shop: many items missing (repeater etc.) → go through every craftable/useful block and item.
 
 ## Mobs and spawners
 - ⬜ M1 Mobs killed by fire (fire aspect, lava, flint and steel) drop cooked food.

@@ -333,8 +333,21 @@ categories:
     groups:
       basics: [torch, scaffolding, bread, white_bed]
       tools: [flint_and_steel, bucket, shears, water_bucket, fishing_rod, lava_bucket]
-      workstations: [stonecutter, blast_furnace, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
+      workstations: [crafting_table, furnace, smoker, blast_furnace, stonecutter, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
+      storage: [chest, barrel, composter, ladder, glass_pane, painting, armor_stand]
     items:
+      # Feedback 5 Nov 2026 ("a lot of items missing, such as repeater"): workstations, storage and redstone parts are back.
+      crafting_table: 10
+      furnace: 15
+      smoker: 30
+      grindstone: 40
+      chest: 15
+      barrel: 15
+      composter: 10
+      ladder: 3
+      glass_pane: 3
+      painting: 20
+      armor_stand: 40
       blast_furnace: 40
       stonecutter: 30
       anvil: 400
@@ -356,12 +369,20 @@ categories:
   redstone:
     icon: redstone
     groups:
-      power: [daylight_detector, comparator, observer, redstone]
-      machines: [dispenser, piston, redstone_lamp, sticky_piston, crafter, hopper]
-      inputs: [tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, light_weighted_pressure_plate]
+      power: [redstone, redstone_torch, repeater, comparator, observer, daylight_detector]
+      machines: [dispenser, dropper, piston, sticky_piston, redstone_lamp, crafter, hopper]
+      inputs: [lever, stone_button, oak_button, stone_pressure_plate, tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, light_weighted_pressure_plate, note_block]
       rails: [rail, detector_rail, activator_rail, powered_rail, minecart]
     items:
       redstone: 260
+      redstone_torch: 20
+      repeater: 60
+      dropper: 30
+      lever: 5
+      stone_button: 3
+      oak_button: 3
+      stone_pressure_plate: 5
+      note_block: 30
       comparator: 60
       piston: 50
       sticky_piston: 70
@@ -511,14 +532,6 @@ worth-only:
   lectern: 50
   ender_chest: 1500
   # Shop v4 (ECON-SELL-SHOP-AH B1, ECON-TABLES D1): crafted from shop items, so players craft them; still sellable.
-  crafting_table: 5
-  furnace: 10
-  smoker: 20
-  chest: 10
-  barrel: 10
-  composter: 10
-  grindstone: 30
-  ladder: 3
   baked_potato: 15
   oak_planks: 2
   spruce_planks: 2
@@ -550,17 +563,6 @@ worth-only:
   quartz_pillar: 22
   packed_ice: 12
   blue_ice: 30
-  glass_pane: 2
-  painting: 20
-  armor_stand: 40
   white_banner: 25
   chiseled_bookshelf: 70
   moss_carpet: 4
-  redstone_torch: 30
-  repeater: 40
-  dropper: 30
-  lever: 5
-  stone_button: 3
-  oak_button: 3
-  stone_pressure_plate: 5
-  note_block: 20
