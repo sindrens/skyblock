@@ -78,8 +78,14 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "growth.bonemeal-stages", desc = "Stages one bone meal adds to an island crop (1 to this, random).", min = 1, max = 7)
     public int growthBonemealStages = 3;
 
-    @Setting(path = "growth.budget", desc = "Most crops grown per half second (the rest wait for the next run; keeps the tick time flat).", min = 10, max = 10000)
-    public int growthBudget = 600;
+    @Setting(path = "growth.budget", desc = "Most crops grown per half second on all islands together (the rest wait for the next "
+            + "run; keeps the tick time flat). Feedback 4 Nov 2026: 2000 (600 was exactly one 60x60 field, so two big fields "
+            + "grew at half speed).", min = 10, max = 10000)
+    public int growthBudget = 2000;
+
+    @Setting(path = "growth.max-ms-per-run", desc = "Most milliseconds one half-second growth run may take (the rest waits for the "
+            + "next run). Feedback 4 Nov 2026: 4 (was a fixed 2, too little for big fields).", min = 1, max = 20)
+    public int growthMaxMillis = 4;
 
     @Setting(path = "growth.sound", desc = "A soft sound when a crop near you grows (at most every 2 s per player).")
     public boolean growthSound = true;
@@ -213,7 +219,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     /** v2 (owner 3 Nov 2026): shards instead of crystals, Shard Finder on every tool, cheaper first tier. */
@@ -225,6 +231,8 @@ public final class IslandToolsConfig extends ModuleConfig {
                 // v3 (owner 3 Nov 2026 20:31, "island tools everywhere, including the Depths")
                 4, java.util.Map.of("shards.chance-hoe", ValueChange.of(1.0, 3.0), "growth.label", ValueChange.of(true, false)),
                 5, java.util.Map.of("upgrades", ValueChange.of(UPGRADES_V2, d.upgrades)),
+                // v6 (feedback 4 Nov 2026, D18a): big fields grew slower than configured
+                6, java.util.Map.of("growth.budget", ValueChange.of(600, d.growthBudget)),
                 3, java.util.Map.of("only-on-island", ValueChange.of(true, false),
                         "own-inventory-worlds", ValueChange.of(List.of("depths"), List.of()),
                         "put-away-worlds", ValueChange.of(List.of("depths"), List.of())));

@@ -27,7 +27,9 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -102,10 +104,23 @@ final class IslandGrowth implements Listener {
         return ToolRules.regrowSeconds(upgrade, 0, c.regrowBase, c.regrowTop, c.regrowFullAt, c.regrowFloor);
     }
 
+    /**
+     * Pure: the age at which a clock crop is done. The torchflower crop's age only goes to 1 (its last step turns it into
+     * a torchflower, vanilla), so it has one step more than its age property.
+     */
+    static int doneAge(Material crop, int maximumAge) {
+        return crop == Material.TORCHFLOWER_CROP ? maximumAge + 1 : maximumAge;
+    }
+
+    /** The upper half of a two-block crop (pitcher) grows with its lower half; it is never on the clock itself. */
+    private static boolean upperHalf(org.bukkit.block.data.BlockData data) {
+        return data instanceof org.bukkit.block.data.Bisected bi && bi.getHalf() == org.bukkit.block.data.Bisected.Half.TOP;
+    }
+
     /** Puts a crop block on the clock (or keeps its place when it is already on it). */
     void track(Block b) {
         if (!m.config().growthEnabled || !CROPS.contains(b.getType()) || !(b.getBlockData() instanceof Ageable a)
-                || a.getAge() >= a.getMaximumAge()) {
+                || a.getAge() >= doneAge(b.getType(), a.getMaximumAge()) || upperHalf(a)) {
             return;
         }
         String key = Due.key(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ());
@@ -156,19 +171,30 @@ final class IslandGrowth implements Listener {
     void tick() {
         long now = System.currentTimeMillis();
         int budget = m.config().growthBudget;
-        long deadline = System.nanoTime() + 2_000_000L; // at most 2 ms per run; the rest waits half a second
+        // At most growth.max-ms-per-run per run (D18a: was a fixed 2 ms); the rest waits half a second.
+        long deadline = System.nanoTime() + Math.max(1, m.config().growthMaxMillis) * 1_000_000L;
         pausedCache.clear();
+        nearCache.clear();
         while (!queue.isEmpty() && queue.peek().at() <= now && budget-- > 0 && System.nanoTime() < deadline) {
             Due d = queue.poll();
+            // Feedback 4 Nov 2026 (D18a): an entry that was replaced (bone meal re-tracks the crop) is stale; before, it
+            // removed the new entry's key and both kept growing the crop (double speed, and the label lost its time).
+            if (byKey.get(d.key()) != d) {
+                continue;
+            }
             byKey.remove(d.key());
             World w = Bukkit.getWorld(d.world());
             if (w == null || !w.isChunkLoaded(d.x() >> 4, d.z() >> 4)) {
-                continue;
+                continue; // the chunk is scanned again when it loads (scanChunk), so the crop comes back on the clock
             }
             Block b = w.getBlockAt(d.x(), d.y(), d.z());
-            if (b.getType() != d.crop() || !(b.getBlockData() instanceof Ageable a) || a.getAge() >= a.getMaximumAge()) {
+            if (b.getType() != d.crop() || !(b.getBlockData() instanceof Ageable a)
+                    || a.getAge() >= doneAge(d.crop(), a.getMaximumAge())) {
                 continue;
             }
+            // D18a: the next stage is due one step after THIS one was due (not after it ran), so a run that is late (the
+            // budget or the 2 ms cap was reached on a big field) doesn't make the whole field slower than configured.
+            long nextAt = nextDue(d.at(), d.stepMillis(), now);
             if (paused(b)) {
                 // An asleep island (no island fuel, production module) doesn't grow; try again a step later.
                 Due later = new Due(d.world(), d.x(), d.y(), d.z(), d.crop(), now + d.stepMillis(), d.stepMillis());
@@ -176,21 +202,159 @@ final class IslandGrowth implements Listener {
                 queue.add(later);
                 continue;
             }
-            a.setAge(a.getAge() + 1);
-            b.setBlockData(a, false);
-            boolean ripe = a.getAge() >= a.getMaximumAge();
+            boolean ripe = grow(b, a);
             effects(b, ripe);
             if (!ripe) {
-                Due next = new Due(d.world(), d.x(), d.y(), d.z(), d.crop(), now + d.stepMillis(), d.stepMillis());
+                Due next = new Due(d.world(), d.x(), d.y(), d.z(), d.crop(), nextAt, d.stepMillis());
                 byKey.put(next.key(), next);
                 queue.add(next);
             }
         }
+        scanTick();
         labels();
+    }
+
+    /** Pure: when the next stage is due after a stage that was due at {@code dueAt} ran at {@code now} (never in the past). */
+    static long nextDue(long dueAt, long stepMillis, long now) {
+        return Math.max(now, dueAt + stepMillis);
+    }
+
+    /** One stage; true when the crop is done now. */
+    private static boolean grow(Block b, Ageable a) {
+        Material crop = b.getType();
+        if (crop == Material.TORCHFLOWER_CROP && a.getAge() >= a.getMaximumAge()) {
+            b.setType(Material.TORCHFLOWER, false); // D18a: vanilla's last torchflower step (it stayed a crop forever)
+            return true;
+        }
+        a.setAge(a.getAge() + 1);
+        b.setBlockData(a, false);
+        if (crop == Material.PITCHER_CROP && a instanceof org.bukkit.block.data.Bisected && a.getAge() >= PITCHER_DOUBLE_AGE) {
+            // D18a: from stage 4 the pitcher crop is two blocks tall (vanilla places the top half; setting only the age
+            // left a half plant without its top).
+            Block up = b.getRelative(0, 1, 0);
+            if (up.getType().isAir() || up.getType() == Material.PITCHER_CROP) {
+                org.bukkit.block.data.BlockData top = Material.PITCHER_CROP.createBlockData();
+                if (top instanceof org.bukkit.block.data.Bisected half) {
+                    half.setHalf(org.bukkit.block.data.Bisected.Half.TOP);
+                }
+                if (top instanceof Ageable topAge) {
+                    topAge.setAge(Math.min(topAge.getMaximumAge(), a.getAge()));
+                }
+                up.setBlockData(top, false);
+            }
+        }
+        return a.getAge() >= doneAge(crop, a.getMaximumAge());
+    }
+
+    /** Vanilla: a pitcher crop of this age (or more) has its top half. */
+    static final int PITCHER_DOUBLE_AGE = 3;
+
+    // ------------------------------------------------------------------ chunk scans (D18a)
+
+    /** A chunk whose crops are put on the clock. */
+    private record ChunkRef(UUID world, int x, int z) {
+    }
+
+    /** Chunks waiting for a scan (loaded in the island world), oldest first. */
+    private final java.util.LinkedHashSet<ChunkRef> scans = new java.util.LinkedHashSet<>();
+    private boolean scannedLoaded;
+
+    /**
+     * Pure: does a clock crop of {@code type} at {@code age} (age property max {@code maximumAge}) still have stages to grow?
+     * The upper half of a pitcher crop is never on the clock.
+     */
+    static boolean needsClock(Material type, int age, int maximumAge, boolean upperHalf) {
+        return CROPS.contains(type) && !upperHalf && age < doneAge(type, maximumAge);
+    }
+
+    /**
+     * Feedback 4 Nov 2026 (D18a, "crops not growing as intended"): before, a crop only came back on the clock through a
+     * vanilla random tick (BlockGrowEvent), which in a big field takes many minutes per crop, so after every restart and
+     * every time an island's chunks unloaded (everyone left) whole fields stayed green. Now every island chunk that
+     * loads is scanned once (a chunk copy, read off the main thread) and its unripe crops go on the clock at once.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkLoad(org.bukkit.event.world.ChunkLoadEvent event) {
+        if (m.config().growthEnabled && islandWorld(event.getWorld())) {
+            scans.add(new ChunkRef(event.getWorld().getUID(), event.getChunk().getX(), event.getChunk().getZ()));
+        }
+    }
+
+    /** From the tick: copies a few queued chunks (at most 1 ms) and scans the copies off the main thread. */
+    private void scanTick() {
+        if (!m.config().growthEnabled) {
+            scans.clear();
+            return;
+        }
+        if (!scannedLoaded) { // first run after enable: what is loaded already (a reload or the start)
+            scannedLoaded = true;
+            for (World w : Bukkit.getWorlds()) {
+                if (islandWorld(w)) {
+                    for (org.bukkit.Chunk c : w.getLoadedChunks()) {
+                        scans.add(new ChunkRef(w.getUID(), c.getX(), c.getZ()));
+                    }
+                }
+            }
+        }
+        long deadline = System.nanoTime() + 1_000_000L;
+        var it = scans.iterator();
+        while (it.hasNext() && System.nanoTime() < deadline) {
+            ChunkRef ref = it.next();
+            it.remove();
+            World w = Bukkit.getWorld(ref.world());
+            if (w == null || !w.isChunkLoaded(ref.x(), ref.z())) {
+                continue; // unloaded again: scanned when it loads next time
+            }
+            org.bukkit.ChunkSnapshot snapshot = w.getChunkAt(ref.x(), ref.z()).getChunkSnapshot(false, false, false);
+            int minY = w.getMinHeight();
+            int maxY = w.getMaxHeight();
+            m.core().scheduler().async(() -> {
+                List<int[]> found = scan(snapshot, minY, maxY);
+                if (!found.isEmpty()) {
+                    m.core().scheduler().main("islandtools:growth-scan", () -> {
+                        if (!w.isChunkLoaded(ref.x(), ref.z())) {
+                            return;
+                        }
+                        for (int[] pos : found) {
+                            track(w.getBlockAt((ref.x() << 4) + pos[0], pos[1], (ref.z() << 4) + pos[2]));
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    /** Off the main thread: chunk-relative x, world y, z of every crop in the copy that still has stages to grow. */
+    static List<int[]> scan(org.bukkit.ChunkSnapshot snapshot, int minY, int maxY) {
+        List<int[]> out = new ArrayList<>();
+        int sections = (maxY - minY) >> 4;
+        for (int s = 0; s < sections; s++) {
+            if (snapshot.isSectionEmpty(s)) {
+                continue;
+            }
+            int baseY = minY + (s << 4);
+            for (int y = baseY; y < baseY + 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        Material type = snapshot.getBlockType(x, y, z);
+                        if (!CROPS.contains(type)) {
+                            continue;
+                        }
+                        org.bukkit.block.data.BlockData data = snapshot.getBlockData(x, y, z);
+                        if (data instanceof Ageable a && needsClock(type, a.getAge(), a.getMaximumAge(), upperHalf(data))) {
+                            out.add(new int[]{x, y, z});
+                        }
+                    }
+                }
+            }
+        }
+        return out;
     }
 
     /** Chunk → its island paused, for one run (one island lookup per chunk instead of per crop). */
     private final java.util.Map<Long, Boolean> pausedCache = new java.util.HashMap<>();
+    /** Chunk → players near it, for one run (one entity lookup per chunk instead of per crop; D18a). */
+    private final java.util.Map<Long, java.util.Collection<Player>> nearCache = new java.util.HashMap<>();
 
     private boolean paused(Block b) {
         long area = ((long) (b.getX() >> 4) << 32) ^ ((b.getZ() >> 4) & 0xffffffffL);
@@ -203,7 +367,15 @@ final class IslandGrowth implements Listener {
     private void effects(Block b, boolean ripe) {
         Location at = b.getLocation().add(0.5, 0.5, 0.5);
         double r = m.config().cueFar;
-        for (Player p : at.getNearbyPlayers(r)) { // chunk lookup, not every player in the world
+        // One player lookup per chunk and run (a big field grows hundreds of crops per run), then a distance check.
+        // Key: the 16x16x16 section (a rare collision only costs a puff).
+        long section = (((long) (b.getX() >> 4) << 32) ^ ((b.getZ() >> 4) & 0xffffffffL)) ^ ((b.getY() >> 4) * 0x9E3779B97F4A7C15L);
+        java.util.Collection<Player> near = nearCache.computeIfAbsent(section, k -> new Location(b.getWorld(),
+                ((b.getX() >> 4) << 4) + 8, ((b.getY() >> 4) << 4) + 8, ((b.getZ() >> 4) << 4) + 8).getNearbyPlayers(r + 14));
+        for (Player p : near) {
+            if (!p.getWorld().equals(at.getWorld()) || p.getLocation().distanceSquared(at) > r * r) {
+                continue;
+            }
             p.spawnParticle(Particle.HAPPY_VILLAGER, at, ripe ? 5 : 1, 0.2, 0.2, 0.2, 0);
             if (m.config().growthSound) {
                 long now = System.currentTimeMillis();
@@ -226,6 +398,7 @@ final class IslandGrowth implements Listener {
     void stop() {
         queue.clear();
         byKey.clear();
+        scans.clear();
         labels.values().forEach(TextDisplay::remove);
         labels.clear();
         labelAt.clear();
@@ -358,11 +531,11 @@ final class IslandGrowth implements Listener {
     }
 
     private String labelText(Player p, Block b, Ageable a) {
-        if (a.getAge() >= a.getMaximumAge()) {
+        if (a.getAge() >= doneAge(b.getType(), a.getMaximumAge())) {
             return m.raw("growth.ripe");
         }
         long next = nextIn(b);
-        String stage = (a.getAge() + 1) + "/" + (a.getMaximumAge() + 1);
+        String stage = (a.getAge() + 1) + "/" + (doneAge(b.getType(), a.getMaximumAge()) + 1);
         return next < 0 ? stage : stage + " · " + Math.max(1, (next + 999) / 1000) + "s";
     }
 
