@@ -271,7 +271,10 @@ final class ShopCatalogMigration {
         if (tabs != null) {
             for (String tab : tabs.getKeys(false)) {
                 String liveIcon = liveTabs == null ? null : liveTabs.getString(tab + ".icon");
-                if (liveIcon != null && !liveIcon.equalsIgnoreCase(tabs.getString(tab + ".icon", ""))) {
+                // An owner-chosen icon stays; the previous default icon follows the new bundled one (3 Nov 2026 vanilla icons).
+                String oldIcon = v2Defaults.getString(ShopCatalog.ROOT + "." + tab + ".icon");
+                if (liveIcon != null && !liveIcon.equalsIgnoreCase(tabs.getString(tab + ".icon", ""))
+                        && !liveIcon.equalsIgnoreCase(oldIcon == null ? "" : oldIcon)) {
                     out.set(ShopCatalog.ROOT + "." + tab + ".icon", liveIcon);
                 }
                 boolean spawners = "spawners".equalsIgnoreCase(tabs.getString(tab + ".kind", "items"));

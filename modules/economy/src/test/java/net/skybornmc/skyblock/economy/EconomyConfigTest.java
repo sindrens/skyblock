@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(5, config.version());
+        assertEquals(6, config.version()); // v6: sell.skip-hotbar-default true -> false (0488c3c9)
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());

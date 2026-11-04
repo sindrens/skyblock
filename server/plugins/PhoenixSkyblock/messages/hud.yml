@@ -97,7 +97,6 @@ scoreboard:
       - "if:afk_pool| <c:bar>|</c:bar><ph:afk_line>"   # the AFK line (messages/afk.yml scoreboard.line) has its own leading space
       - "if:board_timer| <c:bar>|</c:bar> <timer>"
       - " <c:bar>|</c:bar> <c:text>Online:</c:text> <c:value><online>"
-      - " <c:bar>|</c:bar> <c:text>Played:</c:text> <c:value><ph:playtime>"
       - " <c:sky_ice>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: the zone is the section name; tier, Mining level and progress ("Next:" takes the progress row during the tutorial).
