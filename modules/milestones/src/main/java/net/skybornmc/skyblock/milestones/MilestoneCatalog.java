@@ -141,11 +141,11 @@ final class MilestoneCatalog {
         Map<String, Object> filter = map(objective.get("filter"));
         Optional<MilestoneModel.WorldFilter> world = MilestoneModel.WorldFilter.of(text(filter.get("world"), "any"));
         if (world.isEmpty()) {
-            problems.accept(where + ": world must be island, depths or any; skipped");
+            problems.accept(where + ": world must be island, grind or any; skipped");
             return Optional.empty();
         }
-        if (menu.get() == MilestoneModel.Menu.ISLAND && world.get() == MilestoneModel.WorldFilter.DEPTHS) {
-            problems.accept(where + ": an island chain can't count Depths actions (island-world actions only); skipped");
+        if (menu.get() == MilestoneModel.Menu.ISLAND && world.get() == MilestoneModel.WorldFilter.GRIND) {
+            problems.accept(where + ": an island chain can't count /farm and /mine actions (island-world actions only); skipped");
             return Optional.empty();
         }
         Set<String> targets = new LinkedHashSet<>();
@@ -226,13 +226,13 @@ final class MilestoneCatalog {
             }
         }
         out.values().removeIf(c -> {
-            if (c.menu() != MilestoneModel.Menu.PERSONAL || c.world() == MilestoneModel.WorldFilter.DEPTHS) {
+            if (c.menu() != MilestoneModel.Menu.PERSONAL || c.world() == MilestoneModel.WorldFilter.GRIND) {
                 return false;
             }
             boolean dup = c.targets().stream().anyMatch(t -> island.contains(key(c.action(), t)));
             if (dup) {
                 problems.accept("milestones.yml (" + c.id() + "): a personal chain counts the same action and target as an "
-                        + "island chain outside the Depths; skipped");
+                        + "island chain outside /farm and /mine; skipped");
             }
             return dup;
         });

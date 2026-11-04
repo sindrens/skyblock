@@ -36,7 +36,8 @@ final class MilestoneModel {
 
     /** Where an action must happen to count (spec §7.6 filter {@code world}). */
     enum WorldFilter {
-        ISLAND, DEPTHS, ANY;
+        /** GRIND: the /farm and /mine world (owner 5 Nov 2026); "depths" in an old file means the same (the Depths are gone). */
+        ISLAND, GRIND, ANY;
 
         static Optional<WorldFilter> of(String raw) {
             if (raw == null || raw.isBlank()) {
@@ -44,7 +45,7 @@ final class MilestoneModel {
             }
             return switch (raw.trim().toLowerCase(Locale.ROOT)) {
                 case "island" -> Optional.of(ISLAND);
-                case "depths" -> Optional.of(DEPTHS);
+                case "grind", "farm", "mine", "depths" -> Optional.of(GRIND);
                 case "any" -> Optional.of(ANY);
                 default -> Optional.empty();
             };

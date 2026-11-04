@@ -32,7 +32,7 @@ class MilestoneCatalogTest {
         List<String> problems = new ArrayList<>();
         MilestoneCatalog c = MilestoneCatalog.parse(bundled(), CAPS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(66, c.size());
+        assertEquals(51, c.size(), "owner 5 Nov 2026: island (crops, ores, logs, mobs) + Farm + Mine chains");
         MilestoneModel.Chain wheat = c.chain("crop_reaper_wheat").orElseThrow();
         assertEquals(MilestoneModel.Menu.ISLAND, wheat.menu());
         assertEquals(5, wheat.maxTier(), "owner F11: 5 tiers per chain");
@@ -43,8 +43,8 @@ class MilestoneCatalogTest {
     @Test
     void theIndexFindsIslandAndPersonalChainsOfOneTarget() throws Exception {
         MilestoneCatalog c = MilestoneCatalog.parse(bundled(), CAPS, p -> { });
-        List<String> ids = c.chainsFor("kill_mob", "zombie").stream().map(MilestoneModel.Chain::id).sorted().toList();
-        assertEquals(List.of("dungeon_slayer_zombie", "island_slayer_zombie"), ids);
+        List<String> ids = c.chainsFor("break_block", "coal_ore").stream().map(MilestoneModel.Chain::id).sorted().toList();
+        assertEquals(List.of("island_miner_coal_ore", "mine_digger_coal_ore"), ids, "the island and the /mine chain");
         assertEquals(List.of(), c.chainsFor("kill_mob", "villager"));
         assertEquals(List.of(), c.chainsFor("fly", "WHEAT"));
     }

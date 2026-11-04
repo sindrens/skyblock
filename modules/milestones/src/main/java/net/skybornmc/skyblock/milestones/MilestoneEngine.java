@@ -85,6 +85,9 @@ final class MilestoneEngine implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Block b = event.getBlock();
+        if (b.getWorld().getName().equalsIgnoreCase(m.config().grindWorld)) {
+            return; // /farm and /mine count through GrindBreakEvent (the player's own crop or ore, not the real block)
+        }
         UUID world = b.getWorld().getUID();
         if (placed.isPlaced(world, b.getX(), b.getY(), b.getZ(), System.currentTimeMillis())) {
             placed.forget(world, b.getX(), b.getY(), b.getZ());
@@ -100,6 +103,13 @@ final class MilestoneEngine implements Listener {
         if (killer != null && !(dead instanceof Player)) {
             count(killer, GameActionEvent.KILL_MOB, dead.getType().name(), dead.getLocation(), 1);
         }
+    }
+
+    /** Owner 5 Nov 2026: /farm harvests and /mine ores count as the player's own crop or ore (Farm and Mine milestones). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGrind(net.skybornmc.skyblock.common.grind.GrindBreakEvent event) {
+        String action = event.farm() ? GameActionEvent.HARVEST_CROP : GameActionEvent.BREAK_BLOCK;
+        count(event.getPlayer(), action, event.block().name(), event.location(), 1);
     }
 
     /** Ripe harvests from the production module (target = the crop block, amount = crops). */
@@ -165,16 +175,16 @@ final class MilestoneEngine implements Listener {
             return;
         }
         UUID profile = profiles.map(ps -> ps.profileKey(p)).orElse(p.getUniqueId());
-        boolean depths = false; // the Depths were removed (owner 3 Nov 2026): DEPTHS chains never count
+        boolean grind = at.getWorld().getName().equalsIgnoreCase(m.config().grindWorld); // /farm and /mine (owner 5 Nov 2026)
         Optional<IslandService> islands = m.islands();
-        UUID islandHere = depths ? null : islands.flatMap(i -> i.islandAt(at)).map(IslandService.IslandInfo::id).orElse(null);
+        UUID islandHere = grind ? null : islands.flatMap(i -> i.islandAt(at)).map(IslandService.IslandInfo::id).orElse(null);
         UUID ownIsland = islands.flatMap(i -> i.islandOf(p.getUniqueId())).map(IslandService.IslandInfo::id).orElse(null);
         ProgressBuffer.Scope shownScope = null;
         UUID shownId = null;
         MilestoneModel.Chain shown = null;
         for (MilestoneModel.Chain chain : chains) {
             boolean worldOk = switch (chain.world()) {
-                case DEPTHS -> depths;
+                case GRIND -> grind;
                 case ISLAND -> islandHere != null;
                 case ANY -> true;
             };

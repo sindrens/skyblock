@@ -6,6 +6,9 @@ import net.skybornmc.skyblock.common.config.Setting;
 /** Settings of the milestones module ({@code milestones-settings.yml}); the chains live in {@code milestones.yml}. */
 public final class MilestonesConfig extends ModuleConfig {
 
+    @Setting(path = "grind-world", desc = "Owner 5 Nov 2026: the /farm and /mine world; its harvests and ores count for the Farm and Mine milestones.")
+    public String grindWorld = "grind";
+
     @Setting(path = "enabled", desc = "Milestones on: player actions count toward island and personal chains (Complete Developer "
             + "Spec section 7). Off by default until the release (golden rule 10).", level = Setting.Level.OWNER)
     public boolean enabled = true;

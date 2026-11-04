@@ -53,10 +53,10 @@ menu:
   overview:
     island:
       name: "<c:value><bold>Island Milestones"
-      lore: ["<c:text>Shared by your island's members:", "<c:text>crops, ores, logs, stone, mobs", "<c:text>and spawner mobs.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+      lore: ["<c:text>Shared by your island's members:", "<c:text>crops, ores, logs and mobs", "<c:text>on your island.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     personal:
-      name: "<c:value><bold>Personal Milestones"
-      lore: ["<c:text>Only yours, on this profile:", "<c:text>Depths ores and dungeon mobs.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+      name: "<c:value><bold>Farm & Mine Milestones"
+      lore: ["<c:text>Only yours, on this profile:", "<c:text>crops at /farm and ores at /mine.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     top:
       name: "<c:value><bold>Milestone Top"
       lore: ["<c:text>Islands and players with the", "<c:text>most completed tiers.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"]
@@ -66,10 +66,10 @@ menu:
       name: "<c:muted>Nothing here yet"
       lore: ["<c:text>A milestone appears the first", "<c:text>time anyone on your island", "<c:text>does its activity."]
   personal:
-    title: "Personal Milestones"
+    title: "Farm & Mine Milestones"
     empty:
       name: "<c:muted>Nothing here yet"
-      lore: ["<c:text>A milestone appears the first", "<c:text>time you do its activity", "<c:text>in the Depths."]
+      lore: ["<c:text>A milestone appears the first", "<c:text>time you do its activity", "<c:text>at /farm or /mine."]
   # A chain in the list. <chain> <tier> <max> <progress> <target> <bar> <percent> <perk> <next-perk>
   chain:
     progress:
@@ -116,7 +116,7 @@ top:
       name: "<c:value><bold>Island Milestones"
       lore: ["<c:text>Tiers completed by each island."]
     personal:
-      name: "<c:value><bold>Personal Milestones"
+      name: "<c:value><bold>Farm & Mine Milestones"
       lore: ["<c:text>Tiers completed by each player", "<c:text>(their best profile)."]
   empty:
     name: "<c:muted>Nobody yet"

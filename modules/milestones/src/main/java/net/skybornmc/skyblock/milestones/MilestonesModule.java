@@ -161,6 +161,21 @@ public final class MilestonesModule implements SkyblockModule {
                 }
             }
             yaml.load(file);
+            if (yaml.getInt("config-version", 1) < 2) {
+                // Owner 5 Nov 2026: the Depths chains became Farm and Mine, and the island lists only the useful things.
+                // The old file is kept next to it (progress is stored by chain id, so island chains keep theirs).
+                java.nio.file.Files.copy(file.toPath(), new File(file.getParentFile(), CATALOG_FILE + ".before-v2").toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                try (InputStream in = getClass().getClassLoader().getResourceAsStream(CATALOG_FILE)) {
+                    if (in != null) {
+                        java.nio.file.Files.copy(in, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+                yaml = new YamlConfiguration();
+                yaml.load(file);
+                core.plugin().getLogger().info("Milestones: milestones.yml updated to v2 (Farm, Mine and Island chains); the old file is "
+                        + CATALOG_FILE + ".before-v2");
+            }
         } catch (IOException | InvalidConfigurationException e) {
             core.plugin().getLogger().warning("milestones.yml is not valid YAML, using the bundled chains. "
                     + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
