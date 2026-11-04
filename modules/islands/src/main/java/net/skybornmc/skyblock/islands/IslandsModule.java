@@ -72,6 +72,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandProtection protection;
     private BorderProtection borderProtection;
     private IslandLifecycle lifecycle;
+    private WipeLosses wipeLosses;
     private VisitManager visits;
     private IslandHomes homes;
     private WarpManager warps;
@@ -392,6 +393,24 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** Kick backups (owner answer 251), or null before enable. */
     KickBackups kickBackups() {
         return kickBackups;
+    }
+
+    /**
+     * Owner 4 Nov 2026 (island = profile): true when leaving an island wipes the profile ({@code lifecycle.wipe-profile} and
+     * the profiles module is on). Then the old profile reset of disband/reset/join is not used.
+     */
+    boolean wipesProfiles() {
+        return config.wipeProfile && net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).supportsWipe();
+    }
+
+    /** The amounts a profile wipe takes, for confirm screens. */
+    WipeLosses wipeLosses() {
+        WipeLosses losses = wipeLosses;
+        if (losses == null) {
+            losses = new WipeLosses(this);
+            wipeLosses = losses;
+        }
+        return losses;
     }
 
     /** The island notes (NOTES), or null before enable / after disable. */
@@ -731,7 +750,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** A deleted profile's solo island is removed; as a member it leaves the island; coop trust ends. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
-        UUID key = event.profile().id();
+        dropProfile(event.profile().id());
+    }
+
+    /** A deleted or retired profile key leaves every island (coop ends; a solo island is removed). */
+    private void dropProfile(UUID key) {
         Actor actor = Actor.system("profiles");
         for (Island island : List.copyOf(manager.islands())) {
             if (island.coops().contains(key)) {
@@ -747,6 +770,17 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 manager.removeMember(island.id(), key, "profile deleted", actor);
             }
         });
+    }
+
+    /**
+     * Owner 4 Nov 2026: a wiped profile's key is retired. Pending invites follow the person to the fresh profile (so "leave
+     * first, then accept" works); a key that is somehow still on an island (a staff profile reset) leaves it like a deleted
+     * profile.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileWiped(net.skybornmc.skyblock.common.profile.ProfileWipedEvent event) {
+        members.profileWiped(event.gone().id(), event.fresh().id());
+        dropProfile(event.gone().id());
     }
 
     /** After a switch the old profile is "offline": its island's coop trust ends when no manager is left online. */

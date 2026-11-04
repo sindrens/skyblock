@@ -11,6 +11,7 @@ import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.island.IslandService.Bounds;
 import net.skybornmc.skyblock.common.island.IslandService.Role;
 import net.skybornmc.skyblock.common.menu.ConfirmMenu;
+import net.skybornmc.skyblock.common.profile.WipeReason;
 import net.skybornmc.skyblock.common.progression.ProgressionService;
 import net.skybornmc.skyblock.common.stacking.StackingService;
 import net.skybornmc.skyblock.common.util.Format;
@@ -117,24 +118,32 @@ final class IslandLifecycle {
             islands.fail(player, "disband.busy");
             return;
         }
-        boolean reset = config().resetsProfiles(IslandStore.REASON_DISBAND);
+        boolean wipe = module.wipesProfiles();
+        boolean reset = !wipe && config().resetsProfiles(IslandStore.REASON_DISBAND);
         UUID key = islands.key(player);
         Optional<EconomyService> economy = core.services().optional(EconomyService.class);
         CompletableFuture<Long> bank = economy.isEmpty() ? CompletableFuture.completedFuture(null)
                 : economy.get().balance(AccountRef.island(island.id()), Currency.MONEY).handle((v, e) -> e == null ? v : null);
         CompletableFuture<Long> money = economy.isEmpty() || !reset ? CompletableFuture.completedFuture(null)
                 : economy.get().balance(AccountRef.player(key), Currency.MONEY).handle((v, e) -> e == null ? v : null);
-        bank.thenCombine(money, (b, m) -> new Long[]{b, m}).whenCompleteAsync((amounts, error) -> {
+        // Owner 4 Nov 2026 (island = profile): disbanding wipes this profile; the screen shows those losses too.
+        CompletableFuture<WipeLosses.Loss> wipeLoss = wipe ? module.wipeLosses().read(player, key).handle((v, e) -> e == null ? v : null)
+                : CompletableFuture.completedFuture(null);
+        bank.thenCombine(money, (b, m) -> new Long[]{b, m}).thenCombine(wipeLoss, (amounts, loss) -> new Object[]{amounts, loss})
+                .whenCompleteAsync((pair, error) -> {
             if (!player.isOnline() || islands.byId(island.id()) != island) {
                 return;
             }
+            Long[] amounts = pair == null ? null : (Long[]) pair[0];
+            WipeLosses.Loss loss = pair == null ? null : (WipeLosses.Loss) pair[1];
+            WipeLosses.Loss shownLoss = wipe && loss == null ? new WipeLosses.Loss(null, null, 0, 0, 0) : loss;
             Long bankAmount = amounts == null ? null : amounts[0];
             Long moneyAmount = amounts == null ? null : amounts[1];
             String name = islands.displayName(island);
             core.menus().open(player, new ConfirmMenu(
                     viewer -> module.text(viewer, "disband.crumb"),
                     core.menus().item(Material.TNT, player, IslandsModule.ID, "disband.shown", Msg.p("island", name)),
-                    viewer -> lossLines(viewer, island, name, reset, bankAmount, moneyAmount),
+                    viewer -> lossLines(viewer, island, name, reset, bankAmount, moneyAmount, shownLoss),
                     viewer -> confirmed(viewer, island),
                     viewer -> msg.send(viewer, "disband.cancelled")).twoStep()); // GUI-1: can't be undone, so asks twice
         }, main);
@@ -147,7 +156,7 @@ final class IslandLifecycle {
      * shows as unknown.
      */
     private List<net.kyori.adventure.text.Component> lossLines(Player viewer, Island island, String name, boolean reset,
-                                                                Long bank, Long money) {
+                                                                Long bank, Long money, WipeLosses.Loss wipeLoss) {
         List<net.kyori.adventure.text.Component> lines = new ArrayList<>(module.lines(viewer, "disband.loss.top"));
         lines.addAll(module.lines(viewer, "disband.loss.bank", Msg.p("bank", amount(bank))));
         if (reset) {
@@ -158,6 +167,10 @@ final class IslandLifecycle {
                 Msg.p("spawners", Format.number(stacking.spawnersOnIsland(island.id()))))));
         core.services().optional(ProgressionService.class).ifPresent(progression -> lines.addAll(module.lines(viewer,
                 "disband.loss.level", Msg.p("level", Format.number(progression.islandLevel(island.id()))))));
+        if (wipeLoss != null) {
+            lines.add(net.kyori.adventure.text.Component.empty());
+            lines.addAll(module.wipeLosses().lines(viewer, wipeLoss));
+        }
         lines.addAll(module.lines(viewer, "disband.details", Msg.p("island", name)));
         return lines;
     }
@@ -245,22 +258,67 @@ final class IslandLifecycle {
             return CompletableFuture.completedFuture(new IslandStore.DisbandResult.Gone());
         }
         String name = islands.displayName(island);
-        return islands.store().disband(id, expectedOwner, reason, actor.uuid()).handleAsync((result, error) -> {
+        // Owner 4 Nov 2026 (island = profile): every member's profile is wiped. The intents are saved before the removal
+        // (crash safety); REASON_JOIN is wiped by the join flow (it needs the fresh key).
+        WipeReason wipe = module.wipesProfiles() ? LeaveWipe.forIslandRemoval(reason) : null;
+        List<UUID> wiping = new ArrayList<>();
+        if (wipe != null) {
+            for (Map.Entry<UUID, Role> member : island.members().entrySet()) {
+                if (LeaveWipe.wipesRole(member.getValue()) && islands.profiles().isLive(member.getKey())) {
+                    wiping.add(member.getKey());
+                }
+            }
+        }
+        CompletableFuture<?>[] intents = wiping.stream()
+                .map(key -> islands.profiles().intendWipe(key, wipe, actor, id, name)).toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(intents).thenCompose(v -> islands.store().disband(id, expectedOwner, reason, actor.uuid()))
+                .handleAsync((result, error) -> {
             removing.remove(id);
             if (error != null) {
+                wiping.forEach(key -> islands.profiles().dropWipeIntent(key));
                 core.plugin().getLogger().log(Level.SEVERE, "Islands: removing island " + id + " failed", Database.cause(error));
                 throw new CompletionException(Database.cause(error));
             }
             if (result instanceof IslandStore.DisbandResult.Disbanded done) {
                 removed(island, name, done, reason, actor);
+                if (wipe != null) {
+                    wipeMembers(done, wiping, wipe, actor, id, name);
+                }
             } else if (result instanceof IslandStore.DisbandResult.Gone) {
+                wiping.forEach(key -> islands.profiles().dropWipeIntent(key));
                 Island cached = islands.byId(id);
                 if (cached != null) {
                     islands.deindex(cached); // the database says it's gone: drop the stale cache entry too
                 }
             }
+            if (result instanceof IslandStore.DisbandResult.NotLeader) {
+                wiping.forEach(key -> islands.profiles().dropWipeIntent(key));
+            }
             return result;
         }, main);
+    }
+
+    /** Wipes every member profile of a removed island (the saved member list); intents of non-members are dropped. */
+    private void wipeMembers(IslandStore.DisbandResult.Disbanded done, List<UUID> intended, WipeReason wipe, Actor actor, UUID islandId,
+                             String name) {
+        Set<UUID> wiped = new HashSet<>();
+        for (Map.Entry<UUID, Role> member : done.members().entrySet()) {
+            UUID key = member.getKey();
+            if (!LeaveWipe.wipesRole(member.getValue()) || !islands.profiles().isLive(key) || !wiped.add(key)) {
+                continue;
+            }
+            islands.profiles().wipe(key, wipe, actor, islandId, name).whenComplete((result, failure) -> {
+                if (failure != null || result == null || !result.done()) {
+                    core.plugin().getLogger().warning("Islands: the profile wipe of " + key + " after island_" + wipe.key()
+                            + " is pending (" + (result == null ? String.valueOf(failure) : result.status()) + "); the profiles sweep finishes it.");
+                }
+            });
+        }
+        for (UUID key : intended) {
+            if (!wiped.contains(key)) {
+                islands.profiles().dropWipeIntent(key);
+            }
+        }
     }
 
     private void removed(Island island, String name, IslandStore.DisbandResult.Disbanded done, String reason, Actor actor) {
@@ -297,7 +355,7 @@ final class IslandLifecycle {
 
         clearer.enqueue(new IslandClearer.Job(done.slotId(), done.gridX(), done.gridZ(), island.id(), done.sizeChunks(), reason));
         KickBackups backups = module.kickBackups();
-        if (backups == null || !config().resetsProfiles(reason)) {
+        if (backups == null || !config().resetsProfiles(reason) || module.wipesProfiles()) {
             fireRemoved(island, done, reason, actor);
             return;
         }

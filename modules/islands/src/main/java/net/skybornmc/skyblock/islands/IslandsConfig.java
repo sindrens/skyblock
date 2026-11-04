@@ -343,6 +343,13 @@ public final class IslandsConfig extends ModuleConfig {
             min = 0, max = 1_000_000_000)
     public long joinMoney = 1_000;
 
+    @Setting(path = "lifecycle.wipe-profile", desc = "Owner 4 Nov 2026 (island = profile): every way of leaving an island (leave, "
+            + "kick, staff removal, disband, staff delete/reset, replacing your solo island) wipes that profile: money, items, ender "
+            + "chest, XP, tools, shards, skills, quests, collection, milestones, storages. Credits, rank, achievements and cosmetics "
+            + "stay. Staff can restore it (/profiles restore). Replaces the profile-reset settings above while on.",
+            level = Setting.Level.OWNER)
+    public boolean wipeProfile = true;
+
     /** Owner answer 591: does removing an island for {@code reason} reset its members' profiles? */
     public boolean resetsProfiles(String reason) {
         return switch (reason) {

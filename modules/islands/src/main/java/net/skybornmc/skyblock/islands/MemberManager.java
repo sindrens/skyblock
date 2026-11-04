@@ -261,7 +261,13 @@ final class MemberManager {
                     .validWhile(() -> invites.get(islandId, targetId, System.currentTimeMillis()).isPresent())
                     .button(net.skybornmc.skyblock.common.menu.Offer.Button.accept("is accept " + from))
                     .button(net.skybornmc.skyblock.common.menu.Offer.Button.decline("is deny " + from))
-                    .chat(viewer -> msg.send(viewer, "invite.received", tags))
+                    .chat(viewer -> {
+                        msg.send(viewer, "invite.received", tags);
+                        // Owner 4 Nov 2026: joining needs an empty profile; say so before they click.
+                        if (module.wipesProfiles() && islands.islandOfPlayer(islands.key(viewer)).isPresent()) {
+                            msg.send(viewer, "invite.received-not-empty");
+                        }
+                    })
                     .build());
             core.sounds().play(target, "notify");
         }
@@ -328,16 +334,22 @@ final class MemberManager {
             return;
         }
         Optional<Island> current = islands.islandOfPlayer(islands.key(player));
-        if (current.isPresent()) {
-            // Owner 3 Nov 2026: every player starts with an island, so accepting an invite offers to replace it. Only an
-            // island you lead alone can be replaced; with other members on it, hand it over or leave first.
-            Island own = current.get();
-            if (own.roleOrNull(key) == Role.LEADER && own.memberCount() <= 1) {
-                confirmReplace(player, own, pending);
-            } else {
-                islands.fail(player, "accept.has-island");
+        // Owner 3 Nov 2026: every player starts with an island, so accepting an invite offers to replace it. Owner 4 Nov
+        // 2026 (island = profile): joining needs an empty profile; replacing your solo island wipes this profile (confirm
+        // screen with the losses), with other members on it use an empty profile slot or leave first.
+        switch (LeaveWipe.joinNeed(current.isPresent(), current.map(i -> i.roleOrNull(key)).orElse(null),
+                current.map(Island::memberCount).orElse(0))) {
+            case REPLACE -> {
+                confirmReplace(player, current.get(), pending);
+                return;
             }
-            return;
+            case NEED_EMPTY -> {
+                islands.fail(player, "accept.has-island");
+                return;
+            }
+            case JOIN -> {
+                // an empty profile: join below
+            }
         }
         if (!begin(player)) {
             return;
@@ -388,6 +400,10 @@ final class MemberManager {
      * and then accepts the invite.
      */
     private void confirmReplace(Player player, Island own, Invites.Invite pending) {
+        if (module.wipesProfiles()) {
+            confirmReplaceWipe(player, own, pending);
+            return;
+        }
         Island target = islands.byId(pending.islandId());
         String ownName = islands.displayName(own);
         String targetName = target == null ? "?" : islands.displayName(target);
@@ -414,6 +430,94 @@ final class MemberManager {
                             }
                         }),
                 viewer -> msg.send(viewer, "accept.replace.cancelled")).twoStep());
+    }
+
+    /**
+     * Owner 4 Nov 2026 (island = profile): replacing your solo island is leaving it, so it wipes this profile. The screen
+     * (asked twice) lists the real losses; confirm removes the island, wipes the profile (snapshot first), and accepts the
+     * invite with the fresh profile (the invite follows the person, {@link #profileWiped}).
+     */
+    private void confirmReplaceWipe(Player player, Island own, Invites.Invite pending) {
+        Island target = islands.byId(pending.islandId());
+        String ownName = islands.displayName(own);
+        String targetName = target == null ? "?" : islands.displayName(target);
+        UUID key = islands.key(player);
+        module.wipeLosses().read(player, key).whenCompleteAsync((loss, error) -> {
+            if (!player.isOnline() || islands.byId(own.id()) != own || !key.equals(islands.key(player))) {
+                return;
+            }
+            WipeLosses.Loss shown = loss != null ? loss : new WipeLosses.Loss(null, null, 0, 0, 0);
+            core.menus().open(player, new ConfirmMenu(
+                    viewer -> module.text(viewer, "accept.replace.crumb"),
+                    core.menus().item(Material.TNT, player, IslandsModule.ID, "accept.replace.shown-wipe", Msg.p("island", ownName),
+                            Msg.p("target", targetName)),
+                    viewer -> {
+                        List<net.kyori.adventure.text.Component> lines = new ArrayList<>(module.lines(viewer, "accept.replace.details-wipe",
+                                Msg.p("island", ownName), Msg.p("target", targetName)));
+                        lines.addAll(module.wipeLosses().lines(viewer, shown));
+                        return lines;
+                    },
+                    viewer -> replaceAndJoin(viewer, own, ownName, pending),
+                    viewer -> msg.send(viewer, "accept.replace.cancelled")).twoStep());
+        }, main);
+    }
+
+    private void replaceAndJoin(Player viewer, Island own, String ownName, Invites.Invite pending) {
+        UUID key = islands.key(viewer);
+        if (islands.byId(own.id()) != own || own.roleOrNull(key) != Role.LEADER || own.memberCount() > 1) {
+            islands.fail(viewer, "error.island-gone");
+            return;
+        }
+        Actor actor = Actor.player(viewer);
+        ProfileService profiles = islands.profiles();
+        profiles.intendWipe(key, net.skybornmc.skyblock.common.profile.WipeReason.REPLACE, actor, own.id(), ownName)
+                .thenCompose(v -> core.scheduler().supplyMain("islands:replace", () -> module.lifecycle().remove(own, IslandStore.REASON_JOIN, actor, key)))
+                .thenCompose(f -> f)
+                .whenCompleteAsync((result, error) -> {
+                    if (error != null) {
+                        profiles.dropWipeIntent(key);
+                        islands.databaseError(viewer, "accept", error);
+                        return;
+                    }
+                    if (!(result instanceof IslandStore.DisbandResult.Disbanded)) {
+                        profiles.dropWipeIntent(key);
+                        islands.fail(viewer, "error.island-gone");
+                        return;
+                    }
+                    if (viewer.isOnline()) {
+                        msg.send(viewer, "accept.replace.removed-wipe", Msg.p("island", ownName));
+                    }
+                    profiles.wipe(key, net.skybornmc.skyblock.common.profile.WipeReason.REPLACE, actor, own.id(), ownName)
+                            .whenCompleteAsync((wiped, failure) -> {
+                                if (failure != null || wiped == null || !wiped.done()) {
+                                    // The island is gone; the wipe is finished by the profiles sweep. Accepting now would
+                                    // join the old profile, so the player accepts again afterwards.
+                                    if (viewer.isOnline()) {
+                                        islands.fail(viewer, "accept.replace.wipe-later");
+                                    }
+                                    return;
+                                }
+                                if (viewer.isOnline() && wiped.fresh() != null && wiped.fresh().equals(islands.key(viewer))) {
+                                    portalJoins.add(viewer.getUniqueId()); // bring them to the new island once joined
+                                    accept(viewer, pending);
+                                }
+                            }, main);
+                }, main);
+    }
+
+    /**
+     * Owner 4 Nov 2026: a wiped profile's pending invites follow the person to the fresh profile, so "leave your island
+     * first, then accept" works (memory and database).
+     */
+    void profileWiped(UUID gone, UUID fresh) {
+        List<Invites.Invite> moved = invites.removeTarget(gone);
+        for (Invites.Invite invite : moved) {
+            invites.put(new Invites.Invite(invite.islandId(), fresh, invite.inviter(), invite.createdAt(), invite.expiresAt()));
+        }
+        store.moveInvites(gone, fresh).exceptionally(error -> {
+            core.plugin().getLogger().log(Level.WARNING, "Islands: moving the invites of a wiped profile failed", Database.cause(error));
+            return 0;
+        });
     }
 
     /**
@@ -647,12 +751,35 @@ final class MemberManager {
             return;
         }
         String name = islands.displayName(island);
-        open(player, parent, new ConfirmMenu(
-                viewer -> module.text(viewer, "leave.crumb"),
-                core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown", Msg.p("island", name)),
-                viewer -> module.lines(viewer, "leave.details", Msg.p("island", name)),
-                viewer -> remove(viewer, island, islands.key(viewer), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
-                null));
+        if (!module.wipesProfiles()) {
+            open(player, parent, new ConfirmMenu(
+                    viewer -> module.text(viewer, "leave.crumb"),
+                    core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown", Msg.p("island", name)),
+                    viewer -> module.lines(viewer, "leave.details", Msg.p("island", name)),
+                    viewer -> remove(viewer, island, islands.key(viewer), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
+                    null));
+            return;
+        }
+        // Owner 4 Nov 2026 (island = profile): leaving wipes this profile, so the screen lists the real losses and asks
+        // twice (it can't be undone by the player; staff can restore a mistake).
+        UUID key = islands.key(player);
+        module.wipeLosses().read(player, key).whenCompleteAsync((loss, error) -> {
+            if (!player.isOnline() || islands.byId(island.id()) != island || !key.equals(islands.key(player))) {
+                return;
+            }
+            WipeLosses.Loss shown = loss != null ? loss : new WipeLosses.Loss(null, null, 0, 0, 0);
+            open(player, parent, new ConfirmMenu(
+                    viewer -> module.text(viewer, "leave.crumb"),
+                    core.menus().item(Material.OAK_DOOR, player, IslandsModule.ID, "leave.shown-wipe", Msg.p("island", name)),
+                    viewer -> {
+                        List<net.kyori.adventure.text.Component> lines = new ArrayList<>(module.lines(viewer, "leave.details-wipe",
+                                Msg.p("island", name)));
+                        lines.addAll(module.wipeLosses().lines(viewer, shown));
+                        return lines;
+                    },
+                    viewer -> remove(viewer, island, islands.key(viewer), MemberStore.LEFT_LEAVE, "", Actor.player(viewer)),
+                    null).twoStep());
+        }, main);
     }
 
     /**
@@ -667,7 +794,14 @@ final class MemberManager {
         int inactiveDays = config().slotLockInactiveDays;
         int seasonId = config().seasonId;
         UUID person = islands.person(target);
-        return lastSeen(target, reason, lockHours).thenCompose(seen -> {
+        // Owner 4 Nov 2026 (island = profile): leave, kick and staff removal wipe the profile. The intent is saved before
+        // the removal (crash safety), the wipe runs after it.
+        net.skybornmc.skyblock.common.profile.WipeReason wipe = module.wipesProfiles() && islands.profiles().isLive(target)
+                ? LeaveWipe.forRemoval(reason, note) : null;
+        String islandName = islands.displayName(island);
+        CompletableFuture<Void> intent = wipe == null ? CompletableFuture.completedFuture(null)
+                : islands.profiles().intendWipe(target, wipe, actor, island.id(), islandName);
+        return lastSeen(target, reason, lockHours).thenCombine(intent, (seen, ignored) -> seen).thenCompose(seen -> {
             long now = System.currentTimeMillis();
             long lockUntil = SlotLocks.locks(reason, seen, now, inactiveDays, lockHours) ? SlotLocks.until(now, lockHours) : 0L;
             return store.removeMember(island.id(), target, person, reason, seasonId, lockUntil)
@@ -677,6 +811,9 @@ final class MemberManager {
                 end(initiator);
             }
             if (error != null) {
+                if (wipe != null) {
+                    islands.profiles().dropWipeIntent(target);
+                }
                 if (initiator != null) {
                     islands.databaseError(initiator, "remove member", error);
                 } else {
@@ -686,6 +823,9 @@ final class MemberManager {
             }
             Optional<Role> role = removal.role();
             if (role.isEmpty()) {
+                if (wipe != null) {
+                    islands.profiles().dropWipeIntent(target);
+                }
                 if (initiator != null) {
                     islands.fail(initiator, "member.not-found", Msg.p("player", islands.name(target)));
                 }
@@ -695,6 +835,16 @@ final class MemberManager {
                 island.addSlotLock(removal.lockUntil()); // owner F10: saved with the removal
             }
             removed(island, target, role.get(), reason, note, actor, initiator, removal);
+            if (wipe != null && LeaveWipe.wipesRole(role.get())) {
+                islands.profiles().wipe(target, wipe, actor, island.id(), islandName).whenComplete((result, failure) -> {
+                    if (failure != null || result == null || !result.done()) {
+                        core.plugin().getLogger().warning("Islands: the profile wipe after " + reason + " of " + target
+                                + " is pending (" + (result == null ? String.valueOf(failure) : result.status()) + "); the profiles sweep finishes it.");
+                    }
+                });
+            } else if (wipe != null) {
+                islands.profiles().dropWipeIntent(target);
+            }
             return true;
         }, main);
     }

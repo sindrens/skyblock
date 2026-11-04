@@ -144,6 +144,11 @@ final class MemberStore {
         return db.async(c -> Sql.update(c, "DELETE FROM island_invites WHERE island_id = ? AND target_uuid = ?", islandId, target) > 0);
     }
 
+    /** Owner 4 Nov 2026: a wiped profile's invites move to its fresh profile key (the key is brand new: no conflicts). */
+    CompletableFuture<Integer> moveInvites(UUID from, UUID to) {
+        return db.async(c -> Sql.update(c, "UPDATE island_invites SET target_uuid = ? WHERE target_uuid = ?", to, from));
+    }
+
     CompletableFuture<Integer> deleteExpiredInvites(long now) {
         return db.async(c -> Sql.update(c, "DELETE FROM island_invites WHERE expires_at <= ?", now));
     }
