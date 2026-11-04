@@ -35,7 +35,7 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 - **Resource pack:** pack v1 was removed (I7 phase 0, 31 Oct 2026, pure vanilla). Pack v2 (I7 phase 1): forced, asked after joining, item icons only; gets its own build spec when the owner has drawn the first 9 icons.
 - **Starter chest:** custom contents for this server (proposal to the owner). → STARTER.
 - **Island storage** (needed for STORE2).
-- **/settings:** tips stays "Coming soon" until that feature exists ("players in The Depths" became the Show players choice in VIS ✅).
+- **/settings:** tips is the broadcast cards switch (chat module, 4 Nov 2026) ✅ ("players in The Depths" became the Show players choice in VIS ✅).
 - **VIS follow-ups (visibility service, other lanes):** (1) `modules/islands` `VisitManager` still uses `Player#canSee` for "does this player exist" (`/is visit <player>`, the visitor notice, two tab-completion lists): switch to `Visibility.knows(...)` so a player hidden by the AFK pool or Show players can still be visited by name (islands lane was busy). (2) `modules/depths` `AmbientMobs` / `MobFactory` per-player entities (`setVisibleByDefault(false)` + `showEntity`) can move onto the visibility service later (D4; depths lane). (3) The Depths v2 tier palette (D1) and lower-tier choice (D2) don't exist yet; Show players already applies in the whole `depths` world.
 
 ## Rules for agents

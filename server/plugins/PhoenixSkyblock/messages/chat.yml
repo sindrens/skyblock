@@ -103,3 +103,8 @@ rank-preview:
   simple: " <c:muted>Simple</c:muted>  <badge>"
   java: " <c:muted>Java</c:muted>  <badge>"
   bedrock: " <c:muted>Bedrock</c:muted>  <badge>"
+
+# /chat card <id> (staff): preview of a broadcast card. Card texts: messages/broadcasts.yml.
+broadcasts:
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>No card <c:value><card></c:value> in messages/broadcasts.yml. Press Tab to see them all."
+  not-in-rotation: "<prefix><c:warning><sym:cross></c:warning> <c:text>Card <c:value><card></c:value> is skipped in the rotation right now: its command does not exist on this server."

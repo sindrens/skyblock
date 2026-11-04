@@ -154,6 +154,48 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "tab.tps-ok", desc = "Staff TPS line: at or above this TPS (and below tps-good) it shows orange; below it red.", min = 0, max = 20)
     public double tpsOk = 15.0;
 
+    // ---------------------------------------------------------------- broadcast cards (plan chat look, owner 4 Nov 2026)
+
+    @Setting(path = "broadcasts.enabled", desc = "Tip and feature cards in chat now and then (texts: messages/broadcasts.yml). "
+            + "Players turn them off with the Tips switch in /settings.")
+    public boolean broadcastsEnabled = true;
+
+    @Setting(path = "broadcasts.interval-minutes", desc = "At least this many minutes between two cards.", min = 1, max = 240)
+    public int broadcastsIntervalMinutes = 7;
+
+    @Setting(path = "broadcasts.min-messages", desc = "A card goes out only after players sent at least this many chat messages "
+            + "since the last card (a quiet chat gets no cards, so they never stack up). 0 = no chat needed.", min = 0, max = 500)
+    public int broadcastsMinMessages = 6;
+
+    @Setting(path = "broadcasts.min-chatters", desc = "...and those messages came from at least this many different players.",
+            min = 0, max = 100)
+    public int broadcastsMinChatters = 2;
+
+    @Setting(path = "broadcasts.min-online", desc = "No cards with fewer players online than this.", min = 0, max = 1000)
+    public int broadcastsMinOnline = 3;
+
+    @Setting(path = "broadcasts.join-grace-seconds", desc = "A player gets no card in the first seconds after joining (they just "
+            + "got the welcome).", min = 0, max = 3600)
+    public int broadcastsJoinGraceSeconds = 120;
+
+    @Setting(path = "broadcasts.check-seconds", desc = "How often the rule above is checked.", min = 5, max = 300)
+    public int broadcastsCheckSeconds = 15;
+
+    @Setting(path = "broadcasts.cards", desc = "Cards in the rotation (ids under messages/broadcasts.yml cards). Random order, "
+            + "each once before any repeats, never the same twice in a row. A card whose command does not exist is skipped.")
+    public List<String> broadcastsCards = List.of("shop", "farm", "mine", "store", "vote", "discord", "daily", "upgrades",
+            "tip-menu", "tip-settings");
+
+    @Setting(path = "broadcasts.places", desc = "Players at a card's place don't get that card: card=world,centerX,halfWidth "
+            + "(x within halfWidth of centerX) or card=world (the whole world). The temporary /farm is around x 0 and /mine "
+            + "around x 1000 of world grind.")
+    public List<String> broadcastsPlaces = List.of("farm=grind,0,500", "mine=grind,1000,500");
+
+    BroadcastPacing.Rules broadcastRules() {
+        return new BroadcastPacing.Rules(broadcastsIntervalMinutes * 60_000L, broadcastsMinMessages, broadcastsMinChatters,
+                broadcastsMinOnline);
+    }
+
     @Override
     public String fileName() {
         return "chat.yml";

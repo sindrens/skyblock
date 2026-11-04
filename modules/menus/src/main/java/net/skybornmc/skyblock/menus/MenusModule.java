@@ -248,8 +248,8 @@ public final class MenusModule implements SkyblockModule {
      * {@code Sounds#playUi}/{@code Sounds#playEvent}) are implemented here; the others are placeholders shown as
      * "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
      * afk-broadcast; chat: mentions-sound, chat-colors, chat-timestamps; essentials: join-messages, tpa-requests; hud:
-     * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles). Still placeholders (no feature
-     * yet): tips. The old "depths-visibility" placeholder became the core's {@code show-players} choice (VIS).
+     * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles; chat: tips, the broadcast cards).
+     * The old "depths-visibility" placeholder became the core's {@code show-players} choice (VIS).
      */
     private void registerBuiltinSettings() {
         placeholder("private-messages", SettingCategory.CHAT, Material.WRITABLE_BOOK, true);

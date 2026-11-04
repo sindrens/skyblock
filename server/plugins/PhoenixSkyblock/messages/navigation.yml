@@ -347,7 +347,7 @@ settings:
       lore: ["<c:text>Use the normal Minecraft chest", "<c:text>look in menus. Only changes", "<c:text>Java; Bedrock always sees it."]
     tips:
       name: "<c:value>Tips"
-      lore: ["<c:text>Short tips in chat the first", "<c:text>time you open a feature."]
+      lore: ["<c:text>Short tip and feature cards", "<c:text>in chat now and then."]
     particles:
       name: "<c:value>Particles"
       lore: ["<c:text>Cosmetic particles of", "<c:text>other players."]
