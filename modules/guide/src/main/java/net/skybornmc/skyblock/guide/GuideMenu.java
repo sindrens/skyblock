@@ -39,8 +39,6 @@ final class GuideMenu extends Menu {
     static final int ROW_KINDLE = 1;
     static final int ROW_ISLAND = 3;
     static final int ROW_GRIND = 4;
-    /** Help on the bottom row (same slot as the /menu hub). */
-    static final int SLOT_HELP = 50;
 
     /** One button of a row: its item and click. */
     private record Tile(ItemStack item, Consumer<net.skybornmc.skyblock.common.menu.MenuClick> click) {
@@ -83,9 +81,7 @@ final class GuideMenu extends Menu {
         place(ROW_KINDLE, kindleRow());
         place(ROW_ISLAND, islandRow(level));
         place(ROW_GRIND, grindRow());
-        if (commandExists("help")) {
-            set(SLOT_HELP, item(Material.BOOK, "menu.help"), click -> run(click.player(), "help"));
-        }
+        helpButton(); // 50, the same book as the hub and the shop
     }
 
     private void place(int row, List<Tile> tiles) {

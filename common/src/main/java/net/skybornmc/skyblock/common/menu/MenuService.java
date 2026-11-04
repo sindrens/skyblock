@@ -579,6 +579,11 @@ public final class MenuService implements Listener {
         return MenuButton.display(icon(viewer, icon, text(viewer, "wallet." + key + ".name"), lore));
     }
 
+    /** Help (a plain vanilla book, no pack picture; plan 4 Nov C §3): {@code frame.help.*} texts. */
+    public ItemStack helpItem(Player viewer) {
+        return item(Material.BOOK, text(viewer, "frame.help.name"), lines(viewer, "frame.help.lore"));
+    }
+
     /** Close (barrier, {@code nav/close}); never red, red is danger only (I9 section 5). */
     public ItemStack closeItem(Player viewer) {
         return icon(viewer, "nav/close", text(viewer, "frame.close.name"), lines(viewer, "frame.close.lore"));

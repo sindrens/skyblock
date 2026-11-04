@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Owner 3 Nov 2026: the shop grid fills full rows of 7, only a page's last row is centred, 3 rows per page. */
+/** Plan 4 Nov C §3: groups on their own rows (7 max, centred, no holes), an empty row between groups, rows 1-3. */
 class ShopGridTest {
 
     private static ShopCatalog.Item item(String id) {
@@ -63,13 +63,26 @@ class ShopGridTest {
     }
 
     @Test
-    void rowsFillLeftToRightWithoutHoles() {
+    void groupsGetTheirOwnCentredRowsWithAnEmptyRowBetween() {
         List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 3)), new ShopCatalog.Group("b", ids("b", 6)));
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
         assertEquals(1, pages.size());
-        assertArrayEquals(new int[]{10, 11, 12, 13, 14, 15, 16, 19, 20}, pages.get(0).slots(), "3 + 6 = one full row, then 2 from the left");
+        assertArrayEquals(new int[]{12, 13, 14, 28, 29, 30, 31, 32, 33}, pages.get(0).slots(),
+                "3 centred on row 1, row 2 empty, 6 side by side on row 3");
         assertEquals("a0", pages.get(0).items().get(0).id(), "group order kept");
         assertEquals("b0", pages.get(0).items().get(3).id());
+        assertEquals(3, pages.get(0).rows());
+    }
+
+    @Test
+    void aGroupThatDoesNotFitStartsTheNextPage() {
+        List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 7)), new ShopCatalog.Group("b", ids("b", 12)));
+        List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
+        assertEquals(2, pages.size(), "b needs 2 rows, only row 3 is left after the gap");
+        assertArrayEquals(Centered.grid(7), pages.get(0).slots());
+        assertEquals(12, pages.get(1).items().size());
+        assertEquals(10, pages.get(1).slots()[0]);
+        assertEquals(20, pages.get(1).slots()[7], "the last 5 are centred on row 2 (columns 2-6)");
     }
 
     @Test
@@ -82,13 +95,13 @@ class ShopGridTest {
     }
 
     @Test
-    void aPageHoldsThreeRows() {
+    void aLongGroupFillsWholePagesOfThreeRows() {
         List<ShopCatalog.Group> groups = List.of(new ShopCatalog.Group("a", ids("a", 22)));
         List<ShopGrid.Page> pages = ShopGrid.pages(groups, all(groups));
         assertEquals(2, pages.size());
         assertEquals(21, pages.get(0).items().size());
         assertEquals(3, pages.get(0).rows());
-        assertArrayEquals(new int[]{10}, pages.get(1).slots());
+        assertArrayEquals(new int[]{13}, pages.get(1).slots());
     }
 
     @Test

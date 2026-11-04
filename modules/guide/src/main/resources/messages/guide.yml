@@ -153,12 +153,6 @@ menu:
       - "<c:text>Mine ores for money."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"
-  help:
-    name: "<area:neutral><bold>Help"
-    lore:
-      - "<c:muted>What do you want to do?"
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open help"
 
 talk:
   story-ready: "<grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Oh! You have everything for my quest. <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Hand it in]</c:action></hover></click>"

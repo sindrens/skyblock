@@ -56,10 +56,10 @@ frame:
   close:
     name: "<area:neutral><bold>Close"
     lore: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to close"]
-  # Hub only (slot 50): opens /help.
+  # Help on the bottom row (50 on 6 rows, 32 on 4, 23 on 3; the hub, Kindle, the shop): opens /help.
   help:
     name: "<area:neutral><bold>Help"
-    lore: ["<c:text>Every feature, step by step.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    lore: ["<c:muted>What do you want to do?", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   previous:
     name: "<area:move><bold>Previous page"
     lore: ["<c:text>Go to page <c:value><page></c:value> of <c:value><pages></c:value>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go back a page"]

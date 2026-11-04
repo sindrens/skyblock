@@ -9,10 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@code /shop}: the category menu (GUI-P3 5.1, I9 section 2). The categories of {@code shop.yml}, in file order, centred
- * by {@link Centered}: nine = 4 rows, 5 + 4 tiles (9, 11, 13, 15, 17 / 19, 21, 23, 25); eight or fewer re-centre on 3
- * rows. Slot 4 = the wallet tile ({@code Your Money}, MENUS-V3). Bottom row: Back (when opened from another menu), the sell chest on action A, Undo on
- * action B, Close. A click opens that category's grid ({@link ShopMenu}) with Back to here.
+ * {@code /shop}: the category menu (GUI-P3 5.1; plan 4 Nov C §3 "more air"). The categories of {@code shop.yml}, in file
+ * order, laid out by {@link Centered#airy}: up to 7 on row 1 of a 3-row menu (up to 4 with an empty column between
+ * them); 8 to 14 on rows 1 and 3 of a 6-row menu with an empty row between (nine = 5 + 4). Plain vanilla tab icons.
+ * Slot 4 = the wallet tile ({@code Your Money}, MENUS-V3). Bottom row: Back (when opened from another menu), the sell
+ * chest on action A, Undo on action B, Close, Help. A click opens that category's grid ({@link ShopMenu}) with Back here.
  */
 final class ShopCategoryMenu extends Menu {
 
@@ -35,24 +36,14 @@ final class ShopCategoryMenu extends Menu {
 
     @Override
     public int rows() {
-        int n = categories().size();
-        return n <= 9 ? 3 : Centered.layout(n).rows();
+        return Centered.airy(categories().size()).rows();
     }
 
     /**
-     * Owner 3 Nov 2026 ("fix the zigzag"): up to 9 tabs sit side by side in one row (no 5 + 4 stagger), centred
-     * without gaps. Pure.
+     * Plan 4 Nov C §3: at most 7 tabs per row, centred, an empty row between two rows ({@link Centered#airy}). Pure.
      */
     static int[] tabSlots(int n) {
-        if (n > 9) {
-            return Centered.layout(n).slots();
-        }
-        int start = 9 + (9 - n) / 2;
-        int[] out = new int[n];
-        for (int i = 0; i < n; i++) {
-            out[i] = start + i;
-        }
-        return out;
+        return Centered.airy(n).slots();
     }
 
     @Override
@@ -104,5 +95,6 @@ final class ShopCategoryMenu extends Menu {
         int rows = rows();
         module.sellChestButton(viewer, this).ifPresent(b -> set(MenuLayout.actionA(rows), b));
         module.undoButton(viewer).ifPresent(b -> set(MenuLayout.actionB(rows), b));
+        helpButton();
     }
 }

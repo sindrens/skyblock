@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The item grid of one shop category (GUI-P3 5.2, MENUS-V3 6.2): 6 rows, the grouped 7-wide grid ({@link ShopGrid}: one
- * group per row, centred, whole groups per page), page arrows, no tab row. 4 the wallet tile ({@code Your Money}) · 45
- * Back (to the categories) · 46 sell chest · 47 Undo · 49 Close · 52/53 pages.
+ * The item grid of one shop category (GUI-P3 5.2, plan 4 Nov C §3): 6 rows, the grouped grid ({@link ShopGrid}: each
+ * group starts its own row, centred, an empty row between groups, rows 1-3 only, paging instead of full grids), page
+ * arrows, no tab row. 4 the wallet tile ({@code Your Money}) · 45 Back (to the categories) · 46 sell chest · 47 Undo ·
+ * 49 Close · 50 Help · 52/53 pages.
  * <p>Clicks on a tile ({@code ClickRoute}): left / Bedrock tap = buy GUI; right = sell GUI (error sound when not
  * sellable); Shift + Left = buy one stack (a big buy arms first); middle or Shift + Right = sell every one you carry.</p>
  */
@@ -113,6 +114,7 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
     @Override
     protected void decorate() {
         setWallet("money", module.moneyText(module.balance(viewer)), null);
+        helpButton();
         module.sellChestButton(viewer, this).ifPresent(b -> set(SLOT_ACTION_A, b));
         module.undoButton(viewer).ifPresentOrElse(b -> set(SLOT_ACTION_B, b), () -> set(SLOT_ACTION_B, (net.skybornmc.skyblock.common.menu.MenuButton) null));
     }

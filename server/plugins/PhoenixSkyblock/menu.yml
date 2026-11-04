@@ -22,24 +22,26 @@
 # One button per action: a second button that does the same thing is skipped (with a warning).
 hub:
   you:       {slot: 4,  action: you,      icon: player_head}
-  # Play (lime)
-  home:      {slot: 10, group: play,  icon: red_bed,      command: "is home",   service: IslandService}
-  island:    {slot: 12, group: play,  icon: grass_block,    command: "is",        service: IslandService}
-  depths:    {slot: 14, group: play,  icon: wheat,             command: "farm"}   # 3 Nov 2026: the Depths are gone; /farm and /mine
-  travel:    {slot: 16, group: play,  icon: compass,    action: travel}
+  # Plan 4 Nov C §3: vanilla items that match their meaning, at most 4 per row with an empty column between them.
+  # Play (lime): your island and the two grind areas
+  home:      {slot: 10, group: play,  icon: red_bed,           command: "is home",   service: IslandService}
+  island:    {slot: 12, group: play,  icon: grass_block,       command: "is",        service: IslandService}
+  farm:      {slot: 14, group: play,  icon: wheat,             command: "farm"}
+  mine:      {slot: 16, group: play,  icon: iron_pickaxe,      command: "mine"}
   # Money (green)
-  sell:      {slot: 19, group: money, icon: gold_ingot,      command: "sell",      service: SellService}
-  shop:      {slot: 21, group: money, icon: emerald,      command: "shop",      service: ShopPrices}
-  bank:      {slot: 23, group: money, icon: gold_block,      command: "bank",      service: BankService}
-  auction:   {slot: 25, group: money, icon: oak_sign,   command: "ah"}
-  # Power (violet)
-  forge:     {slot: 28, group: power, icon: anvil,     command: "forge",     service: ToolService}
-  skills:    {slot: 30, group: power, icon: experience_bottle,    command: "skills",    service: SkillService}
-  enchanter: {slot: 32, group: power, icon: enchanting_table, command: "enchanter", service: EnchantService}
-  wardrobe:  {slot: 34, group: power, icon: leather_chestplate,  command: "wardrobe",  service: WardrobeService}
-  # More (flame gold)
-  rewards:   {slot: 39, group: more,  icon: chest,   action: rewards, command: "daily", service: RewardsService}
-  top:       {slot: 41, group: more,  icon: diamond,       action: top,      service: IslandService}
+  sell:      {slot: 19, group: money, icon: gold_nugget,       command: "sell",      service: SellService}
+  shop:      {slot: 21, group: money, icon: emerald,           command: "shop",      service: ShopPrices}
+  bank:      {slot: 23, group: money, icon: barrel,            command: "bank",      service: BankService}
+  auction:   {slot: 25, group: money, icon: gold_block,        command: "ah"}
+  # Power (violet): the island tools replace the retired Forge
+  tools:     {slot: 28, group: power, icon: smithing_table,    command: "tool"}
+  skills:    {slot: 30, group: power, icon: experience_bottle, command: "skills",    service: SkillService}
+  enchanter: {slot: 32, group: power, icon: enchanting_table,  command: "enchanter", service: EnchantService}
+  wardrobe:  {slot: 34, group: power, icon: leather_chestplate, command: "wardrobe", service: WardrobeService}
+  # More (flame gold), centred: Rewards, Travel, Top
+  rewards:   {slot: 38, group: more,  icon: chest,             action: rewards, command: "daily", service: RewardsService}
+  travel:    {slot: 40, group: more,  icon: compass,           action: travel}
+  top:       {slot: 42, group: more,  icon: golden_helmet,     action: top,      service: IslandService}
   # Staff tile (G9): only players with the permission see it (hidden, not locked)
   staff:     {slot: 8, icon: shield, action: staff, command: "staff", permission: "skyblock.staff.hub", show-locked: false}
 
@@ -90,7 +92,7 @@ travel:
 # catalogue key: our lit picture for Java with the pack, its base item for everyone else). Clicks do the same as always.
 # To switch a rule off set its step to none (deleted rules come back from the defaults on the next start).
 highlights:
-  hub-depths:  {target: "hub.depths",         step: none, icon: wheat}
+  hub-farm:    {target: "hub.farm",           step: none, icon: wheat}
   gate-depths: {target: "travel.depths-gate", step: none, icon: wheat}
 
 # /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.

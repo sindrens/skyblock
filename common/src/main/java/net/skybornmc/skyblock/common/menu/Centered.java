@@ -149,6 +149,56 @@ public final class Centered {
         return out;
     }
 
+    /**
+     * Columns of {@code count} items side by side, centred, without holes (plan 4 Nov C §3, owner 3 Nov "no zigzag"):
+     * the first column is {@code (9 - count) / 2}, so 7 = 1..7, 5 = 2..6, 4 = 2..5, 1 = 4. At most 7 (columns 1-7).
+     */
+    public static int[] packed(int count) {
+        if (count < 0 || count > GRID_WIDTH) {
+            throw new IllegalArgumentException("A row holds at most " + GRID_WIDTH + " items, got " + count);
+        }
+        int start = (9 - count) / 2;
+        int[] out = new int[count];
+        for (int i = 0; i < count; i++) {
+            out[i] = start + i;
+        }
+        return out;
+    }
+
+    /**
+     * Columns of one airy row (plan 4 Nov C §3, "more air"): up to 4 items keep an empty column between them
+     * ({@link #columns}: 1 3 5 7), 5 to 7 sit side by side, centred ({@link #packed}). Never more than 7 in a row.
+     */
+    public static int[] airyColumns(int count) {
+        return count <= 4 ? columns(count) : packed(count);
+    }
+
+    /**
+     * An airy layout of {@code count} (0-14) equal buttons (plan 4 Nov C §3): rows of at most 7, sizes as equal as
+     * possible ({@link #split}), each centred ({@link #airyColumns}). One row = row 1 of a 3-row menu; two rows = rows 1
+     * and 3 of a 6-row menu, with an empty row between them and above the bottom bar.
+     * <pre>
+     *   9 = . . x x x x x . .   (row 1)       4 = . x . x . x . x .   (row 1, 3 rows)
+     *       . . . . . . . . .
+     *       . x . x . x . x .   (row 3, 6 rows)
+     * </pre>
+     */
+    public static Layout airy(int count) {
+        if (count < 0 || count > MAX_SMALL) {
+            throw new IllegalArgumentException("Centered.airy takes 0.." + MAX_SMALL + " buttons, got " + count);
+        }
+        int[] sizes = split(count);
+        if (sizes.length <= 1) {
+            return new Layout(3, row(9, airyColumns(count)));
+        }
+        int[] top = row(9, airyColumns(sizes[0]));
+        int[] bottom = row(27, airyColumns(sizes[1]));
+        int[] slots = new int[count];
+        System.arraycopy(top, 0, slots, 0, top.length);
+        System.arraycopy(bottom, 0, slots, top.length, bottom.length);
+        return new Layout(6, slots);
+    }
+
     private static int[] row(int start, int[] columns) {
         int[] out = new int[columns.length];
         for (int i = 0; i < columns.length; i++) {

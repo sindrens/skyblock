@@ -28,7 +28,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
     static final int SLOT_PROFILE = 4;
     /** The Staff tile (G9): top right corner, staff only. */
     static final int SLOT_STAFF = 8;
-    /** Help (I9 section 4: the hub's one extra bottom-row button). */
+    /** Help (I9 section 4; {@code MenuLayout#help} on 6 rows, drawn by {@code helpButton()}). */
     static final int SLOT_HELP = 50;
     static final String PERM_STAFF_TILE = "skyblock.staff.hub";
     /** Ticks between checks of the Rewards count (a daily state that loads after opening, midnight reset). */
@@ -111,8 +111,7 @@ final class HubMenu extends net.skybornmc.skyblock.common.menu.Menu {
             }
             render(button, state);
         }
-        set(SLOT_HELP, service.icon(viewer, "nav/help", service.text(viewer, "frame.help.name"), service.lines(viewer, "frame.help.lore")),
-                click -> service.navigate(click.player(), this, () -> click.player().performCommand("help")));
+        helpButton(); // 50: the same plain book as every menu with Help (plan 4 Nov C §3)
     }
 
     /** The area colour of a button's group (G9: hub names take their row colour), or null. */

@@ -1430,7 +1430,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         int seconds = o.secondsLeft(now);
         TagResolver[] tags = {Msg.number("amount", o.quantity()), Msg.c("item", displayName(o.itemId())), money("price", o.total()),
                 Msg.number("seconds", seconds)};
-        ItemStack plate = core.menus().icon(viewer, "state/undo", core.menus().text(viewer, ID, "undo.ready.name", tags),
+        ItemStack plate = core.menus().item(Material.CLOCK, core.menus().text(viewer, ID, "undo.ready.name", tags),
                 core.menus().lines(viewer, ID, "undo.ready.lore", tags));
         plate.setAmount(Math.max(1, Math.min(64, seconds)));
         return Optional.of(MenuButton.of(plate, click -> undoLast(click.player(), () -> {
@@ -1481,7 +1481,7 @@ public final class ShopModule implements SkyblockModule, Listener {
         if (core.services().optional(SellService.class).isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(core.menus().icon(viewer, "shop/sell", core.menus().text(viewer, ID, "menu.sell.name"),
+        return Optional.of(core.menus().item(Material.GOLD_NUGGET, core.menus().text(viewer, ID, "menu.sell.name"),
                 core.menus().lines(viewer, ID, "menu.sell.lore")));
     }
 

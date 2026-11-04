@@ -35,11 +35,11 @@ class HubButtonsTest {
     static final Predicate<String> ITEMS = id -> id.matches("[a-z_]+(/[a-z_]+)?");
 
     @Test
-    void bundledHubHas15ButtonsIn4Groups() throws Exception {
+    void bundledHubHas16ButtonsIn4Groups() throws Exception {
         List<String> problems = new ArrayList<>();
         ButtonLayout hub = ButtonLayout.hub(resource("menu.yml"), ITEMS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(16, hub.buttons().size(), "your head + 14 features + the Staff tile (G9)");
+        assertEquals(17, hub.buttons().size(), "your head + 15 features + the Staff tile (G9; plan 4 Nov C adds Mine)");
         ButtonLayout.Button staff = hub.buttons().stream().filter(b -> ButtonLayout.STAFF.equals(b.action())).findFirst().orElseThrow();
         assertEquals(HubMenu.SLOT_STAFF, staff.slot());
         assertFalse(staff.showLocked(), "players without the node do not see it");
@@ -49,16 +49,27 @@ class HubButtonsTest {
 
         Map<String, List<Integer>> slots = hub.buttons().stream().filter(b -> b.group() != null)
                 .collect(Collectors.groupingBy(ButtonLayout.Button::group, Collectors.mapping(ButtonLayout.Button::slot, Collectors.toList())));
+        // Plan 4 Nov C §3: at most 4 per row, an empty column between them, the last row centred.
         assertEquals(List.of(10, 12, 14, 16), slots.get("play"));
         assertEquals(List.of(19, 21, 23, 25), slots.get("money"));
         assertEquals(List.of(28, 30, 32, 34), slots.get("power"));
-        assertEquals(List.of(39, 41), slots.get("more"));
+        assertEquals(List.of(38, 40, 42), slots.get("more"));
 
         ButtonLayout.Button head = hub.buttons().stream().filter(b -> b.slot() == HubMenu.SLOT_PROFILE).findFirst().orElseThrow();
         assertEquals(ButtonLayout.YOU, head.action(), "your head opens the You menu");
-        assertTrue(hub.buttons().stream().anyMatch(b -> b.slot() == 16 && ButtonLayout.TRAVEL.equals(b.action())));
+        assertTrue(hub.buttons().stream().anyMatch(b -> b.slot() == 40 && ButtonLayout.TRAVEL.equals(b.action())));
+        assertTrue(hub.buttons().stream().anyMatch(b -> b.slot() == 14 && "farm".equals(b.command())));
+        assertTrue(hub.buttons().stream().anyMatch(b -> b.slot() == 16 && "mine".equals(b.command())));
+        assertTrue(hub.buttons().stream().anyMatch(b -> b.slot() == 28 && "tool".equals(b.command())), "island tools, not the Forge");
+        assertFalse(hub.buttons().stream().anyMatch(b -> "forge".equals(b.command()) || "dungeon".equals(b.command())));
+        // Plan 4 Nov C §3: plain vanilla items, no pack icon keys, never two buttons on one item.
+        Set<String> icons = new HashSet<>();
+        for (ButtonLayout.Button b : hub.buttons()) {
+            assertFalse(b.icon().contains("/"), b.id() + ": a vanilla item, not an icon key");
+            assertTrue(icons.add(b.icon()), b.id() + ": the item " + b.icon() + " is used twice");
+        }
         ButtonLayout.Button rewards = hub.buttons().stream().filter(b -> ButtonLayout.REWARDS.equals(b.action())).findFirst().orElseThrow();
-        assertEquals(39, rewards.slot());
+        assertEquals(38, rewards.slot());
         assertEquals("daily", rewards.command(), "nothing ready: opens /daily");
         assertEquals("RewardsService", rewards.service());
     }
@@ -129,8 +140,8 @@ class HubButtonsTest {
         // The test server switch shows them as Coming soon.
         assertEquals(ButtonLayout.State.COMING_SOON, hub.buttons().stream().filter(b -> b.id().equals("wardrobe")).findFirst()
                 .orElseThrow().state(services, commands, true));
-        // Everything built: all 16 show (the Staff tile is then hidden per viewer by its permission).
-        assertEquals(16, hub.buttons().stream().filter(b -> b.state(ALL, ALL, false) == ButtonLayout.State.ACTIVE).count());
+        // Everything built: all 17 show (the Staff tile is then hidden per viewer by its permission).
+        assertEquals(17, hub.buttons().stream().filter(b -> b.state(ALL, ALL, false) == ButtonLayout.State.ACTIVE).count());
     }
 
     @Test

@@ -290,6 +290,18 @@ public abstract class Menu implements InventoryHolder {
     }
 
     /**
+     * Help on the bottom row ({@link MenuLayout#help}: 50 on 6 rows, 32 on 4, 23 on 3; plan 4 Nov C §3): a plain book
+     * that opens {@code /help} ("What do you want to do?") with Back to this menu. Call after {@link #navBar()}.
+     */
+    protected final void helpButton() {
+        int slot = MenuLayout.help(rows());
+        if (slot == MenuLayout.NONE) {
+            return;
+        }
+        set(slot, service.helpItem(viewer), click -> service.navigate(click.player(), this, () -> click.player().performCommand("help")));
+    }
+
+    /**
      * The wallet tile on {@link #SLOT_SUMMARY} (FORMAT 4, MENUS-V3): {@code currencyKey} {@code money}, {@code crystals},
      * {@code shards}, {@code credits} or {@code bank}; {@code amountText} the full amount; {@code noteKey} an optional
      * muted line from {@code messages/menus.yml} (null = none).

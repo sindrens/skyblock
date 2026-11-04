@@ -124,8 +124,12 @@ class ShopCatalogGroupsTest {
         for (ShopCatalog.Category c : tabs) {
             Map<String, ShopCatalog.Item> shown = new LinkedHashMap<>();
             c.enabledItems().forEach(it -> shown.put(it.id(), it));
-            // Owner 3 Nov 2026: 21 items (3 full rows) per page, no group breaks.
-            assertEquals((c.enabledItems().size() + ShopGrid.PAGE - 1) / ShopGrid.PAGE, ShopGrid.pages(c.displayGroups(), shown::get).size(), c.id());
+            // Plan 4 Nov C §3: groups start their own row with an empty row between them, so a tab needs at least
+            // ceil(n / 21) pages and never more than one page per group row.
+            int pages = ShopGrid.pages(c.displayGroups(), shown::get).size();
+            int groupRows = c.displayGroups().stream().mapToInt(g -> (g.items().size() + 6) / 7).sum();
+            assertTrue(pages >= (c.enabledItems().size() + ShopGrid.PAGE - 1) / ShopGrid.PAGE, c.id());
+            assertTrue(pages <= Math.max(1, groupRows), c.id());
             for (ShopCatalog.Group g : c.groups()) {
                 assertEquals(Centered.split(g.items().size()).length, (g.items().size() + 6) / 7, c.id() + "." + g.id());
             }

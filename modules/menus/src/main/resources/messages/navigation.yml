@@ -59,12 +59,16 @@ hub:
     island:
       name: "<area:home><bold>Island"
       lore: ["<c:text>Manage your island."]
-    depths:
-      name: "<area:home><bold>The Farm"
-      lore: ["<c:text>Harvest crops that grow back", "<c:text>in seconds. Also: /mine"]
+    farm:
+      name: "<area:home><bold>Farm"
+      lore: ["<c:text>Crops that grow back in seconds."]
+      action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
+    mine:
+      name: "<area:home><bold>Mine"
+      lore: ["<c:text>Ores that grow back in seconds."]
       action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"]
     travel:
-      name: "<area:home><bold>Travel"
+      name: "<area:reward><bold>Travel"
       lore: ["<c:text>Spawn, markets and more."]
     sell:
       name: "<area:money><bold>Sell"
@@ -78,9 +82,9 @@ hub:
     auction:
       name: "<area:money><bold>Auction House"
       lore: ["<c:text>Trade with other players."]
-    forge:
-      name: "<area:skills><bold>Forge"
-      lore: ["<c:text>Make better tools."]
+    tools:
+      name: "<area:skills><bold>Island Tools"
+      lore: ["<c:text>Upgrade your hoe and pickaxe."]
     skills:
       name: "<area:skills><bold>Skills"
       lore: ["<c:text>See your levels."]

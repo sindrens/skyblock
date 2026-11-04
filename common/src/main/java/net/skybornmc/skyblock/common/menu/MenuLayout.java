@@ -11,7 +11,8 @@ package net.skybornmc.skyblock.common.menu;
  *  1-2  |  no standard buttons
  * </pre>
  * Back is never replaced by Previous page, so Back works on every page. Search (51) is the auction house's only.
- * Slots 48 and 50 are free (the old {@code ?} and Main menu buttons are gone); 46, 47 and 51 are screen actions.
+ * Slot 48 is free (the old {@code ?} button is gone); 50 (bar + 5) is Help where a menu has one ({@link #help});
+ * 46, 47 and 51 are screen actions.
  */
 public final class MenuLayout {
 
@@ -42,6 +43,14 @@ public final class MenuLayout {
 
     public static int close(int rows) {
         return rows >= 4 && rows <= 6 ? bar(rows) + 4 : rows == 3 ? 22 : NONE;
+    }
+
+    /**
+     * Help (a plain book, plan 4 Nov C §3: the same slot on every menu that has one): the slot right of Close, 50 on 6
+     * rows (the /menu hub's Help), 32 on 4, 23 on 3.
+     */
+    public static int help(int rows) {
+        return rows >= 4 && rows <= 6 ? bar(rows) + 5 : rows == 3 ? 23 : NONE;
     }
 
     /** The auction house's Search button (6 rows only, I9 section 11). */
