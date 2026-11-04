@@ -1396,7 +1396,11 @@ public final class ShopModule implements SkyblockModule, Listener {
 
     /** The sell chest button (46 on the grid, 28/19 on the category menu), when selling exists. */
     Optional<MenuButton> sellChestButton(Player viewer, Menu from) {
-        return sellButton(viewer).map(item -> MenuButton.of(item, click -> openSell(click.player(), from)));
+        // Owner 4 Nov 2026 (plan A, item 9): click = Sell all (like /sell); right-click = the sell chest.
+        return sellButton(viewer).map(item -> MenuButton.of(item, click -> {
+            click.player().closeInventory();
+            click.player().performCommand("sell all");
+        }).withRight(click -> openSell(click.player(), from)));
     }
 
     static String words(String id) {

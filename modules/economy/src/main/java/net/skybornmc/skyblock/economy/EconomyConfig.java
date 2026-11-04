@@ -433,6 +433,9 @@ public final class EconomyConfig extends ModuleConfig {
             + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
     public long sellBigSaleChatFrom = 100_000;
 
+    @Setting(path = "sell.menu-enabled", desc = "Owner 4 Nov 2026: /sell sells everything sellable at once (off). On: /sell opens the sell menu as before (it is always /sell menu).")
+    public boolean sellMenuEnabled = false;
+
     @Setting(path = "sell.all-title", desc = "Feedback 5 Nov 2026: selling everything at once (/sell, Sell all) shows the total big on screen (a title).")
     public boolean sellAllTitle = true;
 

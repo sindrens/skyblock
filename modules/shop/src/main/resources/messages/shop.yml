@@ -97,8 +97,8 @@ menu:
     lore: ["<c:text>Spawners are not sold", "<c:text>at the moment."]
   # The sell chest button (46 on the grid, 28 on the category menu): opens /sell.
   sell:
-    name: "<area:money><bold>Sell chest"
-    lore: ["<c:text>Put many items in and sell", "<c:text>them at live prices.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    name: "<area:money><bold>Sell all"
+    lore: ["<c:muted>Live prices", "", "<c:text>Sells everything sellable in", "<c:text>your inventory at once.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell all", "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>for the sell chest"]
 
 # The action line of a category tile.
 category:

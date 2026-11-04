@@ -431,7 +431,21 @@ public final class SellFeature implements Listener {
                 .category("Economy")
                 .permission(PERM_SELL)
                 .playerOnly()
-                .executes(ctx -> open(ctx.player()))
+                .cooldown(cooldown)
+                // Owner 4 Nov 2026 (plan A, item 10): /sell sells everything sellable at once; the menu is /sell menu.
+                .executes(ctx -> {
+                    if (config.sellMenuEnabled) {
+                        open(ctx.player());
+                    } else {
+                        sellAll(ctx.player());
+                    }
+                })
+                .sub(CommandSpec.sub("menu")
+                        .description("Open the sell menu (drop items in, see the prices)")
+                        .permission(PERM_SELL)
+                        .playerOnly()
+                        .example("sell menu")
+                        .executes(ctx -> open(ctx.player())))
                 .sub(CommandSpec.sub("hand")
                         .description("Sell the stack in your hand")
                         .permission(PERM_SELL)
