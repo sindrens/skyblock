@@ -250,9 +250,9 @@ final class GrindAreas extends CommandGroup implements Listener {
             } else if (crop.unlockAt() < CROPS.getLast().unlockAt()) {
                 Crop next = CROPS.get(CROPS.indexOf(crop) + 1);
                 if (farmed % 50 == 0) {
-                    msg.actionBar(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
                             net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
-                            net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item())));
+                            net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item()))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
                 }
             }
             core.scheduler().later("essentials:grind-regrow", config.grindFarmRegrowSeconds * 20L, () -> {
@@ -283,9 +283,11 @@ final class GrindAreas extends CommandGroup implements Listener {
             } else if (mined % 50 == 0) {
                 int next = ORE_TIERS.indexOf(tier) + 1;
                 if (next < ORE_TIERS.size()) {
-                    msg.actionBar(p, "grind.progress-ore", net.skybornmc.skyblock.common.text.Msg.number("have", mined),
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress-ore",
+                            net.skybornmc.skyblock.common.text.Msg.number("have", mined),
                             net.skybornmc.skyblock.common.text.Msg.number("need", unlockAt(next, unlocks)),
-                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(ORE_TIERS.get(next).block())));
+                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(ORE_TIERS.get(next).block()))),
+                            net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
                 }
             }
             core.scheduler().later("essentials:grind-regen", config.grindMineRegenSeconds * 20L, () -> {
@@ -523,8 +525,9 @@ final class GrindAreas extends CommandGroup implements Listener {
                             net.skybornmc.skyblock.common.economy.Currency.MONEY, amount, "grind_bonus")
                     .actor(net.skybornmc.skyblock.common.audit.Actor.system("grind")).reference("farm/mine bonus")
                     .idempotencyKey("grind_bonus:" + java.util.UUID.randomUUID()));
-            profiles.onlinePlayer(id).ifPresent(p -> msg.actionBar(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
-                    net.skybornmc.skyblock.common.util.Format.money(amount))));
+            profiles.onlinePlayer(id).ifPresent(p -> net.skybornmc.skyblock.common.hud.ActionBars.show(p, "bonus",
+                    msg.component(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
+                            net.skybornmc.skyblock.common.util.Format.money(amount))), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500));
         });
     }
 

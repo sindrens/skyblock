@@ -687,7 +687,8 @@ public final class IslandToolsModule implements SkyblockModule {
                     }
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (profile.equals(profile(p))) {
-                            msg.actionBar(p, "shards.found." + currency.key(), Msg.number("amount", n));
+                            net.skybornmc.skyblock.common.hud.ActionBars.show(p, "shards." + currency.key(), msg.component(p, "shards.found." + currency.key(), Msg.number("amount", n)),
+                                    net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
                             core.sounds().play(p, "shard");
                         }
                     }

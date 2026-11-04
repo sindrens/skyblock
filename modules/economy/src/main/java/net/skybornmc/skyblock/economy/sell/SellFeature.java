@@ -922,9 +922,11 @@ public final class SellFeature implements Listener {
                     // One item kind (/sell hand, the shop): "Sold 16x Coal for $32".
                     TagResolver[] one = {Msg.number("items", q.items()), Msg.c("item", keyName(q.lines().getFirst().price().itemKey())),
                             module.amountTag("amount", player, Currency.MONEY, q.total()), Msg.p("bonus", percentText(q.cappedBonusPercent()))};
-                    msg.actionBar(player, bonus ? "sell.sold-bar-item-bonus" : "sell.sold-bar-item", one);
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(player, "sold", msg.component(player,
+                            bonus ? "sell.sold-bar-item-bonus" : "sell.sold-bar-item", one), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
                 } else {
-                    msg.actionBar(player, bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p);
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(player, "sold", msg.component(player,
+                            bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
                 }
                 if (q.lines().size() > 1 && config.sellAllTitle) {
                     msg.title(player, "sell.sold-screen", p); // feedback 5 Nov 2026: Sell all shows big on screen

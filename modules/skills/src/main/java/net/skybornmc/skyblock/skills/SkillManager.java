@@ -426,7 +426,7 @@ final class SkillManager implements SkillService, Listener {
                     Msg.p("percent", XpFormat.percent(progress(player.getUniqueId(), e.getKey()))),
                     Msg.p("level", level(player, e.getKey()))));
         }
-        player.sendActionBar(line);
+        net.skybornmc.skyblock.common.hud.ActionBars.show(player, "xp", line, net.skybornmc.skyblock.common.hud.ActionBars.XP, config.actionBarIntervalMs); // one clean line (plan T1)
     }
 
     Component skillName(Audience viewer, SkillType skill) {
