@@ -8,6 +8,7 @@
 - Achievements: hovering the chat line shows what it was for and the goal of the tier.
 - Sell all (`/sell`, the shop's Sell all) shows the total big on screen (`economy.yml sell.all-title`).
 - Black Market: prices are in crystals now (shards are only for the island tools).
+- Island tools: shards about 5x faster (40% per ripe crop, 30% per ore). Perks have 50-100 bigger levels instead of 500-1,000 tiny ones: Shard Finder +1% shards a level (100 levels = double), Extra Drops +0.5%, Wisdom +2% XP; the first upgrades cost about 50 shards, so you buy one within a minute. Bought levels above the new maximum are kept at the maximum.
 - Spawner mobs drop their full vanilla loot times the number killed and the island's Mob Loot level (cows: beef and leather; cooked when they die burning: fire aspect, lava, flint and steel). Old custom single drops: `stacking.yml spawners.vanilla-loot: false`.
 - A text above every spawner stack: "153x Cow Spawner" (`spawners.labels`). Mob and item stacks keep their "x153" names.
 - Shop: 19 items are back: crafting table, furnace, smoker, grindstone, chest, barrel, composter, ladder, glass pane, painting, armor stand, redstone torch, repeater, dropper, lever, buttons, stone pressure plate, note block.

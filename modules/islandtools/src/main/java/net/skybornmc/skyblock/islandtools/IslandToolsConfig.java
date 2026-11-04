@@ -54,13 +54,13 @@ public final class IslandToolsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ shards
 
     @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 Mining Shard per relevant block mined with the island pickaxe (over 100 = more than one).", min = 0, max = 1000)
-    public double shardPickaxe = 6;
+    public double shardPickaxe = 30; // feedback 5 Nov 2026: about 5x faster
 
     @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
-    public double shardHoe = 8;
+    public double shardHoe = 40; // feedback 5 Nov 2026: about 5x faster
 
-    @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (owner 4 Nov 2026: tiny steps, 0.1% each).", min = 0, max = 20)
-    public double shardFinderPerLevel = 0.1;
+    @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (feedback 5 Nov 2026: 1% a level, 100 levels = double shards).", min = 0, max = 20)
+    public double shardFinderPerLevel = 1.0;
 
     @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
     public int shardPayoutSeconds = 3;
@@ -90,7 +90,20 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "enchant=<vanilla id>, haste, smelt, drops (Extra Drops), storage (hoe), shards (Shard Finder), autosell (Auto-Sell), growth "
             + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds). "
             + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
-    public List<String> perks = List.of(
+    public List<String> perks = List.of( // feedback 5 Nov 2026: fewer, bigger steps; the first upgrade within a minute
+            "hoe:shard_finder:shards:100:1:40+6", "hoe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
+            "hoe:extra_drops:drops:100:3:60+8", "hoe:fortune:enchant=fortune:3:5:1500/8000/30000",
+            "hoe:wisdom:wisdom:50:5:80+10", "hoe:growth:growth:100:10:100+10", "hoe:storage:storage:100:10:60+6",
+            "hoe:haste:haste:2:15:5000/30000", "hoe:auto_sell:autosell:1:20:20000", "hoe:sell_bonus:sell:100:25:200+20",
+            "hoe:lucky:lucky:100:30:300+25", "hoe:sweep:sweep:100:45:3000+100:1",
+            "pickaxe:shard_finder:shards:100:1:40+6", "pickaxe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
+            "pickaxe:extra_drops:drops:100:3:60+8", "pickaxe:fortune:enchant=fortune:3:5:1500/8000/30000",
+            "pickaxe:wisdom:wisdom:50:5:80+10", "pickaxe:smelter:smelt:100:10:100+10", "pickaxe:storage:storage:100:10:60+6",
+            "pickaxe:haste:haste:2:15:5000/30000", "pickaxe:auto_sell:autosell:1:20:20000", "pickaxe:sell_bonus:sell:100:25:200+20",
+            "pickaxe:lucky:lucky:100:30:300+25", "pickaxe:vein:sweep:100:45:3000+100:1");
+
+    /** {@code perks} v8 (owner 4 Nov 2026 19:39): 500-1000 tiny levels; replaced on 5 Nov 2026 (feedback: too slow, +0.01% steps). */
+    static final List<String> PERKS_V8 = List.of(
             "hoe:shard_finder:shards:1000:1:300+10", "hoe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
             "hoe:extra_drops:drops:500:5:400+12", "hoe:fortune:enchant=fortune:3:5:5000/25000/100000",
             "hoe:haste:haste:2:10:15000/75000", "hoe:wisdom:wisdom:100:10:500+25", "hoe:growth:growth:250:15:600+20",
@@ -120,22 +133,22 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Setting(path = "effects.drops-per-level", desc = "Extra Drops: percent more drops per level. Owner 4 Nov 2026: the island's own farm/mine boosts "
             + "(island-boost.*) are much stronger than this.", min = 0, max = 100)
-    public double dropsPerLevel = 0.05;
+    public double dropsPerLevel = 0.5;
 
     @Setting(path = "effects.smelt-per-level", desc = "Smelter: auto-smelt chance percent per level.", min = 0, max = 100)
-    public double smeltPerLevel = 0.5;
+    public double smeltPerLevel = 1.0;
 
     @Setting(path = "effects.growth-per-level", desc = "Growth (hoe): percent faster growth of the crops on the island per level.", min = 0, max = 100)
-    public double growthPerLevel = 0.2;
+    public double growthPerLevel = 0.5;
 
     @Setting(path = "effects.wisdom-per-level", desc = "Wisdom: percent more tool XP per level.", min = 0, max = 100)
-    public double wisdomPerLevel = 0.5;
+    public double wisdomPerLevel = 2.0;
 
     @Setting(path = "effects.sell-per-level", desc = "Sell Bonus: percent more money per level when Auto-Sell or the hoe storage sells.", min = 0, max = 10)
-    public double sellPerLevel = 0.02;
+    public double sellPerLevel = 0.1;
 
     @Setting(path = "effects.lucky-chance-per-level", desc = "Lucky: percent chance per relevant block and level of a Shard Pouch.", min = 0, max = 1)
-    public double luckyPerLevel = 0.002;
+    public double luckyPerLevel = 0.01;
 
     @Setting(path = "effects.lucky-min", desc = "Lucky: fewest shards in a Shard Pouch (the prestige bonus applies on top).", min = 1, max = 1_000_000)
     public int luckyMin = 25;
@@ -163,7 +176,7 @@ public final class IslandToolsConfig extends ModuleConfig {
     public long storageBase = 2000;
 
     @Setting(path = "hoe.storage-per-level", desc = "More storage per Storage level (items), hoe and pickaxe.", min = 0, max = 100_000)
-    public long storagePerLevel = 200;
+    public long storagePerLevel = 500;
 
     @Setting(path = "island-boost.hoe-effect", desc = "Owner 4 Nov 2026: the island upgrade (upgrades.yml effect) whose value is percent more crops for "
             + "everything the island hoe harvests (on islands and at /farm), from the island the player is a member of.")
@@ -246,7 +259,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 8;
+        return 9;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -262,7 +275,18 @@ public final class IslandToolsConfig extends ModuleConfig {
                         "effects.smelt-per-level", ValueChange.of(20.0, d.smeltPerLevel),
                         "hoe.storage-base", ValueChange.of(256, d.storageBase)),
                 // v8 (owner 4 Nov 2026 19:39): the pickaxe got a storage too
-                8, Map.of("perks", ValueChange.of(PERKS_V7, d.perks)));
+                8, Map.of("perks", ValueChange.of(PERKS_V7, PERKS_V8)),
+                // v9 (feedback 5 Nov 2026): shards about 5x faster, Shard Finder 1% a level, 50-100 bigger levels per perk
+                9, Map.ofEntries(Map.entry("perks", ValueChange.of(PERKS_V8, d.perks)),
+                        Map.entry("shards.chance-hoe", ValueChange.of(8.0, d.shardHoe)), Map.entry("shards.chance-pickaxe", ValueChange.of(6.0, d.shardPickaxe)),
+                        Map.entry("shards.finder-per-level", ValueChange.of(0.1, d.shardFinderPerLevel)),
+                        Map.entry("effects.drops-per-level", ValueChange.of(0.05, d.dropsPerLevel)),
+                        Map.entry("effects.smelt-per-level", ValueChange.of(0.5, d.smeltPerLevel)),
+                        Map.entry("effects.growth-per-level", ValueChange.of(0.2, d.growthPerLevel)),
+                        Map.entry("effects.wisdom-per-level", ValueChange.of(0.5, d.wisdomPerLevel)),
+                        Map.entry("effects.sell-per-level", ValueChange.of(0.02, d.sellPerLevel)),
+                        Map.entry("effects.lucky-chance-per-level", ValueChange.of(0.002, d.luckyPerLevel)),
+                        Map.entry("hoe.storage-per-level", ValueChange.of(200L, d.storagePerLevel))));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */

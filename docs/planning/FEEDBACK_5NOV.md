@@ -25,8 +25,8 @@ Status: ⬜ open · 🔧 in progress · ✅ done. Worked in this order (quick fi
   prestige (the Roblox feeling). Easy to understand in one menu.
 
 ## Tools and shards
-- ⬜ T1 Shards about 5× faster. A better Shard Finder: no "+0.01%"; a clear, noticeable effect.
-- ⬜ T2 Upgrade system redone: no waiting until level 20 for the first Shard Finder level; many more enchants
+- ✅ T1 Shards about 5× faster. A better Shard Finder: no "+0.01%"; a clear, noticeable effect.
+- 🔧 T2 (pacing done: first upgrades within minutes, 50-100 bigger levels; more enchants after the research) Upgrade system redone: no waiting until level 20 for the first Shard Finder level; many more enchants
   (inspiration from big harvester hoe / pickaxe plugins).
 
 ## Islands
