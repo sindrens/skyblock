@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.guide;
 
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.island.IslandJoinedEvent;
 import net.skybornmc.skyblock.common.island.IslandService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,6 +18,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -32,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The guide entities: one Mannequin (plus a two-line name/status text) per island, spawned only while a player stands on
- * that island and the chunk is loaded; never saved (not persistent), removed when the chunk unloads and on disable.
+ * that island and the chunk is loaded (right when a player arrives or the spot's chunk loads, plus the periodic sweep); never saved (not persistent), removed when the chunk unloads and on disable.
  * Left-overs from a crash carry the scoreboard tag {@link #TAG} and are removed when their chunk loads.
  */
 final class GuideNpcs implements Listener {
@@ -133,14 +137,43 @@ final class GuideNpcs implements Listener {
             return;
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!islands.isIslandWorld(player.getWorld())) {
-                continue;
-            }
-            islands.islandAt(player.getLocation()).ifPresent(info -> {
-                if (!placed.containsKey(info.id())) {
-                    spot(info.id()).ifPresent(at -> spawn(info.id(), at));
+            ensure(islands, player);
+        }
+    }
+
+    /**
+     * Plan 4 Nov C §2 (spawn delay): the guide of the island {@code player} stands on right now, without waiting for the
+     * next {@link #sweep}. Does nothing when he is already there, the player is not on an island or the chunk of his
+     * spot is not loaded yet (the chunk load spawns him then, {@link #onChunkLoad}).
+     */
+    void ensure(Player player) {
+        if (!m.config().enabled || player == null || !player.isOnline()) {
+            return;
+        }
+        m.islands().ifPresent(islands -> ensure(islands, player));
+    }
+
+    private void ensure(IslandService islands, Player player) {
+        if (!islands.isIslandWorld(player.getWorld())) {
+            return;
+        }
+        islands.islandAt(player.getLocation()).ifPresent(info -> {
+            Placed p = placed.get(info.id());
+            if (p == null || p.body == null || !p.body.isValid()) {
+                if (p != null) {
+                    remove(p);
+                    placed.remove(info.id());
                 }
-            });
+                spot(info.id()).ifPresent(at -> spawn(info.id(), at));
+            }
+        });
+    }
+
+    /** {@link #ensure} now and twice more while the arrival chunks finish loading (a teleport, a join, a new island). */
+    void ensureSoon(Player player) {
+        UUID id = player.getUniqueId();
+        for (long delay : GuideRules.ARRIVAL_CHECK_TICKS) {
+            Bukkit.getScheduler().runTaskLater(m.core().plugin(), () -> ensure(Bukkit.getPlayer(id)), delay);
         }
     }
 
@@ -274,6 +307,62 @@ final class GuideNpcs implements Listener {
                 e.remove(); // never saved, but a crash must not leave doubles
             }
         }
+    }
+
+    /** A player arrives (teleport, /is home, a new island, a profile switch): his island's guide appears right away. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent event) {
+        World to = event.getTo().getWorld();
+        if (to != null && m.islands().map(i -> i.isIslandWorld(to)).orElse(false)) {
+            ensureSoon(event.getPlayer());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        ensureSoon(event.getPlayer());
+    }
+
+    /** A member joined an island (invite accepted): his new island's guide, as soon as he stands there. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandJoined(IslandJoinedEvent event) {
+        ensureSoon(event.getPlayer());
+    }
+
+    /**
+     * The chunk of a guide's spot loaded while a player stands on that island (he arrived before the chunk was ready):
+     * spawn on the next tick (never inside the chunk load itself). Cheap: one island lookup per loaded island chunk.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkLoad(ChunkLoadEvent event) {
+        if (!m.config().enabled) {
+            return;
+        }
+        IslandService islands = m.islands().orElse(null);
+        World world = event.getWorld();
+        if (islands == null || !islands.isIslandWorld(world) || world.getPlayers().isEmpty()) {
+            return;
+        }
+        int cx = event.getChunk().getX();
+        int cz = event.getChunk().getZ();
+        Location centre = new Location(world, (cx << 4) + 8, 64, (cz << 4) + 8);
+        islands.islandAt(centre).ifPresent(info -> {
+            if (placed.containsKey(info.id())) {
+                return;
+            }
+            Optional<Location> at = spot(info.id());
+            if (at.isEmpty() || at.get().getWorld() != world || (at.get().getBlockX() >> 4) != cx || (at.get().getBlockZ() >> 4) != cz) {
+                return;
+            }
+            Bukkit.getScheduler().runTask(m.core().plugin(), () -> {
+                for (Player p : world.getPlayers()) {
+                    if (islands.islandAt(p.getLocation()).map(i -> i.id().equals(info.id())).orElse(false)) {
+                        ensure(islands, p);
+                        return;
+                    }
+                }
+            });
+        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

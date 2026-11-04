@@ -51,6 +51,13 @@ public final class GuideConfig extends ModuleConfig {
     @Setting(path = "talk.radius", desc = "Kindle says a line when a member comes this close (once per rotation per player).", min = 0, max = 16)
     public double talkRadius = 5;
 
+    @Setting(path = "menu.progress-length", desc = "Dots of the island level progress bar in Kindle's menu.", min = 5, max = 20)
+    public int progressLength = 10;
+
+    @Setting(path = "menu.next-none-command", desc = "What Kindle's Next step button runs when there is no next step "
+            + "(without /; empty = only a chat line).")
+    public String nextNoneCommand = "menu";
+
     @Override
     public String fileName() {
         return "guide.yml";

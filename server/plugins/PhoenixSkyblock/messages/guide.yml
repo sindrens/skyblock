@@ -17,123 +17,148 @@ move:
   not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island leader and admins can move Kindle."
   outside: "<prefix><c:error><sym:cross></c:error> <c:text>Stand inside your island's border to move Kindle there."
 
+# Kindle's menu (plan 4 Nov C §2): mockup lore. Bold name in its area colour, a muted subtitle, "| Label: value" rows,
+# the yellow "» CLICK to ..." line last. At most 6 lines per button, Bedrock-safe symbols only.
 menu:
   crumb-island: "Island"
   crumb: "Kindle"
-  info:
-    - "<c:text>Kindle is your island guide."
-    - "<c:muted>Everything your island can do,"
-    - "<c:muted>in one place. Find him next to"
-    - "<c:muted>your island home or use /is guide."
   kindle:
-    name: "<bold><grad:phoenix>Kindle</grad></bold> <c:muted>· your island guide"
+    name: "<bold><grad:phoenix>Kindle</grad></bold>"
     lore:
-      - "<c:text>Hey <c:value><player></c:value>! Your island is"
-      - "<c:text>level <c:value><level></c:value>. Here is what you can do."
+      - "<c:muted>Your island guide"
+      - ""
+      - "<c:text>Hey <c:value><player></c:value>! Here is all your"
+      - "<c:text>island can do, in one place."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to read the guide book"
   kindle-news:
-    name: "<bold><grad:phoenix>Kindle</grad></bold> <c:action><sym:star> Something new"
+    name: "<bold><grad:phoenix>Kindle</grad></bold> <c:action><sym:star>"
     lore:
-      - "<c:text>Your island grew to level <c:value><level></c:value>!"
-      - "<c:text>Check your <c:value>Challenges</c:value> and <c:value>Upgrades</c:value>:"
-      - "<c:text>new ones may be open now."
+      - "<c:muted>Something new!"
+      - ""
+      - "<c:text>Your island is level <c:value><level></c:value>."
+      - "<c:text>New tasks and upgrades may be open."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to read the guide book"
   kindle-quests:
-    name: "<area:reward>Kindle's quests"
+    name: "<area:reward><bold>Kindle's Quests"
     lore:
-      - "<c:text>Bring Kindle what he asks for"
-      - "<c:text>and get more than selling pays."
-      - "<c:muted>He has new errands now and then."
+      - "<c:muted>Errands that change now and then"
+      - ""
+      - "<c:text>Bring what he asks, get more"
+      - "<c:text>than selling pays."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"
   kindle-quests-story:
-    name: "<area:reward>Kindle's quests <c:action><sym:star>"
+    name: "<area:reward><bold>Kindle's Quests</bold> <c:action><sym:star>"
     lore:
-      - "<c:text>Kindle asks: <c:value><ask>"
-      - "<c:muted>Plus a few errands that change"
-      - "<c:muted>now and then."
+      - "<c:muted>Errands that change now and then"
+      - ""
+      - "<c:bar>| </c:bar><c:text>He asks: </c:text><c:value><ask>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see them"
   finds:
-    name: "<area:money>Kindle's finds"
+    name: "<area:money><bold>Kindle's Finds"
     lore:
-      - "<c:text>Useful things Kindle found."
-      - "<c:text>He trades them for your crops,"
-      - "<c:text>ores and mob drops, never money."
+      - "<c:muted>Trades for items, never money"
+      - ""
+      - "<c:text>Useful things for your crops,"
+      - "<c:text>ores and mob drops."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to look"
-  book:
-    name: "<area:neutral>Guide book"
-    lore:
-      - "<c:text>How to play, in short pages."
-      - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to read"
+  # The shared next step (same as /help Find my way and the scoreboard Next line). <next> = the step, <command>.
   next:
-    name: "<c:action>Next step"
+    name: "<c:action><bold>Next Step"
     lore:
-      - "<c:value><next>"
+      - "<c:muted>What to do now"
+      - ""
+      - "<c:bar>| </c:bar><c:value><next>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to do it"
+  # Same, when the step has no command that works here: a click shows it in chat.
+  next-info:
+    name: "<c:action><bold>Next Step"
+    lore:
+      - "<c:muted>What to do now"
+      - ""
+      - "<c:bar>| </c:bar><c:value><next>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see it in chat"
-  next-none: "Explore /menu"
+  next-none: "Explore the main menu"
   next-chat: "<prefix><grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Next: <c:value><next>"
-  challenges:
-    name: "<area:skills>Challenges"
+  # Island level: <level>, <filled>/<empty> progress dots (guide.yml menu.progress-length), <percent>.
+  progress-dot: "●"
+  level:
+    name: "<area:home><bold>Island Level"
     lore:
-      - "<c:text>Island tasks: <c:value><done></c:value><c:muted>/<total> done"
-      - "<c:muted>Finishing them opens new tiers,"
-      - "<c:muted>upgrades and Depths tasks."
+      - "<c:muted>Grows with all you build and do"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the book"
-  quests:
-    name: "<area:reward>Quests"
+      - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level>"
+      - "<c:bar>| </c:bar><c:flame><filled></c:flame><c:locked><empty></c:locked> <c:value><percent>%"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see your points"
+  upgrades:
+    name: "<area:money><bold>Island Upgrades"
     lore:
-      - "<c:text>Daily, weekly and island quests."
+      - "<c:muted>Size, members, farms and more"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Ready to buy: </c:text><c:value><ready>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  milestones:
-    name: "<area:skills>Milestones"
+  challenges:
+    name: "<area:skills><bold>Island Tasks"
     lore:
-      - "<c:text>Grind an activity, claim perks"
-      - "<c:text>for it. Island tiers raise your level."
+      - "<c:muted>Goals that open new upgrades"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Done: </c:text><c:value><done></c:value><c:muted>/<total>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open the book"
+  milestones:
+    name: "<area:skills><bold>Milestones"
+    lore:
+      - "<c:muted>Rewards for what you gather"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Ready to claim: </c:text><c:value>0"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   milestones-ready:
-    name: "<area:reward>Milestones <c:action>(<ready> ready)"
+    name: "<area:reward><bold>Milestones</bold> <c:action>(<ready>)"
     lore:
-      - "<c:value><ready></c:value> <c:text>tier(s) ready to claim!"
+      - "<c:muted>Rewards for what you gather"
+      - ""
+      - "<c:bar>| </c:bar><c:text>Ready to claim: </c:text><c:value><ready>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"
-  upgrades:
-    name: "<area:money>Upgrades"
+  tools:
+    name: "<area:skills><bold>Island Tools"
     lore:
-      - "<c:text>Bigger island, faster production,"
-      - "<c:text>better Depths. Paid from your island."
+      - "<c:muted>Your island hoe and pickaxe"
+      - ""
+      - "<c:text>Level them up with shards."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  masteries:
-    name: "<area:skills>Masteries"
+  farm:
+    name: "<area:move><bold>Farm"
     lore:
-      - "<c:text>Long-term island bonuses."
+      - "<c:muted>/farm"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  level:
-    name: "<area:reward>Island level <c:value><level>"
+      - "<c:text>Harvest crops for money."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"
+  mine:
+    name: "<area:move><bold>Mine"
     lore:
-      - "<c:text>Where your points come from"
-      - "<c:text>and how to raise them."
+      - "<c:muted>/mine"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
-  depths:
-    name: "<area:depths>The Depths"
-    lore:
-      - "<c:text>Your tier: <c:value><tier>"
-      - "<c:muted>Mine, chop and fight below."
+      - "<c:text>Mine ores for money."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to go there"
   help:
-    name: "<area:neutral>Help & guides"
+    name: "<area:neutral><bold>Help"
     lore:
-      - "<c:text>Every feature explained."
+      - "<c:muted>What do you want to do?"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open help"
 
 talk:
   story-ready: "<grad:phoenix>Kindle</grad> <c:muted>»</c:muted> <c:text>Oh! You have everything for my quest. <click:run_command:'/is guide'><hover:show_text:'<c:action>Open Kindle'><c:action>[Hand it in]</c:action></hover></click>"
@@ -217,16 +242,16 @@ book:
     - "<black>I'm Kindle, your island guide."
     - ""
     - "<black>Your island starts small. Grow"
-    - "<black>it, earn money, go down into"
-    - "<black>the Depths and rise like a"
+    - "<black>it, earn money at /farm and"
+    - "<black>/mine and rise like a"
     - "<black>phoenix!"
     - ""
     - "<dark_gray>Turn the page for the basics."
   page-2:
     - "<bold><dark_red>Money</dark_red></bold>"
     - ""
-    - "<black>Farm, mine and fight, then"
-    - "<black>/sell what you gather."
+    - "<black>Harvest at /farm, mine at"
+    - "<black>/mine, then /sell it all."
     - ""
     - "<black>/shop sells blocks, seeds"
     - "<black>and spawners."
@@ -238,8 +263,8 @@ book:
     - ""
     - "<black>Your level grows from island"
     - "<black>milestones (/ms), blocks you"
-    - "<black>place, skills, the Depths and"
-    - "<black>your island bank."
+    - "<black>place, skills and your"
+    - "<black>island bank."
     - ""
     - "<black>/is level shows where your"
     - "<black>points come from."
@@ -248,20 +273,18 @@ book:
     - ""
     - "<black>/is upgrade: a bigger island,"
     - "<black>faster farms and spawners,"
-    - "<black>better Depths."
+    - "<black>more members."
     - ""
     - "<black>Masteries are long-term"
     - "<black>bonuses for your whole island."
   page-5:
-    - "<bold><dark_red>The Depths</dark_red></bold>"
+    - "<bold><dark_red>Island tools</dark_red></bold>"
     - ""
-    - "<black>Below spawn lie the Depths:"
-    - "<black>ores, forests and monsters."
+    - "<black>Your island hoe and pickaxe"
+    - "<black>level up as you use them."
     - ""
-    - "<black>Level Mining, Foraging and"
-    - "<black>Combat to open deeper tiers."
-    - ""
-    - "<black>/dungeon takes you there."
+    - "<black>Spend shards on perks:"
+    - "<black>hold the tool and use /tool."
   page-6:
     - "<bold><dark_red>Milestones</dark_red></bold>"
     - ""

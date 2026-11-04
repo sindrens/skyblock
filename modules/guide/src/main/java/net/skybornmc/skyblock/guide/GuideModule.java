@@ -33,7 +33,8 @@ import java.util.logging.Level;
 
 /**
  * The island guide Kindle (docs/planning/ISLAND_GUIDE.md, owner 2 Nov 2026): one helper NPC per island that opens
- * challenges, quests, milestones, upgrades, masteries, the island level, the Depths and help, and tells members when an
+ * his quests and finds, the island level, upgrades, tasks, milestones, island tools, /farm, /mine and the shared next
+ * step (plan 4 Nov C §2), and tells members when an
  * island level-up brought something new. {@code /is guide} opens him anywhere, {@code /is guide move} moves him.
  */
 public final class GuideModule implements SkyblockModule, Listener {
@@ -256,7 +257,7 @@ public final class GuideModule implements SkyblockModule, Listener {
     // ------------------------------------------------------------------ command
 
     private CommandSpec guideCommand() {
-        return CommandSpec.sub("guide").description("Talk to your island guide Kindle: challenges, quests, upgrades, the Depths, help")
+        return CommandSpec.sub("guide").description("Talk to your island guide Kindle: island level, upgrades, tasks, tools and your next step")
                 .permission(PERM).playerOnly().example("is guide")
                 .executes(ctx -> {
                     Player p = ctx.player();

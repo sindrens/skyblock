@@ -5,7 +5,32 @@ import net.skybornmc.skyblock.common.island.IslandService;
 /** Pure rules of the island guide (unit-tested). */
 final class GuideRules {
 
+    /** Ticks after an arrival when the guide is checked (the arrival chunks may still be loading at the first one). */
+    static final long[] ARRIVAL_CHECK_TICKS = {1L, 10L, 40L};
+
     private GuideRules() {
+    }
+
+    /** Filled dots of a {@code length}-dot progress bar at {@code percent} (0-100, rounded down, clamped). */
+    static int filled(int percent, int length) {
+        if (length <= 0) {
+            return 0;
+        }
+        int p = Math.max(0, Math.min(100, percent));
+        return p * length / 100;
+    }
+
+    /** A placeholder's percent text ({@code "46"}, {@code "46.5"}, {@code "46%"}) as a whole number; 0 when not a number. */
+    static int percent(String text) {
+        if (text == null) {
+            return 0;
+        }
+        String t = text.strip().replace("%", "");
+        try {
+            return (int) Math.max(0, Math.min(100, Math.floor(Double.parseDouble(t))));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     /** The default spot: the island home plus the configured offset, facing back toward the home. */
