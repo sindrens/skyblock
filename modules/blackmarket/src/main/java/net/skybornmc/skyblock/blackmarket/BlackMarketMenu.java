@@ -145,8 +145,8 @@ final class BlackMarketMenu extends Menu {
         List<java.util.function.Consumer<Player>> actions = new ArrayList<>();
         if (m.settings.charterEnabled && !m.charterSteps().isEmpty() && m.islands().isPresent()) {
             Purchases.CharterView view = m.purchases().charter(viewer);
-            stacks.add(charterItem(view, Currency.SHARDS));
-            actions.add(p -> charterClicked(p, Currency.SHARDS));
+            stacks.add(charterItem(view, BlackMarketModule.CURRENCY));
+            actions.add(p -> charterClicked(p, BlackMarketModule.CURRENCY));
             boolean credits = m.charterSteps().stream().anyMatch(s -> s.credits() > 0);
             if (credits) {
                 stacks.add(charterItem(view, Currency.CREDITS));
@@ -170,11 +170,11 @@ final class BlackMarketMenu extends Menu {
     // ================================================================== items
 
     private ItemStack wallet() {
-        OptionalLong shards = m.economy().map(e -> e.cached(viewer.getUniqueId(), Currency.SHARDS)).orElse(OptionalLong.empty());
+        OptionalLong shards = m.economy().map(e -> e.cached(viewer.getUniqueId(), BlackMarketModule.CURRENCY)).orElse(OptionalLong.empty());
         OptionalLong credits = m.economy().map(e -> net.skybornmc.skyblock.common.economy.CreditView.cachedShown(e, viewer.getUniqueId(),
                 Currency.CREDITS)).orElse(OptionalLong.empty());
         return service.item(Material.AMETHYST_SHARD, viewer, BlackMarketModule.ID, "menu.wallet",
-                Msg.p("shards", shards.isPresent() ? m.price(Currency.SHARDS, shards.getAsLong()) : "..."),
+                Msg.p("shards", shards.isPresent() ? m.price(BlackMarketModule.CURRENCY, shards.getAsLong()) : "..."),
                 Msg.p("credits", credits.isPresent() ? m.price(Currency.CREDITS, credits.getAsLong()) : "..."));
     }
 
@@ -252,7 +252,7 @@ final class BlackMarketMenu extends Menu {
                 v -> {
                     List<Component> lines = new ArrayList<>(service.lines(v, BlackMarketModule.ID, "confirm.offer",
                             Msg.c("offer", m.offerName(v, o)), Msg.number("amount", o.amount()), Msg.p("price", m.shards(o.price())),
-                            Msg.p("balance", balance(v, Currency.SHARDS))));
+                            Msg.p("balance", balance(v, BlackMarketModule.CURRENCY))));
                     if (o.kind() != OfferCatalog.Kind.TAG && (m.settings.bound || o.kind() == OfferCatalog.Kind.KEY)) {
                         lines.addAll(service.lines(v, BlackMarketModule.ID, "confirm.bound"));
                     }

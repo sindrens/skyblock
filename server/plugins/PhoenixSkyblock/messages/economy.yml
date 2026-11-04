@@ -347,6 +347,12 @@ sell:
   # A sale (SELL2): below sell.big-sale-chat-from (economy.yml, default $100k) only the action bar line, from there one
   # chat line whose hover shows the breakdown (sell.breakdown.*).
   sold-bar: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount>"
+  sold-screen:
+    title: "<bold><c:success><amount></c:success></bold>"
+    subtitle: "<c:text>Sold <c:value><items></c:value> items"
+    fade-in: 4
+    stay: 30
+    fade-out: 10
   sold-bar-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)"
   # One item kind (/sell hand, the shop's sell GUI and sell all): <items> count, <item> the item name.
   sold-bar-item: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items>x <item></c:value> for <amount>"

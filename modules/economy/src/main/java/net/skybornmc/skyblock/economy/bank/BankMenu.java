@@ -352,7 +352,9 @@ final class BankMenu extends Menu {
     private MenuButton locked(Material icon, String key) {
         List<Component> lore = new ArrayList<>(lines(key + ".about"));
         lore.addAll(lines("bank.menu.locked"));
-        return MenuButton.display(service.item(icon, text(key + ".name", amount("max", 0)), lore));
+        // Feedback 5 Nov 2026: a click on a locked island bank button says why (it did nothing before).
+        return MenuButton.of(service.item(icon, text(key + ".name", amount("max", 0)), lore),
+                click -> bank.fail(click.player(), "bank.island.no-permission"));
     }
 
     // ------------------------------------------------------------------------------------------------ helpers

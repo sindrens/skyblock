@@ -228,6 +228,14 @@ final class StaffCommands extends CommandGroup implements Listener {
             playerFly(target); // feedback 4 Nov 2026 (E17): the rank perk (targetOrSelf already refused others)
             return;
         }
+        // Feedback 5 Nov 2026 ("/fly still doesn't work, especially for top ranks"): staff and the owner (who have the
+        // staff node through *) outside staff/build mode got "only in staff mode". Their own /fly outside the mode is
+        // now the rank perk (island fly) too; the staff power stays for staff mode, for others and for turning it off.
+        if (same(sender, target) && !powers.flyOn(target.getUniqueId()) && !powers.inMode(target)
+                && target.hasPermission(Perms.PLAYER_FLY)) {
+            playerFly(target);
+            return;
+        }
         GameMode mode = target.getGameMode();
         StaffPowerRules.FlyAction action = StaffPowerRules.fly(powers.flyOn(target.getUniqueId()),
                 mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR);

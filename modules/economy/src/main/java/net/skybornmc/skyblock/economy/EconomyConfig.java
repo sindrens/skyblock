@@ -433,6 +433,9 @@ public final class EconomyConfig extends ModuleConfig {
             + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
     public long sellBigSaleChatFrom = 100_000;
 
+    @Setting(path = "sell.all-title", desc = "Feedback 5 Nov 2026: selling everything at once (/sell, Sell all) shows the total big on screen (a title).")
+    public boolean sellAllTitle = true;
+
     @Setting(path = "sell.big-sale-hover-lines", desc = "Most item lines in the hover breakdown of a big sale (the rest is "
             + "summed up as \"+N more\").", min = 1, max = 30)
     public int sellBigSaleHoverLines = 10;

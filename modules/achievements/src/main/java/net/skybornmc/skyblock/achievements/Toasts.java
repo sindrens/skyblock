@@ -47,7 +47,8 @@ final class Toasts {
             int shown = Math.min(unlocks.size(), config.toastMaxLines);
             for (int i = 0; i < shown; i++) {
                 Progression.Unlock u = unlocks.get(i);
-                module.msg().send(player, u.last() ? "unlock.chat-done" : "unlock.chat", withPoints(u.def().name(), u.def(), u.tier()));
+                sendWithHover(player, u.last() ? "unlock.chat-done" : "unlock.chat", u.def().description(), u.def().goal(u.tier()),
+                        withPoints(u.def().name(), u.def(), u.tier()));
             }
             if (unlocks.size() > shown) {
                 module.msg().send(player, "unlock.more", Msg.p("count", unlocks.size() - shown));
@@ -56,6 +57,27 @@ final class Toasts {
         if (!config.toastSound.isBlank()) {
             module.core().sounds().play(player, config.toastSound);
         }
+    }
+
+    /**
+     * Feedback 5 Nov 2026 ("hovering the achievement line should show what it was for"): the chat line shows the
+     * achievement's description and the goal of the tier when hovered.
+     */
+    private void sendWithHover(Player player, String key, List<String> description, long goal, TagResolver... placeholders) {
+        net.kyori.adventure.text.Component hover = net.kyori.adventure.text.Component.empty();
+        boolean first = true;
+        for (String line : description) {
+            if (!first) {
+                hover = hover.append(net.kyori.adventure.text.Component.newline());
+            }
+            hover = hover.append(module.core().messages().parse(player, line));
+            first = false;
+        }
+        if (!first) {
+            hover = hover.append(net.kyori.adventure.text.Component.newline());
+        }
+        hover = hover.append(module.msg().component(player, "unlock.hover-goal", Msg.number("goal", goal)));
+        player.sendMessage(module.msg().component(player, key, placeholders).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(hover)));
     }
 
     /** Island tiers (AC3): the same toast with island texts, shown to every online member. */
@@ -73,7 +95,8 @@ final class Toasts {
             int shown = Math.min(unlocks.size(), config.toastMaxLines);
             for (int i = 0; i < shown; i++) {
                 IslandProgression.Unlock u = unlocks.get(i);
-                module.msg().send(player, u.last() ? "unlock.island-chat-done" : "unlock.island-chat", withPoints(u.def().name(), u.def(), u.tier()));
+                sendWithHover(player, u.last() ? "unlock.island-chat-done" : "unlock.island-chat", u.def().description(), u.def().goal(u.tier()),
+                        withPoints(u.def().name(), u.def(), u.tier()));
             }
             if (unlocks.size() > shown) {
                 module.msg().send(player, "unlock.more", Msg.p("count", unlocks.size() - shown));

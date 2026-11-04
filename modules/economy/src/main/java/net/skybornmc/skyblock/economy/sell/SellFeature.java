@@ -912,6 +912,9 @@ public final class SellFeature implements Listener {
                 } else {
                     msg.actionBar(player, bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p);
                 }
+                if (q.lines().size() > 1 && config.sellAllTitle) {
+                    msg.title(player, "sell.sold-screen", p); // feedback 5 Nov 2026: Sell all shows big on screen
+                }
                 core.sounds().play(player, "money");
                 if (!r.giveBack().isEmpty()) {
                     msg.send(player, "sell.some-unsold", Msg.number("stacks", r.giveBack().size()));

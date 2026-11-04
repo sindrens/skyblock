@@ -62,8 +62,8 @@ final class GrindAreas extends CommandGroup implements Listener {
     }
 
     /** {@code bonus}: money paid per harvest on top of the crop (the Farm pays better than an island farm). */
-    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 6), new Crop(Material.CARROTS, Material.CARROT, 500, 9),
-            new Crop(Material.POTATOES, Material.POTATO, 2_500, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 8_000, 16));
+    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 6), new Crop(Material.CARROTS, Material.CARROT, 3_000, 9),
+            new Crop(Material.POTATOES, Material.POTATO, 12_000, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 40_000, 16)); // owner 5 Nov: carrots take much longer
     private static final org.bukkit.NamespacedKey FARMED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_farmed");
 
     /** Pure: the crop a player with {@code farmed} harvests has unlocked. */
@@ -119,6 +119,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
+            wetFarm(); // owner 5 Nov 2026: every farmland at /farm is wet, as if it had water
             fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
             core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
             // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
@@ -168,6 +169,7 @@ final class GrindAreas extends CommandGroup implements Listener {
         for (int x = -FARM_HALF; x <= FARM_HALF; x++) {
             for (int z = -FARM_HALF; z <= FARM_HALF; z++) {
                 world.getBlockAt(FARM_X + x, base, z).setType(Material.FARMLAND, false);
+                wet(world.getBlockAt(FARM_X + x, base, z));
                 ripe(world.getBlockAt(FARM_X + x, base + 1, z));
             }
         }
@@ -295,6 +297,40 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         event.setCancelled(true);
+    }
+
+    /** Owner 5 Nov 2026: farmland at /farm is always fully wet (looks watered, never dries to dirt). */
+    private void wetFarm() {
+        for (int x = -FARM_HALF; x <= FARM_HALF; x++) {
+            for (int z = -FARM_HALF; z <= FARM_HALF; z++) {
+                wet(world.getBlockAt(FARM_X + x, base, z));
+            }
+        }
+    }
+
+    private static void wet(org.bukkit.block.Block b) {
+        if (b.getBlockData() instanceof org.bukkit.block.data.type.Farmland land && land.getMoisture() != land.getMaximumMoisture()) {
+            land.setMoisture(land.getMaximumMoisture());
+            b.setBlockData(land, false);
+        }
+    }
+
+    private boolean inFarm(org.bukkit.block.Block b) {
+        return world != null && b.getWorld().equals(world) && Math.abs(b.getX() - FARM_X) <= FARM_HALF && Math.abs(b.getZ()) <= FARM_HALF;
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onMoisture(org.bukkit.event.block.MoistureChangeEvent event) {
+        if (inFarm(event.getBlock())) {
+            event.setCancelled(true); // stays wet
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onFade(org.bukkit.event.block.BlockFadeEvent event) {
+        if (event.getBlock().getType() == Material.FARMLAND && inFarm(event.getBlock())) {
+            event.setCancelled(true); // never turns back into dirt
+        }
     }
 
     // ------------------------------------------------------------------ mine: ores per player

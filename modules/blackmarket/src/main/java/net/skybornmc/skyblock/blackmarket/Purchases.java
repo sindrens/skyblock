@@ -144,7 +144,7 @@ final class Purchases {
         }
         int slot = offer.slot() == OfferCatalog.Slot.FIXED ? -1 : m.market().row(offer.id()).map(BlackMarketStore.RotationRow::index).orElse(-1);
         long rotationId = slot >= 0 ? m.market().currentId() : m.rotation().id(System.currentTimeMillis());
-        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), Currency.SHARDS, offer.price(), slot,
+        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), BlackMarketModule.CURRENCY, offer.price(), slot,
                 rotationId, null, 0));
     }
 

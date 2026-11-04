@@ -60,6 +60,12 @@ import java.util.concurrent.Executor;
  */
 public final class BlackMarketModule implements SkyblockModule, Listener {
 
+    /**
+     * The currency Black Market prices are in. Feedback 5 Nov 2026: shards are easy to get and are only for the island
+     * tools now, so the Black Market sells for crystals (same numbers; the credit prices are unchanged).
+     */
+    public static final net.skybornmc.skyblock.common.economy.Currency CURRENCY = net.skybornmc.skyblock.common.economy.Currency.CRYSTALS;
+
     static final String ID = "blackmarket";
     static final String PERM_USE = "skyblock.blackmarket.use";
     /** Key source of keys bought here (crates.yml: not a tradeable source, so the keys are bound). */
@@ -404,7 +410,7 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
     }
 
     String shards(long amount) {
-        return economy().map(e -> e.format(Currency.SHARDS, amount)).orElse(Format.number(amount));
+        return economy().map(e -> e.format(BlackMarketModule.CURRENCY, amount)).orElse(Format.number(amount));
     }
 
     String price(Currency currency, long amount) {

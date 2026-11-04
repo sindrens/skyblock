@@ -1,6 +1,14 @@
 # Changelog
 
 ## [Unreleased]
+### 5 Nov: quick fixes from the testers
+- /farm: carrots need 3,000 harvests (potatoes 12,000, beetroot 40,000); every farmland at /farm is wet and never dries.
+- Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
+- `/fly`: staff and the owner outside staff mode now get the rank perk (island fly) instead of "staff mode only".
+- Achievements: hovering the chat line shows what it was for and the goal of the tier.
+- Sell all (`/sell`, the shop's Sell all) shows the total big on screen (`economy.yml sell.all-title`).
+- Black Market: prices are in crystals now (shards are only for the island tools).
+
 ### 4 Nov: tutorial
 - **`/tutorial` (`/quest`), the guided tour:** seven chapters (Welcome to Phoenix, Your Island, The Farm, The Mine, Money Matters, Growing Together, What's Next). Steps finish from real play: talking to NPCs, menus, harvesting at /farm, mining at /mine, selling, the bank, upgrades, invites, /daily. Rewards per chapter, once per account (a profile wipe never pays them again). `/tutorial skip` ends it without rewards.
 - **Quest book** with your chapter (✔ done, ▶ next with a hint, • to do, click a step to go there) and every chapter with the overall progress; a menu on Bedrock.

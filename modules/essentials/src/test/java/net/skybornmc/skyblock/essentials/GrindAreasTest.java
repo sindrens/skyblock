@@ -11,8 +11,8 @@ class GrindAreasTest {
     @Test
     void cropsUnlockInOrder() {
         assertEquals(Material.WHEAT, GrindAreas.cropFor(0).block());
-        assertEquals(Material.WHEAT, GrindAreas.cropFor(499).block());
-        assertEquals(Material.CARROTS, GrindAreas.cropFor(500).block());
+        assertEquals(Material.WHEAT, GrindAreas.cropFor(2_999).block());
+        assertEquals(Material.CARROTS, GrindAreas.cropFor(3_000).block(), "owner 5 Nov: carrots take much longer");
         assertEquals(Material.BEETROOTS, GrindAreas.cropFor(1_000_000).block());
     }
 
