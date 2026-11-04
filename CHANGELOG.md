@@ -1,6 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### Chat cards and broadcasts (4 Nov 2026)
+- **Broadcast cards:** now and then a short card about a feature (shop, farm, mine, store, vote, Discord, daily reward, island upgrades, tips): a centred bold gradient title, 1-3 lines and a clickable `» /shop «` line. Bedrock players see it left-aligned. Texts in `messages/broadcasts.yml`.
+- Cards only come while chat is active: at least 7 minutes and 6 chat messages from 2 players since the last card, with 3 players online (`chat.yml broadcasts.*`, editable in `/admin`). Random order, never the same card twice in a row; a card whose command doesn't exist is skipped.
+- Nobody gets a card in their first 2 minutes, while AFK, at the place the card is about (no farm card at /farm), or with the **Tips** switch in /settings off (the switch works now).
+- `/chat card <id>` (staff) previews a card.
+- **System notices:** a `<notice>` prefix for server-wide notices: the gradient word PHOENIX and an arrow (`style.yml notice`).
+
 ### 4 Nov quick fixes (tester feedback, plan B phase 1)
 - **/farm and /mine:** your own crops (carrots, potatoes, beetroot) and ores stay visible: no more wheat after a regrow or a right-click, and the view comes back after a chunk reload, teleport or respawn. Farm crops can't be right-clicked (bone meal) any more.
 - **Spawner mobs** fall and can be pushed by players and water (unaware instead of no AI); they still don't walk, fly, jump or hurt players. Fish, guardians and dolphins stay fully still (no flopping). Existing spawner mobs are fixed when their chunk loads.
