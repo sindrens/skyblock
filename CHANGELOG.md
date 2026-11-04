@@ -1,6 +1,16 @@
 # Changelog
 
 ## [Unreleased]
+### 4 Nov quick fixes (tester feedback, plan B phase 1)
+- **/farm and /mine:** your own crops (carrots, potatoes, beetroot) and ores stay visible: no more wheat after a regrow or a right-click, and the view comes back after a chunk reload, teleport or respawn. Farm crops can't be right-clicked (bone meal) any more.
+- **Spawner mobs** fall and can be pushed by players and water (unaware instead of no AI); they still don't walk, fly, jump or hurt players. Fish, guardians and dolphins stay fully still (no flopping). Existing spawner mobs are fixed when their chunk loads.
+- **Bank:** no withdrawal fee (`bank.yml` v4: `withdraw.fee-percent` 0 and the mastery steps 0 when untouched); the bank menu and confirm screen show no fee line.
+- **Island tools:** right-click in the air opens the tool's menu (no sneak); right-click on a block works the vanilla way (tilling, stripping). `/tool` opens the menu of the island tool in your hand (Bedrock).
+- **/fly** for players with the fly rank perk (`skyblock.fly`, Flamecrest and up): toggles island fly on your islands and on visited islands with visitor fly on; it ends with a soft landing when you leave the island (spawn, /farm, /mine). Staff `/fly` is unchanged.
+- **Profiles:** an existing profile can always be switched to, even when your rank now gives fewer slots ("Slot locked" is gone).
+- **Islands:** a profile that left an island no longer blocks your other profiles from joining it ("is or was on this island" is now "is").
+- **Island crops:** fields no longer stay green after a restart or when an island's chunks reload (each loaded island chunk is scanned once); big fields grow in the configured time (`growth.budget` 2000, `growth.max-ms-per-run` 4, `islandtools.yml` v6); torchflowers and pitcher plants finish growing.
+
 ### Depths removed, new start flow (4 Nov 2026)
 **Farm and Mine**
 - The Depths module is deleted. `/farm` harvests and `/mine` ores now give skill XP (Farming, Mining), count for island farm/mine tasks and harvest quests (new `GrindBreakEvent`).
