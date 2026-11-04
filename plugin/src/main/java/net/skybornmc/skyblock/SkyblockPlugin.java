@@ -93,6 +93,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private net.skybornmc.skyblock.common.teleport.CoreTeleportService teleports;
     private final net.skybornmc.skyblock.common.visibility.VisibilityConfig visibilityConfig = new net.skybornmc.skyblock.common.visibility.VisibilityConfig();
     private net.skybornmc.skyblock.common.visibility.CoreVisibilityService visibility;
+    private net.skybornmc.skyblock.common.nextstep.DefaultNextStepService nextSteps;
 
     @Override
     public void onEnable() {
@@ -160,6 +161,15 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         BuiltinPlaceholders.register(placeholders, getServer(), ranks, bedrock,
                 uuid -> players.get(uuid).map(PlayerData::playtimeMillis).orElse(0L));
         messages.placeholders(placeholders);
+        // Plan 4 Nov C §2: one shared next step (Kindle, /help Find my way, the scoreboard Next line); the start flow's
+        // objective is the fallback until a module (the tutorial) registers a better provider.
+        nextSteps = new net.skybornmc.skyblock.common.nextstep.DefaultNextStepService(
+                new net.skybornmc.skyblock.common.nextstep.ObjectiveNextStep(
+                        player -> placeholders.text(player, coreConfig.nextStepPlaceholder),
+                        () -> coreConfig.nextStepCommand), getLogger());
+        services.register("core", net.skybornmc.skyblock.common.nextstep.NextStepService.class, nextSteps);
+        placeholders.registerText("core", "next_step", player -> nextSteps.current(player)
+                .map(net.skybornmc.skyblock.common.nextstep.NextStep::text).orElse(""));
 
         core = new Core(this, coreConfig, configs, style, messages, sounds, database, players, commands, menus, items, dupes,
                 audit, services, placeholders, ranks, bedrockInfo, scheduler);
@@ -190,6 +200,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.afterFailedEnable(permissions::unregister);
         modules.afterDisable(id -> {
             visibility.removeAll(id);
+            nextSteps.unregisterAll(id);
             core.services().unregisterAll(id);
             core.placeholders().unregisterAll(id);
             permissions.unregister(id);

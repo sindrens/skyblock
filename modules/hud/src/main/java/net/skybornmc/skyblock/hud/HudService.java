@@ -51,6 +51,8 @@ import java.util.function.Supplier;
 public final class HudService implements Listener {
 
     static final String MODULE = "hud";
+    /** The built-in {@code <objective>} tag and {@code if:objective} condition: the shared next step (plan 4 Nov C §2). */
+    static final String OBJECTIVE = "objective";
     /** The {@code /settings} toggle (F1): off hides the sidebar, right away. Stored as {@code setting.scoreboard}. */
     public static final String SETTING = "scoreboard";
     /** Profile key of the value from before F1 ({@code "off"} hid the sidebar); moved to the toggle on join. */
@@ -294,6 +296,7 @@ public final class HudService implements Listener {
         sidebar.title(title == null ? Component.empty() : core.messages().parse(player, title, values));
         LayoutLines.Rules boardRules = new LayoutLines.Rules(config.maxLines, config.sectionRows, config.blankUnderTitleMaxLines, config.sectionGaps);
         List<LayoutLines.Line> visible = parsed.visible(key -> LayoutLines.TIMER_KEY.equals(key) ? timer.isPresent()
+                : objectiveCondition(key) ? nextStep(player).isPresent()
                 : LayoutLines.present(core.placeholders().text(player, key).orElse(null)), boardRules);
         List<Component> lines = new ArrayList<>(visible.size());
         for (LayoutLines.Line line : visible) {
@@ -405,8 +408,23 @@ public final class HudService implements Listener {
                 : core.messages().component(player, MODULE, "values.island-no-rank", Msg.p("level", level.get()));
     }
 
+    /** {@code if:objective} (and the configured objective key) follow the shared next step (plan 4 Nov C §2). */
+    private boolean objectiveCondition(String key) {
+        return OBJECTIVE.equals(key) || key.equals(config.objectiveKey);
+    }
+
+    /**
+     * The {@code Next:} text: the shared next step ({@link net.skybornmc.skyblock.common.nextstep.NextStepService}, the
+     * same as Kindle and /help), else the objective placeholder ({@code hud.yml → values.objective}).
+     */
+    private Optional<String> nextStep(Player player) {
+        Optional<String> step = net.skybornmc.skyblock.common.nextstep.NextStepService.of(core.services()).current(player)
+                .map(net.skybornmc.skyblock.common.nextstep.NextStep::text);
+        return step.isPresent() ? step : text(player, config.objectiveKey);
+    }
+
     private Component objective(Player player) {
-        return text(player, config.objectiveKey)
+        return nextStep(player)
                 .map(v -> core.messages().component(player, MODULE, "values.objective", Msg.p("value", v)))
                 .orElseGet(() -> core.messages().fixed(player, MODULE, "values.objective-default"));
     }
