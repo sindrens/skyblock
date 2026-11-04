@@ -5,6 +5,7 @@
 # Names above stacks (owner S8, S15: white name + gold count). <name> <count>
 mob-name: "<c:value><name></c:value> <c:ember>x<count>"
 item-name: "<c:value><name></c:value> <c:ember>x<count>"
+spawner-label: "<c:ember><bold><count>x</bold></c:ember> <c:value><name></c:value> <c:text>Spawner"
 
 # Things you can't do with a stack of mobs.
 stack:

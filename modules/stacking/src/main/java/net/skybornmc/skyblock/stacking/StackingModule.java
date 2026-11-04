@@ -140,6 +140,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         if (crops != null) {
             crops.saveAll();
         }
+        if (spawners != null) {
+            spawners.removeLabels();
+        }
         if (mobs != null) {
             mobs.index().clear();
         }
@@ -273,7 +276,10 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
 
     /** The custom drop of a spawner mob type, if it has one. */
     Optional<SpawnerDrops.Drop> spawnerDrop(EntityType type) {
-        return type == null ? Optional.empty() : drops.of(type.getKey().getKey());
+        if (type == null || config().spawnerVanillaLoot) {
+            return Optional.empty(); // feedback 5 Nov 2026: full vanilla loot (MobStacker scales it by the Mob Loot level)
+        }
+        return drops.of(type.getKey().getKey());
     }
 
     /** The Mob Loot multiplier of the island at a location (1.0 without an island or upgrade). */

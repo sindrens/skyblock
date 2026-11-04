@@ -141,6 +141,14 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.unlock.save-seconds", desc = "Kill counts are written in one batch this often.", min = 5, max = 600, restart = true)
     public int unlockSaveSeconds = 30;
 
+    @Setting(path = "spawners.labels", desc = "Feedback 5 Nov 2026: a text above every spawner stack (\"153x Cow Spawner\").")
+    public boolean spawnerLabels = true;
+
+    @Setting(path = "spawners.vanilla-loot", desc = "Feedback 5 Nov 2026: spawner mobs drop their full vanilla loot (cow: beef and "
+            + "leather, cooked when they die burning) times the number killed and the island's Mob Loot level, instead of the "
+            + "single custom item of spawners.drops. Off: the spawners.drops lines.")
+    public boolean spawnerVanillaLoot = true;
+
     @Setting(path = "spawners.drops", desc = "Custom drop per spawner mob: mob:item id:amount per mob (ECON-SPAWNERS S6). Spawner mobs with a line drop only this item; others keep vanilla loot.", level = Setting.Level.OWNER)
     public List<String> spawnerDrops = List.of(
             // Owner 3 Nov 2026: each mob drops its own vanilla item; the amount per kill keeps the income of the balance

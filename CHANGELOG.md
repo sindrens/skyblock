@@ -8,6 +8,8 @@
 - Achievements: hovering the chat line shows what it was for and the goal of the tier.
 - Sell all (`/sell`, the shop's Sell all) shows the total big on screen (`economy.yml sell.all-title`).
 - Black Market: prices are in crystals now (shards are only for the island tools).
+- Spawner mobs drop their full vanilla loot times the number killed and the island's Mob Loot level (cows: beef and leather; cooked when they die burning: fire aspect, lava, flint and steel). Old custom single drops: `stacking.yml spawners.vanilla-loot: false`.
+- A text above every spawner stack: "153x Cow Spawner" (`spawners.labels`). Mob and item stacks keep their "x153" names.
 - Shop: 19 items are back: crafting table, furnace, smoker, grindstone, chest, barrel, composter, ladder, glass pane, painting, armor stand, redstone torch, repeater, dropper, lever, buttons, stone pressure plate, note block.
 
 ### 4 Nov: tutorial

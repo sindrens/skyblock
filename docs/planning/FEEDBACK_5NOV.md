@@ -14,11 +14,11 @@ Status: ⬜ open · 🔧 in progress · ✅ done. Worked in this order (quick fi
 - ✅ Q9 Shop: many items missing (repeater etc.) → go through every craftable/useful block and item.
 
 ## Mobs and spawners
-- ⬜ M1 Mobs killed by fire (fire aspect, lava, flint and steel) drop cooked food.
-- ⬜ M2 A stack that dies of fall damage dies completely.
-- ⬜ M3 Drops per stack are wrong (a 7-cow stack drops 4 raw beef, no leather) → every mob drops its full vanilla
+- ✅ M1 Mobs killed by fire (fire aspect, lava, flint and steel) drop cooked food.
+- ✅ M2 A stack that dies of fall damage dies completely (already: mobs.whole-stack-damage has fall, lava, void).
+- ✅ M3 Drops per stack are wrong (a 7-cow stack drops 4 raw beef, no leather) → every mob drops its full vanilla
   loot times the number killed.
-- ⬜ M4 Holograms on stacks: spawner stacks and item stacks show "153x".
+- ✅ M4 Holograms on stacks: spawner stacks and item stacks show "153x".
 - ⬜ M5 BIG spawner update: every spawner spawns every 10 s, with an upgrade for a shorter delay. Spawners level up
   by killing their mobs on the island (any death counts): more kills, more spawners you can place. Prices are
   different per spawner and tier, and drops are worth more for more expensive spawners. Progress is fast, then

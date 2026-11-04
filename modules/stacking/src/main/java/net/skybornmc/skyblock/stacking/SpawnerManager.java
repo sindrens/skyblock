@@ -102,6 +102,13 @@ final class SpawnerManager implements Listener {
     private final PriorityQueue<Due> queue = new PriorityQueue<>((a, b) -> Long.compare(a.tick(), b.tick()));
     /** Owner F2: spawners per island and tier (diminishing output), kept up to date by every change below. */
     private final SpawnerCounts counts = new SpawnerCounts();
+    /**
+     * Feedback 5 Nov 2026 ("hologram on top of spawner stacks: 1x or 153x"): a text above every loaded spawner stack,
+     * not saved with the world (spawned again while the spawner runs), updated when the amount changes.
+     */
+    private final Map<Pos, org.bukkit.entity.TextDisplay> labels = new HashMap<>();
+    private final Map<Pos, Integer> labelAmount = new HashMap<>();
+    static final String LABEL_TAG = "phoenix_spawner_label";
 
     SpawnerManager(StackingModule module) {
         this.module = module;
@@ -306,6 +313,7 @@ final class SpawnerManager implements Listener {
         if (!sp.configured) {
             configure(block, sp);
         }
+        label(sp, world);
         schedule(sp, now + interval(sp));
         EntityType type = module.entityType(sp.type);
         if (sp.busy || type == null || !active(sp, world)) {
@@ -367,10 +375,57 @@ final class SpawnerManager implements Listener {
      * frozen, not deleted: it moves to {@code stacking_spawners_frozen} in one transaction, never spawns and can't be
      * taken (no dupe), and staff can give the spawners back from that table and the {@code spawner_frozen} audit row.
      */
+    /** Shows or updates the "153x Cow Spawner" text above a loaded spawner stack. Main thread. */
+    void label(Spawner sp, World world) {
+        if (!module.config().spawnerLabels) {
+            removeLabel(sp.pos);
+            return;
+        }
+        org.bukkit.entity.TextDisplay display = labels.get(sp.pos);
+        Integer shown = labelAmount.get(sp.pos);
+        if (display != null && display.isValid() && shown != null && shown == sp.amount) {
+            return;
+        }
+        EntityType type = module.entityType(sp.type);
+        net.kyori.adventure.text.Component text = module.msg().component(net.kyori.adventure.audience.Audience.empty(), "spawner-label",
+                Msg.c("name", type == null ? net.kyori.adventure.text.Component.text(sp.type)
+                        : net.kyori.adventure.text.Component.translatable(type.translationKey())),
+                Msg.p("count", net.skybornmc.skyblock.common.util.Format.number(sp.amount)));
+        if (display == null || !display.isValid()) {
+            Location at = sp.pos.center(world).add(0, 0.9, 0);
+            display = world.spawn(at, org.bukkit.entity.TextDisplay.class, t -> {
+                t.setPersistent(false);
+                t.setBillboard(org.bukkit.entity.Display.Billboard.CENTER);
+                t.setShadowed(true);
+                t.setViewRange(0.25f); // about 16 blocks
+                t.addScoreboardTag(LABEL_TAG);
+            });
+            labels.put(sp.pos, display);
+        }
+        display.text(text);
+        labelAmount.put(sp.pos, sp.amount);
+    }
+
+    void removeLabel(Pos pos) {
+        org.bukkit.entity.TextDisplay display = labels.remove(pos);
+        labelAmount.remove(pos);
+        if (display != null && display.isValid()) {
+            display.remove();
+        }
+    }
+
+    /** Module disable: every label goes. */
+    void removeLabels() {
+        for (Pos pos : java.util.List.copyOf(labels.keySet())) {
+            removeLabel(pos);
+        }
+    }
+
     private void orphan(Spawner sp, String reason) {
         count(sp, -sp.amount); // frozen spawners don't work, so they don't count
         sp.removed = true;
         spawners.remove(sp.pos, sp);
+        removeLabel(sp.pos);
         Pos p = sp.pos;
         long now = System.currentTimeMillis();
         then(module.core().database().transaction(c -> store.freeze(c, p.world(), p.x(), p.y(), p.z(), reason, now)), frozen -> {
@@ -607,6 +662,7 @@ final class SpawnerManager implements Listener {
                 count(sp, -1);
                 sp.removed = true;
                 spawners.remove(pos, sp);
+                removeLabel(pos);
                 return; // cancelled after us: the item was never used
             }
             configure(b, sp);
@@ -638,6 +694,7 @@ final class SpawnerManager implements Listener {
         count(sp, -sp.amount);
         sp.removed = true;
         spawners.remove(sp.pos, sp);
+        removeLabel(sp.pos);
         Block b = block.getWorld().getBlockAt(sp.pos.x(), sp.pos.y(), sp.pos.z());
         if (b.getType() == Material.SPAWNER) {
             b.setType(Material.AIR, false);
@@ -707,6 +764,7 @@ final class SpawnerManager implements Listener {
                     if (after == 0) {
                         sp.removed = true;
                         spawners.remove(p, sp);
+                        removeLabel(p);
                         if (world != null) {
                             Block b = world.getBlockAt(p.x(), p.y(), p.z());
                             if (b.getType() == Material.SPAWNER) {

@@ -496,6 +496,9 @@ final class MobStacker implements Listener {
                 extras = new ArrayList<>();
                 customDrop(custom.get(), at, killed, rolls, extras);
             } else {
+                if (spawnerMob) {
+                    lootMobs = StackMath.withLoot(lootMobs, module.lootMultiplier(at), true); // the island's Mob Loot level
+                }
                 extras = lootMobs > 0 ? extraLoot(entity, killer, lootMobs, event.getDrops()) : new ArrayList<>();
             }
             if (spawnerMob) {
@@ -579,6 +582,9 @@ final class MobStacker implements Listener {
                 loot = new ArrayList<>();
                 customDrop(custom.get(), at, killed, rolls, loot);
             } else {
+                if (spawnerMob) {
+                    lootMobs = StackMath.withLoot(lootMobs, module.lootMultiplier(at), false);
+                }
                 loot = extraLoot(stack, killer, lootMobs, List.of());
             }
             if (spawnerMob) {
