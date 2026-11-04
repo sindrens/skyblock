@@ -18,7 +18,7 @@ class AchievementRegistryTest {
     @Test
     void bundledFileHas39AchievementsInSixCategories() {
         AchievementRegistry r = Fixtures.registry();
-        assertEquals(38, r.size(), "30 starters + 8 added 2 Nov 2026");
+        assertEquals(26, r.size(), "30 starters + 8 added 2 Nov 2026 - 13 retired 5 Nov + Harvester on");
         assertEquals(List.of("skills", "island", "combat", "economy", "gear", "social"),
                 r.categories().stream().map(Category::id).toList());
         for (Category c : r.categories()) {
