@@ -254,8 +254,10 @@ class ProfileStoreTest {
         assertEquals(1, tx(c -> store.unnotified(c, oldPlayer)).size(), "told on the next join");
 
         StoredState file = new StoredState(new byte[]{8}, null, "level: 3");
-        assertTrue(tx(c -> store.consumeCapture(c, oldPlayer, oldPlayer, file, 7, 6_500)));
-        assertFalse(tx(c -> store.consumeCapture(c, oldPlayer, oldPlayer, StoredState.FRESH, 0, 6_600)), "once only");
+        boolean first = this.<Boolean>tx(c -> store.consumeCapture(c, oldPlayer, oldPlayer, file, 7, 6_500));
+        boolean again = this.<Boolean>tx(c -> store.consumeCapture(c, oldPlayer, oldPlayer, StoredState.FRESH, 0, 6_600));
+        assertTrue(first);
+        assertFalse(again, "once only");
         assertArrayEquals(new byte[]{8}, tx(c -> store.state(c, oldPlayer)).orElseThrow().inventory());
         assertEquals(7, tx(c -> store.snapshot(c, w.snapshotId())).orElseThrow().items());
         assertNull(tx(c -> store.loadOrCreate(c, oldPlayer, 7_000)).capture());
