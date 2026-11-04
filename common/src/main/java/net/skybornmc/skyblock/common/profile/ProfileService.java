@@ -119,6 +119,43 @@ public interface ProfileService {
      */
     CompletableFuture<Integer> seasonResetSlots(Actor actor);
 
+    // ------------------------------------------------------------------ wipe (owner 4 Nov 2026: island = profile)
+
+    /**
+     * True when the profiles module can wipe profiles (see {@link WipeScope}); the islands module then wipes the profile
+     * on every way of leaving an island. {@link #IDENTITY}: false (the old behaviour stays).
+     */
+    default boolean supportsWipe() {
+        return false;
+    }
+
+    /**
+     * Crash safety: records that {@code profileKey} is about to leave {@code islandId}. Call it <b>before</b> saving the
+     * removal, then {@link #wipe} after it. If the server stops in between, the profiles module finishes the wipe later
+     * (on join or in its sweep) once the profile is no longer on that island, or drops the intent when it still is.
+     */
+    default CompletableFuture<Void> intendWipe(UUID profileKey, WipeReason reason, Actor actor, UUID islandId, String islandName) {
+        return CompletableFuture.completedFuture(null);
+    }
+
+    /** The removal of {@code profileKey} was not saved after all: forget the intent of {@link #intendWipe}. */
+    default CompletableFuture<Void> dropWipeIntent(UUID profileKey) {
+        return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Wipes a profile (main thread or any thread): saves a snapshot (kept for {@code wipe.snapshot-days}), retires the key
+     * and gives the slot a fresh empty profile. An online player on that profile switches to the fresh one at once and gets
+     * a chat summary; an offline player's items are taken on the next join. Fires {@link ProfileWipedEvent}. Audited
+     * ({@code profile_wipe}).
+     *
+     * @param islandId   the island that was left (for the snapshot, the summary and {@code /profiles snapshots}), or null
+     * @param islandName its shown name, or null
+     */
+    default CompletableFuture<ProfileWipeResult> wipe(UUID profileKey, WipeReason reason, Actor actor, UUID islandId, String islandName) {
+        return CompletableFuture.completedFuture(ProfileWipeResult.of(ProfileWipeResult.Status.UNAVAILABLE));
+    }
+
     /**
      * Owner decision P7: one leaderboard entry per player from their best live profile, highest first.
      *
