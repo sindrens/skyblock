@@ -30,7 +30,19 @@ public enum Currency {
     CREDITS,
     /** Earned credits (vote, thanks, streak, pass, event, admin give): never transferable (hard rule in code). */
     CREDITS_EARNED,
-    SHARDS;
+    /**
+     * Farming Shards (owner 4 Nov 2026: two shard types). The key stays {@code shards}, so every balance, ledger row and
+     * config from before the split is now Farming Shards (the migration of the old single balance: no data move).
+     * Earned with the island hoe (island crops and /farm); pays the hoe's upgrades.
+     */
+    SHARDS,
+    /** Mining Shards (owner 4 Nov 2026): earned with the island pickaxe (island generator ores and /mine); pays its upgrades. */
+    MINING_SHARDS;
+
+    /** True for the two shard currencies (Farming and Mining Shards), which share their economy.yml limits. */
+    public boolean isShards() {
+        return this == SHARDS || this == MINING_SHARDS;
+    }
 
     /** Lowercase key used in the database, configs, messages, commands and style tags ({@code <cur:money>}). */
     public String key() {

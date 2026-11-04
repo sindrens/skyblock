@@ -90,7 +90,8 @@ colors:
 currencies:
   money: "#4DFF88 green"
   crystals: "#33E0FF aqua"      # island crystals (replaced tokens): aqua crystal look
-  shards: "#FF6B8A red"
+  shards: "#FF6B8A red"         # Farming Shards (owner 4 Nov 2026: two shard types)
+  mining_shards: "#8FB8D8 aqua" # Mining Shards: the mine's gray-blue
   credits: "#FF8C1A gold"       # card C1 (bought + earned; the old <cur:gems> and <cur:credits_earned> fall back to this)
 
 # Event tags in chat: one colour each, never clickable (G1-R1-01). Written <tag:crate><bold>[Crate]</bold></tag>
@@ -144,6 +145,7 @@ symbols:
   crystals: "◆"
   credits: "✦"                  # card C1 (pack glyph U+E204 in I7); <sym:gems> and <sym:credits_earned> fall back to this
   shards: "✧"
+  mining_shards: "✧"
   sparkle: "✦"
   arrow: "»"
   bullet: "▸"

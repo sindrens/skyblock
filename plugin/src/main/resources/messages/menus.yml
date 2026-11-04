@@ -33,8 +33,11 @@ wallet:
     name: "<cur:crystals><bold>Your Crystals"
     amount: "<cur:crystals><amount>"
   shards:
-    name: "<cur:shards><bold>Your Shards"
+    name: "<cur:shards><bold>Your Farming Shards"
     amount: "<cur:shards><amount>"
+  mining_shards:
+    name: "<cur:mining_shards><bold>Your Mining Shards"
+    amount: "<cur:mining_shards><amount>"
   credits:
     name: "<cur:credits><bold>Your Credits"
     amount: "<cur:credits><amount>"

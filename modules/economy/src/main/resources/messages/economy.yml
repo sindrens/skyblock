@@ -10,13 +10,16 @@ format:
   credits: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
   credits_earned: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
+  mining_shards: "<hover:show_text:'<c:text><exact>'><cur:mining_shards><sym:mining_shards> <value></cur:mining_shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
   crystals: "<cur:crystals>Crystals</cur:crystals>"
   credits: "<cur:credits>Credits</cur:credits>"
   credits_earned: "<cur:credits>Earned credits</cur:credits>"
-  shards: "<cur:shards>Shards</cur:shards>"
+  # Owner 4 Nov 2026: two shard types. "shards" is Farming Shards (the old single balance).
+  shards: "<cur:shards>Farming Shards</cur:shards>"
+  mining_shards: "<cur:mining_shards>Mining Shards</cur:mining_shards>"
 
 # Shown by the balance placeholders (scoreboard) for a moment after joining.
 placeholder:

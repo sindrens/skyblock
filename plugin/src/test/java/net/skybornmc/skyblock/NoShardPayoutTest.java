@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * ECON-SHARDS H11 (owner 1 Nov 2026: "shards only from blocks, no other rewards"): only the shard block pays shards. Owner 3 Nov 2026: island tools too (shards from grinding, upgrades cost shards). Code
  * that names {@code Currency.SHARDS} may live only in the shard block module (payout, upgrade prices), the Black Market
- * (prices and refunds of its own shard purchases) and the economy module (balances, /eco, transfers). A new reward, crate
+ * (prices and refunds of its own shard purchases) and the economy module (balances, /eco, transfers). Owner 4 Nov 2026:
+ * the same for {@code Currency.MINING_SHARDS} (only the island pickaxe pays them). A new reward, crate
  * or quest that pays shards fails the build here.
  */
 class NoShardPayoutTest {
@@ -47,8 +48,10 @@ class NoShardPayoutTest {
             for (Path f : files.filter(p -> p.toString().endsWith(".java")).toList()) {
                 List<String> lines = Files.readAllLines(f);
                 for (int i = 0; i < lines.size(); i++) {
-                    if (lines.get(i).contains("Currency.SHARDS") && !lines.get(i).contains(".balance(")) { // reading a balance (wipe summary) pays nothing
-                        bad.add(f + ":" + (i + 1) + "  " + lines.get(i).trim());
+                    String line = lines.get(i);
+                    if ((line.contains("Currency.SHARDS") || line.contains("Currency.MINING_SHARDS"))
+                            && !line.contains(".balance(")) { // reading a balance (wipe summary) pays nothing
+                        bad.add(f + ":" + (i + 1) + "  " + line.trim());
                     }
                 }
             }

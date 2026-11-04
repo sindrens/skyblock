@@ -12,9 +12,10 @@ class CurrencyTest {
 
     @Test
     void currenciesAreMoneyCrystalsCreditsShards() {
-        assertEquals(List.of("money", "crystals", "credits", "credits_earned", "shards"),
+        assertEquals(List.of("money", "crystals", "credits", "credits_earned", "shards", "mining_shards"),
                 Arrays.stream(Currency.values()).map(Currency::key).toList());
-        assertEquals(List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS), Currency.listedValues());
+        assertEquals(List.of(Currency.MONEY, Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS, Currency.MINING_SHARDS),
+                Currency.listedValues());
     }
 
     @Test

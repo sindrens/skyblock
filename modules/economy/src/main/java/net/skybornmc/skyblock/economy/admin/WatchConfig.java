@@ -340,7 +340,7 @@ public final class WatchConfig extends ModuleConfig {
             case CRYSTALS -> earnMinCrystals;
             case CREDITS -> earnMinCredits;
             case CREDITS_EARNED -> earnMinCreditsEarned;
-            case SHARDS -> earnMinShards;
+            case SHARDS, MINING_SHARDS -> earnMinShards;
         };
     }
 
@@ -351,7 +351,7 @@ public final class WatchConfig extends ModuleConfig {
             case CRYSTALS -> bigMinCrystals;
             case CREDITS -> bigMinCredits;
             case CREDITS_EARNED -> bigMinCreditsEarned;
-            case SHARDS -> bigMinShards;
+            case SHARDS, MINING_SHARDS -> bigMinShards;
         };
     }
 
@@ -361,7 +361,7 @@ public final class WatchConfig extends ModuleConfig {
             case MONEY -> staffMinMoney;
             case CRYSTALS -> staffMinCrystals;
             case CREDITS, CREDITS_EARNED -> staffMinCredits; // earned credits never move between players
-            case SHARDS -> staffMinShards;
+            case SHARDS, MINING_SHARDS -> staffMinShards;
         };
     }
 

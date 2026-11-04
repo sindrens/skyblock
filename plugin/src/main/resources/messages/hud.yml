@@ -37,7 +37,8 @@ scoreboard:
       - " <bold><c:header>| You</c:header></bold>"
       - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
       - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <c:bar>|</c:bar> <c:text>Shards:</c:text> <c:value><ph:shards_formatted>"
+      # Owner 4 Nov 2026: Farming Shards (red) and Mining Shards (gray-blue) on one row.
+      - " <c:bar>|</c:bar> <c:text>Shards:</c:text> <cur:shards><sym:shards> <ph:shards_formatted></cur:shards> <c:muted>·</c:muted> <cur:mining_shards><sym:mining_shards> <ph:mining_shards_formatted>"
       - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
       - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
       - " <bold><c:header>| Island</c:header></bold>"
