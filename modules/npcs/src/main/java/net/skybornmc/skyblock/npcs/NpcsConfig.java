@@ -122,8 +122,10 @@ public final class NpcsConfig extends ModuleConfig {
             + "prints the NPC's short help in chat (owner U5: one click talks; no sneak-click needed). Off: help only on sneak-click.")
     public boolean helpOnce = true;
 
-    @Setting(path = "npcs.skins", desc = "NPC id or role -> Minecraft name whose skin the mannequin wears, as 'id: name' lines. Empty = default skins (no skin lookups).")
-    public List<String> skins = List.of();
+    @Setting(path = "npcs.skins", desc = "NPC id or role -> the skin its mannequin wears, as 'id: skin' lines. A skin is a "
+            + "vanilla default (steve, alex, ari, efe, kai, makena, noor, sunny, zuri; slim:/wide: picks the arms; no lookup), "
+            + "texture:<value>[:<signature>] (a Mojang texture) or a player name (player:<name>). Missing = Steve.")
+    public List<String> skins = SKINS_V7;
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
     public List<String> heldItems = List.of(
@@ -256,9 +258,27 @@ public final class NpcsConfig extends ModuleConfig {
             "baltop: money",
             "money: money");
 
+    /** v7 (owner 4 Nov 2026): every spawn NPC wears a different vanilla skin until the owner picks real ones. */
+    static final List<String> SKINS_V7 = List.of(
+            "guide: kai",
+            "info: ari",
+            "shop: alex",
+            "bank: noor",
+            "sell: efe",
+            "auction: sunny",
+            "crates: zuri",
+            "enchanter: makena",
+            "foreman: steve",
+            "forge: steve",
+            "wardrobe: slim:ari",
+            "black_market: wide:efe",
+            "quests: wide:makena",
+            "daily: slim:sunny",
+            "vote: slim:kai");
+
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     /**
@@ -274,7 +294,8 @@ public final class NpcsConfig extends ModuleConfig {
                 3, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V2, new NpcsConfig().roleActions)),
                 4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, SOURCES_V4)),
                 5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())),
-                6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)));
+                6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)),
+                7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)));
     }
 
     private static List<String> sources() {

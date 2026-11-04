@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.guide;
 
-import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.island.IslandJoinedEvent;
 import net.skybornmc.skyblock.common.island.IslandService;
@@ -218,9 +217,8 @@ final class GuideNpcs implements Listener {
             } catch (RuntimeException e) {
                 body.setDescription(Component.empty());
             }
-            if (c.skin != null && !c.skin.isBlank()) {
-                body.setProfile(ResolvableProfile.resolvableProfile().name(c.skin.trim()).build());
-            }
+            // Owner 4 Nov 2026: a vanilla default skin, a Mojang texture or a player's skin (NpcSkin).
+            net.skybornmc.skyblock.common.npc.NpcSkin.profileOf(c.skin).ifPresent(body::setProfile);
             Material held = c.heldItem == null || c.heldItem.isBlank() ? null : Material.matchMaterial(c.heldItem.trim());
             if (held != null && held.isItem()) {
                 body.getEquipment().setItemInMainHand(new ItemStack(held));

@@ -9,8 +9,9 @@ public final class GuideConfig extends ModuleConfig {
     @Setting(path = "enabled", desc = "One guide NPC per island (owner 2 Nov 2026). Off = no NPC; /is guide still opens his menu.")
     public boolean enabled = true;
 
-    @Setting(path = "skin", desc = "Player name whose skin the guide wears (empty = the default look).")
-    public String skin = "";
+    @Setting(path = "skin", desc = "Kindle's skin: a vanilla default (steve, alex, ari, efe, kai, makena, noor, sunny, zuri; "
+            + "slim:/wide: picks the arms), texture:<value>[:<signature>] (a Mojang texture) or a player name (player:<name>).")
+    public String skin = "sunny";
 
     @Setting(path = "held-item", desc = "Item the guide holds (empty = nothing).")
     public String heldItem = "blaze_rod";
@@ -57,6 +58,17 @@ public final class GuideConfig extends ModuleConfig {
     @Setting(path = "menu.next-none-command", desc = "What Kindle's Next step button runs when there is no next step "
             + "(without /; empty = only a chat line).")
     public String nextNoneCommand = "menu";
+
+    /** v2 (owner 4 Nov 2026): Kindle wears a vanilla skin instead of Steve; a skin the owner set is kept. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("skin", ValueChange.of("", "sunny")));
+    }
 
     @Override
     public String fileName() {
