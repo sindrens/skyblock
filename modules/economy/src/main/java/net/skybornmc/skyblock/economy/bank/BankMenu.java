@@ -290,10 +290,13 @@ final class BankMenu extends Menu {
         WithdrawFee fees = bank.fees();
         TagResolver[] p = {amount("max", max), Msg.p("fee", percent(fees.percent(level))), Msg.c("discount", discount(fees, level)),
                 Msg.p("free", BankFeature.time(bank.config.withdrawFreeMinutes * 60_000L))};
+        boolean noFee = fees.percent(level) <= 0; // feedback 4 Nov 2026 (E20): no fee, so no fee line
         if (max < min) {
-            return MenuButton.display(item(Material.DROPPER, a.balance() < min ? "bank.menu.withdraw-none" : "bank.menu.withdraw-limit", p));
+            String emptyKey = a.balance() >= min ? "bank.menu.withdraw-limit" : noFee ? "bank.menu.withdraw-none-no-fee" : "bank.menu.withdraw-none";
+            return MenuButton.display(item(Material.DROPPER, emptyKey, p));
         }
-        return MenuButton.of(item(Material.DROPPER, free ? "bank.menu.withdraw-free" : "bank.menu.withdraw", p), click -> {
+        String buttonKey = noFee ? "bank.menu.withdraw-no-fee" : free ? "bank.menu.withdraw-free" : "bank.menu.withdraw";
+        return MenuButton.of(item(Material.DROPPER, buttonKey, p), click -> {
             UUID key = profileKey;
             Menu back = this;
             NumberPickerMenu picker = new NumberPickerMenu(v -> service.text(v, EconomyModule.ID, "bank.picker.withdraw"), min, max, min,
@@ -316,7 +319,7 @@ final class BankMenu extends Menu {
         }
         ConfirmMenu confirm = new ConfirmMenu(v -> service.text(v, EconomyModule.ID, "bank.confirm.crumb"),
                 service.item(Material.DROPPER, player, EconomyModule.ID, "bank.confirm.shown", p),
-                v -> service.lines(v, EconomyModule.ID, fee > 0 ? "bank.confirm.fee" : "bank.confirm.free", p),
+                v -> service.lines(v, EconomyModule.ID, feePercent <= 0 ? "bank.confirm.no-fee" : fee > 0 ? "bank.confirm.fee" : "bank.confirm.free", p),
                 pl -> bank.withdraw(pl, key, a.ref(), value, a.terms(), limit, () -> reopen(pl)), pl -> { });
         confirm.parent(fresh);
         service.open(player, confirm);

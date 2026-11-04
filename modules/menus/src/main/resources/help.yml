@@ -1063,8 +1063,8 @@ topics:
           - "<c:text>to earn it. Each payout has a cap."
       - title: "<c:value>Taking money out"
         lines:
-          - "<c:text>A withdrawal costs a small fee (2%)."
-          - "<c:text>You always see the fee before you"
+          - "<c:text>Take money out any time, free."
+          - "<c:text>You always see the amount before you"
           - "<c:text>confirm."
       - title: "<c:value>Tiers and roles"
         lines:

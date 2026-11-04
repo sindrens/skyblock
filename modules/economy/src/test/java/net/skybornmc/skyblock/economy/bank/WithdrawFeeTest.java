@@ -7,12 +7,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** BANK2 (owner #169): 2% withdrawal fee, lowered one step per island bank-fee mastery level; rounding of the fee. */
+/** BANK2 (owner #169): the 2% withdrawal fee (shipped until 4 Nov 2026, now 0), lowered one step per island bank-fee mastery level; rounding of the fee. */
 class WithdrawFeeTest {
 
     @Test
     void shippedStepsAreTwoThenOneAndAHalfThenOneThenAHalf() {
-        WithdrawFee fee = WithdrawFee.of(new BankConfig());
+        WithdrawFee fee = WithdrawFee.parse(BankConfig.FEE_PERCENT_V3, BankConfig.MASTERY_FEE_PERCENT_V3);
         assertTrue(fee.problems().isEmpty(), fee.problems().toString());
         assertEquals(2.0, fee.percent(0), "no mastery: the base 2%");
         assertEquals(1.5, fee.percent(1));
@@ -28,7 +28,7 @@ class WithdrawFeeTest {
 
     @Test
     void feeAmountsPerStepRoundUp() {
-        WithdrawFee fee = WithdrawFee.of(new BankConfig());
+        WithdrawFee fee = WithdrawFee.parse(BankConfig.FEE_PERCENT_V3, BankConfig.MASTERY_FEE_PERCENT_V3);
         assertEquals(20_000, InterestMath.fee(1_000_000, fee.percent(0)));
         assertEquals(15_000, InterestMath.fee(1_000_000, fee.percent(1)));
         assertEquals(10_000, InterestMath.fee(1_000_000, fee.percent(2)));

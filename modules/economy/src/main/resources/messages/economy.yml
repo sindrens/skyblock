@@ -518,12 +518,12 @@ bank:
   full: "<prefix><c:error><sym:cross></c:error> <c:text>The bank can't hold that much. A higher tier or the Bank Capacity upgrade gives room."
   below-min: "<prefix><c:error><sym:cross></c:error> <c:text>Too small. The smallest deposit is <deposit><c:text>, the smallest withdrawal <withdraw><c:text>."
   deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank, no fee. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
   # GUI-4 (UX review 6): short, and R3-41 (the fee is the only cost, the interest is kept). <percent> and <balance> still work.
   withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank>"
   island:
     deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-    withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank, no fee. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
     withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank>"
     notify-deposit: "<prefix><c:value><player></c:value> <c:text>put <amount> <c:text>in the island bank."
     notify-withdraw: "<prefix><c:value><player></c:value> <c:text>took <amount> <c:text>out of the island bank."
@@ -557,6 +557,9 @@ bank:
     free:
       - "<c:text>Take out: <amount>"
       - "<c:success>No fee right now"
+      - "<c:text>You get: <net>"
+    # Feedback 4 Nov 2026 (E20): there is no withdrawal fee (withdraw.fee-percent 0), so nothing about a fee is shown.
+    no-fee:
       - "<c:text>You get: <net>"
   menu:
     title: "Bank"
@@ -653,6 +656,20 @@ bank:
         - ""
         - "<bold><c:header>| Withdraw</c:header></bold>"
         - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:value><fee>%</c:value><discount>"
+    # Feedback 4 Nov 2026 (E20): the two above while the fee is 0 (no fee line at all).
+    withdraw-no-fee:
+      name: "<c:value>Withdraw"
+      lore:
+        - "<c:text>Take money out of the bank."
+        - ""
+        - "<bold><c:header>| Withdraw</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Up to: </c:text><max>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
+    withdraw-none-no-fee:
+      name: "<c:muted>Withdraw"
+      lore:
+        - "<c:text>The bank is empty."
     withdraw-limit:
       name: "<c:muted>Withdraw"
       lore:

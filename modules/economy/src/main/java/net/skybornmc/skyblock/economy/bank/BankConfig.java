@@ -69,15 +69,20 @@ public final class BankConfig extends ModuleConfig {
     public long withdrawMin = 100;
 
     @Setting(path = "withdraw.fee-percent", desc = "Withdrawal fee in percent of the amount taken out, before island "
-            + "masteries (owner E4 + #169: 2%). Personal and island bank. The fee leaves the economy. Owner R3-41: this fee is "
-            + "the only withdrawal rule (no lost interest).", min = 0, max = 50, level = Setting.Level.OWNER)
-    public double withdrawFeePercent = 2.0;
+            + "masteries (owner E4 + #169: 2%; feedback 4 Nov 2026: 0 = no fee, the menu then says nothing about a fee). "
+            + "Personal and island bank. The fee leaves the economy. Owner R3-41: this fee is the only withdrawal rule (no "
+            + "lost interest).", min = 0, max = 50, level = Setting.Level.OWNER)
+    public double withdrawFeePercent = 0;
 
     @Setting(path = "withdraw.mastery-fee-percent", desc = "Withdrawal fee in percent at island bank-fee mastery level 1, "
             + "2, 3 ... (owner #169: the fee gets lower as the island progresses, /is masteries). Level 0 pays "
             + "withdraw.fee-percent; levels above the list pay the last entry. Personal banks use the mastery of the profile's "
-            + "island. A step above the one before is lowered to it.", level = Setting.Level.OWNER)
-    public List<String> masteryFeePercent = List.of("1.5", "1.0", "0.5");
+            + "island. A step above the one before is lowered to it. Feedback 4 Nov 2026: all 0 (no fee).", level = Setting.Level.OWNER)
+    public List<String> masteryFeePercent = List.of("0", "0", "0");
+
+    /** The fee defaults before version 4 (2%, then 1.5 / 1.0 / 0.5% with masteries); still used by the fee tests. */
+    static final double FEE_PERCENT_V3 = 2.0;
+    static final List<String> MASTERY_FEE_PERCENT_V3 = List.of("1.5", "1.0", "0.5");
 
     @Setting(path = "withdraw.free-minutes", desc = "Minutes right after each interest payout in which withdrawals cost no fee "
             + "(the lowest-balance rule still applies). Owner R3-41: 0 = always the fee (the menu then says nothing about it).",
@@ -150,11 +155,21 @@ public final class BankConfig extends ModuleConfig {
 
     /**
      * Version 2 (BANK2, owner #169): interest every 8 h with higher rates and caps. Version 3 (UX3): rebalanced tier
-     * tables (personal tier 10 $195.3B → $10B, island level 10 $1T → $50B). See {@link #upgradeValues}.
+     * tables (personal tier 10 $195.3B → $10B, island level 10 $1T → $50B). See {@link #upgradeValues}. Version 4
+     * (feedback 4 Nov 2026, E20): no withdrawal fee ({@link #valueChanges}).
      */
     @Override
     public int version() {
-        return 3;
+        return 4;
+    }
+
+    /** v4: the untouched 2% fee and its mastery steps become 0 (an owner-chosen fee is kept). */
+    @Override
+    public Map<Integer, Map<String, ValueChange>> valueChanges() {
+        BankConfig d = new BankConfig();
+        return Map.of(4, Map.of(
+                "withdraw.fee-percent", ValueChange.of(FEE_PERCENT_V3, d.withdrawFeePercent),
+                "withdraw.mastery-fee-percent", ValueChange.of(MASTERY_FEE_PERCENT_V3, d.masteryFeePercent)));
     }
 
     /** The BANK2 tier tables that UX3 replaces in an existing bank.yml (only when still untouched). */
