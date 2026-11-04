@@ -230,6 +230,9 @@ final class AuctionMenu extends PagedMenu<Listing> {
             service.sound(viewer, "error");
             return;
         }
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(module.core.services(), viewer)) {
+            return; // owner 4 Nov 2026: listing waits until the player talked to the guide at spawn
+        }
         ItemStack hand = viewer.getInventory().getItemInMainHand();
         if (hand.isEmpty()) {
             module.send(viewer, "items.no-item");
@@ -299,6 +302,9 @@ final class AuctionMenu extends PagedMenu<Listing> {
     }
 
     void openBuyConfirm(Listing l) {
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(module.core.services(), viewer)) {
+            return; // owner 4 Nov 2026: buying waits until the player talked to the guide at spawn
+        }
         if (module.ownOtherProfile(viewer, l)) {
             module.send(viewer, "buy.own-profile"); // owner answer 118: never buy from your own other profile
             service.sound(viewer, "error");

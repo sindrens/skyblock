@@ -285,6 +285,9 @@ public final class TradeModule implements SkyblockModule, Listener {
             openTradeMenu(p, s);
             return;
         }
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), p)) {
+            return; // owner 4 Nov 2026: talk to the guide first
+        }
         List<UUID> incoming = requests.incoming(p.getUniqueId(), now());
         if (incoming.size() == 1) {
             Player from = Bukkit.getPlayer(incoming.getFirst());
@@ -306,6 +309,10 @@ public final class TradeModule implements SkyblockModule, Listener {
     }
 
     void request(Player sender, Player target) {
+        // Owner 4 Nov 2026: trading waits until the player talked to the guide at spawn once (told with a /start link).
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), sender)) {
+            return;
+        }
         // P7 (spec 13.1): blocked trading / frozen balance, on either side
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), sender, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
                 || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), sender, target, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
@@ -360,6 +367,9 @@ public final class TradeModule implements SkyblockModule, Listener {
     }
 
     void accept(Player p, String name) {
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), p)) {
+            return; // owner 4 Nov 2026: talk to the guide first
+        }
         Player from = pickRequester(p, name, "accept");
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE) || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), p, from, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
             return; // P7: blocked trading / frozen balance, on either side

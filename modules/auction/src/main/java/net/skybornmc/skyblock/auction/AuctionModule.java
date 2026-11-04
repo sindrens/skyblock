@@ -249,6 +249,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         if (!player.hasPermission(PERM_SELL)) {
             throw fail("no-permission-sell");
         }
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), player)) {
+            return; // owner 4 Nov 2026: listing waits until the player talked to the guide at spawn
+        }
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
             return; // P7: blocked trading or frozen balance
         }
@@ -314,6 +317,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
         }
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
             return; // P7: blocked trading or frozen balance
+        }
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), player)) {
+            return; // owner 4 Nov 2026: talk to the guide first
         }
         PlayerInventory inv = player.getInventory();
         ItemStack now = inv.getItem(slot);
@@ -536,6 +542,9 @@ public final class AuctionModule implements SkyblockModule, Listener {
 
     /** After the buy confirm dialog. */
     void startBuy(Player player, Listing listing) {
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), player)) {
+            return; // owner 4 Nov 2026: buying waits until the player talked to the guide at spawn
+        }
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_BUY)) {
             return; // P7: blocked trading or frozen balance
         }

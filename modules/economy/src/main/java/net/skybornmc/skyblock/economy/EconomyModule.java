@@ -570,7 +570,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     Player p = (Player) ctx.sender();
                     return PayRules.check(config, p.getName(), ctx.get(payTarget), amount, currency, frozen(p))
                             .isEmpty()
-                            && PayRules.needsConfirm(config, amount, currency);
+                            && PayRules.needsConfirm(config, amount, currency)
+                            // a locked player (guide not met) is told at once, without a confirm first
+                            && net.skybornmc.skyblock.common.player.StartGate.of(core.services()).map(g -> g.isOpen(p)).orElse(true);
                 })
                 .confirmMessage(ID, "pay.confirm", ctx -> new TagResolver[]{
                         exactAmountTag("amount", ctx.sender(), ctx.getOr(payCurrency, Currency.MONEY), ctx.get(payAmount)),
@@ -1077,6 +1079,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
     // ================================================================== /pay
 
     private void pay(Player payer, String targetName, long amount, Currency currency) {
+        if (net.skybornmc.skyblock.common.player.StartGate.locked(core.services(), payer)) {
+            return; // owner 4 Nov 2026: /pay waits until the player talked to the guide at spawn (told with a /start link)
+        }
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), payer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
             return; // P7: frozen balance or blocked trading
         }
