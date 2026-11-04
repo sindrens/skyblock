@@ -166,6 +166,9 @@ Rules:
 ### 3.3 Announcements (server-wide)
 Blank line, a centered header with the brand gradient, 1–2 lines, a clickable action, blank line. Max one per 30 s from the auto-announcer.
 
+- **Cards** (4 Nov 2026): build them with `ChatCard` (common/text): bold gradient title, 1–3 body lines (highlight with `<c:value>`, currencies with `<cur:...>`), the action `<c:muted>»</c:muted> <c:action>/shop</c:action> <c:muted>«</c:muted>` with a hover text. Java lines are centred by pixel width (`ChatWidth`: default font, 320 px chat, bold +1 px per character); Bedrock lines are left-aligned because its font has other widths. The auto-broadcast cards live in `messages/broadcasts.yml` and only go out while chat is active (`chat.yml → broadcasts.*`).
+- **System notices** to everyone (a countdown, a server event) start with `<notice>`: the gradient word **PHOENIX**, a gray arrow, then `<c:text>` with `<c:value>` values: `<notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.` (`style.yml → notice`).
+
 ### 3.4 Event tags (G1-R1-01)
 Server event lines are one line that starts with a short bold tag in a fixed colour (`style.yml tag:`), then one space; the tag is never clickable and never inside `<click>`/`<hover>`. Direct replies to one player keep the `<prefix>`.
 

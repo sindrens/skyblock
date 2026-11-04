@@ -1,11 +1,14 @@
 # Phoenix Skyblock style (docs/UI_STYLE.md). Used by every message, menu, item and HUD.
-# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <area:home>, <tag:crate>, <sym:money>, <grad:phoenix>text</grad>, <prefix>
+# In messages: <c:brand>text</c:brand>, <rarity:epic>, <pillar:mining>, <cur:money>, <area:home>, <tag:crate>, <sym:money>, <grad:phoenix>text</grad>, <prefix>, <notice>
 # Each color: "<hex> <legacy fallback for Bedrock>". Legacy names: black dark_blue dark_green dark_aqua dark_red
 # dark_purple gold gray dark_gray blue green aqua red light_purple yellow white
 # Reload: /skyblock reload core
 
 # Owner 3 Nov 2026: each feature's messages start with its own short label (<prefix>); 'prefix' is for the rest.
 prefix: "<c:ember>»</c:ember> "
+# System notices to everyone (plan chat look, 4 Nov 2026): <notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.
+# The gradient word PHOENIX and an arrow; the text after it is gray with white values.
+notice: "<bold><grad:phoenix>PHOENIX</grad></bold> <c:muted>→</c:muted> "
 prefixes:
   islands: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
   progression: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "

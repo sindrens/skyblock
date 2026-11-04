@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
  *   <li>{@code <sym:money>}: a symbol</li>
  *   <li>{@code <grad:phoenix>text</grad>}: a named gradient ({@code {phase}} not supported here)</li>
  *   <li>{@code <prefix>}: the standard chat prefix</li>
+ *   <li>{@code <notice>}: the system notice prefix ({@code notice:}, e.g. "PHOENIX →"), for server-wide notices such
+ *   as a countdown; written {@code <notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.}</li>
  * </ul>
  * Bedrock viewers get each color's legacy fallback, and gradients become their first color's fallback.
  */
@@ -63,6 +65,9 @@ public final class Style {
     private volatile Map<String, String> symbols = Map.of();
     private volatile Map<String, List<Color>> gradients = Map.of();
     private volatile String prefix = "";
+    /** Default of {@code notice:} when style.yml has none (an older live file): gradient PHOENIX and a gray arrow. */
+    public static final String DEFAULT_NOTICE = "<bold><grad:phoenix>PHOENIX</grad></bold> <c:muted>→</c:muted> ";
+    private volatile String notice = DEFAULT_NOTICE;
     /** Per-module {@code <prefix>} texts (owner 3 Nov 2026: a short label per feature instead of one server title). */
     private volatile Map<String, String> prefixes = Map.of();
     private volatile Set<Integer> bedrockSafe = Set.of();
@@ -139,6 +144,7 @@ public final class Style {
         symbols = java.util.Collections.unmodifiableMap(newSymbols);
         gradients = java.util.Collections.unmodifiableMap(newGradients);
         prefix = yaml.getString("prefix", "");
+        notice = yaml.getString("notice", DEFAULT_NOTICE);
         Map<String, String> newPrefixes = new LinkedHashMap<>();
         ConfigurationSection ps = yaml.getConfigurationSection("prefixes");
         if (ps != null) {
@@ -213,8 +219,13 @@ public final class Style {
         return own != null ? own : prefix;
     }
 
+    /** The raw {@code <notice>} text (style.yml {@code notice}). */
+    public String notice() {
+        return notice;
+    }
+
     /**
-     * Resolver including {@code <prefix>}; the prefix itself is parsed with the same palette. Cached per viewer type
+     * Resolver including {@code <prefix>} and {@code <notice>}; the prefix itself is parsed with the same palette. Cached per viewer type
      * until the next {@link #load} (PERF2, P-17): it used to be rebuilt, and the prefix parsed again, for every single
      * message parse in the plugin (scoreboards, menus, chat).
      */
@@ -225,7 +236,9 @@ public final class Style {
         }
         TagResolver base = resolver(bedrock);
         Component parsedPrefix = mm.deserialize(preprocess(prefix, bedrock), base);
-        TagResolver full = TagResolver.resolver(base, TagResolver.resolver("prefix", Tag.selfClosingInserting(parsedPrefix)));
+        Component parsedNotice = mm.deserialize(preprocess(notice, bedrock), base);
+        TagResolver full = TagResolver.resolver(base, TagResolver.resolver("prefix", Tag.selfClosingInserting(parsedPrefix)),
+                TagResolver.resolver("notice", Tag.selfClosingInserting(parsedNotice)));
         Cached fresh = new Cached(mm, full);
         if (bedrock) {
             fullBedrock = fresh;

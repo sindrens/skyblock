@@ -153,4 +153,20 @@ class StyleTest {
         assertEquals("<c:brand>P</c:brand> ", style.prefixFor("shop"), "no own label: the shared prefix");
         assertEquals("<c:brand>P</c:brand> ", style.prefixFor(null));
     }
+
+    @Test
+    void noticeTagInsertsTheSystemNoticePrefix(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, YAML);
+        Style style = new Style();
+        style.load(file.toFile());
+        assertEquals(Style.DEFAULT_NOTICE, style.notice(), "an older style.yml without notice: the default");
+
+        Files.writeString(file, YAML + "notice: \"<c:brand>N</c:brand> > \"\n");
+        style.load(file.toFile());
+        net.kyori.adventure.text.minimessage.MiniMessage mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+        net.kyori.adventure.text.Component parsed = mm.deserialize("<notice>Items are cleared", style.fullResolver(false, mm));
+        assertEquals("N > Items are cleared",
+                net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(parsed));
+    }
 }
