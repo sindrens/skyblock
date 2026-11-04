@@ -36,9 +36,10 @@ create:
   already: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an island. <click:run_command:'/is home'><hover:show_text:'<c:text>Go to your island'><c:action>[Go home]</c:action></hover></click>"
   cancelled: "<prefix><c:text>No island yet. <click:run_command:'/is'><hover:show_text:'<c:text>Create your island'><c:action>[Create one]</c:action></hover></click> <c:muted>(when you're ready)"
   build-failed: "<prefix><c:error><sym:cross></c:error> <c:text>Couldn't build your island. Try <c:value>/is</c:value> again soon, or tell staff."
+  # Owner 4 Nov 2026: the welcome of a new profile (shown once: a profile creates its island once). <island> = its name.
   title:
-    title: "<grad:phoenix><bold>YOUR ISLAND</bold></grad>"
-    subtitle: "<c:text>Rise from the ashes"
+    title: "<grad:phoenix><bold><island></bold></grad>"
+    subtitle: "<c:text>Welcome to <c:value>Phoenix Skyblock"
     fade-in: 10
     stay: 60
     fade-out: 20
@@ -494,9 +495,10 @@ accept:
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't join islands at the moment."
   season-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You already joined <c:value><max></c:value> islands this season, the max."
   joined: "<prefix><c:success><sym:check></c:success> <c:text>You joined <c:value><island></c:value>! <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click> <click:run_command:'/is members'><hover:show_text:'<c:text>See the members'><c:action>[Members]</c:action></hover></click>"
+  # Joining an island is a profile's first island too (island = profile): the same welcome as a new island.
   title:
-    title: "<grad:phoenix><bold>NEW ISLAND</bold></grad>"
-    subtitle: "<c:text>Welcome to <c:value><island>"
+    title: "<grad:phoenix><bold><island></bold></grad>"
+    subtitle: "<c:text>Welcome to <c:value>Phoenix Skyblock"
     fade-in: 10
     stay: 50
     fade-out: 20

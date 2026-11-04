@@ -1124,18 +1124,20 @@ final class IslandManager implements IslandService {
                 borders.refresh(island);
             }
             if (player != null) {
-                teleport(player, location(island, build.home()), true, () -> arrived(player, created));
+                teleport(player, location(island, build.home()), true, () -> arrived(player, island, created));
             }
         }, main);
     }
 
-    private void arrived(Player player, boolean created) {
+    private void arrived(Player player, Island island, boolean created) {
         java.util.function.Consumer<Boolean> portal = portalArrivals.remove(player.getUniqueId());
         if (portal != null) {
             portal.accept(created);
         }
         if (created) {
-            msg.title(player, "create.title");
+            // Owner 4 Nov 2026 (PLAN_4NOV item 4): the welcome of a new profile is this one title (island = profile, so a
+            // profile creates its island once): the island's name, "Welcome to Phoenix Skyblock". JoinFlow skips its own.
+            msg.title(player, "create.title", Msg.p("island", displayName(island)));
             core.sounds().play(player, "unlock");
             msg.send(player, "create.welcome");
             msg.send(player, "create.objective");
@@ -1167,7 +1169,7 @@ final class IslandManager implements IslandService {
                 return;
             }
             Location target = safeHome(player, island, home);
-            teleport(player, target, instant, () -> arrived(player, false));
+            teleport(player, target, instant, () -> arrived(player, island, false));
         }, main);
     }
 
