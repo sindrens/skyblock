@@ -26,7 +26,6 @@ menu:
   rank-3: "<c:value>Warlord</c:value>"
   status-active: "<c:success><sym:check> Playing now"
   status-switch: "<bold><c:action>» CLICK</c:action></bold> <c:text>to manage"
-  status-locked: "<c:error>Slot locked: you can't switch to it"
   # A profile in a slot. <profile> <slot> <island> <level> <created> <playtime> <status>
   profile:
     name: "<c:flame><profile>"
@@ -109,7 +108,6 @@ switch:
   same: "<prefix><c:error><sym:cross> You are already on that profile."
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
   changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
-  locked: "<prefix><c:error><sym:cross> That slot is locked, so you can't switch to it. You can still delete it."
   cooldown: "<prefix><c:error><sym:cross> Wait <c:value><time></c:value> before you switch again."
   blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here. Leave the Depths first (it has its own inventory)."
   dead: "<prefix><c:error><sym:cross> Respawn first."

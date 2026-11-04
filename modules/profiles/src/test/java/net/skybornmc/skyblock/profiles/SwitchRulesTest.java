@@ -27,7 +27,6 @@ class SwitchRulesTest {
     void refusals() {
         assertEquals(Optional.of(SwitchRules.Problem.SAME), SwitchRules.check(input(one, true, 0, 1_000, false)));
         assertEquals(Optional.of(SwitchRules.Problem.GONE), SwitchRules.check(input(null, true, 0, 1_000, false)));
-        assertEquals(Optional.of(SwitchRules.Problem.LOCKED), SwitchRules.check(input(two, false, 0, 1_000, false)));
         assertEquals(Optional.of(SwitchRules.Problem.BLOCKED_WORLD), SwitchRules.check(input(two, true, 0, 1_000, true)));
         assertEquals(Optional.of(SwitchRules.Problem.COOLDOWN), SwitchRules.check(input(two, true, 5_000, 10_000, false)));
         assertEquals(Optional.empty(), SwitchRules.check(input(two, true, 5_000, 15_000, false)));
@@ -37,6 +36,14 @@ class SwitchRulesTest {
                 true, 0, 1_000, 10_000, false, false, false)));
         assertEquals(Optional.of(SwitchRules.Problem.DEAD), SwitchRules.check(new SwitchRules.Input(true, false, one.id(), two,
                 true, 0, 1_000, 10_000, false, false, true)));
+    }
+
+    /** Feedback 4 Nov 2026 (A6): an existing profile in a slot the rank no longer gives can still be switched to. */
+    @Test
+    void anExistingProfileIsSwitchableEvenWhenItsSlotIsLockedNow() {
+        assertEquals(Optional.empty(), SwitchRules.check(input(two, false, 0, 1_000, false)));
+        assertEquals(Optional.of(SwitchRules.Problem.COOLDOWN), SwitchRules.check(input(two, false, 5_000, 10_000, false)),
+                "the other rules still apply");
     }
 
     @Test
