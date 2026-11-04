@@ -17,3 +17,8 @@ enchant: "minecraft:block.enchantment_table.use 0.7 1.0"
 # Owner 3 Nov 2026: shards found with an island tool (quiet, high)
 shard: "minecraft:block.amethyst_cluster.hit 0.4 1.8"
 
+# Owner 4 Nov 2026: island tool levels (quiet), the max level, a prestige, a Shard Pouch (Lucky)
+tool-level-up: "minecraft:entity.player.levelup 0.35 1.4"
+tool-max: "minecraft:ui.toast.challenge_complete 0.45 1.2"
+tool-prestige: "minecraft:ui.toast.challenge_complete 0.6 0.9"
+tool-lucky: "minecraft:block.amethyst_block.chime 0.6 1.2"
