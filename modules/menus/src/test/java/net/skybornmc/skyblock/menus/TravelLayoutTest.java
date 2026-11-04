@@ -52,7 +52,7 @@ class TravelLayoutTest {
     @Test
     void reasonsMapToTeleportReasons() {
         assertEquals("spawn", TravelMenu.reason("spawn").id());
-        assertEquals("dungeon", TravelMenu.reason("dungeon").id());
+        assertEquals("island-home", TravelMenu.reason("island-home").id());
         assertEquals("spawn", TravelMenu.reason("nonsense").id(), "fallback: the /spawn warmup");
     }
 
