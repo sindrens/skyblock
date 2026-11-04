@@ -103,17 +103,11 @@ public final class Nav {
     }
 
     /**
-     * The tutorial highlight of menu tile {@code target} ({@code hub.depths}, {@code travel.depths-gate}) for
-     * {@code viewer}: a rule while the tutorial runs and its current step is the rule's step; empty otherwise (also
-     * when the tutorial module is off).
+     * The tutorial highlight of menu tile {@code target} for {@code viewer}: always empty since the join tutorial was
+     * replaced by the start guide (owner 3 Nov 2026); the {@code menu.yml → highlights} rules are inert.
      */
     java.util.Optional<Highlights.Rule> highlight(Player viewer, String target) {
-        List<Highlights.Rule> rules = highlights;
-        if (rules.isEmpty()) {
-            return java.util.Optional.empty();
-        }
-        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .flatMap(t -> Highlights.pick(rules, target, t.isActive(viewer), t.currentStep(viewer.getUniqueId())));
+        return java.util.Optional.empty();
     }
 
     /**

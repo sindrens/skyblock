@@ -14,7 +14,7 @@ categories:
     slot: 11
     name: "<c:flame><bold>Getting started"
     lore: ["<c:text>New here? Start with these."]
-    topics: [welcome, tutorial, menu, help, settings, rules, npcs]
+    topics: [welcome, start, menu, help, settings, rules, npcs]
   islands:
     icon: grass_block
     status: active
@@ -1251,38 +1251,31 @@ topics:
           - "<c:text>moving away cancels it and gives"
           - "<c:text>everything back. Crystals can't be traded."
 
-  tutorial:
+  start:
     icon: written_book
-    aliases: [guide, start, locks, starter-chest]
-    name: "<c:flame>Tutorial"
-    summary: ["<c:text>A short guided start: your island,", "<c:text>the Depths, selling, Forge and bank."]
-    take-me-there: "tutorial"
+    aliases: [tutorial, rowan, starter-chest, new]
+    name: "<c:flame>Getting started"
+    summary: ["<c:text>Your island is made when you join.", "<c:text>Rowan at spawn shows you the rest."]
+    take-me-there: "start"
     commands: [Info]
     pages:
-      - title: "<c:value>How it works"
+      - title: "<c:value>Your island"
         lines:
-          - "<c:text>Walk into the Island portal at"
-          - "<c:text>spawn. A boss bar, flames and"
-          - "<c:text>holograms show you the way, one"
-          - "<c:text>short step at a time (about 3 min)."
-      - title: "<c:value>Features unlock"
+          - "<c:text>When you join for the first time"
+          - "<c:text>your island is made right away."
+          - "<c:text>Open the starter chest: seeds,"
+          - "<c:text>a sapling, bread, water and lava."
+      - title: "<c:value>Rowan"
         lines:
-          - "<c:text>Some features open as you go: team"
-          - "<c:text>features, the Depths, the auction"
-          - "<c:text>house, /pay and /withdraw, then"
-          - "<c:text>/trade, warzone and new profiles."
-      - title: "<c:value>Lost?"
+          - "<c:text>Go to spawn and talk to Rowan."
+          - "<c:text>The boss bar shows it until then."
+          - "<c:value>/start</c:value> <c:text>opens Rowan's menu"
+          - "<c:text>from anywhere."
+      - title: "<c:value>Where to go"
         lines:
-          - "<c:value>/tutorial</c:value> <c:text>shows your step, takes"
-          - "<c:text>you there and repeats the hint."
-          - "<c:text>Your progress is saved, even if you"
-          - "<c:text>leave. Watch it again any time."
-      - title: "<c:value>Pip and extras"
-        lines:
-          - "<c:text>Pip, a small parrot only you see,"
-          - "<c:text>flies with you. Sneak to skip a"
-          - "<c:text>camera. Later, optional steps in"
-          - "<c:text>/tutorial pay a few crystals each."
+          - "<c:text>Island: grow and build."
+          - "<c:value>/farm</c:value> <c:text>and</c:text> <c:value>/mine</c:value><c:text>: earn money and XP."
+          - "<c:text>Everything else: <c:value>/menu</c:value><c:text>."
 
   blackmarket:
     icon: amethyst_shard

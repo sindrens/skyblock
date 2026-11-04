@@ -10,7 +10,6 @@ import net.skybornmc.skyblock.common.economy.TxGuard;
 import net.skybornmc.skyblock.common.npc.HologramTexts;
 import net.skybornmc.skyblock.common.pass.PassXp;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.tutorial.TutorialService;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.rewards.votifier.Vote;
 import org.bukkit.Bukkit;
@@ -492,9 +491,9 @@ final class VoteService {
         }, m.main());
     }
 
+    /** The join tutorial was replaced by the start guide (owner 3 Nov 2026): every player counts as done. */
     boolean tutorialDone(Player p) {
-        Optional<TutorialService> tutorial = m.core.services().optional(TutorialService.class);
-        return tutorial.isEmpty() || tutorial.get().state(p.getUniqueId()).map(TutorialService.State::complete).orElse(false);
+        return true;
     }
 
     // ================================================================== caches and periodic work

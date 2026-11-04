@@ -42,15 +42,9 @@ public final class TeleportConfig extends ModuleConfig {
     @Setting(path = "island-warp.cooldown-seconds", desc = "/is warp: seconds between two uses.", min = 0, max = 3600)
     public int islandWarpCooldownSeconds = 0;
 
-    @Setting(path = "dungeon.warmup-seconds", desc = "/dungeon: seconds to stand still before the teleport (0 = instant; skyblock.depths.bypass skips it).", min = 0, max = 30)
-    public int dungeonWarmupSeconds = 0;
-
-    @Setting(path = "dungeon.cooldown-seconds", desc = "/dungeon: seconds between two teleports.", min = 0, max = 3600)
-    public int dungeonCooldownSeconds = 0;
-
     @Setting(path = "danger.warmup-seconds", desc = "Owner answers 285/341/345: teleports are instant, but while combat-tagged or "
             + "inside a combat zone (danger.worlds, the Depths boss arena and combat tiers, events) every player teleport "
-            + "(/spawn, /tpa, homes, visits, warps, /dungeon) waits this many seconds. /spawn and /tpa are never blocked there.",
+            + "(/spawn, /tpa, homes, visits, warps) waits this many seconds. /spawn and /tpa are never blocked there.",
             min = 0, max = 30)
     public int dangerWarmupSeconds = 3;
 
@@ -98,8 +92,12 @@ public final class TeleportConfig extends ModuleConfig {
         return Map.of(2, Map.of(
                 "tpa.warmup-seconds", ValueChange.of(3, 0),
                 "island-visit.warmup-seconds", ValueChange.of(3, 0),
-                "island-warp.warmup-seconds", ValueChange.of(3, 0),
-                "dungeon.warmup-seconds", ValueChange.of(3, 0)));
+                "island-warp.warmup-seconds", ValueChange.of(3, 0)));
+    }
+
+    @Override
+    public Map<String, String> removedKeys() {
+        return Map.of("dungeon", "the Depths and /dungeon were removed (owner 3 Nov 2026)");
     }
 
     @Override
@@ -115,7 +113,6 @@ public final class TeleportConfig extends ModuleConfig {
             case ISLAND_HOME -> islandHomeWarmupSeconds;
             case ISLAND_VISIT -> islandVisitWarmupSeconds;
             case ISLAND_WARP -> islandWarpWarmupSeconds;
-            case DUNGEON -> dungeonWarmupSeconds;
             case PROFILE, PORTAL, STAFF -> 0;
         };
     }
@@ -127,7 +124,6 @@ public final class TeleportConfig extends ModuleConfig {
             case ISLAND_HOME -> islandHomeCooldownSeconds;
             case ISLAND_VISIT -> islandVisitCooldownSeconds;
             case ISLAND_WARP -> islandWarpCooldownSeconds;
-            case DUNGEON -> dungeonCooldownSeconds;
             case PROFILE, PORTAL, STAFF -> 0;
         };
     }

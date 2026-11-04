@@ -98,12 +98,9 @@ final class FreeRankService {
         }, new MainThread(core.plugin()));
     }
 
-    /** True when the tutorial is complete for this account, or the tutorial module is off. Main thread, memory only. */
+    /** The join tutorial was replaced by the start guide (owner 3 Nov 2026): always true. */
     boolean tutorialComplete(Player player) {
-        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .map(t -> t.state(player.getUniqueId()).map(net.skybornmc.skyblock.common.tutorial.TutorialService.State::complete)
-                        .orElse(false))
-                .orElse(true);
+        return true;
     }
 
     long playtimeOf(Player player) {

@@ -177,9 +177,6 @@ final class Forge {
         if (def.tier() == 1 || baseTool(inv, def.kind(), def.tier()).isEmpty()) {
             return State.NEEDS_TOOL;
         }
-        if (tutorialFree(player, def.tier())) {
-            return State.CRAFTABLE; // the tutorial's free first forge
-        }
         if (skillLevel(player, def.kind()) < def.skillLevel()) {
             return State.NEEDS_SKILL;
         }
@@ -205,15 +202,6 @@ final class Forge {
 
     // ------------------------------------------------------------------ forge an upgrade
 
-    /** True while this player's tutorial is at its forge step and the target is the first forgeable tier (2). */
-    private boolean tutorialFree(Player player, int target) {
-        if (target != 2 || !module.config().tutorialFreeForge) {
-            return false;
-        }
-        return module.core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .flatMap(t -> t.currentStep(player.getUniqueId())).map("forge"::equals).orElse(false);
-    }
-
     void forge(Player player, ToolKind kind, int target) {
         Optional<ToolCatalog.TierDef> found = module.catalog().tier(kind, target);
         if (found.isEmpty() || target < 2) {
@@ -229,21 +217,6 @@ final class Forge {
         Optional<Map.Entry<Integer, ToolData>> base = baseTool(player.getInventory(), kind, target);
         if (base.isEmpty()) {
             fail(player, "forge.needs-tool", Msg.mm("tool", module.items().tierName(kind, target - 1)));
-            return;
-        }
-        if (tutorialFree(player, target)) {
-            // Owner 3 Nov 2026 ("when it wants you to forge it should allow you to do it"): the tutorial's forge step
-            // forges the first tier for free (no skill level, money or materials). The step ends with this forge, so
-            // it can happen once per account.
-            if (!busy.add(player.getUniqueId())) {
-                fail(player, "forge.busy");
-                return;
-            }
-            try {
-                completeForge(player, def, base.get().getValue().id(), "forge:tutorial:" + player.getUniqueId(), true);
-            } finally {
-                busy.remove(player.getUniqueId());
-            }
             return;
         }
         int skill = skillLevel(player, kind);

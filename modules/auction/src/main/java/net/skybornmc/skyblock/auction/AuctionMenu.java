@@ -253,9 +253,8 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 service.sound(viewer, "error");
                 return;
             }
-            if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)
-                    || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
-                return; // P7: blocked trading or frozen balance; TUTORIAL §4: locked until the sell step
+            if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
+                return; // P7: blocked trading or frozen balance
             }
             Optional<String> problem = module.sellProblem(viewer, viewer.getInventory().getItem(slot), price);
             if (problem.isPresent()) {

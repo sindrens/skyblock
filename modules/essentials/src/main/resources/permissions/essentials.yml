@@ -125,3 +125,6 @@ skyblock.build.spawn:
   default: op
 skyblock.admin.setspawn:
   description: Set the spawn point (/setspawn)
+skyblock.start:
+  description: Open the start guide menu (/start; Island, Farm, Mine)
+  default: true

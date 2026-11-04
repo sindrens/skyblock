@@ -104,13 +104,14 @@ final class JoinFlow implements Listener {
                 return;
             }
             core.sounds().play(player, "unlock");
-            // U2 one welcome: the tutorial's title + chat block are the welcome when it runs; only otherwise ours.
-            boolean tutorial = core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                    .map(t -> t.welcomes(player)).orElse(false);
-            if (!tutorial) {
+            // U2 one welcome: when the start guide creates the island right away, the island's own title and chat are
+            // the welcome (owner 3 Nov 2026); only otherwise ours.
+            boolean islandWelcome = config.startIslandOnFirstJoin
+                    && core.services().has(net.skybornmc.skyblock.common.island.IslandService.class);
+            if (!islandWelcome) {
                 msg.title(player, "join.first-title", Msg.p("player", player.getName()));
-                msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
             }
+            msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
         }), 20L);
         // The privacy line comes a little later, not on the first screen (owner answers 319/532 keep it on the first join).
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {

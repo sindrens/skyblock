@@ -74,8 +74,12 @@ public final class IslandsConfig extends ModuleConfig {
             + "(also after a disband on a reused slot, or a rebuild) holds exactly the starter contents (feedback 31 Oct 2026).")
     public boolean starterChestClearBeforeFill = true;
 
-    @Setting(path = "starter-chest.items", desc = "Starter chest contents as material:amount (plan open question 2).")
+    @Setting(path = "starter-chest.items", desc = "Starter chest contents as material:amount (owner 3 Nov 2026 start flow).")
     public List<String> starterItems = List.of(
+            "wheat_seeds:8", "oak_sapling:2", "bread:16", "water_bucket:1", "lava_bucket:1", "ice:2");
+
+    /** {@code starter-chest.items} up to config version 2 (plan open question 2). */
+    static final List<String> STARTER_ITEMS_V2 = List.of(
             "lava_bucket:1", "ice:1", "bone_meal:2", "bread:16", "oak_sapling:2", "sugar_cane:1", "cactus:1",
             "melon_seeds:1", "pumpkin_seeds:1");
 
@@ -754,11 +758,17 @@ public final class IslandsConfig extends ModuleConfig {
 
     /**
      * Version 2 (owner answers round 1): member slots count the leader on top of the team (4 + leader = 5, cap 8 + leader
-     * = 9); see {@link #upgradeValues}. Sizes need no value change: the new size.normal-max-chunks (9) caps normal upgrades.
+     * = 9); see {@link #upgradeValues}. Version 3: the start-flow starter chest ({@link #valueChanges}). Sizes need no value change: the new size.normal-max-chunks (9) caps normal upgrades.
      */
     @Override
     public int version() {
-        return 2;
+        return 3;
+    }
+
+    /** Version 3 (owner 3 Nov 2026 start flow): the new starter chest, only when the live list is the untouched old default. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of("starter-chest.items", ValueChange.of(STARTER_ITEMS_V2, new IslandsConfig().starterItems)));
     }
 
     /** Old defaults that version 2 changes (only untouched old defaults are changed; owner-chosen values stay). */

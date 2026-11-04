@@ -28,8 +28,6 @@ import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.tools.ToolService;
-import net.skybornmc.skyblock.common.tutorial.Gates;
-import net.skybornmc.skyblock.common.tutorial.TutorialGate;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import net.skybornmc.skyblock.common.island.IslandRemovedEvent;
@@ -342,7 +340,7 @@ public final class QuestsModule implements SkyblockModule, Listener {
     /** What the player has unlocked right now, from the live services. Main thread. */
     QuestPool.Unlocks unlocks(Player player) {
         // The Depths are gone (owner 3 Nov 2026): mine, chop and kill quests are never offered (no wing tiers).
-        boolean islands = islands().isPresent() && gate(player, Gates.ISLAND_TEAM);
+        boolean islands = islands().isPresent();
         boolean tool = holdsTool(player);
         return new QuestPool.Unlocks(false, 0, 0, 0,
                 core.services().optional(SellService.class).isPresent(), tool,
@@ -354,10 +352,6 @@ public final class QuestsModule implements SkyblockModule, Listener {
     private boolean farming(Player player) {
         return core.services().has(net.skybornmc.skyblock.common.production.FarmingService.class)
                 && islands().map(i -> i.islandOf(player.getUniqueId()).isPresent()).orElse(false);
-    }
-
-    private boolean gate(Player player, String gate) {
-        return TutorialGate.allows(core.services(), player, gate);
     }
 
     private boolean holdsTool(Player player) {

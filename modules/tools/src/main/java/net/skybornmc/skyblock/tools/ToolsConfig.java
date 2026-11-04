@@ -15,9 +15,6 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ levels (ECONOMY_BALANCE §3.5)
 
-    @Setting(path = "forge.tutorial-free", desc = "During the tutorial's forge step the first tier is forged for free. Owner 3 Nov 2026: off, the forge needs its real requirements.")
-    public boolean tutorialFreeForge = false; // owner 3 Nov 2026: the tutorial forge needs the real requirements
-
     @Setting(path = "forge.money-percent", desc = "Owner 3 Nov 2026 balance: Forge prices in percent of the tier table (15 = a sixth or so; progression is faster now).", min = 1, max = 1000)
     public double forgeMoneyPercent = 15;
 
@@ -254,7 +251,8 @@ public final class ToolsConfig extends ModuleConfig {
     /** Dead-key rule (REVIEW3 §6): NPC places come from the applied builds now (npcs module); the old keys are deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of("npc", "NPCs stand at the applied builds' points (npcs module), never read here");
+        return java.util.Map.of("npc", "NPCs stand at the applied builds' points (npcs module), never read here",
+                "forge.tutorial-free", "the join tutorial was replaced by the start guide (owner 3 Nov 2026)");
     }
 
     @Override

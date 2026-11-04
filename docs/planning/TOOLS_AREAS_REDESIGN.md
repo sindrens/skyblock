@@ -763,3 +763,14 @@ higher but balanced economy numbers; Depths module deletion (after the inventory
     `combat.only-in-depths` (Combat XP stays off as before).
   - Help: the "The Depths" category and the `depths`/`satchel` topics are replaced by "Farm & Mine" (topic `grind`,
     aliases farm, mine, depths, dungeon).
+- **Tutorial removed, start flow** (4 Nov 2026): `modules/tutorial`, `common/tutorial` (TutorialGate, TutorialService,
+  StarterContents, TutorialFinishedEvent, Gates), `common/depths/DepthsZones`, `TeleportReason.DUNGEON` and
+  `teleport.yml dungeon.*` (removed on load), `server/permissions/tutorial.txt`, `docs/commands/tutorial.md`, the live
+  `messages/tutorial.yml`, the staff-menu Tutorial button, the Forge "tutorial free forge" (`tools.yml forge.tutorial-free`,
+  removed on load). Every gate is open (pay, withdraw, trade, auction, island team, portals, profiles). Inert, kept:
+  menu.yml `highlights` (Nav.highlight is always empty), social `dm.new-player-protection` (nobody is "in the tutorial"),
+  rewards vote party "tutorial done" (always true), MenuService hint API, TxReason/AuditCategory TUTORIAL (old rows).
+  New in essentials: `StartGuide` (island at join through `IslandService.enterFromPortal`, boss bar + `objective`
+  placeholder until the guide is met, account setting `start.met-guide`), `StartMenu` (`/start`, perm `skyblock.start`),
+  `StartRules` (pure, tested). The spawn guide NPC (role `guide`) is "Rowan" and runs `/start` (npcs.yml v6 migration).
+  Starter chest default changed (islands.yml v3 migration).

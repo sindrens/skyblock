@@ -125,7 +125,7 @@ class BoardSourceTest {
 
     @Test
     void f13aMigrationAddsTheMilestoneBoardsToTheUntouchedDefault() {
-        assertEquals(5, new NpcsConfig().version());
+        assertTrue(new NpcsConfig().version() >= 5, "v5 step stays; v6 is the start guide action");
         var change = new NpcsConfig().valueChanges().get(5).get("leaderboards.sources");
         assertTrue(change.matches(new ArrayList<>(NpcsConfig.SOURCES_V4)));
         assertFalse(change.matches(List.of("money: money")));

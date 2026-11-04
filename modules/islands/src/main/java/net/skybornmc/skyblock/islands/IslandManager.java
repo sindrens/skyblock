@@ -1134,13 +1134,6 @@ final class IslandManager implements IslandService {
         if (portal != null) {
             portal.accept(created);
         }
-        // TUT-FIX2 (one place per message): a player in the tutorial gets its island camera and titles right now; the
-        // island's own welcome title and two chat lines would sit on top of them.
-        boolean tutorial = core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .map(t -> t.currentStep(player.getUniqueId()).isPresent()).orElse(false);
-        if (created && tutorial) {
-            return;
-        }
         if (created) {
             msg.title(player, "create.title");
             core.sounds().play(player, "unlock");

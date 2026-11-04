@@ -142,9 +142,6 @@ final class MemberManager {
 
     /** {@code /is invite <player>}: checks, then (solo island) the Team Island warning, then the invite. */
     void invite(Player player, Player target, Menu parent) {
-        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
-            return; // TUTORIAL §4: sending invites opens after the first-crop step (accepting is always open)
-        }
         Island island = ownIsland(player);
         if (island == null) {
             return;
@@ -912,9 +909,6 @@ final class MemberManager {
 
     /** {@code /is coop <player>}: temporary trust while a leader or mod is online (REVIEW A4). */
     void coop(Player player, Player target) {
-        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.ISLAND_TEAM)) {
-            return; // TUTORIAL §4: coop opens after the first-crop step
-        }
         Island island = ownIsland(player);
         if (island == null) {
             return;

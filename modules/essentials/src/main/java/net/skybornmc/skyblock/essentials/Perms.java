@@ -8,6 +8,8 @@ import java.util.Locale;
 final class Perms {
 
     static final String SPAWN = "skyblock.player.spawn";
+    /** {@code /start}: the guide menu (Island, Farm, Mine). */
+    static final String START = "skyblock.start";
     static final String TPA = "skyblock.player.tpa";
 
     static final String TELEPORT_BYPASS = "skyblock.staff.teleport.bypass";

@@ -83,12 +83,6 @@ final class GuideMenu extends Menu {
                 Msg.p("player", viewer.getName()), Msg.p("level", level)));
         set(SLOT_NEXT, service.item(Material.COMPASS, viewer, GuideModule.ID, "menu.next",
                 Msg.p("next", ph("objective", m.core().messages().raw(GuideModule.ID, "menu.next-none")))), click -> {
-            // Owner 3 Nov 2026: Kindle runs the tutorial; while it runs, the step tools (take me there, I'm stuck) open here.
-            var tutorial = m.core().services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class);
-            if (tutorial.isPresent() && tutorial.get().isActive(click.player())) {
-                tutorial.get().openMenu(click.player());
-                return;
-            }
             click.player().closeInventory();
             m.msg().send(click.player(), "menu.next-chat", Msg.p("next", ph("objective", "")));
         });

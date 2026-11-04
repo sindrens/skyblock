@@ -33,8 +33,7 @@ final class PayRules {
     /**
      * The first problem with this payment, if any. {@code targetName} is compared ignoring case.
      */
-    // Owner answers 131/203: no playtime limit here; the join tutorial locks /pay until its bank step (TutorialGate,
-    // checked by EconomyModule#pay before these rules).
+    // Owner answers 131/203: no playtime limit here (the join tutorial lock is gone, owner 3 Nov 2026).
     static Optional<Problem> check(EconomyConfig config, String payerName, String targetName, long amount, Currency currency,
                                    boolean frozen) {
         if (frozen) {

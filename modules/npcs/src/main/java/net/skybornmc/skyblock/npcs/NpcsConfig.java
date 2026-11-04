@@ -63,6 +63,25 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Setting(path = "npcs.actions", desc = "Role -> what a click does, as 'role: command <command>' (runs the command as the player, help on sneak-click) or 'role: help [command]' (help text, with an [Open] button for the command). Roles without a line show their help.")
     public List<String> roleActions = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command forge",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "dungeon: command dungeon",
+            "foreman: help dungeon",
+            "crates: command crates",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help");
+
+    /** {@code npcs.actions} v3 to v5: the spawn guide showed help with a [menu] button (before the start guide, owner 3 Nov 2026). */
+    static final List<String> ACTIONS_V5 = List.of(
             "guide: help menu",
             "info: help help",
             "forge: command forge",
@@ -239,21 +258,23 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     /**
      * v2 (PHASE-5 M5.2): the island top boards show island levels. v3 (GUI-BUGS): the Crate Keeper and Daily Rewards NPCs
      * open /crates and /daily (they exist now). v4 (PHASE-5 M5.7): the two weekly Hall of Heroes boards show the weekly
      * island and pillar gain, switching Solo/Team. v5 (F13a): the two milestone boards (milestones_island,
-     * milestones_personal; they show once a build has leaderboard points with those ids). An owner-edited list is kept.
+     * milestones_personal; they show once a build has leaderboard points with those ids). v6 (owner 3 Nov 2026): the spawn
+     * guide (Rowan) runs /start, the start guide menu. An owner-edited list is kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())),
                 3, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V2, new NpcsConfig().roleActions)),
                 4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, SOURCES_V4)),
-                5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())));
+                5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())),
+                6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)));
     }
 
     private static List<String> sources() {

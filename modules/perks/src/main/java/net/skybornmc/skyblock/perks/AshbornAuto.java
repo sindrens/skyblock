@@ -1,7 +1,6 @@
 package net.skybornmc.skyblock.perks;
 
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.tutorial.TutorialFinishedEvent;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -19,8 +18,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Ranks V2 (owner EP-Q15): Ashborn arrives by itself once the tutorial is complete and the player has played
- * {@code freerank.min-playtime-minutes}. Checks run 100 ticks after a join, at once when the tutorial finishes, and every
+ * Ranks V2 (owner EP-Q15): Ashborn arrives by itself once the player has played
+ * {@code freerank.min-playtime-minutes}. Checks run 100 ticks after a join and every
  * {@code freerank.auto.check-seconds} for at most {@code freerank.auto.batch} online players; they read memory only until a
  * claim is due. The claim is {@link FreeRankService#claim(Player, boolean)}: one row per account, then the group is ADDED
  * (never a downgrade; staff and donors keep their higher badge). {@code /freerank} stays as the one-time tag pick.
@@ -61,11 +60,6 @@ final class AshbornAuto implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
         core.scheduler().later("ashborn-join", JOIN_DELAY_TICKS, () -> check(p));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onTutorialFinished(TutorialFinishedEvent event) {
-        check(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

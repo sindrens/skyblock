@@ -144,11 +144,6 @@ final class InspectMenu extends Menu {
                 .filter(b -> viewer.hasPermission("skyblock.box.admin"))
                 .ifPresent(b -> set(40, service.item(Material.CHEST_MINECART, viewer, StaffFeature.MODULE, "menu.inspect.box",
                         Msg.p("player", name)), click -> b.openStaffView(click.player(), id, name, this)));
-        // Join tutorial (TUTORIAL §9.2): step, times, skip and reset. Shown when the tutorial module runs.
-        s.core().services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .filter(t -> viewer.hasPermission("skyblock.tutorial.admin.status"))
-                .ifPresent(t -> set(41, service.item(Material.WRITTEN_BOOK, viewer, StaffFeature.MODULE, "menu.inspect.tutorial",
-                        Msg.p("player", name)), click -> t.openStaffView(click.player(), id, name, this)));
         // R3-13b: frozen stacked spawners (block lost) of this player; admins restore them to the player's /box.
         s.core().services().optional(net.skybornmc.skyblock.common.stacking.StackingService.class)
                 .filter(st -> viewer.hasPermission("skyblock.spawner.restore"))

@@ -1,6 +1,22 @@
 # Changelog
 
 ## [Unreleased]
+### Depths removed, new start flow (4 Nov 2026)
+**Farm and Mine**
+- The Depths module is deleted. `/farm` harvests and `/mine` ores now give skill XP (Farming, Mining), count for island farm/mine tasks and harvest quests (new `GrindBreakEvent`).
+- Depths-only enchants (area and gathering effects, book drops) and the satchel are retired; the Forge takes materials from the inventory.
+- Help: "Farm & Mine" replaces "The Depths". The spawn scoreboard drops the "Played" row (Bedrock shows 15 lines).
+
+**Start flow (replaces the tutorial)**
+- New players get their island right after joining (also players without an island: `essentials.yml start.island-for-islandless`).
+- A boss bar "Go to spawn and talk to Rowan" (and the scoreboard "Next:" line) shows until you talk to Rowan, the guide NPC at spawn.
+- `/start` (or clicking Rowan) opens Rowan's menu: Island, Farm, Mine. Rowan's name is `messages/npcs.yml roles.guide.name`.
+- Starter chest: 8 wheat seeds, 2 oak saplings, 16 bread, a water bucket, a lava bucket, 2 ice (untouched live lists update).
+- No more tutorial locks: /pay, /withdraw, /trade, the auction house, island team features, portals and new profiles are open from the start.
+
+**Fixes**
+- Shop v5 migration takes the new default tab icons (an owner-chosen icon still stays).
+
 ### v5 evening batch (3 Nov 2026, owner + Cubed feedback)
 **Islands**
 - Invites work for players alone on their own island (a new player's starter island); accepting asks to replace it.

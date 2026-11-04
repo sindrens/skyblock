@@ -30,12 +30,13 @@ npc-names:
 # Action NPCs: one plain click runs the action and, the first time each session, prints this help (npcs.yml npcs.help-once).
 # Help-only NPCs show it on every click; sneak-click always shows it.
 roles:
+  # The spawn guide (start flow, owner 3 Nov 2026): this name is also used in the start boss bar and /start.
   guide:
-    name: "Guide"
+    name: "Rowan"
     help:
-      - "<c:text>Welcome to Phoenix Skyblock!"
-      - "<c:text>Everything is in the main menu: <c:value>/menu</c:value>"
-      - "<c:text>Get an island: <c:value>/is</c:value> <c:muted>·</c:muted> <c:text>help: <c:value>/help"
+      - "<c:text>Welcome to Phoenix Skyblock! I'm Rowan."
+      - "<c:text>Your island, the farm and the mine: <c:value>/start</c:value>"
+      - "<c:text>Everything else: <c:value>/menu</c:value> <c:muted>·</c:muted> <c:text>help: <c:value>/help"
   info:
     name: "Info"
     help:

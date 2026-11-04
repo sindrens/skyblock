@@ -159,9 +159,9 @@ class TeleportWarmupTest {
     void cooldownClearZeroAndPrune() {
         AtomicLong now = new AtomicLong(0);
         TeleportCooldowns cooldowns = new TeleportCooldowns(now::get);
-        cooldowns.start(a, TeleportReason.DUNGEON, 10);
-        cooldowns.clear(a, TeleportReason.DUNGEON);
-        assertEquals(0, cooldowns.left(a, TeleportReason.DUNGEON), "a cancelled warmup clears its cooldown");
+        cooldowns.start(a, TeleportReason.ISLAND_WARP, 10);
+        cooldowns.clear(a, TeleportReason.ISLAND_WARP);
+        assertEquals(0, cooldowns.left(a, TeleportReason.ISLAND_WARP), "a cancelled warmup clears its cooldown");
         cooldowns.start(a, TeleportReason.SPAWN, 10);
         cooldowns.start(a, TeleportReason.SPAWN, 0);
         assertEquals(0, cooldowns.left(a, TeleportReason.SPAWN), "0 seconds clears");
@@ -184,7 +184,6 @@ class TeleportWarmupTest {
         assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_HOME));
         assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_VISIT), "owner answer 285");
         assertEquals(0, config.warmupSeconds(TeleportReason.ISLAND_WARP), "owner answer 285");
-        assertEquals(0, config.warmupSeconds(TeleportReason.DUNGEON), "owner answer 341");
         assertEquals(3, config.dangerWarmupSeconds, "3 s while in combat or a combat zone");
         assertTrue(config.dangerWorlds.contains("warzone"));
         assertTrue(config.portalOnlyWorlds.contains("warzone"), "owner answer 413");
@@ -196,11 +195,8 @@ class TeleportWarmupTest {
 
     @Test
     void bypassPermissionsPerReason() {
-        assertEquals("skyblock.depths.bypass", TeleportReason.DUNGEON.bypassPermission(), "dungeon keeps the Depths bypass");
         for (TeleportReason reason : TeleportReason.values()) {
-            if (reason != TeleportReason.DUNGEON) {
-                assertEquals(TeleportReason.STAFF_BYPASS, reason.bypassPermission(), reason.name());
-            }
+            assertEquals(TeleportReason.STAFF_BYPASS, reason.bypassPermission(), reason.name());
             assertTrue(reason.id().matches("[a-z-]+"), "config section id " + reason.id());
         }
     }
@@ -243,6 +239,6 @@ class TeleportWarmupTest {
         assertEquals(0, config.tpaWarmupSeconds);
         assertEquals(0, config.islandVisitWarmupSeconds);
         assertEquals(5, config.islandWarpWarmupSeconds, "an owner-chosen value stays");
-        assertEquals(0, config.dungeonWarmupSeconds);
+        assertFalse(Files.readString(dir.resolve("teleport.yml")).contains("\ndungeon:"), "the Depths dungeon section is removed");
     }
 }

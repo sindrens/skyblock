@@ -5,6 +5,8 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | Command | What | Permission | Status |
 |---|---|---|---|
 | `/spawn` | Teleport to spawn (warmup 3 s, cooldown 5 s) | `skyblock.player.spawn` (everyone) | ✅ |
+| `/farm` · `/mine` | Teleport to the Farm / the Mine (world `grind`, per-player crops and ores, money bonus; count for skills, island tasks and quests) | `skyblock.player.spawn` (everyone) | ✅ |
+| `/start` | The guide Rowan's menu: Island, Farm, Mine (also opened by clicking Rowan at spawn; hides the start boss bar) | `skyblock.start` (everyone) | ✅ |
 | `/tpa <player>` · `/tpahere <player>` | Ask to teleport to someone / ask them to come to you (clickable Accept/Deny, expires after 60 s). Refused like "requests off" when the target `/ignore`s you (owner answer 316) | `skyblock.player.tpa` (everyone) | ✅ |
 | `/tpaccept [player]` · `/tpdeny [player]` · `/tpcancel` | Answer or cancel requests (aliases `/tpyes`, `/tpno`) | `skyblock.player.tpa` | ✅ |
 | `/tp <player> [target]` | Teleport to a player, or a player to another | `skyblock.staff.tp` (+ `.others`) | ✅ |

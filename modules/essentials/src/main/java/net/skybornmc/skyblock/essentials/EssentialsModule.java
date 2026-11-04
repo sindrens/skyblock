@@ -61,8 +61,9 @@ public final class EssentialsModule implements SkyblockModule {
         commandHints = new CommandHints(core, config, msg);
         noHunger = new NoHunger(config);
         grind = new GrindAreas(core, config, msg, core.services().get(TeleportService.class));
+        start = new StartGuide(core, config, msg);
 
-        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind)) {
+        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind, start)) {
             group.register();
         }
         for (Listener listener : listeners()) {
@@ -79,10 +80,11 @@ public final class EssentialsModule implements SkyblockModule {
 
     private NoHunger noHunger;
     private GrindAreas grind;
+    private StartGuide start;
 
     private List<Listener> listeners() {
         return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints,
-                noHunger, grind);
+                noHunger, grind, start);
     }
 
     @Override
@@ -103,6 +105,7 @@ public final class EssentialsModule implements SkyblockModule {
         settings.unregister();
         views.shutdown();
         vanish.shutdown();
+        start.shutdown();
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);
         }

@@ -285,10 +285,6 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new net.skybornmc.skyblock.logs.LogsModule(core));
         modules.register(new net.skybornmc.skyblock.cosmetics.CosmeticsModule(core));
-        // Owner 3 Nov 2026: the Depths are removed (replaced by /farm and /mine, essentials GrindAreas). The module no
-        // longer starts; its code stays until the modules that compile against it no longer use its classes
-        // (docs/planning/TOOLS_AREAS_REDESIGN.md, "Owner decisions").
-        // modules.register(new net.skybornmc.skyblock.depths.DepthsModule(core));
         modules.register(new net.skybornmc.skyblock.islands.IslandsModule(core));
         modules.register(new net.skybornmc.skyblock.economy.EconomyModule(core));
         modules.register(new net.skybornmc.skyblock.skills.SkillsModule(core));
@@ -315,17 +311,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // NPCs + holograms + leaderboards at the applied builds' points (NPCHOLO); needs the worlds module's BuildPoints.
         npcs = new net.skybornmc.skyblock.npcs.NpcsModule(core);
         modules.register(npcs);
-        // Join tutorial (TUTORIAL.md TU1-TU4): reads islands, depths, tools, economy, npcs, cosmetics services (all optional);
-        // publishes TutorialGate (feature locks), TutorialService and StarterContents (the islands module asks it at paste time).
-        modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core));
         // Crates core (PHASE-10 M10.1): needs economy; reads box, enchants, wardrobe, stacking, cosmetics, islands, skills and
         // builds services (optional). Publishes CrateKeys once ready (the AFK pool then hands over its pending keys).
         modules.register(new net.skybornmc.skyblock.crates.CratesModule(core));
         // Rewards (PHASE-10 M10.6 daily calendar + playtime, M10.5 voting): needs economy; hands keys out through
         // CrateKeys (crates, above) and reads box, boosters, enchants, cosmetics, islands, skills, afk, profiles (optional).
         modules.register(new net.skybornmc.skyblock.rewards.RewardsModule(core));
-        // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads depths (events),
-        // islands, skills, tools, enchants, sell, tutorial and profiles services (all optional).
+        // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads islands, skills,
+        // tools, enchants, sell and profiles services (all optional).
         modules.register(new net.skybornmc.skyblock.quests.QuestsModule(core));
         // Collection log (PHASE-10 M10.10, /collection): after crates (its Crates page reads CrateKeys) and progression (the
         // "Collections" island level source). Hooks Depths drop/kill events; reads cosmetics, islands, wardrobe (optional).

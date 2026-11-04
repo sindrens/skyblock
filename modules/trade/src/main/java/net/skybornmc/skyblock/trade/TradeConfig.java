@@ -64,7 +64,7 @@ public final class TradeConfig extends ModuleConfig {
     public List<String> currencies = List.of("money", "shards", "credits");
 
     // Owner answers 131/203 (round 1): no new-account playtime limit for money offers (old key money.new-account-minutes
-    // is ignored). The join tutorial locks /trade until it is finished (TutorialGate in TradeModule#request/#accept).
+    // is ignored). The join tutorial lock is gone (owner 3 Nov 2026).
 
     // ------------------------------------------------------------------ what can be offered
 

@@ -35,6 +35,43 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
     public int grindDungeonMobs = 12;
 
+    // ------------------------------------------------------------------ start flow (owner 3 Nov 2026, replaces the tutorial)
+
+    @Setting(path = "start.enabled", desc = "Start guide on: a boss bar 'Go to spawn and talk to <guide>' until the player talked "
+            + "to the guide NPC at spawn (or used /start); the scoreboard 'Next:' line shows the same.")
+    public boolean startEnabled = true;
+
+    @Setting(path = "start.island-on-first-join", desc = "Brand-new players get their island created right after joining "
+            + "(no portal walk). If the island can't be made, they stay at spawn and can use /is.")
+    public boolean startIslandOnFirstJoin = true;
+
+    @Setting(path = "start.island-for-islandless", desc = "Also players who already played but have no island (on the active "
+            + "profile) get one created when they join.")
+    public boolean startIslandForIslandless = true;
+
+    @Setting(path = "start.island-delay-ticks", desc = "Ticks after joining (and after the icon pack answer) before the island "
+            + "is created, so the profile and the welcome are ready (20 = 1 second).", min = 1, max = 400)
+    public int startIslandDelayTicks = 40;
+
+    @Setting(path = "start.guide-role", desc = "NPC role of the guide at spawn (npcs.yml): clicking it counts as talking to the "
+            + "guide. Its name is messages/npcs.yml roles.<role>.name.")
+    public String startGuideRole = "guide";
+
+    @Setting(path = "start.bossbar-color", desc = "Boss bar colour: PINK, BLUE, RED, GREEN, YELLOW, PURPLE or WHITE.")
+    public String startBarColor = "YELLOW";
+
+    @Setting(path = "start.bossbar-overlay", desc = "Boss bar style: PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12 or NOTCHED_20.")
+    public String startBarOverlay = "PROGRESS";
+
+    @Setting(path = "start.island-command", desc = "Command (without /) of the Island button in /start.")
+    public String startIslandCommand = "is home";
+
+    @Setting(path = "start.farm-command", desc = "Command (without /) of the Farm button in /start.")
+    public String startFarmCommand = "farm";
+
+    @Setting(path = "start.mine-command", desc = "Command (without /) of the Mine button in /start.")
+    public String startMineCommand = "mine";
+
     @Setting(path = "hunger.pvp-worlds", desc = "Worlds where hunger still works (owner 3 Nov 2026: only PvP; off in dungeons too).")
     public java.util.List<String> hungerWorlds = java.util.List.of("warzone");
 

@@ -524,13 +524,11 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     }
 
     /**
-     * R3-32: true while the account has not finished the tutorial (common TutorialService). Unknown (no tutorial module,
-     * state not loaded) counts as finished, so old players are never cut off.
+     * R3-32: true while the account had not finished the join tutorial. The tutorial was replaced by the start guide
+     * (owner 3 Nov 2026), so nobody counts as "in the tutorial" any more and the new-player DM protection is inert.
      */
     private boolean inTutorial(Player player) {
-        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .flatMap(t -> t.state(player.getUniqueId()))
-                .map(state -> !state.complete()).orElse(false);
+        return false;
     }
 
     private void reply(CommandSender sender, String text) {

@@ -33,7 +33,6 @@ dependencies {
     implementation(project(":modules:afk"))
     implementation(project(":modules:box"))
     implementation(project(":modules:npcs"))
-    implementation(project(":modules:tutorial"))
     implementation(project(":modules:crates"))
     implementation(project(":modules:boosters"))
     implementation(project(":modules:progression"))

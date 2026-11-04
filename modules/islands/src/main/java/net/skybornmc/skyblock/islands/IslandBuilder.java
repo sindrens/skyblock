@@ -317,25 +317,14 @@ final class IslandBuilder {
     }
 
     /**
-     * Puts the starter items into the chest. With the tutorial module running its custom starter chest is used
-     * (TUTORIAL §6, owner answer 158: starter kit, seeds, Field Guide...); otherwise the plain {@code starter-chest.items}
-     * list. Returns what was added ("material:amount"), empty if no chest.
+     * Puts the {@code starter-chest.items} into the chest (owner 3 Nov 2026 start flow; the tutorial's custom chest is
+     * gone). Returns what was added ("material:amount"), empty if no chest.
      */
     private List<String> fillChest(Block block, java.util.UUID ownerProfile) {
         if (config.starterChestClearBeforeFill && block != null && block.getState() instanceof Chest old) {
             // A reused slot or a rebuild can leave a chest that still holds items: the new island starts with exactly the
             // starter contents (the whole chest, both halves of a double chest).
             old.getInventory().clear();
-        }
-        java.util.Optional<net.skybornmc.skyblock.common.tutorial.StarterContents> custom =
-                core.services().optional(net.skybornmc.skyblock.common.tutorial.StarterContents.class);
-        if (custom.isPresent()) {
-            try {
-                Block chestBlock = block != null && block.getState() instanceof Chest ? block : null;
-                return custom.get().fillChest(chestBlock, ownerProfile);
-            } catch (RuntimeException e) {
-                core.plugin().getLogger().log(Level.WARNING, "Islands: the tutorial's starter chest failed; using starter-chest.items", e);
-            }
         }
         List<String> added = new ArrayList<>();
         if (block == null || !(block.getState() instanceof Chest chest)) {
