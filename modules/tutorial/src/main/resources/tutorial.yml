@@ -289,7 +289,6 @@ chapters:
         dialog:
           - "Keys, keys, keys! Every key opens one of my crates."
           - "Finish this chapter for a key, then come back to me."
-          - "Contracts at the Contract Board pay keys too."
 
   next:
     name: "What's Next"
@@ -347,9 +346,7 @@ idle:
   auction:
     - "Good deals today! Juniper's shop is right across."
   crates:
-    - "Got a key? Pick a crate! Contracts pay keys too."
-  contracts:
-    - "New jobs every day. Rewards: money, shards and keys."
+    - "Got a key? Pick a crate! /daily gives keys too."
   tinker:
     - "Your hoe and pickaxe grow with you. Right-click in the air for their menu."
   sage:

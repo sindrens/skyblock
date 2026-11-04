@@ -1,6 +1,15 @@
 # Changelog
 
 ## [Unreleased]
+### 4 Nov: tutorial
+- **`/tutorial` (`/quest`), the guided tour:** seven chapters (Welcome to Phoenix, Your Island, The Farm, The Mine, Money Matters, Growing Together, What's Next). Steps finish from real play: talking to NPCs, menus, harvesting at /farm, mining at /mine, selling, the bank, upgrades, invites, /daily. Rewards per chapter, once per account (a profile wipe never pays them again). `/tutorial skip` ends it without rewards.
+- **Quest book** with your chapter (✔ done, ▶ next with a hint, • to do, click a step to go there) and every chapter with the overall progress; a menu on Bedrock.
+- **Always know what to do:** the boss bar shows the current step (hides after 30 s without progress, back on the next step; `/tutorial hide`), and Kindle, /help and the scoreboard "Next" line show the same step.
+- **Rowan's `/start`** shows pages: your chapter and its steps, plus Island, Farm, Mine and the book.
+- **Talking NPCs:** an NPC of your next step talks with a typewriter text above its head (only you see it) and the line in chat with clickable commands; click again to finish a line, twice to skip. Outside the tour NPCs say a short idle line that points to the next NPC.
+- **New spawn NPC roles:** Bramble (Farm Merchant), Flint (Mine Merchant), Tinker (tools), Sage (skills); Juniper (shop), Ollie (auction) and The Banker got their names. Staff place them on the build's NPC points (docs/commands/tutorial.md).
+- **Staff:** `/tutorial admin reset|step|stats`.
+
 ### 4 Nov: island tools rework
 - **Two island tools:** the Harvester Hoe and the Island Pickaxe, both diamond from the start. The island axe and sword are removed (old items disappear from bags and chests, audit-logged); the wood → netherite tiers are gone.
 - **The tools belong to the island:** level, XP, perks and prestige are shared by every member; each member carries one handle (get a lost one in the tool menu or with `/tool`). A tool of another island stops working and is removed.
@@ -9,7 +18,7 @@
 - **Perks unlock at tool levels:** Shard Finder, Efficiency, Extra Drops, Fortune, Haste, Wisdom, Growth, Storage, Smelter, Auto-Sell, Sell Bonus, Lucky (Shard Pouches), and Sweep (hoe) / Vein (pickaxe) from prestige 1. Long tracks with tiny steps and higher prices; buy x1 / x10 (shift) / x100 (right-click). Every refused purchase says why (price and balance, unlock level, max, not the owner ...). Bought levels carry over proportionally.
 - **Built in:** Magnet; Speed while holding the hoe (Speed II from prestige 2). Loot goes to the bag, then the tool's storage (the pickaxe has one now); never on the ground at /farm and /mine. The storage is in the tool's menu.
 - **Island boosts:** Harvest Yield and Mine Fortune (island upgrades, now buyable; Mine Fortune is much stronger and moved to Production) boost everything the hoe and pickaxe get, from your current island.
-- **/mine:** tier 1 is all coal; mine enough to turn the whole mine into copper, then iron, gold, redstone, lapis, diamond and emerald. The /farm and /mine money bonus comes now and then and grows with your tier. No more wheat flash when a crop comes back.
+- **/mine:** tier 1 is all coal; mine enough to turn the whole mine into iron, then gold, redstone, lapis, diamond and emerald. The /farm and /mine money bonus comes now and then and grows with your tier. No more wheat flash when a crop comes back.
 
 ### 4 Nov: island = profile (plan B section A)
 - **A profile is one island membership.** Leaving the island in any way wipes the profile: `/is leave`, a kick, a staff removal, a disband, a staff island delete/reset, replacing your solo island to join another one, `/profiles reset`. Coop never wipes.

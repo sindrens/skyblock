@@ -142,6 +142,10 @@ final class StartGuide extends CommandGroup implements Listener {
     }
 
     private void showBar(Player player) {
+        if (net.skybornmc.skyblock.common.tutorial.TutorialService.of(core.services())
+                .map(net.skybornmc.skyblock.common.tutorial.TutorialService::ownsStartBar).orElse(false)) {
+            return; // the tutorial's boss bar shows the step (owner 4 Nov 2026: one bar, always the next step)
+        }
         if (!player.isOnline() || !StartRules.showGuide(config.startEnabled, metValue(player)) || bars.containsKey(player.getUniqueId())) {
             return;
         }
@@ -179,6 +183,11 @@ final class StartGuide extends CommandGroup implements Listener {
 
     private void open(Player player) {
         meet(player);
+        var tutorial = net.skybornmc.skyblock.common.tutorial.TutorialService.of(core.services());
+        if (tutorial.isPresent()) {
+            tutorial.get().openStart(player); // owner 4 Nov 2026: /start has pages that show what's next
+            return;
+        }
         core.menus().open(player, new StartMenu(this));
     }
 
