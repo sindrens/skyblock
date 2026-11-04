@@ -20,6 +20,14 @@
 - **Per profile:** the /farm and /mine tier and bonus; a new or wiped profile starts at tier 1 and gets its island right away.
 - Audit flag for large `/pay`s in the 10 minutes before a wipe (`economy.yml pay.leave-flag.*`).
 
+### 4 Nov: help, Kindle and menu design (plan 4 Nov C §1-3, owner 19:39)
+- **/help = "What do you want to do?":** six goal cards (Make money, Upgrade my tools, Grow my island, Play with friends, Find my way, Rules & support) with 1-2 buttons that do it: `/farm`, `/shop`, `/tool`, `/is upgrade`, Kindle, `/is members`, `/is visit`, your next step, `/rules`, `/discord`. Buttons whose command is missing are hidden. The old categories are **All topics** (bottom left, `/help topics`). Texts in `help.yml → goals`.
+- **One next step everywhere:** Kindle's Next step, /help Find my way, the scoreboard `Next:` line and the `next_step` placeholder show the same step (`NextStepService`; today "Talk to Rowan at spawn" → `/start`, `core.yml next-step.*`). Clicking it does it.
+- **Kindle** appears the moment you arrive (teleport, join, invite accepted, chunk load), not a few seconds later. His menu is clean and vanilla: his quests, Next step, his finds; island level with a progress bar, upgrades, island tasks, milestones; island tools, Farm, Mine; Help. No more Depths, Forge or dungeon buttons, and the guide book lost its Depths pages.
+- **Menus with more air:** the `/menu` hub uses vanilla items (Farm and Mine in Play, Island Tools instead of the Forge, Rewards · Travel · Top centred); the shop tabs sit on centred rows of at most 7 with an empty row between them; the shop grid starts every group on its own centred row with an empty row between groups and pages instead of filling every slot. Undo and Sell are a plain clock and gold nugget. The hub, Kindle and the shop have Help (book) right of Close.
+- **Join on your island:** returning players appear at their island home (`essentials.yml → join.location: island`, or `last` / `spawn`); new players start at spawn and the start flow takes them to their new island.
+- **Real NPC skins:** Kindle (sunny), Rowan (kai) and every spawn NPC wear a different vanilla skin (`npcs.yml → npcs.skins`, `guide.yml → skin`): a default skin name, `texture:<value>:<signature>` or a player name.
+
 ### Chat cards and broadcasts (4 Nov 2026)
 - **Broadcast cards:** now and then a short card about a feature (shop, farm, mine, store, vote, Discord, daily reward, island upgrades, tips): a centred bold gradient title, 1-3 lines and a clickable `» /shop «` line. Bedrock players see it left-aligned. Texts in `messages/broadcasts.yml`.
 - Cards only come while chat is active: at least 7 minutes and 6 chat messages from 2 players since the last card, with 3 players online (`chat.yml broadcasts.*`, editable in `/admin`). Random order, never the same card twice in a row; a card whose command doesn't exist is skipped.
