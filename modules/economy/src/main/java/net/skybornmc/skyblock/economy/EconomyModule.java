@@ -317,6 +317,45 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
+    /**
+     * Owner 4 Nov 2026 (island = profile), anti-abuse: a wiped profile that sent a lot with /pay in the minutes before
+     * (moving money out before leaving) is flagged in the audit log ({@code profile_wipe_pay_flag}, category economy).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileWiped(net.skybornmc.skyblock.common.profile.ProfileWipedEvent event) {
+        long threshold = config.leavePayFlagAmount;
+        if (threshold <= 0) {
+            return;
+        }
+        UUID from = event.gone().id();
+        long since = System.currentTimeMillis() - config.leavePayFlagMinutes * 60_000L;
+        String reason = event.reason().key();
+        core.database().async(c -> net.skybornmc.skyblock.common.db.Sql.query(c,
+                        "SELECT to_id, COALESCE(SUM(amount), 0) AS total, COUNT(*) AS n FROM eco_ledger WHERE from_id = ? AND reason = ? "
+                                + "AND currency = ? AND created_at >= ? GROUP BY to_id",
+                        rs -> new Object[]{net.skybornmc.skyblock.common.db.Sql.uuid(rs, "to_id"), rs.getLong("total"), rs.getLong("n")},
+                        from, TxReason.PAY, Currency.MONEY.key(), since))
+                .whenComplete((rows, error) -> core.scheduler().main("economy:leave-pay-flag", () -> {
+                    if (error != null) {
+                        core.plugin().getLogger().warning("Economy: the /pay check before a profile wipe failed: " + error.getMessage());
+                        return;
+                    }
+                    long total = 0;
+                    List<String> receivers = new ArrayList<>();
+                    for (Object[] row : rows) {
+                        total += (Long) row[1];
+                        receivers.add(row[0] + ":" + row[1] + "x" + row[2]);
+                    }
+                    if (total < threshold) {
+                        return;
+                    }
+                    core.audit().logPlayer(AuditCategory.ECONOMY, "profile_wipe_pay_flag", Actor.system(ID), event.gone().owner(),
+                            core.players().get(event.gone().owner()).map(PlayerData::name).orElse(null), total, null,
+                            Map.of("profile", from.toString(), "reason", reason, "minutes", config.leavePayFlagMinutes,
+                                    "threshold", threshold, "receivers", receivers));
+                }));
+    }
+
     /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); credits stay on the player. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {

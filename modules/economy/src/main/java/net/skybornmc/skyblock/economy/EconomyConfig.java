@@ -59,6 +59,14 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay.min.shards", desc = "Smallest /pay amount in shards.", min = 1, level = Setting.Level.OWNER)
     public long payMinShards = 1;
 
+    @Setting(path = "pay.leave-flag.amount", desc = "Owner 4 Nov 2026 (island = profile): the audit log flags a profile wipe "
+            + "(leave, kick, disband) when that profile sent at least this much money with /pay shortly before. 0 = off.", min = 0)
+    public long leavePayFlagAmount = 100_000;
+
+    @Setting(path = "pay.leave-flag.minutes", desc = "How far back before a profile wipe /pay transfers are added up for the flag.",
+            min = 1, max = 1440)
+    public int leavePayFlagMinutes = 10;
+
     @Setting(path = "pay.confirm-above.money", desc = "/pay asks to confirm at or above this much money. 0 = never.", min = 0)
     public long payConfirmMoney = 1_000_000;
 

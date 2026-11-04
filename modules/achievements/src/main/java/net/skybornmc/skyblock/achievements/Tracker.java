@@ -225,6 +225,40 @@ final class Tracker implements Listener {
         });
     }
 
+    /** Owner 4 Nov 2026 (island = profile): achievements are kept on a wipe; they move to the fresh profile. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileWiped(net.skybornmc.skyblock.common.profile.ProfileWipedEvent event) {
+        carry(event.gone().id(), event.fresh().id(), event.gone().owner());
+    }
+
+    /** A restore brings the kept achievements back to the restored profile. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileRestored(net.skybornmc.skyblock.common.profile.ProfileRestoredEvent event) {
+        if (event.replaced() != null) {
+            carry(event.replaced().id(), event.restored().id(), event.restored().owner());
+        }
+    }
+
+    /**
+     * Moves the rows in this module's ordered chain (after the switch's save of {@code from}), then reloads an online
+     * player who plays on {@code to} so the menu shows the moved progress.
+     */
+    private void carry(UUID from, UUID to, UUID owner) {
+        queue(c -> store.carry(c, from, to)).whenComplete((rows, error) -> core.scheduler().main("achievements-carry", () -> {
+            if (error != null) {
+                core.plugin().getLogger().warning("Achievements: could not carry " + from + " to " + to + ": " + Database.cause(error).getMessage());
+                return;
+            }
+            core.audit().log(AuditCategory.ITEM, "achievements_profile_carried", Actor.system(AchievementsModule.ID), to.toString(),
+                    null, (long) rows, null, Map.of("from", from.toString(), "to", to.toString()));
+            Player player = Bukkit.getPlayer(owner);
+            if (player != null && to.equals(profiles().profileKey(player.getUniqueId()))) {
+                detach(owner);
+                attach(player, to);
+            }
+        }));
+    }
+
     private void attach(Player player, UUID key) {
         UUID uuid = player.getUniqueId();
         ProfileProgress p = new ProfileProgress(key, uuid);
