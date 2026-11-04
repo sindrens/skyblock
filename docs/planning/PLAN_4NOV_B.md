@@ -11,6 +11,26 @@ Items are grouped by system, not by message order. The numbers are the owner's.
 - Kick: no preference → default **leave, kick and disband all wipe** (with a 14-day staff restore).
 - Milestones: no preference → default **the proposed list** (section F).
 
+## Owner answers (4 Nov, 09:40), these override everything below
+- **Only two shard types:** **Farming Shards** (from the harvester hoe) and **Mining Shards** (from mining). There
+  are **no Timber or Combat shards**, and there will be **no island axe and no island sword** (they are removed).
+  Combat is only PvP now; Depths/dungeon/timber are gone.
+- **Every way of leaving wipes the profile:** leave, kick and disband.
+- **Milestones:** the list is OK.
+  - Island things count in the **island milestones**.
+  - Sort milestones by where you earn them: **Farm**, **Mine**, **Island**, so grinding at /farm and /mine earns
+    milestones.
+- **/mine tier 1 is ALL coal** (no stone). Break enough coal to make the mine full **iron ore**, then the next ore,
+  and so on. One ore type fills the whole mine per tier (like the farm crops).
+- **Everything starts with diamond tools:** the island hoe and pickaxe start at diamond (the wood→netherite tier-ups
+  are gone).
+- **Clean up custom enchants:**
+  - Remove the axe and sword enchants (no such island tools).
+  - Hoe and pickaxe enchants must work on the island tools and must not copy upgrades (wide_reap vs Sweep, vein_rend
+    vs Vein, swiftness vs hoe Speed, crystal_seeker vs Shard Finder: one survives, the other is removed). Default:
+    the upgrade survives, and the enchant becomes a rare-find book with its own unique effect, or is removed.
+  - Fishing and armor enchants: kept unless they are Depths/PvE-only (default; owner can change).
+
 ## A. Island = profile (14, 15, png "Slot locked", "Profiles can't share one")
 The biggest change, and it touches almost everything, so it is built first, before plan A's phases 4–5.
 
