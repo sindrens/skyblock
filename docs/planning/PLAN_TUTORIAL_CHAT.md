@@ -106,6 +106,37 @@ Total reward: about one hour of early income. It's useful but not game-breaking.
 
 ---
 
+## Owner answers (4 Nov, ~10:00)
+1. **Daily/weekly quests move away from /quests and become relevant to the server.** They become **Contracts**:
+   - `/contracts`, at a "Contract Board" NPC at spawn and in the /menu.
+   - Daily and weekly jobs built around what players actually do: harvest X carrots at /farm, mine Y iron at /mine,
+     sell $Z, earn island level, buy an upgrade, deliver crops for the island.
+   - Rewards are money, shards of the matching type, and sometimes a key.
+   - `/quests` becomes an alias of `/tutorial`.
+2. **NPC names:** friendly names, never taken from the reference server (no Hazel, Mabel, Rufus, Pip, Stephan or
+   Verity), with some role-only NPCs. Proposal:
+   - Rowan (guide)
+   - Bramble (Farm Merchant)
+   - Flint (Mine Merchant)
+   - Juniper (Shopkeeper)
+   - The Banker (role only)
+   - Ollie (Auctioneer)
+   - Contract Board (role only)
+   - Kindle stays the island guide.
+   - All names are in config/messages.
+3. **Broadcast cards come every 7 minutes, but only when chat is active.** Implementation (based on how good servers
+   avoid an "announcement wall"):
+   - A card goes out when **at least 7 minutes** have passed **and** players sent at least
+     `broadcasts.min-messages: 6` chat messages from at least `broadcasts.min-chatters: 2` different players since the
+     last card.
+   - In a quiet chat, nothing is sent, so cards never stack up on top of each other.
+   - At most one card per window. Skipped below `broadcasts.min-online: 3` players.
+   - Each player doesn't get a card in their first 2 minutes after joining (they already get the welcome), or while
+     AFK.
+   - The "Tips" setting turns cards off per player.
+   - The rotation avoids repeats and the card for the place the player is in.
+4. **Chapters and rewards:** yes, as planned.
+
 ## Questions for the owner
 1. **/quests:** today `/quests` is the daily/weekly quest system. Does it stay as it is, with `/tutorial` added as the
    tour? Or should `/quests` become `/tutorial` and the daily/weekly quests be removed?
