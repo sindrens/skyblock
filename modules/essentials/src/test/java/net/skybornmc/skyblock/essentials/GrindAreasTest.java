@@ -21,13 +21,13 @@ class GrindAreasTest {
         java.util.List<Long> none = java.util.List.of();
         assertEquals(Material.COAL_ORE, GrindAreas.oreTier(0, none).block(), "owner 4 Nov 2026: tier 1 is all coal");
         assertEquals(Material.COAL_ORE, GrindAreas.BASE_ORE);
-        assertEquals(Material.COPPER_ORE, GrindAreas.oreTier(400, none).block());
+        assertEquals(Material.IRON_ORE, GrindAreas.oreTier(400, none).block(), "owner: enough coal turns the mine into iron");
         assertEquals(Material.EMERALD_ORE, GrindAreas.oreTier(1_000_000, none).block());
         java.util.List<Long> custom = java.util.List.of(0L, 10L, -1L);
-        assertEquals(Material.COPPER_ORE, GrindAreas.oreTier(10, custom).block(), "thresholds from the config");
-        assertEquals(1_200, GrindAreas.unlockAt(2, custom), "a broken entry keeps the built-in threshold");
+        assertEquals(Material.IRON_ORE, GrindAreas.oreTier(10, custom).block(), "thresholds from the config");
+        assertEquals(1_500, GrindAreas.unlockAt(2, custom), "a broken entry keeps the built-in threshold");
         assertEquals(0, GrindAreas.unlockAt(0, custom));
-        assertEquals(java.util.List.of(Material.COAL_ORE, Material.COPPER_ORE, Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE,
+        assertEquals(java.util.List.of(Material.COAL_ORE, Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE,
                 Material.LAPIS_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE), GrindAreas.ORE_TIERS.stream().map(GrindAreas.Ore::block).toList());
         assertEquals(120, GrindAreas.tierAmount(java.util.List.of(40, 70, 120), 2, 5));
         assertEquals(5, GrindAreas.tierAmount(java.util.List.of(40), 3, 5), "missing tier: the fallback");

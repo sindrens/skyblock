@@ -304,17 +304,16 @@ final class GrindAreas extends CommandGroup implements Listener {
     }
 
     /**
-     * Owner 4 Nov 2026: one ore fills the whole mine per tier, like the farm's crops: all coal at the start, then copper,
-     * iron ... emerald. The real blocks are coal ore; a higher tier is each player's own client-side view.
+     * Owner 4 Nov 2026: one ore fills the whole mine per tier, like the farm's crops: all coal at the start, then iron
+     * (owner: "break enough coal to get it FULL iron ore"), gold ... emerald. The real blocks are coal ore; a higher tier is each player's own client-side view.
      */
     static final List<Ore> ORE_TIERS = List.of(
             new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 30),
-            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 400, 50),
-            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 1_200, 80),
-            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 3_000, 120),
-            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 6_000, 160),
-            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 10_000, 240),
-            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 16_000, 450),
+            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 400, 60),
+            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 120),
+            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 4_000, 160),
+            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 8_000, 240),
+            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 15_000, 450),
             new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 25_000, 800));
     static final Material BASE_ORE = Material.COAL_ORE;
     private static final org.bukkit.NamespacedKey MINED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_mined");

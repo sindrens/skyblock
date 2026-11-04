@@ -262,7 +262,7 @@ Tool tiers, recipes, XP curve, perk slots and abilities live in config (`tools.y
   2). Loot goes to the bag first, then the tool's storage; at /farm and /mine it never lands on the ground.
 - **Island boosts follow the island:** the island upgrades Harvest Yield (hoe) and Mine Fortune (pickaxe) add their
   percent to every drop of the tool, from the island the player is a member of; they are much stronger than the perks.
-- **/mine** tiers: the whole mine is one ore per tier for each player (coal → copper → iron → gold → redstone → lapis →
+- **/mine** tiers: the whole mine is one ore per tier for each player (coal → iron → gold → redstone → lapis →
   diamond → emerald, `essentials.yml grind.mine-unlocks`); the money bonus comes now and then and grows with the tier.
 
 ### 5.2 The Depths (one big shared area)
