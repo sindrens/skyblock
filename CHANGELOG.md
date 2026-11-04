@@ -1,6 +1,15 @@
 # Changelog
 
 ## [Unreleased]
+### 4 Nov: island = profile (plan B section A)
+- **A profile is one island membership.** Leaving the island in any way wipes the profile: `/is leave`, a kick, a staff removal, a disband, a staff island delete/reset, replacing your solo island to join another one, `/profiles reset`. Coop never wipes.
+- **Wiped:** money, crystals, shards, personal bank, inventory, armor, offhand, ender chest, XP, tools, skills, quests, collection, milestones, storages, crate keys, boosters, auction listings, the /farm and /mine tier. **Kept:** credits, rank, store purchases, achievements, cosmetics, tags, account playtime.
+- Leave, disband and "replace your island" show one clear screen with the real losses and what stays (asked twice). Kicked/disbanded members are wiped at once when online (chat summary) or on their next join (crash-safe).
+- **14-day snapshot** of every wiped profile: `/profiles snapshots <player>` and `/profiles restore <player> <slot> [snapshot]` (staff, audited); expired snapshots are deleted in the background.
+- **Joining needs an empty profile:** "Use an empty profile slot or leave your island first" with a `[Profiles]` button; invites wait for you on the fresh profile.
+- **Per profile:** the /farm and /mine tier and bonus; a new or wiped profile starts at tier 1 and gets its island right away.
+- Audit flag for large `/pay`s in the 10 minutes before a wipe (`economy.yml pay.leave-flag.*`).
+
 ### Chat cards and broadcasts (4 Nov 2026)
 - **Broadcast cards:** now and then a short card about a feature (shop, farm, mine, store, vote, Discord, daily reward, island upgrades, tips): a centred bold gradient title, 1-3 lines and a clickable `» /shop «` line. Bedrock players see it left-aligned. Texts in `messages/broadcasts.yml`.
 - Cards only come while chat is active: at least 7 minutes and 6 chat messages from 2 players since the last card, with 3 players online (`chat.yml broadcasts.*`, editable in `/admin`). Random order, never the same card twice in a row; a card whose command doesn't exist is skipped.

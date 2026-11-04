@@ -73,6 +73,15 @@ There are also **weekly mini-leaderboards** (island level gained, pillars, skill
 - A **confirmation warning** is shown before the first invite is sent, explaining that the change is permanent and that solo and team islands compete on separate leaderboards.
 - Attempts to bypass (e.g. kicking everyone to re-enter the solo top) get a clear, friendly explanation.
 
+### 3.2a Island = profile (owner 4 Nov 2026)
+- A **profile is one island membership** (up to 3 profiles per player, `/profiles`). Everything earned on a profile belongs to that island run.
+- **Every way of leaving the island wipes the profile:** leave, kick, staff removal, disband, staff delete/reset, replacing your solo island to join another one. Coop guests are not members and are never wiped.
+- **Kept:** credits, ranks/permissions, store purchases, achievements, cosmetics/tags, nickname, account playtime. **Wiped:** money, crystals, shards, personal bank, inventory/armor/offhand/ender chest, XP, tools and island tools, skills, quests/tasks, collection, milestones, storages, crate keys, boosters, auction listings, the /farm and /mine tier.
+- Leaving shows one warning screen with the real losses (asked twice). Kicked/disbanded members are wiped at once when online (chat summary) or on their next join.
+- Every wipe keeps a **14-day snapshot** that staff can restore (`/profiles restore`); after that it is deleted.
+- After a wipe the slot is an empty profile and starts on a new island right away (invite choice first). **Joining an island needs an empty profile**: otherwise "Use an empty profile slot or leave your island first".
+- Large `/pay`s in the 10 minutes before a wipe are flagged in the audit log. Details: `docs/commands/profiles.md` (Island = profile).
+
 ### 3.3 Roles and permissions
 - Preset roles: **Leader, Mod, Member, Coop/Trust**.
 - The Leader edits each role's permissions in a **GUI** (build, break, containers, spawners, bank withdraw/deposit, invite, kick, warps, upgrades, biomes, outposts, settings).
