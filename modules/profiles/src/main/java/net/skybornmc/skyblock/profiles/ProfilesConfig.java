@@ -61,6 +61,10 @@ public final class ProfilesConfig extends ModuleConfig {
             + "Everything else (vanish, equipped titles/tags, staff homes) is shared by the account.")
     public List<String> profileSettingKeys = List.of("setting.", "scoreboard", "menu-item");
 
+    @Setting(path = "state.persistent-keys", desc = "Owner 4 Nov 2026: player data values (whole numbers) that belong to the "
+            + "profile, like the /farm and /mine tier counters. Saved and loaded with the profile; a new or wiped profile starts without them.")
+    public List<String> persistentKeys = List.of("phoenixskyblock:grind_farmed", "phoenixskyblock:grind_mined");
+
     @Setting(path = "wipe.snapshot-days", desc = "Owner 4 Nov 2026 (island = profile): leaving an island wipes the profile. Days the "
             + "wiped profile is kept as a snapshot that staff can put back with /profiles restore. After that every module deletes it.",
             min = 1, max = 365, level = Setting.Level.OWNER)

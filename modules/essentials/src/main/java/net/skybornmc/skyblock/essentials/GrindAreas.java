@@ -432,7 +432,8 @@ final class GrindAreas extends CommandGroup implements Listener {
     private void addBonus(Player p, long amount) {
         long scaled = Math.round(amount * config.grindBonusPercent / 100.0);
         if (scaled > 0) {
-            pendingBonus.merge(p.getUniqueId(), scaled, Long::sum);
+            // Owner 4 Nov 2026: farm/mine progress and bonus are per profile, so the bonus is owed to this profile.
+            pendingBonus.merge(net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p), scaled, Long::sum);
         }
     }
 
@@ -448,17 +449,14 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         due.forEach((id, amount) -> {
-            Player p = Bukkit.getPlayer(id);
-            if (p == null) {
-                return;
-            }
-            var account = net.skybornmc.skyblock.common.economy.AccountRef.player(profiles.profileKey(p));
+            // id = the profile key that earned it (paid there even after a switch or quit)
+            var account = net.skybornmc.skyblock.common.economy.AccountRef.player(id);
             economy.execute(net.skybornmc.skyblock.common.economy.Transaction.deposit(account,
                             net.skybornmc.skyblock.common.economy.Currency.MONEY, amount, "grind_bonus")
                     .actor(net.skybornmc.skyblock.common.audit.Actor.system("grind")).reference("farm/mine bonus")
                     .idempotencyKey("grind_bonus:" + java.util.UUID.randomUUID()));
-            msg.actionBar(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
-                    net.skybornmc.skyblock.common.util.Format.money(amount)));
+            profiles.onlinePlayer(id).ifPresent(p -> msg.actionBar(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
+                    net.skybornmc.skyblock.common.util.Format.money(amount))));
         });
     }
 
@@ -624,6 +622,18 @@ final class GrindAreas extends CommandGroup implements Listener {
             }
             if (mine) {
                 sendMine(p, minX, minX + 15, minZ, minZ + 15);
+            }
+        });
+    }
+
+    /** Owner 4 Nov 2026: the crop/ore tier belongs to the profile (profiles module swaps it): show the new profile's view. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        Player p = event.getPlayer();
+        core.scheduler().later("essentials:grind-view", 20L, () -> {
+            if (p.isOnline()) {
+                sendFarm(p);
+                sendMine(p);
             }
         });
     }

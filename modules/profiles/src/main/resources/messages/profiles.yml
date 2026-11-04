@@ -202,7 +202,7 @@ wipe:
       - "<c:bar>|</c:bar> <c:text>Gone: <c:error><money></c:error> <c:text>money, <c:error><shards></c:error> <c:text>shards, <c:error><items></c:error> <c:text>items,"
       - "<c:bar>|</c:bar> <c:text>all tools, skills, quests, collection and milestones."
       - "<c:bar>|</c:bar> <c:text>Kept: <c:success>credits, rank, achievements and cosmetics</c:success><c:text>."
-      - "<c:bar>|</c:bar> <c:text>Start again: <click:run_command:'/start'><hover:show_text:'<c:text>New island, farm and mine'><c:action>[Start]</c:action></hover></click> <c:muted>or accept an island invite.</c:muted>"
+      - "<c:bar>|</c:bar> <c:text>You start again on a new island. <c:muted>Got an invite? Accept it instead:</c:muted> <click:run_command:'/is invites'><hover:show_text:'<c:text>Your island invites'><c:action>[Invites]</c:action></hover></click>"
       - "<c:bar>|</c:bar> <c:muted>A mistake? Staff can restore it for <days> days.</c:muted>"
     no-island: "your island"
     unknown: "?"

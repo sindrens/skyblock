@@ -107,6 +107,21 @@ final class StartGuide extends CommandGroup implements Listener {
         }));
     }
 
+    /**
+     * Owner 4 Nov 2026: a new profile starts on an island. Switching to a new (empty) profile and a profile wipe (the
+     * player now plays on a fresh profile) get the island right away, like a first join; the portal flow still offers
+     * pending invites first.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
+        Player player = event.getPlayer();
+        core.scheduler().later("essentials:start-profile", Math.max(1, config.startIslandDelayTicks), () -> {
+            if (player.isOnline()) {
+                startIsland(player, true); // only when the new profile has no island yet
+            }
+        });
+    }
+
     private void startIsland(Player player, boolean first) {
         Optional<IslandService> islands = core.services().optional(IslandService.class);
         if (islands.isEmpty() || ProfileService.of(core.services()).isSwitching(player.getUniqueId())) {

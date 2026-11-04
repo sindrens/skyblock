@@ -53,6 +53,7 @@ public final class ProfilesModule implements SkyblockModule {
     public void enable() throws Exception {
         new Migrations(core.database(), core.plugin().getLogger()).migrate(ID, getClass().getClassLoader());
         core.configs().load(config);
+        StateCodec.persistentKeys(config.persistentKeys);
         service = new ProfileServiceImpl(this, new ProfileStore(), new MainThread(core.plugin()));
         service.start();
         core.services().register(ID, ProfileService.class, service);
@@ -168,6 +169,7 @@ public final class ProfilesModule implements SkyblockModule {
     @Override
     public void reload() {
         core.configs().load(config);
+        StateCodec.persistentKeys(config.persistentKeys);
         core.messages().load(ID);
     }
 
