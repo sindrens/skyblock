@@ -133,3 +133,6 @@ skyblock.admin.setspawn:
 skyblock.start:
   description: Open the start guide menu (/start; Island, Farm, Mine)
   default: true
+skyblock.guide.bypass:
+  description: Use /pay, /trade and buy or list on /ah before talking to the guide (Rowan) at spawn (owner 4 Nov 2026; staff testing)
+  default: op

@@ -52,12 +52,24 @@ class StartRulesTest {
     }
 
     @Test
+    void gateOpensOnlyAfterTheGuideOrWithBypass() {
+        assertFalse(StartRules.gateOpen(true, true, false, true, null), "not met yet: locked");
+        assertFalse(StartRules.gateOpen(true, true, false, true, " "), "blank = not met");
+        assertFalse(StartRules.gateOpen(true, true, false, false, null), "not loaded: stays locked");
+        assertTrue(StartRules.gateOpen(true, true, false, true, "1730700000000"), "met: open");
+        assertTrue(StartRules.gateOpen(true, true, true, true, null), "staff bypass");
+        assertTrue(StartRules.gateOpen(false, true, false, true, null), "start flow off: nothing to meet");
+        assertTrue(StartRules.gateOpen(true, false, false, true, null), "gate off");
+        assertEquals(net.skybornmc.skyblock.common.player.StartGate.MET_KEY, StartRules.MET_KEY, "one flag, shared");
+    }
+
+    @Test
     void textsExistInBothCopies() {
         for (String file : List.of("../../plugin/src/main/resources/messages/essentials.yml",
                 "../../server/plugins/PhoenixSkyblock/messages/essentials.yml")) {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new File(file));
             for (String key : List.of("start.guide-name", "start.bossbar", "start.objective", "start.welcome", "start.menu.title",
-                    "start.menu.island.name", "start.menu.farm.name", "start.menu.mine.name")) {
+                    "start.menu.island.name", "start.menu.farm.name", "start.menu.mine.name", "start.locked")) {
                 assertTrue(yaml.isString(key), file + " misses " + key);
             }
             for (String button : List.of("island", "farm", "mine")) {

@@ -57,6 +57,10 @@ public final class EssentialsConfig extends ModuleConfig {
             + "guide. Its name is messages/npcs.yml roles.<role>.name.")
     public String startGuideRole = "guide";
 
+    @Setting(path = "start.gate", desc = "Owner 4 Nov 2026: /pay, /trade and buying or listing on /ah stay locked until the "
+            + "player talked to the guide once (staff bypass: skyblock.guide.bypass). Only while start.enabled is on.")
+    public boolean startGate = true;
+
     @Setting(path = "start.bossbar-color", desc = "Boss bar colour: PINK, BLUE, RED, GREEN, YELLOW, PURPLE or WHITE.")
     public String startBarColor = "YELLOW";
 

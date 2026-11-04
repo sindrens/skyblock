@@ -52,3 +52,5 @@ lp group builder permission set skyblock.join.message true
 lp group helper permission set skyblock.join.message true
 lp group builder permission set skyblock.build.spawn true
 lp group admin permission set skyblock.build.spawn true
+# Owner 4 Nov 2026: staff skip the guide gate (/pay, /trade, /ah before talking to Rowan) for testing.
+lp group helper permission set skyblock.guide.bypass true

@@ -39,7 +39,7 @@ import java.util.UUID;
  * </ol>
  * The guide's name is the NPC's name ({@code messages/npcs.yml roles.<role>.name}), so it is set in one place.
  */
-final class StartGuide extends CommandGroup implements Listener {
+final class StartGuide extends CommandGroup implements Listener, net.skybornmc.skyblock.common.player.StartGate {
 
     private final Map<UUID, BossBar> bars = new HashMap<>();
 
@@ -193,6 +193,26 @@ final class StartGuide extends CommandGroup implements Listener {
         hideBar(player);
         msg.send(player, "start.welcome", Msg.p("player", player.getName()), Msg.mm("guide", guideName()));
         core.sounds().play(player, "unlock");
+    }
+
+    // ------------------------------------------------------------------ the gate (owner 4 Nov 2026)
+
+    /** {@link net.skybornmc.skyblock.common.player.StartGate}: /pay, /trade and /ah buy/list need the guide met once. */
+    @Override
+    public boolean isOpen(Player player) {
+        Optional<PlayerData> data = core.players().get(player.getUniqueId());
+        return StartRules.gateOpen(config.startEnabled, config.startGate, player.hasPermission(BYPASS), data.isPresent(),
+                data.map(d -> d.setting(StartRules.MET_KEY, null)).orElse(null));
+    }
+
+    @Override
+    public boolean refuse(Player player) {
+        if (isOpen(player)) {
+            return false;
+        }
+        msg.send(player, "start.locked", Msg.mm("guide", guideName()));
+        core.sounds().play(player, "error");
+        return true;
     }
 
     // ------------------------------------------------------------------ menu helpers

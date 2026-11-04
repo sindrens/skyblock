@@ -285,6 +285,8 @@ start:
   bossbar: "<c:flame><bold>Go to spawn and talk to <guide></bold>"
   # Scoreboard "Next:" line (plain text) until the player talked to the guide.
   objective: "Talk to <guide> at spawn"
+  # Owner 4 Nov 2026: /pay, /trade and buying or listing on /ah wait until the player talked to the guide once.
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Talk to <c:value><guide></c:value> <c:text>at spawn first <click:run_command:'/start'><hover:show_text:'<c:text>Runs /start'><c:action>(/start)</c:action></hover></click><c:text>."
   welcome: "<prefix><c:success><sym:check></c:success> <c:value><guide></c:value><c:text>: Welcome, <c:value><player></c:value><c:text>! Your island, the farm and the mine are one click away. Open this again with <c:value>/start</c:value><c:text>."
   menu:
     title: "<guide>"

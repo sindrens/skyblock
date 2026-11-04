@@ -6,7 +6,7 @@ import java.util.Locale;
 final class StartRules {
 
     /** Account setting that remembers that the player talked to the guide (any value but empty = met). */
-    static final String MET_KEY = "start.met-guide";
+    static final String MET_KEY = net.skybornmc.skyblock.common.player.StartGate.MET_KEY;
 
     private StartRules() {
     }
@@ -33,7 +33,19 @@ final class StartRules {
     }
 
     static boolean met(String metValue) {
-        return metValue != null && !metValue.isBlank();
+        return net.skybornmc.skyblock.common.player.StartGate.met(metValue);
+    }
+
+    /**
+     * Owner 4 Nov 2026: is {@code /pay}, {@code /trade} and buying/listing on {@code /ah} open for the player? Open when the
+     * start flow or its gate is off, for staff with the bypass, and once the guide was met. Not loaded yet
+     * ({@code metValue == null} and {@code loaded == false}) stays closed.
+     */
+    static boolean gateOpen(boolean startEnabled, boolean gate, boolean bypass, boolean loaded, String metValue) {
+        if (!startEnabled || !gate || bypass) {
+            return true;
+        }
+        return loaded && met(metValue);
     }
 
     /** True when an NPC role is the guide's role (case and blanks ignored). */

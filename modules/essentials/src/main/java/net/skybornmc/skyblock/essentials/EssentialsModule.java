@@ -62,6 +62,8 @@ public final class EssentialsModule implements SkyblockModule {
         noHunger = new NoHunger(config);
         grind = new GrindAreas(core, config, msg, core.services().get(TeleportService.class));
         start = new StartGuide(core, config, msg);
+        // Owner 4 Nov 2026: /pay, /trade and /ah buy/list are locked until the guide was met (they ask StartGate).
+        core.services().register(id(), net.skybornmc.skyblock.common.player.StartGate.class, start);
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind, start)) {
             group.register();
@@ -106,6 +108,7 @@ public final class EssentialsModule implements SkyblockModule {
         views.shutdown();
         vanish.shutdown();
         start.shutdown();
+        core.services().unregister(id(), net.skybornmc.skyblock.common.player.StartGate.class);
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);
         }
