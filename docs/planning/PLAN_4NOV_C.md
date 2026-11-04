@@ -101,3 +101,19 @@ this.**
 4. PvE and island modes once the owner has answered.
 5. The remaining parts of plan A: start safety and anti-boost, tab list and scoreboard, selling and storages, the
    bottom bar and lore, "Coming soon" items, daily reward, friends, milestones/achievements/sounds.
+
+## Owner 4 Nov 19:39 (priority: the start experience first)
+- **Join on your island:** rejoining or reconnecting puts you on your island (`join.location: island`).
+- **/start has pages** that show the current chapter and what's next (part of the tutorial).
+- **Island tools work at /farm and /mine.** Loot fills the **inventory first**, then the tool's storage. The storage
+  can be seen and used **inside the tool's right-click menu**.
+- **Tool items use the mockup lore:**
+  - name in the rarity color, bold
+  - "Tool · Prestige ★N"
+  - a level bar
+  - a `| Stats` section and a `| Perks` section (with "Locked · Lv 25")
+  - `» CLICK` last
+  - a rarity footer
+- **NPC skins:** a placeholder skin per NPC (vanilla default skins), changeable in config.
+- **Paused on purpose:** anti-boosting/guide gate (plan A phase 1) and PvE. They are planned, not implemented, until the
+  start experience is perfect.
