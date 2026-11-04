@@ -5,6 +5,7 @@
 - /farm: carrots need 3,000 harvests (potatoes 12,000, beetroot 40,000); every farmland at /farm is wet and never dries.
 - Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
 - `/fly`: staff and the owner outside staff mode now get the rank perk (island fly) instead of "staff mode only".
+- Achievements cleaned up: 13 switched off (duplicate first steps like First Coins and Stone Cold, Depths and Forge leftovers like Into the Void, Toolsmith and Reborn, and random ones like First Steps and Overkill); Harvester (Farming) is on; no text mentions the Depths.
 - Achievements: hovering the chat line shows what it was for and the goal of the tier.
 - Sell all (`/sell`, the shop's Sell all) shows the total big on screen (`economy.yml sell.all-title`).
 - Black Market: prices are in crystals now (shards are only for the island tools).

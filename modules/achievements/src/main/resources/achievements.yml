@@ -95,7 +95,7 @@ achievements:
   # ------------------------------------------------------------------ skills
   prospector:
     name: "<pillar:mining>Prospector"
-    description: ["<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> in The Depths."]
+    description: ["<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> at /mine and on your island."]
     icon: iron_pickaxe
     category: skills
     metric: skill_mining
@@ -103,7 +103,7 @@ achievements:
     title: {id: prospector, display: "<pillar:mining>Prospector", rarity: epic}
   lumberjack:
     name: "<pillar:foraging>Lumberjack"
-    description: ["<c:text>Level up <pillar:foraging>Foraging</pillar:foraging><c:text> in The Depths."]
+    description: ["<c:text>Level up <pillar:foraging>Foraging</pillar:foraging><c:text> by chopping logs."]
     icon: iron_axe
     category: skills
     metric: skill_foraging
@@ -125,7 +125,6 @@ achievements:
     metric: skill_farming
     goals: [10, 25, 50, 66, 100]
     title: {id: harvester, display: "<pillar:farming>Harvester", rarity: epic}
-    enabled: false   # Farming opens in Phase 7
   angler:
     name: "<pillar:fishing>Angler"
     description: ["<c:text>Level up <pillar:fishing>Fishing</pillar:fishing><c:text>."]
@@ -136,6 +135,7 @@ achievements:
     title: {id: angler, display: "<pillar:fishing>Angler", rarity: epic}
     enabled: false   # Fishing opens in Phase 7
   into_the_void:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:sky_ice>Into the Void"
     description: ["<c:text>Reach <pillar:mining>Mining</pillar:mining> <c:value>66</c:value><c:text> and open the", "<c:text>last tier of the Mine."]
     icon: echo_shard
@@ -221,6 +221,7 @@ achievements:
     goals: [1000, 10000, 100000, 1000000]
     title: {id: slayer, display: "<pillar:combat>Slayer", rarity: legendary}
   overkill:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:error>Overkill"
     description: ["<c:text>Wipe out a big chunk of a", "<c:text>stack in one go."]
     icon: tnt
@@ -262,6 +263,7 @@ achievements:
     metric: balance_peak
     goals: [1000000, 10000000, 100000000]
   tycoon:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<cur:money>Tycoon"
     description: ["<c:text>Hold <cur:money>$1B</cur:money><c:text> at once."]
     icon: emerald_block
@@ -297,6 +299,7 @@ achievements:
     goals: [1, 10, 50, 200]
     title: {id: runesmith, display: "<c:enchant>Runesmith", rarity: epic}
   toolsmith:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:flame>Toolsmith"
     description: ["<c:text>Level up a custom tool."]
     icon: smithing_table
@@ -305,6 +308,7 @@ achievements:
     goals: [10, 25, 50]
     title: {id: toolsmith, display: "<c:ember>Toolsmith", rarity: rare}
   reborn:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<grad:flame>Reborn</grad>"
     description: ["<c:text>Prestige a tool for the first", "<c:text>time."]
     icon: blaze_powder
@@ -331,6 +335,7 @@ achievements:
 
   # ------------------------------------------------------------------ exploring
   first_steps:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:flame>First Steps"
     description: ["<c:text>Play for 10 minutes."]
     icon: leather_boots
@@ -346,6 +351,7 @@ achievements:
     goals: [60, 600, 3000, 12000, 30000]
     title: {id: dedicated, display: "<c:flame>Dedicated", rarity: epic}
   unstoppable:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<grad:phoenix>Unstoppable</grad>"
     description: ["<c:text>Keep coming back. A lot."]
     icon: recovery_compass
@@ -381,6 +387,7 @@ achievements:
     goals: [1, 50, 500, 2500, 10000]
     title: {id: key_turner, display: "<c:flame>Key Turner", rarity: epic}
   first_coins:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:flame>Pocket Money"
     description: ["<c:text>Hold money at once."]
     icon: gold_nugget
@@ -388,6 +395,7 @@ achievements:
     metric: balance_peak
     goals: [10000, 100000]
   green_fingers:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<pillar:farming>Green Fingers"
     description: ["<c:text>Your first harvests on", "<c:text>your island."]
     icon: wheat_seeds
@@ -395,6 +403,7 @@ achievements:
     metric: island_crops_harvested
     goals: [50]
   first_tree:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<pillar:foraging>Timber!"
     description: ["<c:text>Chop your first logs on", "<c:text>your island."]
     icon: oak_sapling
@@ -402,6 +411,7 @@ achievements:
     metric: island_logs_chopped
     goals: [32]
   stone_cold:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<pillar:mining>Stone Cold"
     description: ["<c:text>Mine your first blocks on", "<c:text>your island."]
     icon: stone_pickaxe
@@ -409,6 +419,7 @@ achievements:
     metric: island_blocks_mined
     goals: [100]
   multi_talent:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:flame>Multi-Talent"
     description: ["<c:text>Get every open skill to", "<c:text>level 10 or higher."]
     icon: amethyst_shard
@@ -416,6 +427,7 @@ achievements:
     metric: skill_total
     goals: [30, 60, 120]
   globetrotter:
+    enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:sky_blue>Globetrotter"
     description: ["<c:text>Visit many islands", "<c:text>(each island once a day)."]
     icon: filled_map

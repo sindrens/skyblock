@@ -33,8 +33,8 @@ class BoostMathTest {
         assertEquals(6, BoostMath.points(warrior, 3, perTier));
         assertEquals(19, BoostMath.points(warrior, 5, perTier));
         assertEquals(19, BoostMath.points(warrior, 9, perTier), "never more than its tiers");
-        AchievementDef overkill = registry.get("overkill").orElseThrow(); // one-step secret
-        assertEquals(1, BoostMath.points(overkill, 1, perTier));
+        AchievementDef jackpot = registry.get("jackpot").orElseThrow(); // one-step secret
+        assertEquals(1, BoostMath.points(jackpot, 1, perTier));
     }
 
     @Test

@@ -34,7 +34,7 @@ Status: ⬜ open · 🔧 in progress · ✅ done. Worked in this order (quick fi
   revamp with motivation (owner offers to research the biggest plugins: see the research prompt).
 
 ## Achievements, sounds, menus
-- ⬜ A1 Go over all achievements: only real achievements, no random ones.
+- ✅ A1 (13 switched off, Harvester on, Depths texts fixed) Go over all achievements: only real achievements, no random ones.
 - ⬜ A2 Go over /shop, /skills and every menu not yet updated (vanilla, spacious, mockup lore).
 
 ## Plan only (not built yet)

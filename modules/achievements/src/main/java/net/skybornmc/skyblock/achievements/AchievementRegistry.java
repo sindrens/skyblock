@@ -29,6 +29,18 @@ import java.util.regex.Pattern;
 final class AchievementRegistry {
 
     static final String FILE = "achievements.yml";
+
+    /** Feedback 5 Nov 2026: achievements switched off (duplicate first steps, Depths/Forge leftovers, random ones). */
+    static final java.util.List<String> RETIRED_5NOV = java.util.List.of("into_the_void", "first_steps", "unstoppable", "tycoon",
+            "first_coins", "green_fingers", "first_tree", "stone_cold", "multi_talent", "globetrotter", "overkill", "toolsmith", "reborn");
+
+    /** Untouched descriptions that still named the Depths: {id, old line, new line}. */
+    static final java.util.List<String[]> DESCRIPTION_FIXES_5NOV = java.util.List.of(
+            new String[]{"prospector", "<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> in The Depths.",
+                    "<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> at /mine and on your island."},
+            new String[]{"lumberjack", "<c:text>Level up <pillar:foraging>Foraging</pillar:foraging><c:text> in The Depths.",
+                    "<c:text>Level up <pillar:foraging>Foraging</pillar:foraging><c:text> by chopping logs."});
+
     static final String CATEGORIES = "categories";
     static final String ACHIEVEMENTS = "achievements";
     static final String ISLAND_ACHIEVEMENTS = "island-achievements";
