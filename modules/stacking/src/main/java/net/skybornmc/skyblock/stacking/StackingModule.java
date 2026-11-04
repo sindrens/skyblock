@@ -191,6 +191,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
             }
             for (Entity entity : world.getEntities()) {
                 added(entity);
+                if (entity instanceof org.bukkit.entity.Mob mob && MobStacker.isSpawnerMob(mob)) {
+                    SpawnerMobSafety.calm(mob); // feedback 4 Nov 2026: older no-AI spawner mobs get gravity back
+                }
             }
             if (config.cropsEnabled) {
                 for (Chunk chunk : world.getLoadedChunks()) {

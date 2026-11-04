@@ -20,10 +20,10 @@ import org.bukkit.event.world.EntitiesLoadEvent;
 import java.util.function.Supplier;
 
 /**
- * Feedback 1 Nov 2026 ("make so spawner mobs doesn't move, they stand still and no damage on island"): spawner mobs already
- * have no AI (owner S7); this also stops the damage that needs no AI - contact (pufferfish, magma cubes, guardians' thorns),
- * attack effects (poison, wither), an ignited creeper's explosion and arrows. Players still kill them as before
- * ({@code stacking.yml mobs.spawner-mobs-hurt-players}). Mobs loaded from disk get their no-AI flag again.
+ * Feedback 1 Nov 2026 ("make so spawner mobs doesn't move, they stand still and no damage on island"): spawner mobs are
+ * unaware (owner S7, {@link #calm}); this also stops the damage that needs no goals - contact (pufferfish, magma cubes,
+ * guardians' thorns), attack effects (poison, wither), an ignited creeper's explosion and arrows. Players still kill them
+ * as before ({@code stacking.yml mobs.spawner-mobs-hurt-players}). Mobs loaded from disk are calmed again.
  */
 final class SpawnerMobSafety implements Listener {
 
@@ -108,13 +108,37 @@ final class SpawnerMobSafety implements Listener {
         }
     }
 
-    /** Owner S7 again after a restart or chunk load: spawner mobs never get their AI back. */
+    /**
+     * Fish (cod, salmon, pufferfish, tropical fish, tadpole), guardians (and elder guardians) and dolphins flop around on
+     * land by themselves (their own movement code, not their goals), so they keep the full no-AI flag and stay still;
+     * every other spawner mob only loses awareness and keeps gravity and pushing.
+     */
+    static boolean flopsOnLand(Mob mob) {
+        return mob instanceof org.bukkit.entity.Fish || mob instanceof org.bukkit.entity.Guardian
+                || mob instanceof org.bukkit.entity.Dolphin;
+    }
+
+    /**
+     * Feedback 4 Nov 2026 (D13): a spawner mob is unaware (Paper: no goals, so it doesn't walk, fly, jump or attack by
+     * itself) but keeps its AI flag, so it has gravity and players and water can push it. Before this they had no AI at
+     * all and floated where they spawned. Returns true when something changed.
+     */
+    static boolean calm(Mob mob) {
+        boolean noAi = flopsOnLand(mob);
+        if (!mob.isAware() && mob.hasAI() == !noAi) {
+            return false;
+        }
+        mob.setAware(false);
+        mob.setAI(!noAi);
+        return true;
+    }
+
+    /** Again after a restart or chunk load; older spawner mobs (no AI at all) get their gravity back. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLoad(EntitiesLoadEvent event) {
         for (Entity e : event.getEntities()) {
-            if (e instanceof Mob mob && spawnerMob(mob) && (mob.isAware() || mob.hasAI())) {
-                mob.setAware(false);
-                mob.setAI(false);
+            if (e instanceof Mob mob && spawnerMob(mob)) {
+                calm(mob);
             }
         }
     }

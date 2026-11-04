@@ -412,10 +412,9 @@ final class MobStacker implements Listener {
     private void prepareSpawnerMob(LivingEntity living, int size) {
         living.getPersistentDataContainer().set(StackKeys.SPAWNER_MOB, PersistentDataType.BYTE, (byte) 1);
         if (living instanceof Mob mob) {
-            mob.setAware(false); // owner S7: no AI for spawner mobs
-            // Owner 3 Nov 2026 ("blaze and ghast don't fly, guardian no jump, everyone stands still"): no AI at all, so no
-            // flying, flopping, knockback or drifting; they can still be hit and killed.
-            mob.setAI(false);
+            // Owner S7 / 3 Nov 2026 ("blaze and ghast don't fly, guardian no jump, everyone stands still"); feedback
+            // 4 Nov 2026: unaware instead of no AI, so they fall and can be pushed (fish-likes stay fully still).
+            SpawnerMobSafety.calm(mob);
             mob.getEquipment().clear(); // owner SK9: vanilla loot only
         }
         if (living instanceof Slime slime) {
