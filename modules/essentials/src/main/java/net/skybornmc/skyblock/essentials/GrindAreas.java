@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -255,9 +256,11 @@ final class GrindAreas extends CommandGroup implements Listener {
                 // Also a crop the hoe replanted (age 0): it would never grow here (no random ticks).
                 if ((b.getType().isAir() || b.getType() == Material.WHEAT) && b.getRelative(0, -1, 0).getType() == Material.FARMLAND) {
                     ripe(b);
-                    showCrop(b);
+                    showLater(b);
                 }
             });
+            // The island hoe replants the crop next tick (young real wheat): show it in each player's own crop.
+            core.scheduler().later("essentials:grind-view", 2L, () -> showLater(b));
             return;
         }
         if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() != Material.BEDROCK) {
@@ -288,12 +291,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             core.scheduler().later("essentials:grind-regen", config.grindMineRegenSeconds * 20L, () -> {
                 if (b.getType().isAir()) {
                     b.setType(Material.STONE, false);
-                    for (Player near : b.getLocation().getNearbyPlayers(64)) {
-                        Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(near));
-                        if (view != Material.STONE) {
-                            near.sendBlockChange(b.getLocation(), view.createBlockData());
-                        }
-                    }
+                    showLater(b);
                 }
             });
             return;
@@ -357,15 +355,20 @@ final class GrindAreas extends CommandGroup implements Listener {
 
     /** The mine as the player sees it: their unlocked ores on the real stone (client side only). */
     private void sendMine(Player p) {
+        sendMine(p, MINE_X - MINE_HALF, MINE_X + MINE_HALF, -MINE_HALF, MINE_HALF);
+    }
+
+    /** {@link #sendMine(Player)} for the part of the mine inside x/z (one chunk after it was sent to the player). */
+    private void sendMine(Player p, int minX, int maxX, int minZ, int maxZ) {
         if (world == null || !p.getWorld().equals(world)) {
             return;
         }
         long mined = mined(p);
         List<org.bukkit.block.BlockState> states = new ArrayList<>();
-        for (int x = -MINE_HALF; x <= MINE_HALF; x++) {
-            for (int z = -MINE_HALF; z <= MINE_HALF; z++) {
+        for (int x = Math.max(minX, MINE_X - MINE_HALF); x <= Math.min(maxX, MINE_X + MINE_HALF); x++) {
+            for (int z = Math.max(minZ, -MINE_HALF); z <= Math.min(maxZ, MINE_HALF); z++) {
                 for (int d = 0; d < MINE_DEPTH; d++) {
-                    Block b = world.getBlockAt(MINE_X + x, base - d, z);
+                    Block b = world.getBlockAt(x, base - d, z);
                     if (b.getType() != Material.STONE) {
                         continue;
                     }
@@ -378,7 +381,9 @@ final class GrindAreas extends CommandGroup implements Listener {
                 }
             }
         }
-        p.sendBlockChanges(states);
+        if (!states.isEmpty()) {
+            p.sendBlockChanges(states);
+        }
     }
 
     /** Drops follow what the player sees: their crop at the farm, their ore at the mine. */
@@ -471,43 +476,162 @@ final class GrindAreas extends CommandGroup implements Listener {
         return Character.toUpperCase(id.charAt(0)) + id.substring(1);
     }
 
-    private static org.bukkit.block.data.BlockData ripeData(Material block) {
-        org.bukkit.block.data.BlockData d = block.createBlockData();
-        if (d instanceof Ageable a) {
-            a.setAge(a.getMaximumAge());
+    /** Pure: the age the player's own crop shows for a real wheat block of {@code realAge} (ripe stays ripe). */
+    static int viewAge(int realAge, int realMax, int viewMax) {
+        if (realAge >= realMax) {
+            return viewMax;
         }
-        return d;
+        return Math.max(0, Math.min(viewMax, (int) Math.floor(realAge * (double) viewMax / Math.max(1, realMax))));
+    }
+
+    /** Pure: does chunk cx/cz overlap the square area centred on x {@code centerX}, z 0, with half size {@code half}? */
+    static boolean chunkOverlaps(int chunkX, int chunkZ, int centerX, int half) {
+        int minX = chunkX << 4;
+        int minZ = chunkZ << 4;
+        return minX + 15 >= centerX - half && minX <= centerX + half && minZ + 15 >= -half && minZ <= half;
+    }
+
+    /**
+     * What player {@code p} should see at {@code b} instead of the real block, or null when the real block is right.
+     * Farm: their own crop (same growth stage) on real wheat. Mine: their own ore on real stone.
+     */
+    private org.bukkit.block.data.BlockData viewOf(Player p, Block b) {
+        if (in(b, FARM_X, FARM_HALF) && b.getY() == base + 1 && b.getType() == Material.WHEAT) {
+            Crop crop = cropFor(farmed(p));
+            if (crop == Crop_WHEAT()) {
+                return null;
+            }
+            org.bukkit.block.data.BlockData d = crop.block().createBlockData();
+            if (d instanceof Ageable view && b.getBlockData() instanceof Ageable real) {
+                view.setAge(viewAge(real.getAge(), real.getMaximumAge(), view.getMaximumAge()));
+            }
+            return d;
+        }
+        if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() == Material.STONE) {
+            Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(p));
+            return view == Material.STONE ? null : view.createBlockData();
+        }
+        return null;
+    }
+
+    private void show(Player p, Block b) {
+        org.bukkit.block.data.BlockData view = viewOf(p, b);
+        if (view != null && p.isOnline() && p.getWorld().equals(b.getWorld())) {
+            p.sendBlockChange(b.getLocation(), view);
+        }
+    }
+
+    /**
+     * Feedback 4 Nov 2026 (C): one changed block, shown in each nearby player's own view, one tick later. The server
+     * sends its own block update (real wheat / stone) at the end of the tick the block changed, and that overwrote a
+     * view sent at once: that is why wheat showed up after carrots.
+     */
+    private void showLater(Block b) {
+        core.scheduler().later("essentials:grind-view", 1L, () -> {
+            for (Player p : b.getLocation().getNearbyPlayers(64)) {
+                show(p, b);
+            }
+        });
     }
 
     /** The whole farm in the player's own crop (client side only; the real blocks stay wheat). */
     private void sendFarm(Player p) {
-        Crop crop = cropFor(farmed(p));
-        if (world == null || !p.getWorld().equals(world) || crop == Crop_WHEAT()) {
+        sendFarm(p, FARM_X - FARM_HALF, FARM_X + FARM_HALF, -FARM_HALF, FARM_HALF);
+    }
+
+    /** {@link #sendFarm(Player)} for the part of the farm inside x/z (one chunk after it was sent to the player). */
+    private void sendFarm(Player p, int minX, int maxX, int minZ, int maxZ) {
+        if (world == null || !p.getWorld().equals(world) || cropFor(farmed(p)) == Crop_WHEAT()) {
             return;
         }
-        org.bukkit.block.data.BlockData data = ripeData(crop.block());
         List<org.bukkit.block.BlockState> states = new ArrayList<>();
-        for (int x = -FARM_HALF; x <= FARM_HALF; x++) {
-            for (int z = -FARM_HALF; z <= FARM_HALF; z++) {
-                Block b = world.getBlockAt(FARM_X + x, base + 1, z);
-                if (b.getType() == Material.WHEAT) {
+        for (int x = Math.max(minX, FARM_X - FARM_HALF); x <= Math.min(maxX, FARM_X + FARM_HALF); x++) {
+            for (int z = Math.max(minZ, -FARM_HALF); z <= Math.min(maxZ, FARM_HALF); z++) {
+                Block b = world.getBlockAt(x, base + 1, z);
+                org.bukkit.block.data.BlockData view = viewOf(p, b);
+                if (view != null) {
                     org.bukkit.block.BlockState st = b.getState();
-                    st.setBlockData(data);
+                    st.setBlockData(view);
                     states.add(st);
                 }
             }
         }
-        p.sendBlockChanges(states);
+        if (!states.isEmpty()) {
+            p.sendBlockChanges(states);
+        }
     }
 
-    /** One regrown crop, shown in each nearby player's own crop. */
-    private void showCrop(Block b) {
-        for (Player p : b.getLocation().getNearbyPlayers(64)) {
-            Crop crop = cropFor(farmed(p));
-            if (crop != Crop_WHEAT()) {
-                p.sendBlockChange(b.getLocation(), ripeData(crop.block()));
-            }
+    /**
+     * Feedback 4 Nov 2026 (C, "right-click turns a crop into wheat"): a right-click makes the server re-send the real
+     * blocks around the click. Farm crops can't be used (bone meal etc.), and the clicked block and the one in front of
+     * it get the player's view again next tick; the same on the mine's ores. Runs for clicks cancelled elsewhere too.
+     */
+    @EventHandler(priority = EventPriority.LOW)
+    public void onUse(PlayerInteractEvent event) {
+        Block b = event.getClickedBlock();
+        if (world == null || b == null || event.getAction() != Action.RIGHT_CLICK_BLOCK || !b.getWorld().equals(world)
+                || staff(event.getPlayer())) {
+            return;
         }
+        boolean farm = in(b, FARM_X, FARM_HALF) && b.getY() == base + 1 && b.getType() == Material.WHEAT;
+        boolean mine = in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH;
+        if (!farm && !mine) {
+            return;
+        }
+        if (farm) {
+            event.setCancelled(true);
+        }
+        Player p = event.getPlayer();
+        Block front = b.getRelative(event.getBlockFace());
+        core.scheduler().later("essentials:grind-view", 1L, () -> {
+            show(p, b);
+            show(p, front);
+        });
+    }
+
+    /** A break that something cancelled re-sends the real block too: the player's view again. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBreakCancelled(BlockBreakEvent event) {
+        if (event.isCancelled() && world != null && event.getBlock().getWorld().equals(world)) {
+            Player p = event.getPlayer();
+            Block b = event.getBlock();
+            core.scheduler().later("essentials:grind-view", 1L, () -> show(p, b));
+        }
+    }
+
+    /** A chunk sent to a player (walking in, teleport, respawn, a chunk resend) has the real blocks: their view again. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkSent(io.papermc.paper.event.packet.PlayerChunkLoadEvent event) {
+        if (world == null || !event.getWorld().equals(world)) {
+            return;
+        }
+        int cx = event.getChunk().getX();
+        int cz = event.getChunk().getZ();
+        boolean farm = chunkOverlaps(cx, cz, FARM_X, FARM_HALF);
+        boolean mine = chunkOverlaps(cx, cz, MINE_X, MINE_HALF);
+        if (!farm && !mine) {
+            return;
+        }
+        Player p = event.getPlayer();
+        int minX = cx << 4;
+        int minZ = cz << 4;
+        core.scheduler().later("essentials:grind-view", 1L, () -> {
+            if (!p.isOnline()) {
+                return;
+            }
+            if (farm) {
+                sendFarm(p, minX, minX + 15, minZ, minZ + 15);
+            }
+            if (mine) {
+                sendMine(p, minX, minX + 15, minZ, minZ + 15);
+            }
+        });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+        Player p = event.getPlayer();
+        core.scheduler().later("essentials:grind-view", 20L, () -> { sendFarm(p); sendMine(p); });
     }
 
     /** Arriving in the farm world (teleport, portal, join): the farm in your crop, again after the chunks loaded. */
