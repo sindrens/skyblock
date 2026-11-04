@@ -47,7 +47,10 @@ final class WipeLosses {
         CompletableFuture<Long> money = economy.isEmpty() ? CompletableFuture.completedFuture(null)
                 : economy.get().balance(AccountRef.player(profileKey), Currency.MONEY).handle((v, e) -> e == null ? v : null);
         CompletableFuture<Long> shards = economy.isEmpty() ? CompletableFuture.completedFuture(null)
-                : economy.get().balance(AccountRef.player(profileKey), Currency.SHARDS).handle((v, e) -> e == null ? v : null);
+                : economy.get().balance(AccountRef.player(profileKey), Currency.SHARDS).handle((v, e) -> e == null ? v : null)
+                // owner 4 Nov 2026: Farming and Mining Shards together in the summary
+                .thenCombine(economy.get().balance(AccountRef.player(profileKey), Currency.MINING_SHARDS).handle((v, e) -> e == null ? v : null),
+                        (a, b) -> a == null && b == null ? null : (a == null ? 0L : a) + (b == null ? 0L : b));
         return money.thenCombine(shards, (m, s) -> new Loss(m, s, items, tools, skills));
     }
 

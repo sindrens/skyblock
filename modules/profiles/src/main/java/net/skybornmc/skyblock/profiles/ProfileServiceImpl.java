@@ -860,7 +860,10 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         CompletableFuture<Long> money = eco.isEmpty() ? CompletableFuture.completedFuture(null)
                 : eco.get().balance(AccountRef.player(job.key()), Currency.MONEY).handle((v, e) -> e == null ? v : null);
         CompletableFuture<Long> shards = eco.isEmpty() ? CompletableFuture.completedFuture(null)
-                : eco.get().balance(AccountRef.player(job.key()), Currency.SHARDS).handle((v, e) -> e == null ? v : null);
+                : eco.get().balance(AccountRef.player(job.key()), Currency.SHARDS).handle((v, e) -> e == null ? v : null)
+                // owner 4 Nov 2026: Farming and Mining Shards together in the summary
+                .thenCombine(eco.get().balance(AccountRef.player(job.key()), Currency.MINING_SHARDS).handle((v, e) -> e == null ? v : null),
+                        (a, b) -> a == null && b == null ? null : (a == null ? 0L : a) + (b == null ? 0L : b));
         money.thenCombine(shards, (m, s) -> new Long[]{m, s})
                 .whenCompleteAsync((amounts, error) -> wipeNow(job, attempt, amounts == null ? null : amounts[0],
                         amounts == null ? null : amounts[1]), main);
