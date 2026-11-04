@@ -8,9 +8,9 @@ public final class CoreConfig extends ModuleConfig {
     @Setting(desc = "Extra debug output in the console. Keep off on the live server.")
     public boolean debug = false;
 
-    @Setting(desc = "Main-thread work slower than this (milliseconds) is logged as a warning with its name.",
-            min = 1, max = 1000)
-    public int slowOperationMs = 5;
+    @Setting(desc = "Main-thread work slower than this (milliseconds) is logged as a warning with its name (owner 4 Nov 2026: "
+            + "10, so short spikes don't fill the console).", min = 1, max = 1000)
+    public int slowOperationMs = 10;
 
     @Setting(path = "performance.preload-classes", desc = "Load the plugin's classes on a background thread after start, so the "
             + "first join, teleport or menu after a restart doesn't read them from the jar on the main thread (PERF6). "
@@ -45,6 +45,17 @@ public final class CoreConfig extends ModuleConfig {
     @Override
     public String fileName() {
         return "core.yml";
+    }
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (owner 4 Nov 2026, PLAN_4NOV item 26): slow-operation-ms 5 → 10 while it still is the old default. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("slow-operation-ms", ValueChange.of(5, 10)));
     }
 
     @Override
