@@ -271,7 +271,7 @@ public final class IslandToolsModule implements SkyblockModule {
         if (prog == null) {
             return 0;
         }
-        return upgrades.byEffect(kind, effect).map(d -> prog.level(d.id())).orElse(0);
+        return upgrades.byEffect(kind, effect).map(d -> Math.min(prog.level(d.id()), d.max())).orElse(0); // a level above a lowered max counts as the max
     }
 
     double prestigeBonus(UUID island, Kind kind) {
@@ -330,7 +330,7 @@ public final class IslandToolsModule implements SkyblockModule {
         if (def.effect() == Upgrades.Effect.ENCHANT || def.effect() == Upgrades.Effect.HASTE) {
             return roman(level);
         }
-        return def.max() == 1 ? raw("menu.owned") : Format.number(level) + "<c:muted>/" + Format.number(def.max()) + "</c:muted>";
+        return def.max() == 1 ? raw("menu.owned") : Format.number(Math.min(level, def.max())) + "<c:muted>/" + Format.number(def.max()) + "</c:muted>";
     }
 
     static String roman(int n) {
