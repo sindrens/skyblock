@@ -39,7 +39,7 @@ final class TutorialCommands {
                 .category("Info")
                 .permission(TutorialModule.PERM_USE)
                 .playerOnly()
-                .aliases("quest")
+                .aliases("quest", "quests")
                 .example("tutorial")
                 .executes(ctx -> m.open(ctx.player()))
                 .sub(CommandSpec.sub("menu")

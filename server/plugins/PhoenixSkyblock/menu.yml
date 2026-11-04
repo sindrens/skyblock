@@ -60,7 +60,7 @@ you:
   profiles:     {icon: armor_stand,     command: "profiles",     service: ProfileService}
   titles:       {icon: paper,       command: "tags",         service: Cosmetics}
   achievements: {icon: nether_star, command: "achievements", service: AchievementService}
-  quests:       {icon: map,       command: "quests",       service: QuestService}
+  quests:       {icon: map,       command: "contracts",    service: QuestService}
   collection:   {icon: bundle,   command: "collection",   service: CollectionLog}
   settings:     {icon: repeater,     action: settings}
   rules:        {icon: book,        command: "rules"}

@@ -1548,12 +1548,12 @@ topics:
     aliases: [quest, daily-quests, weekly-quests, missions, island-missions, quest-master]
     name: "<c:flame>Quests"
     summary: ["<c:text>Daily, weekly and island", "<c:text>goals that pay by themselves."]
-    take-me-there: "quests"
+    take-me-there: "contracts"
     commands: [Rewards]
     pages:
       - title: "<c:value>Daily quests"
         lines:
-          - "<c:value>/quests</c:value> <c:text>or the Quest Master in the"
+          - "<c:value>/contracts</c:value> <c:text>or the Contract Board in the"
           - "<c:text>Tavern: 3 quests a day, sized to"
           - "<c:text>your tier. New ones at 00:00 Oslo"
           - "<c:text>time. All 3 done: a Cinder key."

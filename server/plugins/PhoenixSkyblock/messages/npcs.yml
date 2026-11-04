@@ -97,9 +97,9 @@ roles:
       - "<c:text>Rare goods. The stock changes at every restock."
       - "<c:text>Open it any time: <c:value>/blackmarket"
   quests:
-    name: "Quest Master"
+    name: "Contract Board"
     help:
-      - "<c:text>Daily, weekly and island quests: <c:value>/quests"
+      - "<c:text>Daily and weekly contracts: <c:value>/contracts"
       - "<c:text>Finish all your dailies for a key."
   daily:
     name: "Daily Rewards"
@@ -196,7 +196,7 @@ holograms:
   quest_board:
     - "<c:flame><bold>Quests"
     - "<c:text>Daily, weekly and island quests"
-    - "<c:value>/quests"
+    - "<c:value>/contracts"
   vote_party:
     - "<c:flame><bold>Vote Party"
     - "<c:text>Vote every day: <c:value>/vote"

@@ -5,6 +5,7 @@
 - /farm: carrots need 3,000 harvests (potatoes 12,000, beetroot 40,000); every farmland at /farm is wet and never dries.
 - Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
 - `/fly`: staff and the owner outside staff mode now get the rank perk (island fly) instead of "staff mode only".
+- Daily and weekly quests are now **Contracts** (`/contracts`, the Contract Board NPC, the menu button). `/quests` and `/quest` open the tutorial.
 - Scoreboard at /farm and /mine: your crop or ore, the progress to the next one ("1,234 / 3,000"), the bonus of this visit and your Farming/Mining level.
 - One clean action bar while grinding: skill XP, shards, the bonus and sales no longer overwrite each other; payouts that come together share one line.
 - Milestones sorted into **Island** (shared: 12 crops, cobblestone, stone, 7 ores and obsidian, 8 logs, 10 mobs) and **Farm & Mine** (your own crop at /farm and your own ore at /mine count). The Depths chains are gone; a live milestones.yml is updated once (old file kept as milestones.yml.before-v2).

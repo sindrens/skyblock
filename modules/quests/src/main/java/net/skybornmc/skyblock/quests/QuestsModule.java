@@ -227,12 +227,12 @@ public final class QuestsModule implements SkyblockModule, Listener {
         Arg<Player> player = Args.onlinePlayer("player");
         Arg<QuestKind> board = Args.choice("board", QuestKind.class);
         Arg<Integer> slot = Args.integer("quest", 1, 7, "1", "2", "3", "4", "5");
-        core.commands().register(CommandSpec.command("quests")
+        core.commands().register(CommandSpec.command("contracts") // owner 4 Nov 2026: daily and weekly quests are Contracts; /quests is the tutorial
                 .description("Your daily and weekly quests and your island's missions")
                 .category("Rewards")
                 .permission(PERM_USE)
                 .playerOnly()
-                .example("quests")
+                .example("contracts")
                 .executes(ctx -> {
                     if (!settings.enabled) {
                         throw new CommandFailure(ID, "disabled");
@@ -243,24 +243,24 @@ public final class QuestsModule implements SkyblockModule, Listener {
                         .description("Staff tools for quests: view, reset and complete (P10-41)")
                         .category("Staff")
                         .permission(PERM_ADMIN)
-                        .example("quests admin view Steve")
+                        .example("contracts admin view Steve")
                         .sub(CommandSpec.sub("view")
                                 .description("A player's quests on their active profile and their island's missions")
                                 .permission(PERM_ADMIN)
                                 .arg(player)
-                                .example("quests admin view Steve")
+                                .example("contracts admin view Steve")
                                 .executes(ctx -> view(ctx.sender(), ctx.get(player))))
                         .sub(CommandSpec.sub("reset")
                                 .description("Throw away a player's current daily, weekly or island quests and roll new ones")
                                 .permission(PERM_ADMIN)
                                 .arg(player).arg(board)
-                                .example("quests admin reset Steve daily")
+                                .example("contracts admin reset Steve daily")
                                 .executes(ctx -> reset(ctx.sender(), ctx.get(player), ctx.get(board))))
                         .sub(CommandSpec.sub("complete")
                                 .description("Finish one quest of a player now (the normal rewards are paid)")
                                 .permission(PERM_ADMIN)
                                 .arg(player).arg(board).arg(slot)
-                                .example("quests admin complete Steve daily 1")
+                                .example("contracts admin complete Steve daily 1")
                                 .executes(ctx -> complete(ctx.sender(), ctx.get(player), ctx.get(board), ctx.get(slot))))));
     }
 

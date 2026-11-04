@@ -1,13 +1,13 @@
-# Quests (`modules/quests`)
+# Quests (`modules/contracts`)
 
-Daily and weekly quests per profile and weekly island missions per island (PHASE-10-REWARDS.md **M10.7**, P10-21, P10-22, RX19, RX23; staff tools P10-41). Each profile has its own quests (nothing moves between your own profiles, P4). Settings: `quests.yml`; texts: `messages/quests.yml`. Reload: `/skyblock reload quests`.
+Daily and weekly quests per profile and weekly island missions per island (PHASE-10-REWARDS.md **M10.7**, P10-21, P10-22, RX19, RX23; staff tools P10-41). Each profile has its own quests (nothing moves between your own profiles, P4). Settings: `quests.yml`; texts: `messages/contracts.yml`. Reload: `/skyblock reload quests`.
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/quests` | Opens the quests menu with three tabs that switch in place: **Daily** (3 quests, new at 00:00 Oslo), **Weekly** (5 quests, new Monday 00:00) and **Island** (3 missions for your island this week). Each quest shows its goal, the Depths tier for mine/chop/kill, a progress bar and its rewards; slot 40 shows the all-done key (or the helper rule) and the reset countdown. Click an open daily quest to swap it (1 free swap per day, with a confirm). Also opened by the **Quest Master NPC** (role `quests`; sneak-click keeps the help text), `/menu` → You → Quests and `/help quests`. No arguments | `skyblock.quests.use` (everyone) | ✅ |
-| `/quests admin view <player>` | Chat summary of an online player's daily, weekly and island quests (progress, swaps, bonus) | `skyblock.quests.admin` (admin) | ✅ |
-| `/quests admin reset <player> <daily\|weekly\|island>` | Throws away that board's current quests and rolls new ones (audited `staff_reset`) | `skyblock.quests.admin` (admin) | ✅ |
-| `/quests admin complete <player> <daily\|weekly\|island> <quest>` | Finishes quest 1-7 of that board now; the normal rewards follow (audited `staff_complete`). For testing and support | `skyblock.quests.admin` (admin) | ✅ |
+| `/contracts` | Opens the quests menu with three tabs that switch in place: **Daily** (3 quests, new at 00:00 Oslo), **Weekly** (5 quests, new Monday 00:00) and **Island** (3 missions for your island this week). Each quest shows its goal, the Depths tier for mine/chop/kill, a progress bar and its rewards; slot 40 shows the all-done key (or the helper rule) and the reset countdown. Click an open daily quest to swap it (1 free swap per day, with a confirm). Also opened by the **Quest Master NPC** (role `quests`; sneak-click keeps the help text), `/menu` → You → Quests and `/help quests`. No arguments | `skyblock.quests.use` (everyone) | ✅ |
+| `/contracts admin view <player>` | Chat summary of an online player's daily, weekly and island quests (progress, swaps, bonus) | `skyblock.quests.admin` (admin) | ✅ |
+| `/contracts admin reset <player> <daily\|weekly\|island>` | Throws away that board's current quests and rolls new ones (audited `staff_reset`) | `skyblock.quests.admin` (admin) | ✅ |
+| `/contracts admin complete <player> <daily\|weekly\|island> <quest>` | Finishes quest 1-7 of that board now; the normal rewards follow (audited `staff_complete`). For testing and support | `skyblock.quests.admin` (admin) | ✅ |
 
 Tab completion: online players, the three boards, quest numbers 1-5.
 

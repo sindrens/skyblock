@@ -70,7 +70,7 @@ step:
 # A finished quest: a screen title, a chat line, the rewards, one sound.
 done:
   screen:
-    title: "<c:success><sym:check> Quest done!"
+    title: "<c:success><sym:check> Contract done!"
     subtitle: "<quest>"
     fade-in: 5
     stay: 40
@@ -108,9 +108,9 @@ placeholder:
   next: "<quest> <progress>/<target>"
 
 menu:
-  title: "Quests"
+  title: "Contracts"
   disabled:
-    name: "<c:muted>Quests are turned off"
+    name: "<c:muted>Contracts are turned off"
     lore: ["<c:text>Staff turned quests off for now."]
   board-off:
     name: "<c:muted>No quests on this board"
