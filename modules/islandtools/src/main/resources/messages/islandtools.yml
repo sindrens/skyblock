@@ -24,7 +24,8 @@ item:
   tiered-name: "<c:value>{tier} {tool}"
   upgrade-line: "<c:text>{name} <c:value>{level}<c:muted>/{max}"
   only-island: "<c:muted>Works on islands only."
-  action-input: "Sneak + click"
+  # Feedback 4 Nov 2026 (B7): right-click in the air (no sneak); Bedrock players type /tool.
+  action-input: "Right-click air"
   action: "upgrades"
 
 effect:

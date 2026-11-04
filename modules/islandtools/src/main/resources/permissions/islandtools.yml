@@ -1,6 +1,9 @@
 skyblock.islandtools.use:
   description: Use island tools and open /is tools (upgrades, tiers, hoe storage)
   default: true
+skyblock.islandtools.tool:
+  description: /tool - the menu of the island tool in your hand (Bedrock-friendly; when the custom tools module owns /tool, its permission applies)
+  default: true
 skyblock.islandtools.admin:
   description: Staff - give island tools or reset a profile's island tools (/istools admin)
   default: op

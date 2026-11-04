@@ -424,6 +424,11 @@ public final class ToolsModule implements SkyblockModule {
                     Player player = ctx.player();
                     Optional<ToolData> held = ToolItems.read(player.getInventory().getItemInMainHand());
                     if (held.isEmpty()) {
+                        // Feedback 4 Nov 2026 (B7): an island tool in hand opens its menu (island tools module).
+                        if (core.services().optional(net.skybornmc.skyblock.common.item.HeldToolMenu.class)
+                                .map(h -> h.openHeld(player)).orElse(false)) {
+                            return;
+                        }
                         throw new CommandFailure(ID, "tool.hold-a-tool");
                     }
                     openToolMenu(player, held.get().id());

@@ -2,7 +2,8 @@
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/is tools` | Your island's shared tools: tier (wood → netherite, shards + money), 8 upgrades per tool incl. Shard Finder (shards + the island task for that tool; confirm above `confirm-above`), a new copy (older copies stop working), the hoe storage (take a stack, sell all). Sneak + right-click in the air with a tool opens that tool | `skyblock.islandtools.use` | ✅ |
+| `/is tools` | Your island's shared tools: tier (wood → netherite, shards + money), 8 upgrades per tool incl. Shard Finder (shards + the island task for that tool; confirm above `confirm-above`), a new copy (older copies stop working), the hoe storage (take a stack, sell all). Right-click in the air with a tool (main hand, no sneak needed) opens that tool; right-click on a block works the vanilla way (tilling, stripping) | `skyblock.islandtools.use` | ✅ |
+| `/tool` | The menu of the island tool in your hand (for Bedrock, where a click in the air may not arrive); no island tool in hand: all island tools. When the custom tools module is on it owns `/tool` and opens the island tool's menu the same way (`HeldToolMenu`) | `skyblock.islandtools.tool` (everyone; `skyblock.tools.menu` while the tools module owns `/tool`) | ✅ |
 | `/islandtools` (`/itools`) | Same menu | `skyblock.islandtools.use` | ✅ |
 | `/islandtools reset <player>` | Staff: back to the wooden set, hoe storage emptied (audited `island_tools_reset`) | `skyblock.islandtools.admin` | ✅ |
 

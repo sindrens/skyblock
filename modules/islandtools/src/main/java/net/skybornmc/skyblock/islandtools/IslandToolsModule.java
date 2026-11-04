@@ -47,6 +47,7 @@ public final class IslandToolsModule implements SkyblockModule {
     public static final String ID = "islandtools";
     static final String PERM = "skyblock.islandtools.use";
     static final String PERM_ADMIN = "skyblock.islandtools.admin";
+    static final String PERM_TOOL = "skyblock.islandtools.tool";
 
     private final Core core;
     private final IslandToolsConfig config = new IslandToolsConfig();
@@ -764,6 +765,34 @@ public final class IslandToolsModule implements SkyblockModule {
                 .sub(CommandSpec.sub("reset").description("Staff: reset a player's island tools to the wooden set (and empty the hoe storage)")
                         .permission(PERM_ADMIN).arg(target).example("islandtools reset Steve")
                         .executes(ctx -> reset(ctx.sender(), ctx.get(target)))));
+        // Feedback 4 Nov 2026 (B7): /tool opens the held tool's menu (Bedrock: a click in the air may not reach us). The
+        // custom tools module owns /tool when it is on and asks HeldToolMenu for an island tool; else it is ours.
+        core.services().register(ID, net.skybornmc.skyblock.common.item.HeldToolMenu.class, this::openHeld);
+        if (!core.commands().registered("tool")) {
+            core.commands().register(CommandSpec.command("tool").description("Open the menu of the island tool in your hand")
+                    .category("Island").permission(PERM_TOOL).playerOnly().example("tool")
+                    .executes(ctx -> {
+                        if (!openHeld(ctx.player())) {
+                            open(ctx.player()); // no island tool in hand: all island tools
+                        }
+                    }));
+        }
+    }
+
+    /** The menu of the island tool in the main hand; false when the item in hand is not an island tool. */
+    boolean openHeld(Player p) {
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        if (!ToolItems.isTool(hand)) {
+            return false;
+        }
+        if (!config.enabled) {
+            msg.send(p, "disabled");
+        } else if (!loaded(p)) {
+            msg.send(p, "loading");
+        } else {
+            core.menus().open(p, new ToolMenu(this, ToolItems.kindOf(hand)));
+        }
+        return true;
     }
 
     void open(Player p) {

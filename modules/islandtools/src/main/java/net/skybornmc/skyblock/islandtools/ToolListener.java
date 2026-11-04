@@ -331,15 +331,16 @@ final class ToolListener implements Listener {
         }
     }
 
-    /** Sneak + right-click in the air: that tool's menu. Not ignoreCancelled: Bukkit fires air clicks as cancelled. */
+    /** Right-click in the air: that tool's menu. Not ignoreCancelled: Bukkit fires air clicks as cancelled. */
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND || !ToolItems.isTool(event.getItem())) {
             return;
         }
         Player p = event.getPlayer();
-        // Owner 3 Nov 2026: sneak + right-click in the AIR opens the tool's menu; on a block the tool works as usual.
-        if (p.isSneaking() && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR) {
+        // Feedback 4 Nov 2026 (B7): right-click in the AIR opens the tool's menu, sneaking or not (main hand only); on a
+        // block the tool works the vanilla way (tilling, stripping logs, paths). Bedrock: /tool.
+        if (event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR) {
             event.setCancelled(true);
             if (m.loaded(p) && m.config().enabled) {
                 m.core().menus().open(p, new ToolMenu(m, ToolItems.kindOf(event.getItem())));

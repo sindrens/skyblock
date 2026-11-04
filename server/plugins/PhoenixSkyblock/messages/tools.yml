@@ -228,7 +228,7 @@ level-up:
 # /tool
 tool:
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That tool is no longer in your inventory."
-  hold-a-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Hold a custom tool first. Get one at <c:value>/forge</c:value>."
+  hold-a-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Hold a tool first: an island tool (<click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>) or a custom tool (<c:value>/forge</c:value><c:text>)."
 
 tool-menu:
   title: "Tool"

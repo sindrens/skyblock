@@ -93,6 +93,11 @@ public final class CommandService {
         }
     }
 
+    /** True when a module already registered the top-level command {@code name} (two modules may offer the same one). */
+    public boolean registered(String name) {
+        return specs.containsKey(name);
+    }
+
     /**
      * Adds {@code sub} under a command another module registered ({@code /eco shop} from the shop module under the economy
      * module's {@code /eco}). Call it in {@code enable()}, after the owner module enabled (module dependencies): the command
