@@ -39,6 +39,10 @@ import java.util.UUID;
 final class IslandFly implements Listener {
 
     static final String PERM_FLY = "skyblock.island.fly";
+    /** Feedback 4 Nov 2026 (E17): the rank perk behind {@code /fly}; the same island fly, and {@code /fly} toggles it. */
+    static final String PERM_PLAYER_FLY = "skyblock.fly";
+    /** Set on players who turned island fly off with {@code /fly} (kept with the player data). */
+    private static final org.bukkit.NamespacedKey SWITCHED_OFF = net.skybornmc.skyblock.common.item.ItemKeys.key("island_fly_off");
 
     private final IslandsModule module;
     private final IslandManager islands;
@@ -111,8 +115,9 @@ final class IslandFly implements Listener {
             return;
         }
         Island island = at != null && islands.isIslandWorld(at.getWorld()) ? islands.islandAt(at.getBlockX(), at.getBlockZ()) : null;
-        boolean allowed = island != null && allowed(true, island.roleOrNull(islands.key(player)) != null,
-                islands.flagOn(island, IslandFlag.VISITOR_FLY), player.hasPermission(PERM_FLY), islands.hasWings(island.id()));
+        boolean allowed = island != null && !switchedOff(player) && allowed(true, island.roleOrNull(islands.key(player)) != null,
+                islands.flagOn(island, IslandFlag.VISITOR_FLY), player.hasPermission(PERM_FLY) || player.hasPermission(PERM_PLAYER_FLY),
+                islands.hasWings(island.id()));
         if (allowed) {
             if (!granted.contains(uuid) || !player.getAllowFlight()) {
                 boolean couldFly = player.getAllowFlight();
@@ -131,6 +136,32 @@ final class IslandFly implements Listener {
         } else if (granted.contains(uuid)) {
             revoke(player, true);
         }
+    }
+
+    private static boolean switchedOff(Player player) {
+        return player.getPersistentDataContainer().has(SWITCHED_OFF, org.bukkit.persistence.PersistentDataType.BYTE);
+    }
+
+    /**
+     * {@code /fly} for players (E17, {@link net.skybornmc.skyblock.common.flight.PlayerFlight}): flying here now turns
+     * island fly off (soft landing) and keeps it off; otherwise it is switched back on and granted where it is allowed
+     * (own island, visited islands with visitor fly on). Spawn, /farm, /mine and other worlds never allow it.
+     */
+    net.skybornmc.skyblock.common.flight.PlayerFlight.Toggle toggle(Player player) {
+        UUID uuid = player.getUniqueId();
+        if (granted.contains(uuid) && player.getAllowFlight()) {
+            player.getPersistentDataContainer().set(SWITCHED_OFF, org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+            boolean wasFlying = player.isFlying();
+            revoke(player, false);
+            if (!wasFlying) {
+                landing.remove(uuid);
+            }
+            return net.skybornmc.skyblock.common.flight.PlayerFlight.Toggle.OFF;
+        }
+        player.getPersistentDataContainer().remove(SWITCHED_OFF);
+        update(player, player.getLocation());
+        return granted.contains(uuid) ? net.skybornmc.skyblock.common.flight.PlayerFlight.Toggle.ON
+                : net.skybornmc.skyblock.common.flight.PlayerFlight.Toggle.NOT_HERE;
     }
 
     private void revoke(Player player, boolean tell) {

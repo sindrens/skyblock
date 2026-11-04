@@ -130,6 +130,12 @@ fly:
   disabled-notify: "<prefix><c:text>Your /fly was turned off <c:muted>(<staff>)</c:muted>."
   game-mode: "<prefix><c:warning><sym:dot></c:warning> <c:text>You always fly in <c:value><mode></c:value><c:text>. /fly is for survival."
   game-mode-other: "<prefix><c:warning><sym:dot></c:warning> <c:value><player></c:value> <c:text>is in <c:value><mode></c:value> <c:text>and always flies."
+  # Feedback 4 Nov 2026 (E17): /fly with the rank perk (skyblock.fly) = island fly, toggled.
+  player:
+    "on": "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>on</c:value><c:text>. Double-tap jump to fly. It works on your island and on islands that let visitors fly."
+    "off": "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>off</c:value><c:text>. Type <c:action>/fly</c:action> <c:text>to turn it on again."
+    not-here: "<prefix><c:warning><sym:dot></c:warning> <c:text>You can't fly here. Fly is <c:value>on</c:value> <c:text>and starts on your island, or on an island that lets visitors fly."
+    unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Fly is not available right now (islands are off). Try again later."
 
 speed:
   fly: "<prefix><c:success><sym:check></c:success> <c:text>Fly speed: <c:value><speed></c:value>."

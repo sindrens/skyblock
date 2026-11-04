@@ -215,6 +215,8 @@ lp group fledgling permission set skyblock.join.message true
 lp group firewing permission set skyblock.perks.enderchest true
 lp group firewing permission set skyblock.perks.nick true
 lp group flamecrest permission set skyblock.island.fly true
+# Feedback 4 Nov 2026 (E17): /fly toggles that island fly (same rank as island fly; inherited by Sunfeather and up).
+lp group flamecrest permission set skyblock.fly true
 lp group sunfeather permission set skyblock.perks.nick.color true
 lp group immortal permission set skyblock.perks.nick.hex true
 # Immortal picks the colours of its badge in /settings (moved here from chat.txt).

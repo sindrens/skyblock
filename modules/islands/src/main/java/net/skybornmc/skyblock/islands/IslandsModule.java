@@ -188,6 +188,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         visits.onVisit(island -> stats.tracker().recordIsland(island.id(), net.skybornmc.skyblock.common.island.IslandStat.VISITORS, 1));
         // M2.5: island chat as a chat channel (the chat module routes toggled chat here and checks one-shots)
         core.services().register(ID, ChatChannel.class, chat);
+        // Feedback 4 Nov 2026 (E17): /fly for players with the fly rank perk is island fly (essentials asks this).
+        core.services().register(ID, net.skybornmc.skyblock.common.flight.PlayerFlight.class, fly::toggle);
         registerPlaceholders();
         registerCommands();
         admin = new IslandAdmin(this, manager, lifecycle, protection);

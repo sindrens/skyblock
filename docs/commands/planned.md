@@ -34,7 +34,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |
 | `/settings` | Personal toggles | `skyblock.settings` | ⬜ |
 | `/stats [player]`, `/titles`, `/cosmetics` | Profile, titles, cosmetics | `skyblock.stats` … | ⬜ |
-| `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
+| `/fly` | Fly on own island (perk) | `skyblock.fly` | ✅ (built 4 Nov 2026, see essentials.md) |
 | `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
 | `/tags` | Choose an owned cosmetic tag shown in chat/tab | `skyblock.tags` | ⬜ |
 | `/is fuel` | Island Fuel status: replaced by the fuel gauge in the island menu (M7.1) and the planned `/is production` (PD34, see `production.md`) | `skyblock.production.menu` | ⏸ |

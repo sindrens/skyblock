@@ -95,8 +95,8 @@ final class StaffCommands extends CommandGroup implements Listener {
         // Fly, speed, god
         Arg<Player> flyTarget = player("player");
         core.commands().register(CommandSpec.command("fly")
-                .description("Toggle flying").category("Staff")
-                .permission(Perms.FLY).optional(flyTarget)
+                .description("Toggle flying (rank perk: on islands)").category("Island")
+                .permission(Perms.PLAYER_FLY).optional(flyTarget)
                 .executes(ctx -> fly(ctx.sender(), ctx.getOr(flyTarget, null))));
         Arg<Integer> speed = Args.integer("speed", 1, 10, "1", "2", "3", "5", "10");
         Arg<String> speedType = Args.oneOf("type", () -> List.of("fly", "walk"));
@@ -224,6 +224,10 @@ final class StaffCommands extends CommandGroup implements Listener {
      */
     private void fly(CommandSender sender, Player given) {
         Player target = targetOrSelf(sender, given, Perms.FLY_OTHERS);
+        if (!sender.hasPermission(Perms.FLY)) {
+            playerFly(target); // feedback 4 Nov 2026 (E17): the rank perk (targetOrSelf already refused others)
+            return;
+        }
         GameMode mode = target.getGameMode();
         StaffPowerRules.FlyAction action = StaffPowerRules.fly(powers.flyOn(target.getUniqueId()),
                 mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR);
@@ -253,6 +257,28 @@ final class StaffCommands extends CommandGroup implements Listener {
         }
         audit(action == StaffPowerRules.FlyAction.TURN_ON ? "fly_on" : "fly_off", sender, target,
                 Map.of("still_flying", text == StaffPowerRules.FlyText.DISABLED_STILL_FLYING));
+    }
+
+    /**
+     * {@code /fly} with the rank perk only (E17): island fly, toggled. Members' islands and visited islands with visitor
+     * fly on; spawn, /farm, /mine and other worlds never (the islands module turns it off there, with a soft landing).
+     */
+    private void playerFly(Player player) {
+        GameMode mode = player.getGameMode();
+        if (mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR) {
+            msg.send(player, "fly.game-mode", Msg.p("mode", modeName(mode)));
+            return;
+        }
+        var flight = core.services().optional(net.skybornmc.skyblock.common.flight.PlayerFlight.class);
+        if (flight.isEmpty()) {
+            throw fail("fly.player.unavailable");
+        }
+        String key = switch (flight.get().toggle(player)) {
+            case ON -> "fly.player.on";
+            case OFF -> "fly.player.off";
+            case NOT_HERE -> "fly.player.not-here";
+        };
+        msg.send(player, key);
     }
 
     private void speed(Player player, int value, String type) {
