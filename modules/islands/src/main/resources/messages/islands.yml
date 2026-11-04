@@ -472,7 +472,7 @@ accept:
       - "<c:text>personal bank and items."
     removed: "<prefix><c:text>Your island <c:value><island></c:value><c:text> was deleted. Joining now..."
     cancelled: "<prefix><c:text>Nothing changed. You kept your island."
-  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is (or was) on this island. Profiles can't share one."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is on this island. Two of your profiles can't be on one island at the same time."
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."
   # Owner F10: the free slot of that island is locked after a recent leave or kick. <time> <hours>
@@ -997,7 +997,7 @@ admin:
     done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is now a member of <c:value><island></c:value>. <c:muted>(<members>/<slots>)"
     has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has an island. Remove them there first with <c:value>/isadmin kick</c:value>."
     full: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is full (<c:value><slots></c:value> slots)."
-    own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Another profile of <c:value><player></c:value> is or was on this island. Profiles never share one."
+    own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Another profile of <c:value><player></c:value> is on this island. Two profiles of one player can't be on one island at the same time."
     you: "<prefix><c:success><sym:star></c:success> <c:text>Staff added you to <c:value><island></c:value>. <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click>"
   kick:
     not-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>isn't a member or coop player of any island."

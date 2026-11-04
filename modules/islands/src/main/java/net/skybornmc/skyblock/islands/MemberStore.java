@@ -317,14 +317,15 @@ final class MemberStore {
     }
 
     /**
-     * Owner P3 in the database: true if {@code player} has join history on the island with ANOTHER profile than
-     * {@code key}, or their profile-1 key (= the player UUID) is a member or coop of it. (Other current members are
-     * checked from the cache before; their joins are in the history anyway.) Rows from before profiles have no
-     * profile id and belong to profile 1.
+     * Owner P3 in the database: true if ANOTHER profile of {@code player} than {@code key} is on the island now (an open
+     * join row: not left yet), or their profile-1 key (= the player UUID) is a member or coop of it. (Other current
+     * members are checked from the cache before.) Rows from before profiles have no profile id and belong to profile 1.
+     * Feedback 4 Nov 2026 (A7): only CURRENT profiles count; a profile that left (or was kicked) no longer blocks the
+     * player's other profiles ("is or was on this island" became "is").
      */
     static boolean otherOwnProfileOn(Connection c, UUID islandId, UUID key, UUID player) throws SQLException {
-        if (Sql.queryOne(c, "SELECT 1 FROM player_island_joins WHERE uuid = ? AND island_id = ? AND COALESCE(profile_id, uuid) <> ?",
-                rs -> 1, player, islandId, key).isPresent()) {
+        if (Sql.queryOne(c, "SELECT 1 FROM player_island_joins WHERE uuid = ? AND island_id = ? AND COALESCE(profile_id, uuid) <> ? "
+                        + "AND left_at IS NULL", rs -> 1, player, islandId, key).isPresent()) {
             return true;
         }
         return !player.equals(key)
