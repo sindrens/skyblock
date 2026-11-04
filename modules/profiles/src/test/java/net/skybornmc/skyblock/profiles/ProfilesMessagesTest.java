@@ -71,6 +71,16 @@ class ProfilesMessagesTest {
         for (ProfileNames.Problem p : ProfileNames.Problem.values()) {
             keys.add("rename." + p.key);
         }
+        // 4 Nov 2026 (island = profile): wipe reasons, snapshot states and restore refusals are built from keys.
+        for (net.skybornmc.skyblock.common.profile.WipeReason r : net.skybornmc.skyblock.common.profile.WipeReason.values()) {
+            keys.add("wipe.reason." + r.key());
+        }
+        for (WipeRules.SnapshotStatus status : WipeRules.SnapshotStatus.values()) {
+            keys.add("snapshots.status." + status.key());
+        }
+        for (String refused : List.of("restored", "expired", "live", "gone")) {
+            keys.add("restore.refused." + refused);
+        }
         List<String> missing = keys.stream().filter(k -> !yml.contains(k)).toList();
         assertEquals(List.of(), missing);
     }

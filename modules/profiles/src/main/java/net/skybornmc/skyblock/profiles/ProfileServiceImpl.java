@@ -16,11 +16,15 @@ import net.skybornmc.skyblock.common.profile.Profile;
 import net.skybornmc.skyblock.common.profile.ProfileDeleteEvent;
 import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
 import net.skybornmc.skyblock.common.profile.ProfileNames;
+import net.skybornmc.skyblock.common.profile.ProfileRestoredEvent;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
+import net.skybornmc.skyblock.common.profile.ProfileWipeResult;
+import net.skybornmc.skyblock.common.profile.ProfileWipedEvent;
 import net.skybornmc.skyblock.common.profile.SlotRules;
 import net.skybornmc.skyblock.common.profile.SlotSource;
+import net.skybornmc.skyblock.common.profile.WipeReason;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
@@ -35,6 +39,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -103,6 +108,8 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     /** Players whose switch transaction is running (they can't log in again until it finished). */
     private final Set<UUID> inFlight = ConcurrentHashMap.newKeySet();
     private net.skybornmc.skyblock.common.util.Scheduler.Task autosaveTask;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task purgeTask;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task sweepTask;
 
     ProfileServiceImpl(ProfilesModule module, ProfileStore store, Executor main) {
         this.module = module;
@@ -132,12 +139,23 @@ final class ProfileServiceImpl implements ProfileService, Listener {
             }
         }
         autosaveTask = core.scheduler().repeat("profiles:playtime", AUTOSAVE_TICKS, AUTOSAVE_TICKS, this::autosave);
+        // 4 Nov 2026: expired wipe snapshots are deleted in the background; interrupted wipes are finished.
+        long purgeTicks = 20L * 60 * config().purgeIntervalMinutes;
+        purgeTask = core.scheduler().repeat("profiles:snapshot-purge", 20L * 90, purgeTicks, this::purgeExpired);
+        long sweepTicks = 20L * config().intentSweepSeconds;
+        sweepTask = core.scheduler().repeat("profiles:wipe-sweep", sweepTicks, sweepTicks, this::sweepIntents);
     }
 
     /** Saves playtime of everyone online (blocking, shutdown). */
     void stop() {
         if (autosaveTask != null) {
             autosaveTask.cancel();
+        }
+        if (purgeTask != null) {
+            purgeTask.cancel();
+        }
+        if (sweepTask != null) {
+            sweepTask.cancel();
         }
         List<Object[]> rows = playtimeRows(System.currentTimeMillis(), true);
         if (!rows.isEmpty() && core.database().isRunning()) {
@@ -214,19 +232,77 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     private void attach(Player player, ProfileStore.Account account, long now) {
         Session session = new Session(account, now);
         sessions.put(player.getUniqueId(), session);
-        if (account.pending() != null) {
-            // A switch finished in the database but was not applied in game (crash or quit): apply it now.
-            StateCodec.apply(player, account.pending());
-            player.saveData();
-            UUID active = account.active();
-            core.database().run(c -> store.consumeState(c, player.getUniqueId(), active)).exceptionally(e -> {
-                core.plugin().getLogger().log(Level.SEVERE, "Profiles: could not clear the applied state of " + player.getName(), Database.cause(e));
-                return null;
-            });
-            core.audit().logPlayer(AuditCategory.AUTH, "profile_switch_resumed", Actor.system("profiles"), player.getUniqueId(),
-                    player.getName(), null, player.getLocation(), Map.of("profile", active.toString()));
-            Bukkit.getScheduler().runTask(core.plugin(), () -> teleportToProfile(player, active));
+        UUID owner = player.getUniqueId();
+        switch (WipeRules.joinStep(account.active(), account.capture(), account.pending() != null)) {
+            case NOTHING -> {
+                // the player file is the active profile
+            }
+            case APPLY_PENDING -> applyPending(player, account.active(), account.pending());
+            case DROP_CAPTURE -> dropCapture(owner, account.capture());
+            case DROP_CAPTURE_THEN_APPLY -> {
+                dropCapture(owner, account.capture());
+                applyPending(player, account.active(), account.pending());
+            }
+            case CAPTURE_THEN_APPLY -> captureThenApply(player, session, account);
         }
+        // Wipes that happened while the player was offline (kick, disband, staff): a chat summary once they are in.
+        core.scheduler().later("profiles:wipe-notices", 60L, () -> sendWipeNotices(player));
+    }
+
+    /** A switch (or wipe/restore) finished in the database but was not applied in game (crash or quit): apply it now. */
+    private void applyPending(Player player, UUID active, StoredState pending) {
+        StateCodec.apply(player, pending);
+        player.saveData();
+        core.database().run(c -> store.consumeState(c, player.getUniqueId(), active)).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.SEVERE, "Profiles: could not clear the applied state of " + player.getName(), Database.cause(e));
+            return null;
+        });
+        core.audit().logPlayer(AuditCategory.AUTH, "profile_switch_resumed", Actor.system("profiles"), player.getUniqueId(),
+                player.getName(), null, player.getLocation(), Map.of("profile", active.toString()));
+        Bukkit.getScheduler().runTask(core.plugin(), () -> teleportToProfile(player, active));
+    }
+
+    private void dropCapture(UUID owner, UUID profileId) {
+        core.database().run(c -> store.dropCapture(c, owner, profileId)).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.WARNING, "Profiles: could not drop a stale capture row of " + owner, Database.cause(e));
+            return null;
+        });
+    }
+
+    /**
+     * 4 Nov 2026: the player was wiped (or restored away) while offline, so their player file still holds the items of a
+     * profile that is no longer active. They stay locked while those items are saved to that profile (its snapshot); only
+     * after the commit the active profile's state is applied. A crash in between repeats this on the next join; nothing is
+     * ever on two profiles.
+     */
+    private void captureThenApply(Player player, Session session, ProfileStore.Account account) {
+        UUID owner = player.getUniqueId();
+        UUID capturedFor = account.capture();
+        session.switching = true;
+        StoredState fileState = StateCodec.capture(player);
+        int items = WipeRules.clampItems(WipeRules.countItems(player.getInventory().getContents())
+                + WipeRules.countItems(player.getEnderChest().getContents()));
+        long now = System.currentTimeMillis();
+        core.database().transaction(c -> store.consumeCapture(c, owner, capturedFor, fileState, items, now))
+                .whenCompleteAsync((ok, error) -> {
+                    if (sessions.get(owner) != session || !player.isOnline()) {
+                        return; // quit meanwhile: the file is unchanged; a committed capture makes the next join apply the state
+                    }
+                    if (error != null) {
+                        core.plugin().getLogger().log(Level.SEVERE, "Profiles: could not save the items of wiped profile " + capturedFor
+                                + " of " + player.getName() + "; kicked to keep them safe", Database.cause(error));
+                        player.kick(module.msg.component(player, "login.failed"));
+                        return;
+                    }
+                    StoredState apply = account.pending() != null ? account.pending() : Boolean.TRUE.equals(ok) ? StoredState.FRESH : null;
+                    if (apply != null) {
+                        applyPending(player, account.active(), apply);
+                    }
+                    session.switching = false;
+                    core.audit().logPlayer(AuditCategory.AUTH, "profile_wipe_items_taken", Actor.system("profiles"), owner, player.getName(),
+                            (long) items, player.getLocation(), Map.of("profile", capturedFor.toString(), "active", account.active().toString(),
+                                    "saved", Boolean.TRUE.equals(ok)));
+                }, main);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -644,10 +720,10 @@ final class ProfileServiceImpl implements ProfileService, Listener {
     }
 
     /**
-     * {@code /profiles reset <player> [slot]}: replaces one profile (default the active one) with a fresh one in the same
-     * slot; every module cleans up its data through {@link ProfileDeletedEvent} (islands, money, skills, keys ...). Offline
-     * players only (the active profile's items live in the player file until the next login applies the empty state).
-     * A team island's leader is refused (transfer the island first), like a player's own delete.
+     * {@code /profiles reset <player> [slot]}: wipes one profile (default the active one) with the normal wipe (4 Nov 2026):
+     * snapshot first (restorable for {@code wipe.snapshot-days}), then a fresh profile in the same slot. Online players
+     * switch to the fresh profile at once; offline players lose the items in their file on the next join. A team island's
+     * leader is refused (transfer the island first), like a player's own delete.
      */
     void staffReset(org.bukkit.command.CommandSender staff, String name, Integer slot) {
         org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(name);
@@ -655,17 +731,19 @@ final class ProfileServiceImpl implements ProfileService, Listener {
             module.msg.send(staff, "staff.unknown", Msg.p("player", name));
             return;
         }
-        if (target.isOnline()) {
-            module.msg.send(staff, "staff.reset.online", Msg.p("player", name));
-            return;
-        }
         if (staff instanceof Player self && self.getUniqueId().equals(target.getUniqueId())) {
             module.msg.send(staff, "staff.reset.self");
             return;
         }
         UUID owner = target.getUniqueId();
+        Actor actor = staff instanceof Player p ? Actor.player(p) : Actor.system("console");
         core.database().async(c -> new Object[]{store.liveProfiles(c, owner), store.activeProfile(c, owner).orElse(null)})
-                .thenComposeAsync(pair -> {
+                .whenCompleteAsync((pair, error) -> {
+                    if (error != null) {
+                        core.plugin().getLogger().log(Level.SEVERE, "Profiles: staff reset of " + name + " failed", Database.cause(error));
+                        module.msg.send(staff, "error");
+                        return;
+                    }
                     @SuppressWarnings("unchecked")
                     List<Profile> live = (List<Profile>) pair[0];
                     UUID active = (UUID) pair[1];
@@ -673,42 +751,610 @@ final class ProfileServiceImpl implements ProfileService, Listener {
                             .filter(p -> slot == null ? p.id().equals(active) : p.slot() == slot).findFirst();
                     if (pick.isEmpty()) {
                         module.msg.send(staff, "staff.reset.no-profile", Msg.p("player", name), Msg.p("slot", slot == null ? "active" : String.valueOf(slot)));
-                        return java.util.concurrent.CompletableFuture.completedFuture(null);
+                        return;
                     }
                     Profile profile = pick.get();
-                    boolean teamLeader = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
-                            .flatMap(i -> i.islandOf(profile.id()))
+                    Optional<IslandService> islands = core.services().optional(IslandService.class);
+                    boolean teamLeader = islands.flatMap(i -> i.islandOf(profile.id()))
                             .map(i -> i.team() && profile.id().equals(i.owner())).orElse(false);
                     if (teamLeader) {
                         module.msg.send(staff, "staff.reset.team-leader", Msg.p("player", name));
-                        return java.util.concurrent.CompletableFuture.completedFuture(null);
-                    }
-                    return core.database().transaction(c -> store.staffReset(c, owner, profile.id(), System.currentTimeMillis()));
-                }, main)
-                .whenCompleteAsync((reset, error) -> {
-                    if (error != null) {
-                        Throwable cause = Database.cause(error);
-                        if (cause instanceof ProfileStore.Refused) {
-                            module.msg.send(staff, "staff.reset.no-profile", Msg.p("player", name), Msg.p("slot", String.valueOf(slot)));
-                        } else {
-                            core.plugin().getLogger().log(Level.SEVERE, "Profiles: staff reset of " + name + " failed", cause);
-                            module.msg.send(staff, "error");
-                        }
                         return;
                     }
-                    if (reset == null) {
-                        return; // refused above, already told
-                    }
-                    remember(reset.gone().id(), owner, true);
-                    remember(reset.fresh().id(), owner, false);
-                    core.audit().logPlayer(AuditCategory.AUTH, "profile_staff_reset",
-                            staff instanceof Player p ? Actor.player(p) : Actor.system("console"), owner, name, null, null,
-                            Map.of("profile", reset.gone().id().toString(), "new_profile", reset.fresh().id().toString(),
-                                    "slot", reset.gone().slot(), "active", reset.wasActive()));
-                    Bukkit.getPluginManager().callEvent(new ProfileDeletedEvent(reset.gone()));
-                    module.msg.send(staff, "staff.reset.done", Msg.p("player", name), Msg.number("slot", reset.gone().slot()),
-                            Msg.p("profile", name(reset.gone())));
+                    UUID islandId = islands.flatMap(i -> i.islandOf(profile.id())).map(i -> i.id()).orElse(null);
+                    String islandName = islands.flatMap(i -> i.islandOf(profile.id())).map(i -> i.name()).orElse(null);
+                    wipe(profile.id(), WipeReason.STAFF, actor, islandId, islandName).whenCompleteAsync((result, failure) -> {
+                        if (failure != null || result == null || !result.done()) {
+                            module.msg.send(staff, result != null && result.status() == ProfileWipeResult.Status.BUSY
+                                    ? "staff.reset.busy" : "error");
+                            return;
+                        }
+                        module.msg.send(staff, "staff.reset.done", Msg.p("player", name), Msg.number("slot", profile.slot()),
+                                Msg.p("profile", name(profile)), Msg.number("snapshot", result.snapshotId()),
+                                Msg.number("days", config().snapshotDays));
+                    }, main);
                 }, main);
+    }
+
+    // ================================================================== wipe (owner 4 Nov 2026: island = profile)
+
+    @Override
+    public boolean supportsWipe() {
+        return true;
+    }
+
+    private static String actorName(Actor actor) {
+        return actor == null || actor.name() == null ? "system" : actor.name();
+    }
+
+    @Override
+    public CompletableFuture<Void> intendWipe(UUID profileKey, WipeReason reason, Actor actor, UUID islandId, String islandName) {
+        if (profileKey == null || reason == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        ProfileStore.Intent intent = new ProfileStore.Intent(profileKey, ownerOf(profileKey), reason.key(), actorName(actor), islandId,
+                islandName, System.currentTimeMillis());
+        return core.database().run(c -> store.intend(c, intent)).exceptionally(e -> {
+            // Without the intent only the crash safety is lost (the wipe itself still runs after the removal).
+            core.plugin().getLogger().log(Level.WARNING, "Profiles: could not save the wipe intent of " + profileKey, Database.cause(e));
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> dropWipeIntent(UUID profileKey) {
+        if (profileKey == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return core.database().run(c -> store.dropIntent(c, profileKey)).exceptionally(e -> {
+            core.plugin().getLogger().log(Level.WARNING, "Profiles: could not drop the wipe intent of " + profileKey, Database.cause(e));
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<ProfileWipeResult> wipe(UUID profileKey, WipeReason reason, Actor actor, UUID islandId, String islandName) {
+        CompletableFuture<ProfileWipeResult> out = new CompletableFuture<>();
+        if (profileKey == null || reason == null) {
+            out.complete(ProfileWipeResult.of(ProfileWipeResult.Status.NOT_FOUND));
+            return out;
+        }
+        WipeJob job = new WipeJob(profileKey, reason, actor == null ? Actor.system("profiles") : actor, islandId, islandName, out);
+        main.execute(() -> startWipe(job, 0));
+        return out;
+    }
+
+    /** One wipe on its way (main thread). */
+    private record WipeJob(UUID key, WipeReason reason, Actor actor, UUID islandId, String islandName,
+                           CompletableFuture<ProfileWipeResult> out) {
+    }
+
+    /** A player who is switching (or still loading) can't be wiped this tick: try again shortly. */
+    private boolean busy(WipeJob job, int attempt) {
+        UUID owner = ownerOf(job.key());
+        Player player = Bukkit.getPlayer(owner);
+        Session s = sessions.get(owner);
+        if (player == null || (s != null && !s.switching)) {
+            return false;
+        }
+        if (attempt < config().wipeBusyRetries) {
+            core.scheduler().later("profiles:wipe-retry", 40L, () -> startWipe(job, attempt + 1));
+        } else {
+            core.plugin().getLogger().warning("Profiles: wipe of " + job.key() + " (" + player.getName() + ") waits for the sweep: "
+                    + "the player kept switching.");
+            job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.BUSY));
+        }
+        return true;
+    }
+
+    /** Reads the money and shards for the snapshot and the summary, then wipes. */
+    private void startWipe(WipeJob job, int attempt) {
+        if (!isLive(job.key())) {
+            job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.NOT_FOUND));
+            return;
+        }
+        if (busy(job, attempt)) {
+            return;
+        }
+        Optional<EconomyService> eco = core.services().optional(EconomyService.class);
+        CompletableFuture<Long> money = eco.isEmpty() ? CompletableFuture.completedFuture(null)
+                : eco.get().balance(AccountRef.player(job.key()), Currency.MONEY).handle((v, e) -> e == null ? v : null);
+        CompletableFuture<Long> shards = eco.isEmpty() ? CompletableFuture.completedFuture(null)
+                : eco.get().balance(AccountRef.player(job.key()), Currency.SHARDS).handle((v, e) -> e == null ? v : null);
+        money.thenCombine(shards, (m, s) -> new Long[]{m, s})
+                .whenCompleteAsync((amounts, error) -> wipeNow(job, attempt, amounts == null ? null : amounts[0],
+                        amounts == null ? null : amounts[1]), main);
+    }
+
+    private void wipeNow(WipeJob job, int attempt, Long money, Long shards) {
+        if (!isLive(job.key())) {
+            job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.NOT_FOUND));
+            return;
+        }
+        if (busy(job, attempt)) {
+            return;
+        }
+        UUID owner = ownerOf(job.key());
+        Player player = Bukkit.getPlayer(owner);
+        Session s = sessions.get(owner);
+        boolean onlineActive = player != null && s != null && job.key().equals(s.active);
+        long now = System.currentTimeMillis();
+        StoredState captured = null;
+        Map<String, String> settings = null;
+        long playtimeAdd = 0;
+        Integer items = null;
+        if (onlineActive) {
+            Optional<PlayerData> data = core.players().get(owner);
+            if (data.isEmpty()) {
+                // Still loading: never wipe with an unknown settings map; the retry (or the sweep) does it.
+                if (attempt < config().wipeBusyRetries) {
+                    core.scheduler().later("profiles:wipe-retry", 40L, () -> startWipe(job, attempt + 1));
+                } else {
+                    job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.BUSY));
+                }
+                return;
+            }
+            // From here until the result the player is locked (ProfileGuards), exactly like a switch.
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            ItemStack cursor = player.getItemOnCursor();
+            if (!cursor.isEmpty()) {
+                player.setItemOnCursor(null);
+                // Back into the inventory so it is part of the snapshot. What does not fit is wiped with the rest
+                // (never dropped: a dropped item would survive the wipe).
+                player.getInventory().addItem(cursor);
+            }
+            if (player.isInsideVehicle()) {
+                player.leaveVehicle();
+            }
+            s.switching = true;
+            inFlight.add(owner);
+            captured = StateCodec.capture(player);
+            items = WipeRules.clampItems(WipeRules.countItems(player.getInventory().getContents())
+                    + WipeRules.countItems(player.getEnderChest().getContents()));
+            settings = data.get().snapshot().settings();
+            playtimeAdd = Math.max(0, now - s.checkpoint);
+        }
+        ProfileStore.WipeInput in = new ProfileStore.WipeInput(owner, job.key(), captured, settings, playtimeAdd, job.reason().key(),
+                actorName(job.actor()), job.islandId(), job.islandName(), money, shards, items, player != null, now,
+                WipeRules.expiresAt(now, config().snapshotDays));
+        CompletableFuture<ProfileStore.Wiped> tx = core.database().transaction(c -> store.wipe(c, in, config()::profileSetting));
+        if (onlineActive) {
+            tx.whenComplete((result, error) -> inFlight.remove(owner));
+        }
+        tx.copy().orTimeout(config().switchTimeoutSeconds, TimeUnit.SECONDS)
+                .whenCompleteAsync((result, error) -> finishWipe(job, player, s, onlineActive, in, result, error), main);
+    }
+
+    private void finishWipe(WipeJob job, Player player, Session s, boolean onlineActive, ProfileStore.WipeInput in,
+                            ProfileStore.Wiped result, Throwable error) {
+        UUID owner = in.owner();
+        boolean switched = false;
+        try {
+            if (error != null) {
+                Throwable cause = Database.cause(error);
+                if (cause instanceof TimeoutException) {
+                    // Unknown outcome: the player was locked since the capture, so their file equals the saved state.
+                    // The kick saves it and the next join applies whatever the database decided (like a switch timeout).
+                    core.plugin().getLogger().severe("Profiles: wipe of " + in.profileId() + " timed out; player kicked to keep the items safe.");
+                    if (onlineActive && player.isOnline()) {
+                        player.kick(module.msg.component(player, "login.switch-timeout"));
+                    }
+                    job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.UNAVAILABLE));
+                    return;
+                }
+                if (cause instanceof ProfileStore.Refused) {
+                    job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.NOT_FOUND));
+                    return;
+                }
+                // Rolled back: nothing changed. The intent (if any) stays and the sweep tries again.
+                core.plugin().getLogger().log(Level.SEVERE, "Profiles: wipe of profile " + in.profileId() + " failed", cause);
+                job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.UNAVAILABLE));
+                return;
+            }
+            Profile gone = result.gone();
+            Profile fresh = result.fresh();
+            remember(gone.id(), owner, true);
+            remember(fresh.id(), owner, false);
+            Session live = sessions.get(owner);
+            if (live != null) {
+                live.profiles = live.profiles.stream().map(p -> p.id().equals(gone.id()) ? fresh : p).toList();
+            }
+            if (onlineActive && player.isOnline() && live == s) {
+                try {
+                    StateCodec.apply(player, StoredState.FRESH);
+                } catch (RuntimeException e) {
+                    // The database says "fresh, not applied": the next join applies the empty state again.
+                    core.plugin().getLogger().log(Level.SEVERE, "Profiles: emptying " + player.getName() + " after a wipe failed", e);
+                    player.kick(module.msg.component(player, "login.switch-timeout"));
+                    job.out().complete(new ProfileWipeResult(ProfileWipeResult.Status.WIPED_ON_JOIN, gone.id(), fresh.id(), result.snapshotId()));
+                    return;
+                }
+                long now = System.currentTimeMillis();
+                s.active = fresh.id();
+                s.checkpoint = now;
+                core.players().get(owner).ifPresent(d -> swapSettings(d, result.settings()));
+                net.skybornmc.skyblock.common.player.PlayerSaves.save(player, "a profile wipe");
+                UUID freshId = fresh.id();
+                core.database().run(c -> store.consumeState(c, owner, freshId)).exceptionally(e -> {
+                    core.plugin().getLogger().log(Level.SEVERE, "Profiles: could not clear the applied state of " + player.getName(), Database.cause(e));
+                    return null;
+                });
+                s.switching = false;
+                switched = true;
+                Bukkit.getPluginManager().callEvent(new ProfileSwitchedEvent(player, gone, fresh));
+            }
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("profile", gone.id().toString());
+            details.put("new_profile", fresh.id().toString());
+            details.put("slot", gone.slot());
+            details.put("reason", job.reason().key());
+            details.put("snapshot", result.snapshotId());
+            details.put("was_active", result.wasActive());
+            details.put("online", switched);
+            details.put("items_on_join", result.captureOnJoin());
+            details.put("money", in.money() == null ? -1 : in.money());
+            details.put("shards", in.shards() == null ? -1 : in.shards());
+            details.put("items", in.items() == null ? -1 : in.items());
+            if (job.islandId() != null) {
+                details.put("island", job.islandId().toString());
+            }
+            if (job.islandName() != null) {
+                details.put("island_name", job.islandName());
+            }
+            core.audit().logPlayer(AuditCategory.AUTH, "profile_wipe", job.actor(), owner,
+                    core.players().get(owner).map(PlayerData::name).orElse(player == null ? null : player.getName()), in.money(),
+                    player != null && player.isOnline() ? player.getLocation() : null, details);
+            Bukkit.getPluginManager().callEvent(new ProfileWipedEvent(gone, fresh, job.reason(), job.actor(), result.snapshotId(), switched));
+            if (player != null && player.isOnline()) {
+                sendSummary(player, job.reason().key(), job.islandName(), in.money(), in.shards(), in.items());
+            }
+            ProfileWipeResult.Status status = result.captureOnJoin() ? ProfileWipeResult.Status.WIPED_ON_JOIN : ProfileWipeResult.Status.WIPED;
+            job.out().complete(new ProfileWipeResult(status, gone.id(), fresh.id(), result.snapshotId()));
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().log(Level.SEVERE, "Profiles: finishing the wipe of " + in.profileId() + " failed", e);
+            if (!job.out().isDone()) {
+                job.out().complete(ProfileWipeResult.of(ProfileWipeResult.Status.UNAVAILABLE));
+            }
+        } finally {
+            if (onlineActive && s != null && player.isOnline()) {
+                s.switching = false;
+            }
+        }
+    }
+
+    /** A raw text of messages/profiles.yml, or {@code fallback} when it is missing or blank. */
+    private String raw(String key, String fallback) {
+        String text = core.messages().raw(ProfilesModule.ID, key);
+        return text == null || text.isBlank() ? fallback : text;
+    }
+
+    /** The chat summary of a wipe: what was lost, what stays, how to start again. */
+    private void sendSummary(Player player, String reasonKey, String islandName, Long money, Long shards, Integer items) {
+        String island = islandName == null || islandName.isBlank() ? raw("wipe.summary.no-island", "your island") : islandName;
+        String why = raw("wipe.reason." + reasonKey, reasonKey);
+        Optional<EconomyService> eco = core.services().optional(EconomyService.class);
+        String unknown = raw("wipe.summary.unknown", "?");
+        String moneyText = money == null ? unknown : eco.map(e -> e.format(Currency.MONEY, money)).orElse(Format.money(money));
+        String shardText = shards == null ? unknown : Format.number(shards);
+        String itemText = items == null ? unknown : Format.number(items);
+        module.msg.send(player, "wipe.summary.text", Msg.mm("why", why.replace("<island>",
+                net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(island))), Msg.p("money", moneyText),
+                Msg.p("shards", shardText), Msg.p("items", itemText), Msg.number("days", config().snapshotDays));
+        core.sounds().play(player, "warning");
+    }
+
+    /** Join: the summaries of wipes that happened while the player was offline (once each). */
+    private void sendWipeNotices(Player player) {
+        if (!player.isOnline()) {
+            return;
+        }
+        UUID owner = player.getUniqueId();
+        core.database().async(c -> store.unnotified(c, owner)).whenCompleteAsync((list, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Profiles: could not load the wipe notices of " + player.getName(), Database.cause(error));
+                return;
+            }
+            if (list.isEmpty() || !player.isOnline()) {
+                return;
+            }
+            for (ProfileStore.Snapshot snap : list) {
+                sendSummary(player, snap.reason(), snap.islandName(), snap.money(), snap.shards(), snap.items());
+            }
+            core.database().run(c -> store.markNotified(c, owner)).exceptionally(e -> null);
+        }, main);
+    }
+
+    // ================================================================== crash sweep and purge
+
+    /**
+     * Crash safety: an intent whose profile left its island (the removal committed but the wipe did not) is wiped now; an
+     * intent whose profile is still on that island (the removal never committed) or is gone already is dropped.
+     */
+    private void sweepIntents() {
+        Optional<IslandService> islands = core.services().optional(IslandService.class);
+        if (islands.isEmpty() || !core.database().isRunning()) {
+            return; // without islands we can't tell whether the removal happened: wait
+        }
+        long now = System.currentTimeMillis();
+        long grace = config().intentGraceSeconds * 1000L;
+        core.database().async(c -> store.intents(c, now - grace, 100)).whenCompleteAsync((list, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Profiles: wipe intent sweep failed", Database.cause(error));
+                return;
+            }
+            for (ProfileStore.Intent intent : list) {
+                boolean still = intent.islandId() != null && islands.get().islandOfProfile(intent.profileId())
+                        .map(i -> i.id().equals(intent.islandId())).orElse(false);
+                switch (WipeRules.intent(isLive(intent.profileId()), still, now - intent.createdAt(), grace)) {
+                    case WAIT -> {
+                        // too young
+                    }
+                    case DROP -> dropWipeIntent(intent.profileId());
+                    case WIPE -> {
+                        WipeReason reason = WipeReason.byKey(intent.reason()).orElse(WipeReason.LEAVE);
+                        core.plugin().getLogger().warning("Profiles: finishing an interrupted wipe of " + intent.profileId() + " (" + reason.key() + ")");
+                        wipe(intent.profileId(), reason, Actor.system("profiles"), intent.islandId(), intent.islandName());
+                    }
+                }
+            }
+        }, main);
+    }
+
+    /** Deletes expired snapshots: claims each in the database, then lets every module delete the old key's rows. */
+    private void purgeExpired() {
+        if (!core.database().isRunning()) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        int batch = config().purgeBatch;
+        core.database().async(c -> store.purgeDue(c, now, batch)).whenComplete((due, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Profiles: snapshot purge failed", Database.cause(error));
+                return;
+            }
+            for (ProfileStore.Snapshot snap : due) {
+                core.database().transaction(c -> store.claimPurge(c, snap.id(), now)).whenCompleteAsync((old, failure) -> {
+                    if (failure != null) {
+                        core.plugin().getLogger().log(Level.WARNING, "Profiles: purging snapshot " + snap.id() + " failed", Database.cause(failure));
+                        return;
+                    }
+                    if (old.isEmpty()) {
+                        return; // restored or purged meanwhile
+                    }
+                    remember(old.get().id(), old.get().owner(), true);
+                    core.audit().logPlayer(AuditCategory.AUTH, "profile_snapshot_purge", Actor.system("profiles"), snap.owner(),
+                            core.players().get(snap.owner()).map(PlayerData::name).orElse(null), null, null,
+                            Map.of("snapshot", snap.id(), "profile", snap.profileId().toString(), "slot", snap.slot(), "reason", snap.reason()));
+                    // Every module deletes what it stored under the old key (the same event as a deleted profile).
+                    Bukkit.getPluginManager().callEvent(new ProfileDeletedEvent(old.get()));
+                }, main);
+            }
+        });
+    }
+
+    // ================================================================== staff: snapshots and restore
+
+    /** {@code /profiles snapshots <player>}: the newest snapshots with status and a click to restore the open ones. */
+    void staffSnapshots(org.bukkit.command.CommandSender staff, String name) {
+        org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(name);
+        if (target == null) {
+            module.msg.send(staff, "staff.unknown", Msg.p("player", name));
+            return;
+        }
+        UUID owner = target.getUniqueId();
+        int limit = config().snapshotListLimit;
+        core.database().async(c -> store.snapshots(c, owner, limit)).whenCompleteAsync((list, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Profiles: snapshots of " + name + " failed", Database.cause(error));
+                module.msg.send(staff, "error");
+                return;
+            }
+            if (list.isEmpty()) {
+                module.msg.send(staff, "snapshots.none", Msg.p("player", name));
+                return;
+            }
+            long now = System.currentTimeMillis();
+            module.msg.send(staff, "snapshots.header", Msg.p("player", name), Msg.number("count", list.size()),
+                    Msg.number("days", config().snapshotDays));
+            Optional<EconomyService> eco = core.services().optional(EconomyService.class);
+            String unknown = raw("wipe.summary.unknown", "?");
+            for (ProfileStore.Snapshot snap : list) {
+                WipeRules.SnapshotStatus status = snap.status(now);
+                String statusText = raw("snapshots.status." + status.key(), status.key())
+                        .replace("<time>", Format.duration(Duration.ofMillis(Math.max(0, snap.expiresAt() - now))))
+                        .replace("<by>", snap.restoredBy() == null ? "?" : snap.restoredBy());
+                String money = snap.money() == null ? unknown
+                        : eco.map(e -> e.format(Currency.MONEY, snap.money())).orElse(Format.money(snap.money()));
+                module.msg.send(staff, status == WipeRules.SnapshotStatus.OPEN ? "snapshots.line-open" : "snapshots.line",
+                        Msg.number("id", snap.id()), Msg.number("slot", snap.slot()), Msg.p("reason", snap.reason()),
+                        Msg.p("island", snap.islandName() == null ? "-" : snap.islandName()), Msg.p("money", money),
+                        Msg.p("items", snap.items() == null ? unknown : Format.number(snap.items())),
+                        Msg.p("ago", Format.duration(Duration.ofMillis(Math.max(1000, now - snap.createdAt())))),
+                        Msg.p("by", snap.actorName()), Msg.mm("status", statusText), Msg.p("player", name));
+            }
+        }, main);
+    }
+
+    /** Open snapshot ids of a player (tab completion of {@code /profiles restore}), newest first; {@code slot} null = any. */
+    CompletableFuture<List<String>> openSnapshotIds(UUID owner, Integer slot) {
+        long now = System.currentTimeMillis();
+        return core.database().async(c -> store.snapshots(c, owner, 25)).thenApply(list -> list.stream()
+                .filter(s -> s.status(now) == WipeRules.SnapshotStatus.OPEN && (slot == null || s.slot() == slot))
+                .map(s -> String.valueOf(s.id())).toList());
+    }
+
+    /**
+     * {@code /profiles restore <player> <slot> [snapshot]}: puts a wiped profile back into its slot (default: the newest
+     * open snapshot of that slot). The profile in the slot now is wiped into its own snapshot, so a restore can be undone
+     * the same way. Online players on that slot switch at once. Audited ({@code profile_restore}).
+     */
+    void staffRestore(org.bukkit.command.CommandSender staff, String name, int slot, Integer snapshotId) {
+        org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(name);
+        if (target == null) {
+            module.msg.send(staff, "staff.unknown", Msg.p("player", name));
+            return;
+        }
+        UUID owner = target.getUniqueId();
+        long now = System.currentTimeMillis();
+        core.database().async(c -> store.snapshots(c, owner, 50)).whenCompleteAsync((list, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Profiles: restore lookup for " + name + " failed", Database.cause(error));
+                module.msg.send(staff, "error");
+                return;
+            }
+            Optional<ProfileStore.Snapshot> pick = list.stream()
+                    .filter(s -> snapshotId == null ? s.slot() == slot && s.status(now) == WipeRules.SnapshotStatus.OPEN : s.id() == snapshotId)
+                    .findFirst();
+            if (pick.isEmpty()) {
+                module.msg.send(staff, snapshotId == null ? "restore.none" : "restore.unknown", Msg.p("player", name), Msg.number("slot", slot),
+                        Msg.p("snapshot", snapshotId == null ? "-" : String.valueOf(snapshotId)));
+                return;
+            }
+            if (pick.get().slot() != slot) {
+                module.msg.send(staff, "restore.other-slot", Msg.number("snapshot", pick.get().id()), Msg.number("slot", pick.get().slot()),
+                        Msg.p("player", name));
+                return;
+            }
+            doRestore(staff, owner, name, pick.get());
+        }, main);
+    }
+
+    private void doRestore(org.bukkit.command.CommandSender staff, UUID owner, String name, ProfileStore.Snapshot snap) {
+        Player player = Bukkit.getPlayer(owner);
+        Session s = sessions.get(owner);
+        if (player != null && (s == null || s.switching)) {
+            module.msg.send(staff, "restore.busy", Msg.p("player", name));
+            return;
+        }
+        boolean slotActive = player != null && s.inSlot(snap.slot()).map(p -> p.id().equals(s.active)).orElse(false);
+        Actor actor = staff instanceof Player p ? Actor.player(p) : Actor.system("console");
+        long now = System.currentTimeMillis();
+        StoredState captured = null;
+        Map<String, String> settings = null;
+        long playtimeAdd = 0;
+        if (slotActive) {
+            Optional<PlayerData> data = core.players().get(owner);
+            if (data.isEmpty()) {
+                module.msg.send(staff, "restore.busy", Msg.p("player", name));
+                return;
+            }
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            if (!player.getItemOnCursor().isEmpty()) {
+                ItemStack cursor = player.getItemOnCursor();
+                player.setItemOnCursor(null);
+                player.getInventory().addItem(cursor);
+            }
+            if (player.isInsideVehicle()) {
+                player.leaveVehicle();
+            }
+            s.switching = true;
+            inFlight.add(owner);
+            captured = StateCodec.capture(player);
+            settings = data.get().snapshot().settings();
+            playtimeAdd = Math.max(0, now - s.checkpoint);
+        }
+        ProfileStore.RestoreInput in = new ProfileStore.RestoreInput(owner, snap.id(), captured, settings, playtimeAdd, actorName(actor), now,
+                WipeRules.expiresAt(now, config().snapshotDays));
+        CompletableFuture<ProfileStore.Restored> tx = core.database().transaction(c -> store.restore(c, in, config()::profileSetting));
+        if (slotActive) {
+            tx.whenComplete((result, error) -> inFlight.remove(owner));
+        }
+        tx.copy().orTimeout(config().switchTimeoutSeconds, TimeUnit.SECONDS)
+                .whenCompleteAsync((result, error) -> finishRestore(staff, player, s, slotActive, name, actor, snap, result, error), main);
+    }
+
+    private void finishRestore(org.bukkit.command.CommandSender staff, Player player, Session s, boolean slotActive, String name, Actor actor,
+                               ProfileStore.Snapshot snap, ProfileStore.Restored result, Throwable error) {
+        UUID owner = snap.owner();
+        try {
+            if (error != null) {
+                Throwable cause = Database.cause(error);
+                if (cause instanceof TimeoutException) {
+                    core.plugin().getLogger().severe("Profiles: restore of snapshot " + snap.id() + " timed out; player kicked to keep the items safe.");
+                    if (slotActive && player.isOnline()) {
+                        player.kick(module.msg.component(player, "login.switch-timeout"));
+                    }
+                    module.msg.send(staff, "error");
+                    return;
+                }
+                if (cause instanceof ProfileStore.Refused refused) {
+                    module.msg.send(staff, "restore.refused." + switch (refused.key) {
+                        case "restored" -> "restored";
+                        case "expired" -> "expired";
+                        case "live" -> "live";
+                        default -> "gone";
+                    }, Msg.number("snapshot", snap.id()), Msg.p("player", name));
+                    return;
+                }
+                core.plugin().getLogger().log(Level.SEVERE, "Profiles: restore of snapshot " + snap.id() + " failed", cause);
+                module.msg.send(staff, "error");
+                return;
+            }
+            Profile restored = result.restored();
+            Profile replaced = result.replaced();
+            remember(restored.id(), owner, false);
+            if (replaced != null) {
+                remember(replaced.id(), owner, true);
+            }
+            Session live = sessions.get(owner);
+            if (live != null) {
+                List<Profile> list = new ArrayList<>(live.profiles.stream()
+                        .filter(p -> replaced == null || !p.id().equals(replaced.id())).toList());
+                list.add(restored);
+                list.sort(java.util.Comparator.comparingInt(Profile::slot).thenComparingLong(Profile::createdAt));
+                live.profiles = List.copyOf(list);
+            }
+            boolean switched = false;
+            if (result.becameActive() && player != null && player.isOnline() && live == s && result.apply() != null) {
+                try {
+                    StateCodec.apply(player, result.apply());
+                } catch (RuntimeException e) {
+                    core.plugin().getLogger().log(Level.SEVERE, "Profiles: loading restored profile " + restored.id() + " failed", e);
+                    player.kick(module.msg.component(player, "login.switch-timeout"));
+                    return;
+                }
+                long now = System.currentTimeMillis();
+                s.active = restored.id();
+                s.checkpoint = now;
+                core.players().get(owner).ifPresent(d -> swapSettings(d, result.settings()));
+                net.skybornmc.skyblock.common.player.PlayerSaves.save(player, "a profile restore");
+                UUID restoredId = restored.id();
+                core.database().run(c -> store.consumeState(c, owner, restoredId)).exceptionally(e -> {
+                    core.plugin().getLogger().log(Level.SEVERE, "Profiles: could not clear the applied state of " + player.getName(), Database.cause(e));
+                    return null;
+                });
+                s.switching = false;
+                switched = true;
+                Bukkit.getPluginManager().callEvent(new ProfileSwitchedEvent(player, replaced, restored));
+                teleportToProfile(player, restoredId);
+            }
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("snapshot", snap.id());
+            details.put("profile", restored.id().toString());
+            details.put("slot", restored.slot());
+            details.put("wipe_reason", snap.reason());
+            details.put("replaced", replaced == null ? "-" : replaced.id().toString());
+            details.put("replaced_snapshot", result.replacedSnapshotId());
+            details.put("active", result.becameActive());
+            details.put("online", switched);
+            core.audit().logPlayer(AuditCategory.AUTH, "profile_restore", actor, owner, name, snap.money(), null, details);
+            Bukkit.getPluginManager().callEvent(new ProfileRestoredEvent(restored, replaced,
+                    WipeReason.byKey(snap.reason()).orElse(WipeReason.STAFF), snap.islandId(), actor, snap.id()));
+            module.msg.send(staff, "restore.done", Msg.p("player", name), Msg.number("slot", restored.slot()), Msg.number("snapshot", snap.id()),
+                    Msg.p("profile", name(restored)), Msg.number("replaced", result.replacedSnapshotId()));
+            if (snap.islandId() != null) {
+                module.msg.send(staff, "restore.island-hint", Msg.p("player", name),
+                        Msg.p("island", snap.islandName() == null ? "?" : snap.islandName()));
+            }
+            if (player != null && player.isOnline()) {
+                module.msg.send(player, "restore.you", Msg.p("profile", name(restored)), Msg.number("slot", restored.slot()));
+                core.sounds().play(player, "success");
+            }
+        } finally {
+            if (slotActive && s != null && player != null && player.isOnline()) {
+                s.switching = false;
+            }
+        }
     }
 
     private void updateProfiles(UUID owner, List<Profile> live) {

@@ -188,4 +188,60 @@ staff:
     self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't reset your own profile. Ask another admin or use the console."
     no-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no profile in slot <c:value><slot></c:value><c:text>. See /profiles info <player>."
     team-leader: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>leads a team island. Give it to another member first (/isadmin setowner)."
-    done: "<prefix><c:success><sym:check></c:success> <c:text>Reset <c:value><player></c:value><c:text>'s profile <c:value><profile></c:value> <c:text>(slot <slot>). They start fresh on their next login."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Wiped <c:value><player></c:value><c:text>'s profile <c:value><profile></c:value> <c:text>(slot <slot>) into snapshot <c:value>#<snapshot></c:value><c:text>. Undo within <days> days: <c:value>/profiles restore <player> <slot> <snapshot>"
+    busy: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is switching profiles right now. Try again in a moment."
+
+# Owner 4 Nov 2026 (island = profile): leaving an island in any way wipes the profile. A snapshot is kept for
+# wipe.snapshot-days (profiles.yml) so staff can put it back.
+wipe:
+  # Chat summary right after the wipe (or on the next join when it happened while offline).
+  # <why> (from wipe.reason, may hold <island>), <money> <shards> <items> <days>
+  summary:
+    text:
+      - "<c:header><bold>| Profile wiped</bold></c:header> <c:muted>(<why>)"
+      - "<c:bar>|</c:bar> <c:text>Gone: <c:error><money></c:error> <c:text>money, <c:error><shards></c:error> <c:text>shards, <c:error><items></c:error> <c:text>items,"
+      - "<c:bar>|</c:bar> <c:text>all tools, skills, quests, collection and milestones."
+      - "<c:bar>|</c:bar> <c:text>Kept: <c:success>credits, rank, achievements and cosmetics</c:success><c:text>."
+      - "<c:bar>|</c:bar> <c:text>Start again: <click:run_command:'/start'><hover:show_text:'<c:text>New island, farm and mine'><c:action>[Start]</c:action></hover></click> <c:muted>or accept an island invite.</c:muted>"
+      - "<c:bar>|</c:bar> <c:muted>A mistake? Staff can restore it for <days> days.</c:muted>"
+    no-island: "your island"
+    unknown: "?"
+  # Why the profile was wiped (in the summary). <island>
+  reason:
+    leave: "you left <island>"
+    kick: "you were kicked from <island>"
+    removed: "staff removed you from <island>"
+    disband: "<island> was disbanded"
+    island_deleted: "staff deleted <island>"
+    island_reset: "staff reset <island>"
+    replace: "you replaced <island> to join another island"
+    staff: "staff reset this profile"
+    restore_replaced: "staff restored an older profile into this slot"
+
+# /profiles snapshots <player> (staff). <id> <slot> <reason> <island> <money> <items> <ago> <by> <status> <player>
+snapshots:
+  none: "<prefix><c:text><c:value><player></c:value> <c:text>has no wiped profiles."
+  header: "<c:header><bold>| Snapshots of <player></bold></c:header> <c:muted>(<count>, kept <days> days)"
+  line: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status>"
+  line-open: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status> <click:suggest_command:'/profiles restore <player> <slot> <id>'><hover:show_text:'<c:text>Put this profile back'><c:action>[Restore]</c:action></hover></click>"
+  # <time> = time left, <by> = who restored it
+  status:
+    open: "<c:success>open (<time> left)</c:success>"
+    restored: "<c:muted>restored by <by></c:muted>"
+    expired: "<c:muted>expired</c:muted>"
+    purged: "<c:muted>deleted</c:muted>"
+
+# /profiles restore <player> <slot> [snapshot] (staff). <player> <slot> <snapshot> <profile> <replaced> <island>
+restore:
+  none: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no open snapshot in slot <c:value><slot></c:value><c:text>. See /profiles snapshots <player>."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No snapshot <c:value>#<snapshot></c:value> <c:text>of <c:value><player></c:value><c:text>. See /profiles snapshots <player>."
+  other-slot: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>is for slot <c:value><slot></c:value><c:text>. Use /profiles restore <player> <slot> <snapshot>."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is switching or loading right now. Try again in a moment."
+  refused:
+    restored: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>was restored already."
+    expired: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>expired; it can't be restored any more."
+    live: "<prefix><c:error><sym:cross></c:error> <c:text>That profile is in use already."
+    gone: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>is gone. See /profiles snapshots <player>."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s <c:value><profile></c:value> <c:text>(slot <slot>, snapshot #<snapshot>). The profile that was there is snapshot <c:value>#<replaced></c:value> <c:muted>(0 = the slot was empty)</c:muted><c:text>."
+  island-hint: "<prefix><c:muted>Island membership doesn't come back by itself. If <player> was kicked from <island>, use</c:muted> <click:suggest_command:'/isadmin restore <player>'><hover:show_text:'<c:text>Open the kick backups'><c:action>[/isadmin restore]</c:action></hover></click>"
+  you: "<prefix><c:success><sym:check></c:success> <c:text>Staff restored your profile <c:value><profile></c:value> <c:text>(slot <slot>)."

@@ -7,3 +7,8 @@
 # Staff (feedback 31 Oct 2026): helpers see a player's profiles, admins can reset one (offline, confirm, audited).
 lp group helper permission set skyblock.profiles.admin.info true
 lp group admin permission set skyblock.profiles.admin.reset true
+
+# 4 Nov 2026 (island = profile): leaving an island wipes the profile into a 14-day snapshot. Moderators see the snapshots,
+# admins put one back (mistakes, griefing kicks).
+lp group mod permission set skyblock.profiles.admin.snapshots true
+lp group admin permission set skyblock.profiles.admin.restore true

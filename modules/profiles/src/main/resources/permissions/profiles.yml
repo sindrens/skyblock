@@ -14,5 +14,11 @@ skyblock.profiles.admin.info:
   description: Staff - /profiles info <player> lists a player's profiles (slot, name, active, playtime, island)
   default: op
 skyblock.profiles.admin.reset:
-  description: Staff - /profiles reset <player> [slot] replaces a profile with a fresh one (offline players, confirm, audited)
+  description: Staff - /profiles reset <player> [slot] wipes a profile into a snapshot and gives a fresh one (confirm, audited)
+  default: op
+skyblock.profiles.admin.snapshots:
+  description: Staff - /profiles snapshots <player> lists a player's wiped profiles (snapshots kept for wipe.snapshot-days)
+  default: op
+skyblock.profiles.admin.restore:
+  description: Staff - /profiles restore <player> <slot> [snapshot] puts a wiped profile back into its slot (confirm, audited)
   default: op

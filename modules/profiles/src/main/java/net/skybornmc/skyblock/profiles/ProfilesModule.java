@@ -30,6 +30,8 @@ public final class ProfilesModule implements SkyblockModule {
     static final String PERM_USE = "skyblock.profiles.use";
     static final String PERM_INFO = "skyblock.profiles.admin.info";
     static final String PERM_RESET = "skyblock.profiles.admin.reset";
+    static final String PERM_SNAPSHOTS = "skyblock.profiles.admin.snapshots";
+    static final String PERM_RESTORE = "skyblock.profiles.admin.restore";
 
     final Core core;
     final ModuleMessages msg;
@@ -75,14 +77,89 @@ public final class ProfilesModule implements SkyblockModule {
                         .permission(PERM_INFO).arg(net.skybornmc.skyblock.common.command.Args.offlinePlayer("player"))
                         .example("profiles info Steve")
                         .executes(ctx -> service.staffInfo(ctx.sender(), ctx.get(net.skybornmc.skyblock.common.command.Args.offlinePlayer("player")))))
-                .sub(resetSpec()));
+                .sub(resetSpec())
+                .sub(snapshotsSpec())
+                .sub(restoreSpec()));
+    }
+
+    /** {@code /profiles snapshots <player>} (staff): the wiped profiles of a player that can still be restored. */
+    private CommandSpec snapshotsSpec() {
+        var player = net.skybornmc.skyblock.common.command.Args.offlinePlayer("player");
+        return CommandSpec.sub("snapshots").description("Staff: a player's wiped profiles (snapshots kept for wipe.snapshot-days)")
+                .permission(PERM_SNAPSHOTS).arg(player)
+                .example("profiles snapshots Steve")
+                .executes(ctx -> service.staffSnapshots(ctx.sender(), ctx.get(player)));
+    }
+
+    /**
+     * {@code /profiles restore <player> <slot> [snapshot]} (staff, confirm): puts a wiped profile back into its slot (default
+     * the newest open snapshot of that slot). The snapshot id suggestions are that player's open snapshots of that slot.
+     */
+    private CommandSpec restoreSpec() {
+        var player = net.skybornmc.skyblock.common.command.Args.offlinePlayer("player");
+        var slot = net.skybornmc.skyblock.common.command.Args.integer("slot", 1, 3, "1", "2", "3");
+        var snapshot = net.skybornmc.skyblock.common.command.Arg.<Integer>word("snapshot", (sender, raw) -> {
+            try {
+                int id = Integer.parseInt(raw.strip());
+                if (id >= 1) {
+                    return id;
+                }
+            } catch (NumberFormatException ignored) {
+                // falls through to the error
+            }
+            throw net.skybornmc.skyblock.common.command.CommandFailure.of("invalid-number", net.skybornmc.skyblock.common.text.Msg.p("input", raw),
+                    net.skybornmc.skyblock.common.text.Msg.p("min", 1), net.skybornmc.skyblock.common.text.Msg.p("max", Integer.MAX_VALUE));
+        }, this::suggestSnapshots);
+        return CommandSpec.sub("restore").description("Staff: put a wiped profile back into its slot (confirm; the current one is kept as a snapshot)")
+                .permission(PERM_RESTORE).arg(player).arg(slot).optional(snapshot).confirm(10)
+                .example("profiles restore Steve 1")
+                .executes(ctx -> service.staffRestore(ctx.sender(), ctx.get(player), ctx.get(slot), ctx.getOr(snapshot, null)));
+    }
+
+    /** Tab completion of the snapshot id: the open snapshots of the typed player (and slot), from the database. */
+    private java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestSnapshots(
+            com.mojang.brigadier.context.CommandContext<io.papermc.paper.command.brigadier.CommandSourceStack> ctx,
+            com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
+        String name = argument(ctx, "player");
+        org.bukkit.OfflinePlayer target = name == null ? null : org.bukkit.Bukkit.getOfflinePlayerIfCached(name);
+        if (target == null || service == null) {
+            builder.suggest("<snapshot>");
+            return builder.buildFuture();
+        }
+        Integer slot = null;
+        try {
+            String raw = argument(ctx, "slot");
+            slot = raw == null ? null : Integer.parseInt(raw.strip());
+        } catch (NumberFormatException ignored) {
+            // any slot
+        }
+        String typed = builder.getRemaining();
+        return service.openSnapshotIds(target.getUniqueId(), slot).handle((ids, error) -> {
+            if (ids != null) {
+                for (String id : ids) {
+                    if (id.startsWith(typed)) {
+                        builder.suggest(id);
+                    }
+                }
+            }
+            return builder.build();
+        });
+    }
+
+    private static String argument(com.mojang.brigadier.context.CommandContext<io.papermc.paper.command.brigadier.CommandSourceStack> ctx,
+                                   String name) {
+        try {
+            return ctx.getArgument(name, String.class);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /** {@code /profiles reset <player> [slot]} (staff, confirm): a fresh profile in that slot (default: the active one). */
     private CommandSpec resetSpec() {
         var player = net.skybornmc.skyblock.common.command.Args.offlinePlayer("player");
         var slot = net.skybornmc.skyblock.common.command.Args.integer("slot", 1, 3, "1", "2", "3");
-        return CommandSpec.sub("reset").description("Staff: replace a player's profile with a fresh one (offline players; confirm)")
+        return CommandSpec.sub("reset").description("Staff: wipe a player's profile into a snapshot and give them a fresh one (confirm)")
                 .permission(PERM_RESET).arg(player).optional(slot).confirm(10)
                 .example("profiles reset Steve 1")
                 .executes(ctx -> service.staffReset(ctx.sender(), ctx.get(player), ctx.getOr(slot, null)));

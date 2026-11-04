@@ -61,6 +61,32 @@ public final class ProfilesConfig extends ModuleConfig {
             + "Everything else (vanish, equipped titles/tags, staff homes) is shared by the account.")
     public List<String> profileSettingKeys = List.of("setting.", "scoreboard", "menu-item");
 
+    @Setting(path = "wipe.snapshot-days", desc = "Owner 4 Nov 2026 (island = profile): leaving an island wipes the profile. Days the "
+            + "wiped profile is kept as a snapshot that staff can put back with /profiles restore. After that every module deletes it.",
+            min = 1, max = 365, level = Setting.Level.OWNER)
+    public int snapshotDays = 14;
+
+    @Setting(path = "wipe.purge-interval-minutes", desc = "How often expired snapshots are deleted (in the background).", min = 1, max = 1440)
+    public int purgeIntervalMinutes = 30;
+
+    @Setting(path = "wipe.purge-batch", desc = "Expired snapshots deleted per run at most (the rest waits for the next run).", min = 1, max = 1000)
+    public int purgeBatch = 50;
+
+    @Setting(path = "wipe.intent-sweep-seconds", desc = "Crash safety: how often a wipe that was interrupted (server stop between the "
+            + "island removal and the wipe) is finished.", min = 30, max = 3600)
+    public int intentSweepSeconds = 120;
+
+    @Setting(path = "wipe.intent-grace-seconds", desc = "An interrupted wipe counts as interrupted after this many seconds (a normal "
+            + "removal and wipe take less than a second).", min = 10, max = 3600)
+    public int intentGraceSeconds = 60;
+
+    @Setting(path = "wipe.busy-retries", desc = "A wipe of a player who is switching profiles right now is tried again every 2 seconds, "
+            + "this many times; after that the crash sweep finishes it.", min = 1, max = 120)
+    public int wipeBusyRetries = 15;
+
+    @Setting(path = "wipe.list-limit", desc = "Snapshots shown by /profiles snapshots <player> (newest first).", min = 1, max = 100)
+    public int snapshotListLimit = 15;
+
     @Override
     public String fileName() {
         return "profiles.yml";
