@@ -469,7 +469,7 @@
 - M2.2: a player inside an island border can't walk/fly/be pushed out of it (also with /fly; creative/spectator and bypass excepted); they leave by /spawn, /is home etc. OK? (default: yes, `protection.keep-players-inside`)
 - M2.2: falling blocks (sand, gravel, anvils) that would land outside their own island's border disappear instead of dropping an item (prevents gravity dupes at the border). OK? (default: yes)
 - M2.1 Who may move the island home with `/is sethome`? (default: leader only until M2.3 makes it a role permission)
-- M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)
+- ~~M2.1 Players still join at spawn (`essentials.yml` `join.teleport-to-spawn: true`). Join at your island instead once islands exist? (default: keep spawn)~~ **Answered (owner 4 Nov 2026):** returning players join on their island home (`essentials.yml → join.location: island`; `last` / `spawn` also possible); new players start at spawn and the start flow brings them to their new island.
 - M2.1 Staff build bypass on islands is permission-only (`skyblock.island.bypass`, admins) until M2.2 adds the logged `/is bypass` toggle. OK? (default: yes)
 - ~~M2.1 Scoreboard shows "Lv -" for island level until Phase 5 and no island position (`island_rank` empty). OK? (default: yes)~~ Decided (round 1, answer 275): the Level line (and its empty "| Island" header) is hidden until island levels exist.
 - ~~Economy (M3.1): `/eco give|take|set|reset` is owner-only; should admins get it too?~~ Decided (#47): owner + admin via `skyblock.admin.economy` (R2B).

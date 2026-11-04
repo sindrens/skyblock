@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.essentials;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.pack.PackWait;
@@ -24,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * M1.1 join flow: spawn on join, first-join welcome (title, sound, clickable chat, server-wide broadcast with the
+ * M1.1 join flow: the join location ({@code join.location}: island home by default, owner 4 Nov 2026; new players at
+ * spawn), first-join welcome (title, sound, clickable chat, server-wide broadcast with the
  * unique join number), welcome-back title, join/quit messages only for players with the join-message permission
  * (ranks + staff, owner decision), respawn at spawn.
  *
@@ -74,8 +77,11 @@ final class JoinFlow implements Listener {
         Player player = event.getPlayer();
         boolean first = core.players().get(player.getUniqueId()).map(PlayerData::isNew).orElse(!player.hasPlayedBefore());
 
-        if (first || config.joinTeleportToSpawn) {
-            spawn().ifPresent(loc -> player.teleportAsync(loc));
+        switch (JoinRules.where(config.joinLocation, first)) {
+            case SPAWN -> spawn().ifPresent(player::teleportAsync);
+            case ISLAND -> core.scheduler().later("essentials:join-island", config.joinIslandDelayTicks, () -> toIsland(player));
+            case LAST -> {
+            }
         }
 
         if (first) {
@@ -93,6 +99,31 @@ final class JoinFlow implements Listener {
                     msg.title(player, "join.welcome-back", Msg.p("player", player.getName()));
                 }
             }), 10L);
+        }
+    }
+
+    /**
+     * Owner 4 Nov 2026: a returning player appears on their island (the instant, safe home teleport of the island
+     * portal); without an island (or while a profile switch runs) they go to spawn, where the start flow takes over.
+     * Someone already standing on their own island stays where they are.
+     */
+    private void toIsland(Player player) {
+        if (!player.isOnline()) {
+            return;
+        }
+        Optional<IslandService> islands = core.services().optional(IslandService.class);
+        boolean switching = ProfileService.of(core.services()).isSwitching(player.getUniqueId());
+        Optional<IslandService.IslandInfo> own = islands.flatMap(i -> i.islandOf(player.getUniqueId()));
+        if (switching) {
+            return; // the profile switch places the player itself
+        }
+        if (islands.isEmpty() || own.isEmpty()) {
+            spawn().ifPresent(player::teleportAsync);
+            return;
+        }
+        boolean onIt = islands.get().islandAt(player.getLocation()).map(i -> i.id().equals(own.get().id())).orElse(false);
+        if (!onIt) {
+            islands.get().enterFromPortal(player, arrived -> { });
         }
     }
 

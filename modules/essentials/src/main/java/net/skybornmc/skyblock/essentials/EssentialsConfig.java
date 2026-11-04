@@ -117,8 +117,14 @@ public final class EssentialsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ M1.1 join flow
 
-    @Setting(path = "join.teleport-to-spawn", desc = "Teleport every player to spawn when they join (until islands exist).")
-    public boolean joinTeleportToSpawn = true;
+    @Setting(path = "join.location", desc = "Where a returning player appears when they join (owner 4 Nov 2026): island = "
+            + "their island home (safe spot; spawn when they have no island), last = where they logged out, spawn = spawn. "
+            + "New players always start at spawn (the start flow then brings them to their new island).")
+    public String joinLocation = JoinRules.ISLAND;
+
+    @Setting(path = "join.island-delay-ticks", desc = "Ticks after joining before the island teleport (join.location: island), "
+            + "so the profile and island data are loaded (20 = 1 second).", min = 1, max = 200)
+    public int joinIslandDelayTicks = 10;
 
     @Setting(path = "join.privacy-delay-seconds", desc = "Seconds after the first join before the privacy line (chat and commands "
             + "are logged) is sent, so it is not on the first screen next to the welcome.", min = 1, max = 600)
@@ -207,7 +213,8 @@ public final class EssentialsConfig extends ModuleConfig {
     /** Dead-key rule (REVIEW3 §6): the menu item moved to menus.yml (menu-item.*); the old essentials keys are deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now");
+        return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now",
+                "join.teleport-to-spawn", "replaced by join.location (island, last or spawn; owner 4 Nov 2026)");
     }
 
     @Override
