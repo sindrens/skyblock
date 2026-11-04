@@ -7,17 +7,26 @@ item:
   name:
     hoe: "Harvester Hoe"
     pickaxe: "Island Pickaxe"
+  # One short line (owner mockup).
   description:
-    hoe: "Your island's hoe. Levels up as anyone on your island farms."
-    pickaxe: "Your island's pickaxe. Levels up as anyone on your island mines."
-  # {tool} {stars}
-  plain-name: "<c:value>{tool}"
-  star-name: "<c:value>{tool} <c:flame>{stars}"
+    hoe: "Levels up as your island farms."
+    pickaxe: "Levels up as your island mines."
+  # Bold in the rarity colour (the stars after it). {tool} {stars} {rarity}
+  plain-name: "<rarity:{rarity}>{tool}"
+  star-name: "<rarity:{rarity}>{tool} <c:flame>{stars}"
+  # {stars}
+  subtitle: "<c:muted>Tool · Diamond"
+  subtitle-prestige: "<c:muted>Tool · Prestige <c:flame>{stars}"
   loading: "<c:muted>Loading your island's tool..."
+  stat:
+    speed: "Speed"
   perks-header: "Perks"
+  # The next perk still to unlock. {perk} {level}
+  perk-locked: "<c:locked>{perk} · Locked · Lv {level}"
   # Feedback 4 Nov 2026 (B7): right-click in the air (no sneak); Bedrock players type /tool.
-  action-input: "Right-click air"
-  action: "perks"
+  hint: "Right-click the air (or /tool)"
+  action-input: "CLICK"
+  action: "to open the menu"
 
 # Short words after a perk's value in the menus ("+1.2% shards").
 effect:
@@ -45,7 +54,6 @@ tool:
 hoe:
   not-ripe: "<c:muted>Not ripe yet. The hoe only harvests fully grown crops."
   burst: "<bold><grad:flame>GROWTH BURST!</grad></bold> <c:text>The crop is ripe again at once."
-  storage-full: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your hoe storage is full. Empty it in <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
 
 # Owner 4 Nov 2026: one clear message for every reason a purchase can't happen.
 buy:
@@ -237,12 +245,15 @@ menu:
     - "<c:muted>Right-click: x100 (<cost100><c:muted>)"
   perk-buy:
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy a level"
+  # <tool> <used> <cap> <bar>
   storage:
-    name: "<bold><area:reward>Hoe storage"
+    name: "<bold><area:reward>Storage"
     lore:
-      - "<c:muted>Crops your hoe harvests land here."
+      - "<c:muted>Loot when your bag is full."
       - ""
+      - "<bold><c:header>| Storage</c:header></bold>"
       - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><used></c:value><c:muted>/<cap>"
+      - "<c:bar>| </c:bar><bar>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
@@ -255,34 +266,46 @@ upgrade:
   haste: {name: "Haste", icon: golden_pickaxe, lore: ["<c:muted>Haste while you hold it."]}
   wisdom: {name: "Wisdom", icon: experience_bottle, lore: ["<c:muted>The tool levels up faster."]}
   growth: {name: "Growth", icon: bone_meal, lore: ["<c:muted>Crops on your island grow faster."]}
-  storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the hoe storage."]}
+  storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the tool's storage."]}
   auto_sell: {name: "Auto-Sell", icon: hopper, lore: ["<c:muted>Sells the drops as you break them."]}
-  sell_bonus: {name: "Sell Bonus", icon: gold_ingot, lore: ["<c:muted>More money from Auto-Sell and", "<c:muted>the hoe storage."]}
+  sell_bonus: {name: "Sell Bonus", icon: gold_ingot, lore: ["<c:muted>More money from Auto-Sell and", "<c:muted>the tool's storage."]}
   lucky: {name: "Lucky", icon: rabbit_foot, lore: ["<c:muted>A chance to find a Shard Pouch."]}
   sweep: {name: "Sweep", icon: wheat, lore: ["<c:muted>A chance to harvest nearby ripe", "<c:muted>crops too. Better every prestige."]}
   smelter: {name: "Smelter", icon: furnace, lore: ["<c:muted>A chance to smelt what you mine."]}
   vein: {name: "Vein", icon: raw_iron, lore: ["<c:muted>A chance to mine nearby ores of", "<c:muted>the same kind. Better every prestige."]}
 
 storage:
-  crumb: "Hoe storage"
+  crumb: "Storage"
   info:
-    - "<c:text>Crops your island hoe harvested."
-    - "<c:muted>Take a stack or sell everything."
+    - "<c:text>Loot that did not fit in your bag."
+    - "<c:muted>Take it out or sell everything."
+  # <tool> <used> <cap> <bar>
   head:
-    name: "<bold><area:reward>Hoe storage"
+    name: "<bold><area:reward><tool> storage"
     lore:
       - "<c:muted>More room: the Storage perk."
       - ""
+      - "<bold><c:header>| Storage</c:header></bold>"
       - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><used></c:value><c:muted>/<cap>"
+      - "<c:bar>| </c:bar><bar>"
   empty:
-    name: "<c:muted>Empty"
-    lore:
-      - "<c:muted>Harvest ripe crops with your hoe."
-  item-name: "<c:value><item>"
+    hoe:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Crops land here when your bag is full."
+    pickaxe:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Ores land here when your bag is full."
+  item-name: "<bold><c:value><item>"
   item-lore:
     - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><amount>"
     - ""
+    - "<c:muted>Shift-click: as much as fits"
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take a stack"
+  # Action bar: bag and storage are full (at /farm and /mine the rest is lost, never dropped).
+  full: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Empty it in the tool menu or /sell."
+  inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your bag is full. Make room first."
   sell:
     name: "<bold><area:money>Sell all"
     lore:

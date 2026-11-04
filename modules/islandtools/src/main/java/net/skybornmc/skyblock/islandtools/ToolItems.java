@@ -46,29 +46,12 @@ final class ToolItems {
                             ToolStore.Prog prog = m.prog(islandOf(stack), kind);
                             String stars = prog == null ? "" : ToolRules.stars(prog.prestige(), m.config().maxStars);
                             return m.raw(stars.isEmpty() ? "item.plain-name" : "item.star-name").replace("{tool}", m.raw("item.name." + kind.id()))
-                                    .replace("{stars}", stars);
+                                    .replace("{stars}", stars).replace("{rarity}", rarity(stack, def).id());
                         }
 
                         @Override
                         public void lore(ItemStack stack, ItemDefinition def, LoreBuilder lore) {
-                            ToolStore.Prog prog = m.prog(islandOf(stack), kind);
-                            if (prog == null) {
-                                lore.line(m.raw("item.loading"));
-                            } else {
-                                ToolRules.Level lv = m.level(prog);
-                                lore.level(lv.level(), lv.progress());
-                                LoreBuilder.Section perks = lore.section(m.raw("item.perks-header"));
-                                int shown = 0;
-                                for (Upgrades.Def u : m.upgrades().of(kind)) {
-                                    int n = prog.level(u.id());
-                                    if (n > 0 && shown < 6) {
-                                        perks.rowMini(m.raw("upgrade." + u.id() + ".name"), m.levelText(u, n));
-                                        shown++;
-                                    }
-                                }
-                                perks.done();
-                            }
-                            lore.action(m.raw("item.action-input"), m.raw("item.action"));
+                            renderLore(kind, m.prog(islandOf(stack), kind), lore);
                         }
 
                         @Override
@@ -79,6 +62,60 @@ final class ToolItems {
                     })
                     .build());
         }
+    }
+
+    /**
+     * Owner 4 Nov 2026 mockup: bold name in the rarity colour (stars after it), muted subtitle "Tool · Prestige ★★",
+     * one short description, the level line, "| Stats", "| Perks" (bought perks and the next locked one), the action
+     * line and the rarity footer (added by the item registry).
+     */
+    void renderLore(Kind kind, ToolStore.Prog prog, LoreBuilder lore) {
+        if (prog == null) {
+            lore.subtitle(m.raw("item.subtitle"));
+            lore.line(m.raw("item.loading"));
+            lore.action(m.raw("item.action-input"), m.raw("item.action"));
+            return;
+        }
+        String stars = ToolRules.stars(prog.prestige(), m.config().maxStars);
+        lore.subtitle(stars.isEmpty() ? m.raw("item.subtitle") : m.raw("item.subtitle-prestige").replace("{stars}", stars));
+        ToolRules.Level lv = m.level(prog);
+        lore.level(lv.level(), lv.progress());
+        IslandToolsConfig c = m.config();
+        if (kind == Kind.HOE && c.speedLevel > 0) {
+            int speed = c.speedLevel + (c.swiftnessPrestige > 0 && prog.prestige() >= c.swiftnessPrestige ? 1 : 0);
+            lore.stat("", m.raw("item.stat.speed"), IslandToolsModule.roman(speed));
+        }
+        for (Upgrades.Def u : m.upgrades().of(kind)) {
+            int n = prog.level(u.id());
+            switch (u.effect()) {
+                case ENCHANT -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), n == 0 ? "-" : IslandToolsModule.roman(n));
+                case SHARDS -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), "+" + ToolMenu.pct(n * c.shardFinderPerLevel));
+                case DROPS -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), "+" + ToolMenu.pct(n * c.dropsPerLevel));
+                default -> { }
+            }
+        }
+        LoreBuilder.Section perks = lore.section(m.raw("item.perks-header"));
+        int shown = 0;
+        Upgrades.Def nextLocked = null;
+        for (Upgrades.Def u : m.upgrades().of(kind)) {
+            if (u.effect() == Upgrades.Effect.ENCHANT || u.effect() == Upgrades.Effect.SHARDS || u.effect() == Upgrades.Effect.DROPS) {
+                continue; // already under Stats
+            }
+            int n = prog.level(u.id());
+            if (n > 0 && shown < 5) {
+                perks.rowMini(m.raw("upgrade." + u.id() + ".name"), m.levelText(u, n));
+                shown++;
+            } else if (n == 0 && lv.level() < u.unlock() && (nextLocked == null || u.unlock() < nextLocked.unlock())) {
+                nextLocked = u;
+            }
+        }
+        if (nextLocked != null) {
+            perks.text(m.raw("item.perk-locked").replace("{perk}", m.raw("upgrade." + nextLocked.id() + ".name"))
+                    .replace("{level}", String.valueOf(nextLocked.unlock())));
+        }
+        perks.done();
+        lore.hint(m.raw("item.hint"));
+        lore.action(m.raw("item.action-input"), m.raw("item.action"));
     }
 
     void unregister() {

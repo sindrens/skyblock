@@ -19,20 +19,21 @@ import java.util.UUID;
 /**
  * One island tool (owner 4 Nov 2026: vanilla items, no glass, spacious, contiguous groups, mockup lore):
  * <pre>
- *  . . G . T . P . .      2 get your handle (only without one), 4 the tool (level, XP, prestige), 6 prestige
+ *  . . . S T P . . .      3 the tool's storage, 4 the tool (level, XP, prestige), 5 prestige
  *  . . E E E E . . .      row 1: enchant-like perks and one-time unlocks, centred
  *  . . . . . . . . .
  *  . L L L L L L . .      rows 3-4: the long tracks, centred
  *  . . L L L L L . .
- *  nav bar
+ *  nav bar                47 get your handle (only without one)
  * </pre>
  * Plain click buys 1 level, shift-click 10, right-click 100 (Java), at the summed price.
  */
 final class ToolMenu extends Menu {
 
-    static final int SLOT_HANDLE = 2;
+    static final int SLOT_STORAGE = 3;
     static final int SLOT_TOOL = 4;
-    static final int SLOT_PRESTIGE = 6;
+    static final int SLOT_PRESTIGE = 5;
+    static final int SLOT_HANDLE = 47;
 
     private final IslandToolsModule m;
     private final Kind kind;
@@ -99,6 +100,11 @@ final class ToolMenu extends Menu {
         set(SLOT_TOOL, service.item(m.items().create(kind, island, m.profile(viewer)),
                 m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), info));
         set(SLOT_PRESTIGE, prestigeButton(prog, lv), click -> prestige(click.player()));
+        long used = m.storage().used(m.profile(viewer), kind);
+        long cap = m.storage().capacity(viewer, kind);
+        set(SLOT_STORAGE, service.item(Material.BARREL, viewer, IslandToolsModule.ID, "menu.storage",
+                Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("used", Format.number(used)), Msg.p("cap", Format.number(cap)),
+                Msg.mm("bar", StorageMenu.bar(used, cap))), click -> openChild(new StorageMenu(m, kind)));
 
         List<Upgrades.Def> once = new ArrayList<>();
         List<Upgrades.Def> tracks = new ArrayList<>();

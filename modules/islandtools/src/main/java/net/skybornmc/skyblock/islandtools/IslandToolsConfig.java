@@ -99,6 +99,19 @@ public final class IslandToolsConfig extends ModuleConfig {
             "pickaxe:shard_finder:shards:1000:1:300+10", "pickaxe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
             "pickaxe:extra_drops:drops:500:5:400+12", "pickaxe:fortune:enchant=fortune:3:5:5000/25000/100000",
             "pickaxe:haste:haste:2:10:15000/75000", "pickaxe:wisdom:wisdom:100:10:500+25", "pickaxe:smelter:smelt:100:15:600+20",
+            "pickaxe:storage:storage:250:15:300+10", "pickaxe:auto_sell:autosell:1:25:50000", "pickaxe:sell_bonus:sell:500:30:800+20", "pickaxe:lucky:lucky:500:35:1000+25",
+            "pickaxe:vein:sweep:100:45:5000+150:1");
+
+    /** The v7 default (before the pickaxe storage, 4 Nov 2026 19:39). */
+    static final List<String> PERKS_V7 = List.of(
+            "hoe:shard_finder:shards:1000:1:300+10", "hoe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
+            "hoe:extra_drops:drops:500:5:400+12", "hoe:fortune:enchant=fortune:3:5:5000/25000/100000",
+            "hoe:haste:haste:2:10:15000/75000", "hoe:wisdom:wisdom:100:10:500+25", "hoe:growth:growth:250:15:600+20",
+            "hoe:storage:storage:250:15:300+10", "hoe:auto_sell:autosell:1:25:50000", "hoe:sell_bonus:sell:500:30:800+20",
+            "hoe:lucky:lucky:500:35:1000+25", "hoe:sweep:sweep:100:45:5000+150:1",
+            "pickaxe:shard_finder:shards:1000:1:300+10", "pickaxe:efficiency:enchant=efficiency:5:1:1500/4000/10000/25000/60000",
+            "pickaxe:extra_drops:drops:500:5:400+12", "pickaxe:fortune:enchant=fortune:3:5:5000/25000/100000",
+            "pickaxe:haste:haste:2:10:15000/75000", "pickaxe:wisdom:wisdom:100:10:500+25", "pickaxe:smelter:smelt:100:15:600+20",
             "pickaxe:auto_sell:autosell:1:25:50000", "pickaxe:sell_bonus:sell:500:30:800+20", "pickaxe:lucky:lucky:500:35:1000+25",
             "pickaxe:vein:sweep:100:45:5000+150:1");
 
@@ -146,10 +159,10 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "hoe.swiftness-prestige", desc = "'Swiftness': from this hoe prestige on the Speed is one level higher (0 = never).", min = 0, max = 100)
     public int swiftnessPrestige = 2;
 
-    @Setting(path = "hoe.storage-base", desc = "Hoe storage at Storage level 0 (items).", min = 1, max = 1_000_000)
+    @Setting(path = "hoe.storage-base", desc = "Hoe and pickaxe storage at Storage level 0 (items; loot lands there when the bag is full).", min = 1, max = 1_000_000)
     public long storageBase = 2000;
 
-    @Setting(path = "hoe.storage-per-level", desc = "More hoe storage per Storage level (items).", min = 0, max = 100_000)
+    @Setting(path = "hoe.storage-per-level", desc = "More storage per Storage level (items), hoe and pickaxe.", min = 0, max = 100_000)
     public long storagePerLevel = 200;
 
     @Setting(path = "island-boost.hoe-effect", desc = "Owner 4 Nov 2026: the island upgrade (upgrades.yml effect) whose value is percent more crops for "
@@ -233,7 +246,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 7;
+        return 8;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -247,7 +260,9 @@ public final class IslandToolsConfig extends ModuleConfig {
                         "shards.finder-per-level", ValueChange.of(0.5, d.shardFinderPerLevel),
                         "effects.drops-per-level", ValueChange.of(8.0, d.dropsPerLevel),
                         "effects.smelt-per-level", ValueChange.of(20.0, d.smeltPerLevel),
-                        "hoe.storage-base", ValueChange.of(256, d.storageBase)));
+                        "hoe.storage-base", ValueChange.of(256, d.storageBase)),
+                // v8 (owner 4 Nov 2026 19:39): the pickaxe got a storage too
+                8, Map.of("perks", ValueChange.of(PERKS_V7, d.perks)));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */

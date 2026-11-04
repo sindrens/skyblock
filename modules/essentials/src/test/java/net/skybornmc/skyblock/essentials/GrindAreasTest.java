@@ -17,20 +17,24 @@ class GrindAreasTest {
     }
 
     @Test
-    void oresAreStablePerPositionAndOnlyUnlockedOnesShow() {
-        int ores = 0;
-        for (int x = 0; x < 100; x++) {
-            for (int z = 0; z < 100; z++) {
-                Material a = GrindAreas.oreAt(x, 99, z, 0);
-                assertEquals(a, GrindAreas.oreAt(x, 99, z, 0), "same view every time");
-                assertTrue(a == Material.STONE || a == Material.COAL_ORE || a == Material.COPPER_ORE, "only tier 0 ores: " + a);
-                if (a != Material.STONE) {
-                    ores++;
-                }
-            }
-        }
-        assertTrue(ores > 1_000 && ores < 2_200, "about 15% ores at the start: " + ores);
-        assertEquals(Material.EMERALD_ORE, GrindAreas.oreTier(20_000).block());
+    void oneOreFillsTheMinePerTier() {
+        java.util.List<Long> none = java.util.List.of();
+        assertEquals(Material.COAL_ORE, GrindAreas.oreTier(0, none).block(), "owner 4 Nov 2026: tier 1 is all coal");
+        assertEquals(Material.COAL_ORE, GrindAreas.BASE_ORE);
+        assertEquals(Material.COPPER_ORE, GrindAreas.oreTier(400, none).block());
+        assertEquals(Material.EMERALD_ORE, GrindAreas.oreTier(1_000_000, none).block());
+        java.util.List<Long> custom = java.util.List.of(0L, 10L, -1L);
+        assertEquals(Material.COPPER_ORE, GrindAreas.oreTier(10, custom).block(), "thresholds from the config");
+        assertEquals(1_200, GrindAreas.unlockAt(2, custom), "a broken entry keeps the built-in threshold");
+        assertEquals(0, GrindAreas.unlockAt(0, custom));
+        assertEquals(java.util.List.of(Material.COAL_ORE, Material.COPPER_ORE, Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE,
+                Material.LAPIS_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE), GrindAreas.ORE_TIERS.stream().map(GrindAreas.Ore::block).toList());
+        assertEquals(120, GrindAreas.tierAmount(java.util.List.of(40, 70, 120), 2, 5));
+        assertEquals(5, GrindAreas.tierAmount(java.util.List.of(40), 3, 5), "missing tier: the fallback");
+        assertEquals(5, GrindAreas.tierAmount(java.util.List.of("x"), 0, 5));
+        EssentialsConfig c = new EssentialsConfig();
+        assertTrue(c.grindBonusChance > 0 && c.grindBonusChance < 20, "the money bonus is rare");
+        assertTrue(c.grindMineBonus.getLast() > c.grindMineBonus.getFirst() * 10, "and grows with the tier");
     }
 
     @Test

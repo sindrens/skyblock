@@ -119,7 +119,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
-            stoneMine(); // the real mine is stone; ores are per player (an older build had real random ores)
+            fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
             core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
             // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
             core.scheduler().repeat("essentials:grind-view", 200L, 200L, () -> {
@@ -193,13 +193,14 @@ final class GrindAreas extends CommandGroup implements Listener {
         core.plugin().getLogger().info("Essentials: built the farm, mine and dungeon in " + world.getName());
     }
 
-    private void stoneMine() {
+    /** Owner 4 Nov 2026: every block of the pit is the first ore (coal); an older build had stone and random ores. */
+    private void fillMine() {
         for (int x = -MINE_HALF; x <= MINE_HALF; x++) {
             for (int z = -MINE_HALF; z <= MINE_HALF; z++) {
                 for (int d = 0; d < MINE_DEPTH; d++) {
                     Block b = world.getBlockAt(MINE_X + x, base - d, z);
-                    if (b.getType() != Material.STONE) {
-                        b.setType(Material.STONE, false);
+                    if (b.getType() != BASE_ORE) {
+                        b.setType(BASE_ORE, false);
                     }
                 }
             }
@@ -237,7 +238,7 @@ final class GrindAreas extends CommandGroup implements Listener {
             Crop before = cropFor(farmed - 1);
             Crop crop = cropFor(farmed);
             p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
-            addBonus(p, crop.bonus());
+            rollBonus(p, farmBonus(CROPS.indexOf(before)));
             Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FARM, crop.block(), crop.item(), 1, b.getLocation()));
             // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
             if (crop != before) {
@@ -265,32 +266,29 @@ final class GrindAreas extends CommandGroup implements Listener {
         }
         if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() != Material.BEDROCK) {
             Player p = event.getPlayer();
-            Ore before = oreTier(mined(p));
+            List<Long> unlocks = mineUnlocks();
+            Ore before = oreTier(mined(p), unlocks);
             long mined = mined(p) + 1;
             p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
-            Ore tier = oreTier(mined);
-            Ore seen = oreOf(oreAt(b.getX(), b.getY(), b.getZ(), mined - 1));
-            if (seen != null) {
-                addBonus(p, seen.bonus());
-            }
-            Bukkit.getPluginManager().callEvent(seen != null
-                    ? new GrindBreakEvent(p, GrindBreakEvent.MINE, seen.block(), seen.drop(), seen.amount(), b.getLocation())
-                    : new GrindBreakEvent(p, GrindBreakEvent.MINE, Material.STONE, Material.COBBLESTONE, 1, b.getLocation()));
+            Ore tier = oreTier(mined, unlocks);
+            rollBonus(p, mineBonus(ORE_TIERS.indexOf(before)));
+            Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.MINE, before.block(), before.drop(), before.amount(),
+                    b.getLocation()));
             if (tier != before) {
-                msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.drop())));
+                msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.block())));
                 core.sounds().play(p, "unlock");
-                sendMine(p);
+                core.scheduler().later("essentials:grind-view", 1L, () -> sendMine(p));
             } else if (mined % 50 == 0) {
-                Ore next = ORE_TIERS.stream().filter(o -> o.unlockAt() > mined).findFirst().orElse(null);
-                if (next != null) {
+                int next = ORE_TIERS.indexOf(tier) + 1;
+                if (next < ORE_TIERS.size()) {
                     msg.actionBar(p, "grind.progress-ore", net.skybornmc.skyblock.common.text.Msg.number("have", mined),
-                            net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
-                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(next.drop())));
+                            net.skybornmc.skyblock.common.text.Msg.number("need", unlockAt(next, unlocks)),
+                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(ORE_TIERS.get(next).block())));
                 }
             }
             core.scheduler().later("essentials:grind-regen", config.grindMineRegenSeconds * 20L, () -> {
                 if (b.getType().isAir()) {
-                    b.setType(Material.STONE, false);
+                    b.setType(BASE_ORE, false);
                     showLater(b);
                 }
             });
@@ -301,20 +299,24 @@ final class GrindAreas extends CommandGroup implements Listener {
 
     // ------------------------------------------------------------------ mine: ores per player
 
-    /** One ore: the block a player sees, what it drops, mined blocks in total to unlock it, share per 1,000 blocks. */
-    record Ore(Material block, Material drop, int amount, long unlockAt, int perMille, long bonus) {
+    /** One ore tier: the block the whole mine shows, what it drops, mined blocks to unlock it (default), money bonus (default). */
+    record Ore(Material block, Material drop, int amount, long unlockAt, long bonus) {
     }
 
-    /** Feedback 3 Nov 2026: the same as the farm, for ores. Real blocks are stone; each player sees their unlocked ores. */
+    /**
+     * Owner 4 Nov 2026: one ore fills the whole mine per tier, like the farm's crops: all coal at the start, then copper,
+     * iron ... emerald. The real blocks are coal ore; a higher tier is each player's own client-side view.
+     */
     static final List<Ore> ORE_TIERS = List.of(
-            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 90, 4),
-            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 0, 60, 5),
-            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 300, 55, 8),
-            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 35, 14),
-            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 1_500, 35, 12),
-            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 5_000, 25, 20),
-            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 5_000, 12, 45),
-            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 15_000, 8, 70));
+            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 30),
+            new Ore(Material.COPPER_ORE, Material.RAW_COPPER, 2, 400, 50),
+            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 1_200, 80),
+            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 3_000, 120),
+            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 6_000, 160),
+            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 10_000, 240),
+            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 16_000, 450),
+            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 25_000, 800));
+    static final Material BASE_ORE = Material.COAL_ORE;
     private static final org.bukkit.NamespacedKey MINED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_mined");
 
     private static long mined(Player p) {
@@ -322,35 +324,65 @@ final class GrindAreas extends CommandGroup implements Listener {
         return v == null ? 0 : v;
     }
 
-    /** Pure: the newest ore unlocked at {@code mined} blocks. */
-    static Ore oreTier(long mined) {
-        Ore out = ORE_TIERS.getFirst();
-        for (Ore o : ORE_TIERS) {
-            if (mined >= o.unlockAt()) {
-                out = o;
+    /** {@code grind.mine-unlocks} as longs (a broken or missing entry falls back to the built-in threshold). */
+    private List<Long> mineUnlocks() {
+        List<Long> out = new ArrayList<>();
+        for (Object o : config.grindMineUnlocks) {
+            try {
+                out.add(o instanceof Number n ? n.longValue() : Long.parseLong(String.valueOf(o).trim().replace(",", "")));
+            } catch (NumberFormatException e) {
+                out.add(-1L);
             }
         }
         return out;
     }
 
-    /** Pure: what a player who mined {@code mined} blocks sees at x/y/z (stable per position, so view and drop agree). */
-    static Material oreAt(int x, int y, int z, long mined) {
-        long h = (x * 73_856_093L) ^ (y * 19_349_663L) ^ (z * 83_492_791L);
-        int roll = (int) Math.floorMod(h * 0x9E3779B97F4A7C15L >>> 20, 1000);
-        int acc = 0;
-        for (Ore o : ORE_TIERS) {
-            if (mined >= o.unlockAt()) {
-                acc += o.perMille();
-                if (roll < acc) {
-                    return o.block();
-                }
-            }
+    /** Pure: blocks mined to unlock tier {@code index} (configured, else the built-in default). */
+    static long unlockAt(int index, List<Long> unlocks) {
+        if (index <= 0) {
+            return 0;
         }
-        return Material.STONE;
+        Long v = index < unlocks.size() ? unlocks.get(index) : null;
+        return v == null || v < 0 ? ORE_TIERS.get(index).unlockAt() : v;
     }
 
-    private static Ore oreOf(Material block) {
-        return ORE_TIERS.stream().filter(o -> o.block() == block).findFirst().orElse(null);
+    /** Pure: the newest ore tier unlocked at {@code mined} blocks. */
+    static Ore oreTier(long mined, List<Long> unlocks) {
+        Ore out = ORE_TIERS.getFirst();
+        for (int i = 0; i < ORE_TIERS.size(); i++) {
+            if (mined >= unlockAt(i, unlocks)) {
+                out = ORE_TIERS.get(i);
+            }
+        }
+        return out;
+    }
+
+    /** Pure: a configured bonus amount for tier {@code index}, else {@code fallback}. */
+    static long tierAmount(List<?> list, int index, long fallback) {
+        if (index < 0 || list == null || index >= list.size()) {
+            return fallback;
+        }
+        Object o = list.get(index);
+        try {
+            return o instanceof Number n ? n.longValue() : Long.parseLong(String.valueOf(o).trim().replace(",", ""));
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private long farmBonus(int tier) {
+        return tierAmount(config.grindFarmBonus, tier, tier >= 0 && tier < CROPS.size() ? CROPS.get(tier).bonus() : 0);
+    }
+
+    private long mineBonus(int tier) {
+        return tierAmount(config.grindMineBonus, tier, tier >= 0 && tier < ORE_TIERS.size() ? ORE_TIERS.get(tier).bonus() : 0);
+    }
+
+    /** Owner 4 Nov 2026: the money bonus comes now and then ({@code grind.bonus-chance-percent}) and grows with the tier. */
+    private void rollBonus(Player p, long amount) {
+        if (amount > 0 && ThreadLocalRandom.current().nextDouble(100) < config.grindBonusChance) {
+            addBonus(p, amount);
+        }
     }
 
     /** The mine as the player sees it: their unlocked ores on the real stone (client side only). */
@@ -363,19 +395,19 @@ final class GrindAreas extends CommandGroup implements Listener {
         if (world == null || !p.getWorld().equals(world)) {
             return;
         }
-        long mined = mined(p);
+        Ore tier = oreTier(mined(p), mineUnlocks());
+        if (tier.block() == BASE_ORE) {
+            return; // the real blocks are this tier
+        }
+        org.bukkit.block.data.BlockData view = tier.block().createBlockData();
         List<org.bukkit.block.BlockState> states = new ArrayList<>();
         for (int x = Math.max(minX, MINE_X - MINE_HALF); x <= Math.min(maxX, MINE_X + MINE_HALF); x++) {
             for (int z = Math.max(minZ, -MINE_HALF); z <= Math.min(maxZ, MINE_HALF); z++) {
                 for (int d = 0; d < MINE_DEPTH; d++) {
                     Block b = world.getBlockAt(x, base - d, z);
-                    if (b.getType() != Material.STONE) {
-                        continue;
-                    }
-                    Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined);
-                    if (view != Material.STONE) {
+                    if (b.getType() == BASE_ORE) {
                         org.bukkit.block.BlockState st = b.getState();
-                        st.setBlockData(view.createBlockData());
+                        st.setBlockData(view);
                         states.add(st);
                     }
                 }
@@ -410,17 +442,18 @@ final class GrindAreas extends CommandGroup implements Listener {
             }
             return;
         }
-        if (in(b, MINE_X, MINE_HALF) && event.getBlockState().getType() == Material.STONE) {
-            Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(p));
-            Ore ore = oreOf(view);
-            if (ore == null) {
-                return; // plain stone: vanilla cobblestone
+        if (in(b, MINE_X, MINE_HALF) && event.getBlockState().getType() == BASE_ORE) {
+            Ore ore = oreTier(mined(p) - 1, mineUnlocks()); // the tier the player saw (onBreak already counted this block)
+            if (ore.block() == BASE_ORE) {
+                return; // coal: vanilla drops (Fortune counts)
             }
             boolean first = true;
             for (var it = event.getItems().iterator(); it.hasNext(); ) {
                 org.bukkit.entity.Item item = it.next();
                 if (first) {
-                    item.setItemStack(new ItemStack(ore.drop(), ore.amount()));
+                    // the vanilla coal count (Fortune) carries over to the player's ore
+                    int times = Math.max(1, item.getItemStack().getAmount());
+                    item.setItemStack(new ItemStack(ore.drop(), Math.min(ore.drop().getMaxStackSize(), ore.amount() * times)));
                     first = false;
                 } else {
                     it.remove();
@@ -505,9 +538,9 @@ final class GrindAreas extends CommandGroup implements Listener {
             }
             return d;
         }
-        if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() == Material.STONE) {
-            Material view = oreAt(b.getX(), b.getY(), b.getZ(), mined(p));
-            return view == Material.STONE ? null : view.createBlockData();
+        if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() == BASE_ORE) {
+            Material view = oreTier(mined(p), mineUnlocks()).block();
+            return view == BASE_ORE ? null : view.createBlockData();
         }
         return null;
     }
@@ -525,11 +558,34 @@ final class GrindAreas extends CommandGroup implements Listener {
      * view sent at once: that is why wheat showed up after carrots.
      */
     private void showLater(Block b) {
+        tickEnd.add(b);
         core.scheduler().later("essentials:grind-view", 1L, () -> {
             for (Player p : b.getLocation().getNearbyPlayers(64)) {
                 show(p, b);
             }
         });
+    }
+
+    /** Blocks changed this tick whose personal views go out at the end of the tick. */
+    private final java.util.Set<Block> tickEnd = new java.util.LinkedHashSet<>();
+
+    /**
+     * Owner 4 Nov 2026 ("a respawned crop still shows wheat for a split second"): the server sends the real block (wheat,
+     * coal) while it ticks the world; a view sent at the end of the same tick goes out right after it in the same network
+     * flush, so the client never draws the real block. The view one tick later stays as a safety net.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onTickEnd(com.destroystokyo.paper.event.server.ServerTickEndEvent event) {
+        if (tickEnd.isEmpty()) {
+            return;
+        }
+        List<Block> blocks = new ArrayList<>(tickEnd);
+        tickEnd.clear();
+        for (Block b : blocks) {
+            for (Player p : b.getLocation().getNearbyPlayers(64)) {
+                show(p, b);
+            }
+        }
     }
 
     /** The whole farm in the player's own crop (client side only; the real blocks stay wheat). */

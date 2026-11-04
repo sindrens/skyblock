@@ -78,7 +78,7 @@ class ToolRulesTest {
         Upgrades u = Upgrades.parse(C.perks, problems::add);
         assertEquals(List.of(), problems);
         assertEquals(12, u.of(Kind.HOE).size());
-        assertEquals(11, u.of(Kind.PICKAXE).size());
+        assertEquals(12, u.of(Kind.PICKAXE).size(), "with the pickaxe storage");
         assertTrue(u.get(Kind.HOE, "magnet").isEmpty(), "owner 4 Nov 2026: Magnet is built in");
         assertTrue(u.get(Kind.HOE, "row").isEmpty(), "Row became Sweep");
         Upgrades.Def sweep = u.get(Kind.HOE, "sweep").orElseThrow();

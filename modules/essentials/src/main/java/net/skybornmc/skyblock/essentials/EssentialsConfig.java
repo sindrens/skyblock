@@ -3,6 +3,8 @@ package net.skybornmc.skyblock.essentials;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
+import java.util.List;
+
 /** Typed settings of {@code essentials.yml}. */
 public final class EssentialsConfig extends ModuleConfig {
 
@@ -29,8 +31,22 @@ public final class EssentialsConfig extends ModuleConfig {
     public String removedWorld = "depths";
 
     @Setting(path = "grind.bonus-percent", desc = "Money bonus per /farm harvest and /mine ore, in percent of the built-in amounts "
-            + "(wheat $6 ... beetroot $16, coal $4 ... emerald $70). 0 = no bonus.", min = 0, max = 1000)
+            + "(grind.farm-bonus and grind.mine-bonus). 0 = no bonus.", min = 0, max = 1000)
     public int grindBonusPercent = 100;
+
+    @Setting(path = "grind.bonus-chance-percent", desc = "Owner 4 Nov 2026: the money bonus comes only now and then: percent chance per /farm "
+            + "harvest and /mine ore (was every block).", min = 0, max = 100)
+    public double grindBonusChance = 4;
+
+    @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot): small at the start, bigger later.")
+    public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200);
+
+    @Setting(path = "grind.mine-bonus", desc = "Money of one /mine bonus per ore tier (coal, copper, iron, gold, redstone, lapis, diamond, emerald).")
+    public List<Integer> grindMineBonus = List.of(30, 50, 80, 120, 160, 240, 450, 800);
+
+    @Setting(path = "grind.mine-unlocks", desc = "Owner 4 Nov 2026: blocks mined in total that turn the whole /mine into the next ore for you "
+            + "(coal, copper, iron, gold, redstone, lapis, diamond, emerald; the first is always 0).")
+    public List<Integer> grindMineUnlocks = List.of(0, 400, 1_200, 3_000, 6_000, 10_000, 16_000, 25_000);
 
     @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
     public int grindDungeonMobs = 12;

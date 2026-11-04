@@ -3,18 +3,16 @@ package net.skybornmc.skyblock.islandtools;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.util.Format;
-import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * {@code /is tools}: the island's two tools and the hoe storage, one contiguous group (owner 4 Nov 2026).
+ * {@code /is tools}: the island's two tools (owner 4 Nov 2026); each tool's menu holds its storage.
  * <pre>
  *  . . . . . . . . .
- *  . . . H B P . . .      12 hoe, 13 hoe storage, 14 pickaxe
+ *  . . . H . P . . .      12 hoe, 14 pickaxe
  *  . . . . . . . . .
  *  nav bar
  * </pre>
@@ -22,7 +20,6 @@ import java.util.UUID;
 final class ToolsMenu extends Menu {
 
     static final int SLOT_HOE = 12;
-    static final int SLOT_STORAGE = 13;
     static final int SLOT_PICKAXE = 14;
 
     private final IslandToolsModule m;
@@ -78,10 +75,6 @@ final class ToolsMenu extends Menu {
                     m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), lore),
                     click -> openChild(new ToolMenu(m, kind)));
         }
-        UUID profile = m.profile(viewer);
-        set(SLOT_STORAGE, service.item(Material.BARREL, viewer, IslandToolsModule.ID, "menu.storage",
-                Msg.p("used", Format.number(m.storage().used(profile))), Msg.p("cap", Format.number(m.storage().capacity(viewer)))),
-                click -> openChild(new StorageMenu(m)));
     }
 
     private Component text(String key) {

@@ -90,6 +90,11 @@ final class ToolListener implements Listener {
                 || m.config().toolWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
     }
 
+    /** The /farm and /mine world (tool-worlds): loot never lands on the ground there. */
+    private boolean grindWorld(Player p) {
+        return m.config().toolWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
+    }
+
     /**
      * The kind of the island tool in hand when it is a working handle of the player's island in a tool world; removes a
      * handle of another island (or an old axe/sword). Null for anything else (a handle outside the tool worlds works as
@@ -257,24 +262,25 @@ final class ToolListener implements Listener {
                 it.remove(); // Auto-Sell: sold in the next batch
                 continue;
             }
-            if (pd.crop()) {
-                long stored = m.storage().add(p, stack.getType().getKey().getKey(), stack.getAmount());
-                if (stored >= stack.getAmount()) {
-                    it.remove();
-                    continue;
-                }
-                if (stored > 0) {
-                    stack.setAmount(stack.getAmount() - (int) stored);
-                } else {
-                    warn(p, "hoe.storage-full");
-                }
-            }
+            // Owner 4 Nov 2026: the bag first, then the tool's storage; at /farm and /mine nothing ever lands on the ground.
             Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
             if (left.isEmpty()) {
                 it.remove();
                 continue;
             }
-            entity.setItemStack(left.values().iterator().next());
+            ItemStack rest = left.values().iterator().next();
+            long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount());
+            if (stored >= rest.getAmount()) {
+                it.remove();
+                continue;
+            }
+            rest.setAmount(rest.getAmount() - (int) stored);
+            warn(p, "storage.full");
+            if (grindWorld(p)) {
+                it.remove(); // full bag and storage at /farm or /mine: lost, like vanilla, never an item on the ground
+            } else {
+                entity.setItemStack(rest);
+            }
         }
         if (pd.crop()) {
             BlockState before = event.getBlockState();
@@ -282,12 +288,12 @@ final class ToolListener implements Listener {
         }
     }
 
-    /** Magnet: the drops go straight into the bag (what does not fit stays on the ground). */
+    /** Magnet: the drops go straight into the bag (what does not fit stays on the ground, never at /farm and /mine). */
     private void magnet(Player p, BlockDropItemEvent event) {
         for (Iterator<Item> it = event.getItems().iterator(); it.hasNext(); ) {
             Item entity = it.next();
             Map<Integer, ItemStack> left = p.getInventory().addItem(entity.getItemStack());
-            if (left.isEmpty()) {
+            if (left.isEmpty() || grindWorld(p)) {
                 it.remove();
             } else {
                 entity.setItemStack(left.values().iterator().next());
