@@ -346,6 +346,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.milestones.MilestonesModule(core));
         modules.register(new net.skybornmc.skyblock.guide.GuideModule(core));
         modules.register(new net.skybornmc.skyblock.islandtools.IslandToolsModule(core));
+        modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core)); // the guided tour (owner 4 Nov 2026)
         // Shard block (ECON-SHARDS): the only source of shards; needs economy, islands and profiles (registered above).
         modules.register(new net.skybornmc.skyblock.shardblock.ShardBlockModule(core));
     }

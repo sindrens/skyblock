@@ -202,10 +202,10 @@ chapters:
           - "Hi, I'm Juniper! Blocks, seeds, tools: it's all in /shop."
           - "Buy anything you like. Got coins left? The Banker keeps them safe."
       buy:
-        type: audit
-        target: "economy:shop_buy"
-        text: "Buy one item in /shop"
-        hint: "Anything counts, even one block."
+        type: menu
+        target: buy
+        text: "Pick something to buy in /shop"
+        hint: "Click any item in the shop."
         command: shop
         icon: gold_ingot
       banker:
@@ -294,7 +294,7 @@ chapters:
   next:
     name: "What's Next"
     icon: experience_bottle
-    rewards: ["money 5000", "tag trailblazer"]
+    rewards: ["money 5000", "tag harvest"]
     steps:
       sage:
         type: npc

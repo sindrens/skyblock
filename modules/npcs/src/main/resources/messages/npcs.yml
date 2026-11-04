@@ -58,12 +58,12 @@ roles:
     help:
       - "<c:text>Save and swap armor sets: <c:value>/wardrobe"
   bank:
-    name: "Banker"
+    name: "The Banker"
     help:
       - "<c:text>Keep money safe and earn interest."
       - "<c:text>Open it any time: <c:value>/bank"
   shop:
-    name: "Builder Shop"
+    name: "Juniper"
     help:
       - "<c:text>Buy blocks and items: <c:value>/shop"
   sell:
@@ -71,7 +71,7 @@ roles:
     help:
       - "<c:text>Sell your loot for money: <c:value>/sell"
   auction:
-    name: "Auctioneer"
+    name: "Ollie"
     help:
       - "<c:text>Buy and sell with other players."
       - "<c:text>Open it any time: <c:value>/ah"
@@ -111,6 +111,28 @@ roles:
     help:
       - "<c:text>Vote for us every day for keys and credits: <c:value>/vote"
       - "<c:text>Votes fill the vote party on the board."
+
+  # Tutorial spawn NPCs (owner 4 Nov 2026): friendly names, each points to the next one in the tour.
+  farm_merchant:
+    name: "Bramble"
+    help:
+      - "<c:text>I buy every crop you harvest: <c:value>/sell"
+      - "<c:text>The farm is always ripe: <c:value>/farm"
+  mine_merchant:
+    name: "Flint"
+    help:
+      - "<c:text>I buy every ore you mine: <c:value>/sell"
+      - "<c:text>Better ores show up as you mine: <c:value>/mine"
+  tinker:
+    name: "Tinker"
+    help:
+      - "<c:text>Your island hoe and pickaxe level up as you use them."
+      - "<c:text>Upgrades and storage: <c:value>/tool"
+  sage:
+    name: "Sage"
+    help:
+      - "<c:text>Every skill grows as you play: <c:value>/skills"
+      - "<c:text>Higher skills give more crops and ores."
 
 # ------------------------------------------------------------------ help dialog
 help:

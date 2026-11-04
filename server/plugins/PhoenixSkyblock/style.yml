@@ -44,7 +44,7 @@ prefixes:
   stacking: "<c:ember><bold>Stacker</bold></c:ember> <c:muted>»</c:muted> "
   afk: "<c:ember><bold>AFK</bold></c:ember> <c:muted>»</c:muted> "
   box: "<c:ember><bold>Box</bold></c:ember> <c:muted>»</c:muted> "
-  tutorial: "<c:ember><bold>Kindle</bold></c:ember> <c:muted>»</c:muted> "
+  tutorial: "<c:ember><bold>Tutorial</bold></c:ember> <c:muted>»</c:muted> "
   chat: "<c:ember><bold>Chat</bold></c:ember> <c:muted>»</c:muted> "
   npcs: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
   menus: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "

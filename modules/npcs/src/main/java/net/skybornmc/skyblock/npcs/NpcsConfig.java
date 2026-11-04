@@ -78,6 +78,29 @@ public final class NpcsConfig extends ModuleConfig {
             "black_market: help",
             "quests: help",
             "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
+            "sage: command skills");
+
+    /** {@code npcs.actions} v6 to v7 (before the tutorial's spawn NPCs, owner 4 Nov 2026). */
+    static final List<String> ACTIONS_V6 = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command forge",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "dungeon: command dungeon",
+            "foreman: help dungeon",
+            "crates: command crates",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
             "vote: help");
 
     /** {@code npcs.actions} v3 to v5: the spawn guide showed help with a [menu] button (before the start guide, owner 3 Nov 2026). */
@@ -125,7 +148,7 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "npcs.skins", desc = "NPC id or role -> the skin its mannequin wears, as 'id: skin' lines. A skin is a "
             + "vanilla default (steve, alex, ari, efe, kai, makena, noor, sunny, zuri; slim:/wide: picks the arms; no lookup), "
             + "texture:<value>[:<signature>] (a Mojang texture) or a player name (player:<name>). Missing = Steve.")
-    public List<String> skins = SKINS_V7;
+    public List<String> skins = SKINS_V8;
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
     public List<String> heldItems = List.of(
@@ -276,9 +299,16 @@ public final class NpcsConfig extends ModuleConfig {
             "daily: slim:sunny",
             "vote: slim:kai");
 
+    /** v8 (tutorial, owner 4 Nov 2026): the new spawn NPCs Bramble, Flint, Tinker and Sage get their own skins. */
+    static final List<String> SKINS_V8 = java.util.stream.Stream.concat(SKINS_V7.stream(), java.util.stream.Stream.of(
+            "farm_merchant: wide:noor",
+            "mine_merchant: wide:steve",
+            "tinker: wide:zuri",
+            "sage: slim:makena")).toList();
+
     @Override
     public int version() {
-        return 7;
+        return 8;
     }
 
     /**
@@ -286,7 +316,8 @@ public final class NpcsConfig extends ModuleConfig {
      * open /crates and /daily (they exist now). v4 (PHASE-5 M5.7): the two weekly Hall of Heroes boards show the weekly
      * island and pillar gain, switching Solo/Team. v5 (F13a): the two milestone boards (milestones_island,
      * milestones_personal; they show once a build has leaderboard points with those ids). v6 (owner 3 Nov 2026): the spawn
-     * guide (Rowan) runs /start, the start guide menu. An owner-edited list is kept.
+     * guide (Rowan) runs /start, the start guide menu. v7: skins. v8 (tutorial, owner 4 Nov 2026): the spawn NPCs Bramble
+     * (farm_merchant), Flint (mine_merchant), Tinker and Sage. An owner-edited list is kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -295,7 +326,9 @@ public final class NpcsConfig extends ModuleConfig {
                 4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, SOURCES_V4)),
                 5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())),
                 6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)),
-                7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)));
+                7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)),
+                8, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V6, new NpcsConfig().roleActions),
+                        "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)));
     }
 
     private static List<String> sources() {

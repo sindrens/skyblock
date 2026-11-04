@@ -1,0 +1,6 @@
+skyblock.tutorial.use:
+  description: Use /tutorial (the guided tour, its book, boss bar and trail)
+  default: true
+skyblock.tutorial.admin:
+  description: Staff tools of /tutorial admin (reset, step, stats)
+  default: op

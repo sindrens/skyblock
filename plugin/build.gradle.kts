@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":modules:milestones"))
     implementation(project(":modules:guide"))
     implementation(project(":modules:islandtools"))
+    implementation(project(":modules:tutorial"))
     implementation(project(":modules:shardblock"))
     implementation(project(":modules:production"))
     implementation(project(":modules:pack"))
