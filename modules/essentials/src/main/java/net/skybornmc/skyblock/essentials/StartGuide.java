@@ -115,6 +115,9 @@ final class StartGuide extends CommandGroup implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileSwitched(net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent event) {
         Player player = event.getPlayer();
+        if (event.to() == null || event.to().playtimeMillis() > 0) {
+            return; // an old profile (or one staff restored) is left as it is: only a new profile gets its island
+        }
         core.scheduler().later("essentials:start-profile", Math.max(1, config.startIslandDelayTicks), () -> {
             if (player.isOnline()) {
                 startIsland(player, true); // only when the new profile has no island yet
