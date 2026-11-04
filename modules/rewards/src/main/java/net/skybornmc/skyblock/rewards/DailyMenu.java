@@ -150,7 +150,7 @@ final class DailyMenu extends Menu {
         int upTo = DailyRules.claimedUpTo(state, today, calendar.size());
         int next = DailyRules.nextDay(state, calendar.size());
         String reset = Format.duration(DailyRules.untilReset(now, m.zone()));
-        int streak = DailyRules.liveStreak(state, today);
+        int streak = DailyRules.liveStreak(state, today, m.settings.graceDays);
         Payout.Context ctx = m.context(m.tier(viewer), profile);
 
         set(SLOT_SUMMARY, service.item(Material.SUNFLOWER, service.text(viewer, RewardsModule.ID, "menu.daily.summary.name"),

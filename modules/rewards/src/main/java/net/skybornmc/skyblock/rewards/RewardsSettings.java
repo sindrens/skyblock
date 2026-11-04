@@ -17,6 +17,12 @@ public final class RewardsSettings extends ModuleConfig {
     @Setting(path = "calendar.enabled", desc = "Daily calendar on (/daily, the Daily Rewards NPC).")
     public boolean calendarEnabled = true;
 
+    @Setting(path = "calendar.streak-grace-days", desc = "Owner 4 Nov 2026: days you may miss without losing the streak (1 = one missed day is fine, two break it).", min = 0, max = 7)
+    public int graceDays = 1;
+
+    @Setting(path = "calendar.min-online-minutes", desc = "Owner 4 Nov 2026 (anti-alt): minutes to play in this session before the daily reward can be claimed (0 = at once).", min = 0, max = 120)
+    public int minOnlineMinutes = 10;
+
     @Setting(path = "calendar.zone", desc = "Time zone of the daily reset (00:00 there; RX19: Europe/Oslo). Read at every claim.",
             level = Setting.Level.OWNER)
     public String zone = "Europe/Oslo";

@@ -5,6 +5,7 @@
 - /farm: carrots need 3,000 harvests (potatoes 12,000, beetroot 40,000); every farmland at /farm is wet and never dries.
 - Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
 - `/fly`: staff and the owner outside staff mode now get the rank perk (island fly) instead of "staff mode only".
+- Daily reward: missing one day no longer breaks the streak (two days do; `calendar.streak-grace-days`), and the reward can be claimed after 10 minutes of play in that session (`calendar.min-online-minutes`, stops alt farming).
 - Daily and weekly quests are now **Contracts** (`/contracts`, the Contract Board NPC, the menu button). `/quests` and `/quest` open the tutorial.
 - Scoreboard at /farm and /mine: your crop or ore, the progress to the next one ("1,234 / 3,000"), the bonus of this visit and your Farming/Mining level.
 - One clean action bar while grinding: skill XP, shards, the bonus and sales no longer overwrite each other; payouts that come together share one line.

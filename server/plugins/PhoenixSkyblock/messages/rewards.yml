@@ -14,6 +14,7 @@ daily:
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Daily rewards are turned off right now."
   reminder: "<prefix><c:flame><sym:star></c:flame> <c:text>Your daily reward (day <c:value><day></c:value><c:text>) is ready! Streak: <c:value><streak></c:value><c:text>. Type <c:action>/daily</c:action><c:text>."
   already: "<prefix><c:muted><sym:time></c:muted> <c:text>You already claimed today. Next reward in <c:value><time></c:value><c:text>."
+  wait: "<prefix><c:muted><sym:time></c:muted> <c:text>Play <c:value><minutes> more minute(s)</c:value> <c:text>first, then your daily reward is ready."
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your calendar just changed. Open <c:action>/daily</c:action> <c:text>and try again."
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>Day <c:value><day></c:value> <c:text>claimed! Streak: <c:value><streak></c:value> <c:text>days."
   streak-lost: "<prefix><c:muted><sym:time></c:muted> <c:text>You missed a day, so your <c:value><lost></c:value><c:text>-day streak started over. Your calendar day stays."

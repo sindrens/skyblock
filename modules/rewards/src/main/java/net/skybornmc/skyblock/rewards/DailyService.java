@@ -30,6 +30,8 @@ final class DailyService {
     private final RewardsModule m;
     private final Map<UUID, DailyRules.State> states = new ConcurrentHashMap<>();
     private final Set<UUID> busy = ConcurrentHashMap.newKeySet();
+    /** When each online player joined (the daily's play-time gate). */
+    private final Map<UUID, Long> onlineSince = new ConcurrentHashMap<>();
 
     DailyService(RewardsModule module) {
         this.m = module;
@@ -59,6 +61,7 @@ final class DailyService {
 
     /** After joining: load, then remind when today's reward is still open. */
     void joined(Player p) {
+        onlineSince.put(p.getUniqueId(), System.currentTimeMillis());
         UUID profile = m.profiles().profileKey(p);
         m.core.database().async(c -> RewardStore.calendar(c, profile)).whenCompleteAsync((s, e) -> {
             if (e != null || !p.isOnline()) {
@@ -69,13 +72,14 @@ final class DailyService {
             if (m.settings.calendarEnabled && m.settings.joinReminder && p.hasPermission(RewardsModule.PERM_DAILY)
                     && m.wantsReminder(p) && !DailyRules.claimedToday(state, today())) {
                 m.msg.send(p, "daily.reminder", Msg.number("day", DailyRules.nextDay(state, m.calendar().size())),
-                        Msg.number("streak", DailyRules.liveStreak(state, today())));
+                        Msg.number("streak", DailyRules.liveStreak(state, today(), m.settings.graceDays)));
             }
         }, m.main());
     }
 
     void quit(Player p) {
         busy.remove(p.getUniqueId());
+        onlineSince.remove(p.getUniqueId());
         UUID profile = m.profiles().profileKey(p);
         states.remove(profile);
     }
@@ -130,6 +134,13 @@ final class DailyService {
             return done;
         }
         UUID player = p.getUniqueId();
+        // Anti-alt (owner 4 Nov 2026): the daily reward needs a few minutes of play in this session first.
+        long wait = DailyRules.minutesToWait(onlineSince.getOrDefault(player, 0L), System.currentTimeMillis(), m.settings.minOnlineMinutes);
+        if (wait > 0) {
+            m.msg.send(p, "daily.wait", Msg.number("minutes", wait));
+            done.complete(Result.of(Outcome.FAILED));
+            return done;
+        }
         if (!busy.add(player)) {
             m.msg.send(p, "busy");
             done.complete(Result.of(Outcome.FAILED));
@@ -161,7 +172,7 @@ final class DailyService {
         List<RewardSpec> calendar = m.calendar();
         DailyRules.State state = before.orElse(DailyRules.State.NONE);
         states.put(profile, state);
-        Optional<DailyRules.Claim> claim = DailyRules.claim(state, today, calendar.size());
+        Optional<DailyRules.Claim> claim = DailyRules.claim(state, today, calendar.size(), m.settings.graceDays);
         if (claim.isEmpty()) {
             busy.remove(player);
             if (!quiet) {
