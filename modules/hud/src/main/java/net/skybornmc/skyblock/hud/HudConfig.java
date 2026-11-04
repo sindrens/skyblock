@@ -61,17 +61,17 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "places.island.visit-layout", desc = "Layout on someone else's island (coop players count as visitors). Falls back to the own-island layout.")
     public String islandVisitLayout = "island-visit";
 
-    @Setting(path = "places.depths.worlds", desc = "Worlds of The Depths.")
-    public List<String> depthsWorlds = List.of("depths");
+    @Setting(path = "places.depths.worlds", desc = "Worlds of the grind place: /farm and /mine (owner 4 Nov 2026; the Depths are gone, the place kept its key).")
+    public List<String> depthsWorlds = List.of("grind");
 
     @Setting(path = "places.depths.layout", desc = "Layout in The Depths when no variant below matches.")
-    public String depthsLayout = "depths";
+    public String depthsLayout = "grind";
 
     @Setting(path = "places.depths.variant-placeholder", desc = "Placeholder whose plain text picks a Depths variant (depths_tier is 'Mine · Tier 3' in a zone, 'The Gate' at the hub).")
-    public String depthsVariantPlaceholder = "depths_tier";
+    public String depthsVariantPlaceholder = "grind_area";
 
     @Setting(path = "places.depths.variants", desc = "Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.")
-    public List<String> depthsVariants = List.of("The Gate=depths-gate", "Forest=depths-forest", "Combat=depths-combat");
+    public List<String> depthsVariants = List.of("Farm=grind-farm", "Mine=grind-mine");
 
     @Setting(path = "places.spawn.worlds", desc = "Spawn worlds.")
     public List<String> spawnWorlds = List.of("spawn");
@@ -91,7 +91,7 @@ public final class HudConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -105,7 +105,13 @@ public final class HudConfig extends ModuleConfig {
         return java.util.Map.of(3, java.util.Map.of("values.credits", ValueChange.of("gems_formatted", "credits_formatted")),
                 // Owner 2 Nov 2026: the You section got a Rank row, so a section holds 4 rows.
                 4, java.util.Map.of("scoreboard.section-rows", ValueChange.of(3, 4)),
-                5, java.util.Map.of("scoreboard.section-rows", ValueChange.of(4, 5)));
+                5, java.util.Map.of("scoreboard.section-rows", ValueChange.of(4, 5)),
+                // Owner 4 Nov 2026 (plan A item 8): the Depths place became /farm and /mine with their own boards.
+                6, java.util.Map.of("places.depths.worlds", ValueChange.of(List.of("depths"), List.of("grind")),
+                        "places.depths.layout", ValueChange.of("depths", "grind"),
+                        "places.depths.variant-placeholder", ValueChange.of("depths_tier", "grind_area"),
+                        "places.depths.variants", ValueChange.of(List.of("The Gate=depths-gate", "Forest=depths-forest", "Combat=depths-combat"),
+                                List.of("Farm=grind-farm", "Mine=grind-mine"))));
     }
 
     @Override

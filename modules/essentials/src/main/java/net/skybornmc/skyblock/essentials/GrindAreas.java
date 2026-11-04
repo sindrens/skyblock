@@ -101,6 +101,51 @@ final class GrindAreas extends CommandGroup implements Listener {
         core.commands().register(CommandSpec.command("mine").description("Teleport to the mine").category("Teleport")
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "mine")));
         // Owner 3 Nov 2026 23:05: no dungeon (the arena stays built but has no command and no monsters).
+        // Owner 4 Nov 2026 (plan A item 8): the /farm and /mine scoreboard shows the tier, the progress and this visit's bonus.
+        core.placeholders().registerText(MODULE, "grind_area", p -> area(p));
+        core.placeholders().registerText(MODULE, "grind_tier", p -> switch (area(p)) {
+            case "Farm" -> name(cropFor(farmed(p)).item());
+            case "Mine" -> name(oreTier(mined(p), mineUnlocks()).block());
+            default -> "";
+        });
+        core.placeholders().registerText(MODULE, "grind_progress", p -> progressText(p));
+        core.placeholders().registerText(MODULE, "grind_bonus_visit", p -> net.skybornmc.skyblock.common.util.Format.money(
+                visitBonus.getOrDefault(p.getUniqueId(), 0L)));
+    }
+
+    /** Bonus money paid since the player came to /farm or /mine (reset when they leave the grind world). */
+    private final java.util.Map<java.util.UUID, Long> visitBonus = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** "Farm" or "Mine" where the player stands in the grind world, "" elsewhere (the HUD picks its layout by this). */
+    String area(Player p) {
+        if (p == null || world == null || !p.getWorld().equals(world)) {
+            return "";
+        }
+        int x = p.getLocation().getBlockX();
+        if (Math.abs(x - MINE_X) <= MINE_HALF + 40) {
+            return "Mine";
+        }
+        return Math.abs(x - FARM_X) <= FARM_HALF + 40 ? "Farm" : "";
+    }
+
+    /** "1,234 / 3,000" toward the next crop or ore, "Max" at the last one. */
+    private String progressText(Player p) {
+        String a = area(p);
+        if (a.equals("Farm")) {
+            long have = farmed(p);
+            Crop crop = cropFor(have);
+            int i = CROPS.indexOf(crop);
+            return i + 1 >= CROPS.size() ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
+                    + net.skybornmc.skyblock.common.util.Format.number(CROPS.get(i + 1).unlockAt());
+        }
+        if (a.equals("Mine")) {
+            long have = mined(p);
+            List<Long> unlocks = mineUnlocks();
+            int i = ORE_TIERS.indexOf(oreTier(have, unlocks));
+            return i + 1 >= ORE_TIERS.size() ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
+                    + net.skybornmc.skyblock.common.util.Format.number(unlockAt(i + 1, unlocks));
+        }
+        return "";
     }
 
     /** After enable: the world (created by the worlds module from worlds.yml), the areas built once, the dungeon spawner. */
@@ -525,6 +570,7 @@ final class GrindAreas extends CommandGroup implements Listener {
                             net.skybornmc.skyblock.common.economy.Currency.MONEY, amount, "grind_bonus")
                     .actor(net.skybornmc.skyblock.common.audit.Actor.system("grind")).reference("farm/mine bonus")
                     .idempotencyKey("grind_bonus:" + java.util.UUID.randomUUID()));
+            profiles.onlinePlayer(id).ifPresent(p -> visitBonus.merge(p.getUniqueId(), amount, Long::sum));
             profiles.onlinePlayer(id).ifPresent(p -> net.skybornmc.skyblock.common.hud.ActionBars.show(p, "bonus",
                     msg.component(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
                             net.skybornmc.skyblock.common.util.Format.money(amount))), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500));
@@ -742,6 +788,7 @@ final class GrindAreas extends CommandGroup implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player p = event.getPlayer();
+        visitBonus.remove(p.getUniqueId()); // a new visit starts at $0
         core.scheduler().later("essentials:grind-view", 20L, () -> { sendFarm(p); sendMine(p); });
         core.scheduler().later("essentials:grind-view", 60L, () -> { sendFarm(p); sendMine(p); });
     }

@@ -48,16 +48,15 @@ places:
   depths:
     # Worlds of The Depths.
     worlds:
-    - depths
+    - grind
     # Layout in The Depths when no variant below matches.
-    layout: depths
+    layout: grind
     # Placeholder whose plain text picks a Depths variant (depths_tier is 'Mine · Tier 3' in a zone, 'The Gate' at the hub).
-    variant-placeholder: depths_tier
+    variant-placeholder: grind_area
     # Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.
     variants:
-    - The Gate=depths-gate
-    - Forest=depths-forest
-    - Combat=depths-combat
+    - Farm=grind-farm
+    - Mine=grind-mine
   spawn:
     # Spawn worlds.
     worlds:

@@ -100,6 +100,47 @@ scoreboard:
       - " <c:bar>|</c:bar> <c:text>Online:</c:text> <c:value><online>"
       - " <c:sky_ice>play.skybornmc.net"
 
+  # /farm and /mine (owner 4 Nov 2026, plan A item 8): your crop or ore, the progress to the next one and this visit's bonus.
+  grind-farm:
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    lines:
+      - "<soft-blank>"
+      - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <bold><c:header>| The Farm</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Crop:</c:text> <c:value><ph:grind_tier>"
+      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
+      - " <c:bar>|</c:bar> <c:text>Bonus:</c:text> <c:value><ph:grind_bonus_visit>"
+      - " <c:bar>|</c:bar> <c:text>Farming:</c:text> <c:value>Lv <ph:skill_farming_level>"
+      - " <c:bar>|</c:bar> <progress:skill_farming_progress>"
+      - "if:objective| <c:bar>|</c:bar> <objective>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  grind-mine:
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    lines:
+      - "<soft-blank>"
+      - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <bold><c:header>| The Mine</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Ore:</c:text> <c:value><ph:grind_tier>"
+      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
+      - " <c:bar>|</c:bar> <c:text>Bonus:</c:text> <c:value><ph:grind_bonus_visit>"
+      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level>"
+      - " <c:bar>|</c:bar> <progress:skill_mining_progress>"
+      - "if:objective| <c:bar>|</c:bar> <objective>"
+      - " <c:sky_ice>play.skybornmc.net"
+
+  # Between the two areas in the grind world.
+  grind:
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    lines:
+      - "<soft-blank>"
+      - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - "if:objective| <c:bar>|</c:bar> <objective>"
+      - " <c:sky_ice>play.skybornmc.net"
+
   # The Depths, Mine wing and causeways: the zone is the section name; tier, Mining level and progress ("Next:" takes the progress row during the tutorial).
   depths:
     title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"

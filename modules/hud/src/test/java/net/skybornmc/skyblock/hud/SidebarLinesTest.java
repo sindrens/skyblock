@@ -84,6 +84,8 @@ class SidebarLinesTest {
                 assertTrue(section.isConfigurationSection(layout), file + " misses layout " + layout);
             }
             contains(yaml, file, "depths", "<plain:depths_zone>", "<ph:depths_tier>", "<ph:skill_mining_level>", "<progress:skill_mining_progress>");
+            contains(yaml, file, "grind-farm", "<ph:grind_tier>", "<ph:grind_progress>", "<ph:grind_bonus_visit>");
+            contains(yaml, file, "grind-mine", "<ph:grind_tier>", "<ph:grind_progress>", "<ph:grind_bonus_visit>");
             contains(yaml, file, "depths-forest", "<plain:depths_zone>", "<ph:skill_foraging_level>", "<progress:skill_foraging_progress>");
             contains(yaml, file, "depths-combat", "<plain:depths_zone>", "<ph:skill_combat_level>", "<progress:skill_combat_progress>");
             contains(yaml, file, "depths-gate", "<ph:skill_mining_level>", "<ph:skill_foraging_level>", "<ph:skill_combat_level>");
