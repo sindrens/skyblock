@@ -70,8 +70,8 @@ worlds (`DepthsWiring`, `worlds.yml:83-218`, messages), hud (`places.depths`, `P
 | P-05 | **Tool enchants v2** (T2, more enchants; remove axe/sword enchants, dedupe) | The research result |
 | P-06 | **Grind inventories** (farm, mine and hoe storage) | Q-30 |
 | P-07 | **/mailbox** | Q-31 |
-| P-08 | **Anti-boost + start gate** (F1: send money only after earning $10k yourself, island members always OK) | Q-32 |
-| P-09 | **Tutorial v2, short** | Q-10 to Q-13 |
+| P-08 | **Playtime pay limits** (daily limit on money you receive from /pay, trades and sales, rising at 6 h / 12 h / 24 h playtime; island members exempt; /paytoggle). No $10k rule | Ready to plan (Q-32, `planning/INSPIRATION_6NOV.md`) |
+| P-09 | **Quest line v2** (no tutorial: `/quest` shows the next step, 5-10 quests per location, most from spawn NPCs, some on the island; old players can do it too; no invite step) | Ready to plan (Q-10 to Q-15) |
 | P-10 | **Contracts targets v2** (/mine ores, island mining, spawner kills) | Q-14 |
 | P-11 | **Menu and help coverage pass** (A2 + every feature in /menu and /help) | Q-15, Q-16 |
 | P-12 | **Combat after the Depths** (skill, achievements, titles) | Q-20, Q-21 |
@@ -79,6 +79,9 @@ worlds (`DepthsWiring`, `worlds.yml:83-218`, messages), hud (`places.depths`, `P
 | P-14 | **Wardrobe Tome + Tool Skin Blueprint** (FEEDBACK_5NOV ⬜) | Q-41 |
 | P-15 | **Shop pass** (Q9 missing items, Mob Drops tab, ECON-B1) | Q-42 |
 | P-16 | Seasons, events, store, launch (phases 9, 11-13) | Later |
+| P-17 | **PvE** (where the Combat skill, combat achievements and titles come from) | Research big servers first (Q-20) |
+| P-18 | **/fish** (third grind area next to /farm and /mine; also feeds quests and contracts) | Research + inspiration (Q-12) |
+| P-19 | **Resource pack v2** (owner dislikes the current look; only the /collection icons are decent) + GUI design pass | Q-42, Q-43 |
 The owner's own "14 plans still needed" list is not saved in the repo; it is matched against this table when he re-sends it.
 
 ## 5. Owner questions
