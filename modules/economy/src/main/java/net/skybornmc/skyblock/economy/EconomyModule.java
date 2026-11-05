@@ -98,6 +98,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private EconomyServiceImpl service;
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
+    private net.skybornmc.skyblock.economy.sell.SellWandListener sellWand;
     private net.skybornmc.skyblock.economy.bank.BankFeature bank;
     private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
@@ -163,6 +164,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
+        sellWand = new net.skybornmc.skyblock.economy.sell.SellWandListener(core, msg); // owner 4 Nov 2026: the Sell Wand
+        core.plugin().getServer().getPluginManager().registerEvents(sellWand, core.plugin());
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }

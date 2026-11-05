@@ -181,5 +181,6 @@ offers:
     name: "<rarity:epic>Elytra"
   sell_wand:
     name: "<rarity:rare>Sell Wand"
+    lore: ["<c:text>100 uses. Right-click a chest", "<c:text>on your island: everything", "<c:text>sellable in it is sold."]
   wardrobe_tome:
     name: "<rarity:rare>Greater Wardrobe Tome"

@@ -1206,3 +1206,18 @@ watch:
       lore:
         - "<c:text>This alert is about totals."
         - "<c:text>See the dashboard numbers."
+
+# The Sell Wand (owner 4 Nov 2026): right-click a chest or barrel on your island to sell what's inside. <uses> = uses left.
+sell-wand:
+  name: "<bold><area:money>Sell Wand</area:money></bold>"
+  subtitle: "<c:muted>Tool <sym:dot> Black Market"
+  about: "<c:text>Sells everything sellable in a chest."
+  uses: "<c:bar>|</c:bar> <c:text>Uses left: <c:value><uses>"
+  action: "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a chest on your island"
+  sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> <c:text>items from the chest for <c:value><amount></c:value><c:text>. Uses left: <c:value><uses>"
+  nothing: "<prefix><c:text>Nothing in that chest can be sold."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>This Sell Wand has no uses left."
+  broke: "<prefix><c:text>Your Sell Wand used its last charge."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>The Sell Wand only works on a chest on your own island."
+  not-chest: "<c:text>Right-click a chest or barrel with the Sell Wand."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Selling is turned off right now."

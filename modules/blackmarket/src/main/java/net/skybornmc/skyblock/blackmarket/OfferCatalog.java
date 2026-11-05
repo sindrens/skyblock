@@ -52,7 +52,9 @@ final class OfferCatalog {
         ITEM("item", true),
         /** The tag {@code ref} (account-wide). Can't be bought twice. */
         TAG("tag", true),
-        /** Not built yet (collectors, auto-sell chests, blueprints, sell wands, tomes): shown in the config only. */
+        /** A Sell Wand with {@code ref} uses (owner 4 Nov 2026: built for real). Item. */
+        SELL_WAND("sell-wand", true),
+        /** Not built yet (collectors, auto-sell chests, blueprints, tomes): shown in the config only. */
         COMING_SOON("coming-soon", false);
 
         private final String key;

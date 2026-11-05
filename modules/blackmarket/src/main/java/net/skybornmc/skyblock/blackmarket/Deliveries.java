@@ -125,6 +125,7 @@ final class Deliveries {
             case ENCHANT_BOOK, SCROLL -> m.core.services().has(EnchantService.class);
             case KEY -> m.core.services().has(CrateKeys.class);
             case SPAWNER -> m.core.services().has(StackingService.class);
+            case SELL_WAND -> m.core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
             case TAG -> m.cosmetics().isPresent();
             default -> true;
         };
@@ -299,6 +300,19 @@ final class Deliveries {
             case SPAWNER -> {
                 StackingService s = m.core.services().optional(StackingService.class).orElseThrow();
                 return CompletableFuture.completedFuture(s.createSpawner(row.ref(), amount, origin).map(List::of).orElse(List.of()));
+            }
+            case SELL_WAND -> {
+                int uses;
+                try {
+                    uses = Math.max(1, Math.min(10_000, Integer.parseInt(row.ref())));
+                } catch (NumberFormatException e) {
+                    return CompletableFuture.completedFuture(List.of());
+                }
+                List<ItemStack> wands = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    wands.add(net.skybornmc.skyblock.common.sell.SellWand.create(m.core, uses));
+                }
+                return CompletableFuture.completedFuture(wands);
             }
             case ITEM -> {
                 Material mat = BlackMarketModule.material(row.ref());

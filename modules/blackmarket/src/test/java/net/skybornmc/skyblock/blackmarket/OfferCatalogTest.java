@@ -40,7 +40,10 @@ class OfferCatalogTest {
         assertEquals(400, golem.price());
         assertEquals(OfferCatalog.Period.DAY, golem.period());
         assertEquals(8, c.get("scroll").orElseThrow().price());
-        assertFalse(c.get("sell_wand").orElseThrow().rollable(), "coming soon is never rolled");
+        assertTrue(c.get("sell_wand").orElseThrow().rollable(), "owner 4 Nov 2026: the Sell Wand is sold for real");
+        assertEquals(OfferCatalog.Kind.SELL_WAND, c.get("sell_wand").orElseThrow().kind());
+        assertEquals("100", c.get("sell_wand").orElseThrow().ref());
+        assertFalse(c.get("wardrobe_tome").orElseThrow().rollable(), "coming soon is never rolled");
         assertFalse(c.get("scroll").orElseThrow().rollable(), "the fixed row is not rolled");
         assertTrue(c.get("elytra").orElseThrow().rollable());
         assertFalse(c.liveIds().contains("blueprint"));
@@ -65,7 +68,10 @@ class OfferCatalogTest {
     void anUntouchedOfferListMigrates() {
         var change = new BlackMarketSettings().valueChanges().get(2).get("offers");
         assertEquals(BlackMarketSettings.OFFERS_V1, change.from());
-        assertEquals(new BlackMarketSettings().offers, change.to());
+        assertEquals(BlackMarketSettings.OFFERS, change.to());
+        var v3 = new BlackMarketSettings().valueChanges().get(3).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V2, v3.from());
+        assertEquals(new BlackMarketSettings().offers, v3.to());
     }
 
     @Test
