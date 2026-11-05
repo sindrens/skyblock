@@ -198,7 +198,7 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
             case SPAWNER -> !spawnerTypes(o).isEmpty();
             case ITEM -> material(o.ref()) != null;
             case TAG -> cosmetics().map(c -> c.ids(Cosmetics.Kind.TAG).contains(o.ref())).orElse(false);
-            case SELL_WAND -> core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
+            case SELL_WAND, AUTOSELL_CHEST -> core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
             case COMING_SOON -> false;
         };
     }
@@ -407,6 +407,7 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
             case ITEM -> Optional.ofNullable(material(o.ref())).orElse(Material.CHEST);
             case TAG -> Material.NAME_TAG;
             case SELL_WAND -> Material.BLAZE_ROD;
+            case AUTOSELL_CHEST -> Material.CHEST;
             case COMING_SOON -> Material.GRAY_DYE;
         };
     }

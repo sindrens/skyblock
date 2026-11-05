@@ -433,6 +433,12 @@ public final class EconomyConfig extends ModuleConfig {
             + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
     public long sellBigSaleChatFrom = 100_000;
 
+    @Setting(path = "autosell.interval-seconds", desc = "Owner 4 Nov 2026: an Auto-Sell Chest sells what is in it this often (Black Market item).", min = 5, max = 3600)
+    public int autosellIntervalSeconds = 30;
+
+    @Setting(path = "autosell.max-per-island", desc = "Most Auto-Sell Chests on one island.", min = 1, max = 100)
+    public int autosellMaxPerIsland = 1;
+
     @Setting(path = "sell.menu-enabled", desc = "Owner 4 Nov 2026: /sell sells everything sellable at once (off). On: /sell opens the sell menu as before (it is always /sell menu).")
     public boolean sellMenuEnabled = false;
 

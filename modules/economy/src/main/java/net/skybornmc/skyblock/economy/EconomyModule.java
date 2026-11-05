@@ -99,6 +99,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
     private net.skybornmc.skyblock.economy.sell.SellWandListener sellWand;
+    private net.skybornmc.skyblock.economy.sell.AutoSellChests autoSell;
     private net.skybornmc.skyblock.economy.bank.BankFeature bank;
     private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
@@ -166,6 +167,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         sellWand = new net.skybornmc.skyblock.economy.sell.SellWandListener(core, msg); // owner 4 Nov 2026: the Sell Wand
         core.plugin().getServer().getPluginManager().registerEvents(sellWand, core.plugin());
+        autoSell = new net.skybornmc.skyblock.economy.sell.AutoSellChests(core, msg, config.autosellIntervalSeconds, config.autosellMaxPerIsland);
+        core.plugin().getServer().getPluginManager().registerEvents(autoSell, core.plugin());
+        autoSell.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }
@@ -217,6 +221,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        if (autoSell != null) {
+            autoSell.stop();
+        }
         if (baltopTask != null) {
             baltopTask.cancel();
         }

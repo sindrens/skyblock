@@ -1221,3 +1221,16 @@ sell-wand:
   not-island: "<prefix><c:error><sym:cross></c:error> <c:text>The Sell Wand only works on a chest on your own island."
   not-chest: "<c:text>Right-click a chest or barrel with the Sell Wand."
   unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Selling is turned off right now."
+
+# The Auto-Sell Chest (owner 4 Nov 2026, Black Market): sells what is in it every few seconds.
+autosell:
+  item:
+    name: "<bold><area:money>Auto-Sell Chest</area:money></bold>"
+    subtitle: "<c:muted>Block <sym:dot> Black Market"
+    about: "<c:text>Sells what is in it every 30 s."
+    action: "<bold><c:action>» PLACE</c:action></bold> <c:text>it on your island"
+  placed: "<prefix><c:success><sym:check></c:success> <c:text>Auto-Sell Chest placed. It sells what is in it every <c:value><seconds> s</c:value><c:text>; hoppers can feed it."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest on your own island."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> <c:text>Auto-Sell Chest(s), the most allowed."
+  not-double: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest away from other chests (it can't be a double chest)."
+  sold: "<c:success>Auto-Sell Chest</c:success> <c:text>+<amount> <c:muted>(<items> items)"

@@ -53,7 +53,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Setting(path = "offers", desc = "Offers, one per line: '<id>: slot=<headline|rare|common|fixed> price=<shards> weight=<n> "
             + "reward=<kind>[:<value>] [amount=<n>] [level=<n>] [limit=<n>/<rotation|day|month|season>] [icon=<item>]'. Kinds: "
-            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, coming-soon "
+            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, autosell-chest, coming-soon "
             + "(listed, never rolled). Names and lore: messages/blackmarket.yml offers.<id>.", level = Setting.Level.OWNER)
     public List<String> offers = OFFERS;
 
@@ -139,7 +139,9 @@ public final class BlackMarketSettings extends ModuleConfig {
     /** The default offer list (version 3: the Sell Wand is built for real, 100 uses; owner 4 Nov 2026). */
     static final List<String> OFFERS = OFFERS_V2.stream()
             .map(line -> line.startsWith("sell_wand:")
-                    ? "sell_wand: slot=common price=25 weight=3 reward=sell-wand:100 limit=2/rotation icon=blaze_rod" : line)
+                    ? "sell_wand: slot=common price=25 weight=3 reward=sell-wand:100 limit=2/rotation icon=blaze_rod"
+                    : line.startsWith("autosell_chest:")
+                    ? "autosell_chest: slot=rare price=120 weight=2 reward=autosell-chest limit=1/rotation icon=chest" : line)
             .toList();
 
     /** The default offer list before ECON-SPAWNERS (version 1). */

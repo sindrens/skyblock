@@ -54,6 +54,8 @@ final class OfferCatalog {
         TAG("tag", true),
         /** A Sell Wand with {@code ref} uses (owner 4 Nov 2026: built for real). Item. */
         SELL_WAND("sell-wand", true),
+        /** An Auto-Sell Chest (owner 4 Nov 2026). Item. */
+        AUTOSELL_CHEST("autosell-chest", false),
         /** Not built yet (collectors, auto-sell chests, blueprints, tomes): shown in the config only. */
         COMING_SOON("coming-soon", false);
 

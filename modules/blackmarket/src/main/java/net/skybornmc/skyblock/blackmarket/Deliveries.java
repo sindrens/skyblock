@@ -125,7 +125,7 @@ final class Deliveries {
             case ENCHANT_BOOK, SCROLL -> m.core.services().has(EnchantService.class);
             case KEY -> m.core.services().has(CrateKeys.class);
             case SPAWNER -> m.core.services().has(StackingService.class);
-            case SELL_WAND -> m.core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
+            case SELL_WAND, AUTOSELL_CHEST -> m.core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
             case TAG -> m.cosmetics().isPresent();
             default -> true;
         };
@@ -313,6 +313,13 @@ final class Deliveries {
                     wands.add(net.skybornmc.skyblock.common.sell.SellWand.create(m.core, uses));
                 }
                 return CompletableFuture.completedFuture(wands);
+            }
+            case AUTOSELL_CHEST -> {
+                List<ItemStack> chests = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    chests.add(net.skybornmc.skyblock.common.sell.AutoSellChestItem.create(m.core));
+                }
+                return CompletableFuture.completedFuture(chests);
             }
             case ITEM -> {
                 Material mat = BlackMarketModule.material(row.ref());
