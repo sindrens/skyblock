@@ -35,5 +35,5 @@ The owner accepted the master plan (`MASTER_PLAN.md`). Where an answer below cha
 | Q-50-52 | release-v4 becomes main, delete the 4 dead branches, move old docs to docs/archive | step 3 of the order |
 
 ## Still needed from the owner
-- Q-60: the full Plan Pack text (5 Nov) and the list of the 14 plans.
+- ~~Q-60: the full Plan Pack text~~ Resolved: the owner does not have it, and it is not on the Mac or GitHub. The spawner numbers in MASTER_PLAN P-01/P-02 (from his 5 Nov message) are the source; the P-01..P-19 list in MASTER_PLAN replaces the "14 plans" list.
 - Q-61: the result of the research prompt, if it was run.
