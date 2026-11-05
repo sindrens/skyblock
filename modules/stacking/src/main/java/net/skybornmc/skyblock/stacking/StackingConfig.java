@@ -141,6 +141,9 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.unlock.save-seconds", desc = "Kill counts are written in one batch this often.", min = 5, max = 600, restart = true)
     public int unlockSaveSeconds = 30;
 
+    @Setting(path = "collectors.max-per-island", desc = "Owner 4 Nov 2026: most Chunk Collectors on one island (one per chunk always).", min = 1, max = 100)
+    public int collectorsPerIsland = 1;
+
     @Setting(path = "spawners.labels", desc = "Feedback 5 Nov 2026: a text above every spawner stack (\"153x Cow Spawner\").")
     public boolean spawnerLabels = true;
 

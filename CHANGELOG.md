@@ -6,6 +6,7 @@
 - Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
 - `/fly`: staff and the owner outside staff mode now get the rank perk (island fly) instead of "staff mode only".
 - **Auto-Sell Chest** (Black Market): place it on your island and it sells what is in it every 30 s (hoppers can feed it; one per island; breaking it gives the chest back).
+- **Chunk Collector** (Black Market): a hopper for your island that catches every item dropped in its chunk (farms, spawners) before it hits the ground and passes it on to the chest under it. One per chunk, one per island (`collectors.max-per-island`). Items players drop are never caught.
 - **Sell Wand** (Black Market, no longer "Coming soon"): right-click a chest or barrel on your island and everything sellable in it is sold at once; 100 uses, shown in the lore.
 - **Friends:** `/friends` lists your friends with online status (click to visit their island), requests to accept or deny, and `/friends add/remove/list`. Friends stay when you leave an island. A friend coming online shows a short line (can be turned off in /settings).
 - Daily reward: missing one day no longer breaks the streak (two days do; `calendar.streak-grace-days`), and the reward can be claimed after 10 minutes of play in that session (`calendar.min-online-minutes`, stops alt farming).

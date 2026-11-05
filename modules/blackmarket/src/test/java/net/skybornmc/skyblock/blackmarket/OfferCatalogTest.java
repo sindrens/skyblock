@@ -44,6 +44,8 @@ class OfferCatalogTest {
         assertEquals(OfferCatalog.Kind.SELL_WAND, c.get("sell_wand").orElseThrow().kind());
         assertEquals("100", c.get("sell_wand").orElseThrow().ref());
         assertFalse(c.get("wardrobe_tome").orElseThrow().rollable(), "coming soon is never rolled");
+        assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, c.get("chunk_collector").orElseThrow().kind());
+        assertTrue(c.get("chunk_collector").orElseThrow().rollable(), "owner 4 Nov 2026: the Chunk Collector is sold for real");
         assertFalse(c.get("scroll").orElseThrow().rollable(), "the fixed row is not rolled");
         assertTrue(c.get("elytra").orElseThrow().rollable());
         assertFalse(c.liveIds().contains("blueprint"));
@@ -72,6 +74,9 @@ class OfferCatalogTest {
         var v3 = new BlackMarketSettings().valueChanges().get(3).get("offers");
         assertEquals(BlackMarketSettings.OFFERS_V2, v3.from());
         assertEquals(new BlackMarketSettings().offers, v3.to());
+        var v4 = new BlackMarketSettings().valueChanges().get(4).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V3, v4.from());
+        assertEquals(BlackMarketSettings.OFFERS, v4.to());
     }
 
     @Test

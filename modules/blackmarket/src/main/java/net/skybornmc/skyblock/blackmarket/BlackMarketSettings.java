@@ -53,7 +53,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Setting(path = "offers", desc = "Offers, one per line: '<id>: slot=<headline|rare|common|fixed> price=<shards> weight=<n> "
             + "reward=<kind>[:<value>] [amount=<n>] [level=<n>] [limit=<n>/<rotation|day|month|season>] [icon=<item>]'. Kinds: "
-            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, autosell-chest, coming-soon "
+            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, autosell-chest, chunk-collector, coming-soon "
             + "(listed, never rolled). Names and lore: messages/blackmarket.yml offers.<id>.", level = Setting.Level.OWNER)
     public List<String> offers = OFFERS;
 
@@ -136,12 +136,18 @@ public final class BlackMarketSettings extends ModuleConfig {
             "sell_wand: slot=common price=25 weight=3 reward=coming-soon icon=blaze_rod",
             "wardrobe_tome: slot=common price=20 weight=3 reward=coming-soon icon=book");
 
-    /** The default offer list (version 3: the Sell Wand is built for real, 100 uses; owner 4 Nov 2026). */
-    static final List<String> OFFERS = OFFERS_V2.stream()
+    /** The default offer list of version 3: the Sell Wand (100 uses) and the Auto-Sell Chest are built (owner 4 Nov 2026). */
+    static final List<String> OFFERS_V3 = OFFERS_V2.stream()
             .map(line -> line.startsWith("sell_wand:")
                     ? "sell_wand: slot=common price=25 weight=3 reward=sell-wand:100 limit=2/rotation icon=blaze_rod"
                     : line.startsWith("autosell_chest:")
                     ? "autosell_chest: slot=rare price=120 weight=2 reward=autosell-chest limit=1/rotation icon=chest" : line)
+            .toList();
+
+    /** The default offer list (version 4: the Chunk Collector is built too). */
+    static final List<String> OFFERS = OFFERS_V3.stream()
+            .map(line -> line.startsWith("chunk_collector:")
+                    ? "chunk_collector: slot=rare price=100 weight=2 reward=chunk-collector limit=1/rotation icon=hopper" : line)
             .toList();
 
     /** The default offer list before ECON-SPAWNERS (version 1). */
@@ -165,7 +171,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /**
@@ -176,6 +182,7 @@ public final class BlackMarketSettings extends ModuleConfig {
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("offers", ValueChange.of(OFFERS_V1, OFFERS)),
-                3, java.util.Map.of("offers", ValueChange.of(OFFERS_V2, OFFERS)));
+                3, java.util.Map.of("offers", ValueChange.of(OFFERS_V2, OFFERS)),
+                4, java.util.Map.of("offers", ValueChange.of(OFFERS_V3, OFFERS)));
     }
 }

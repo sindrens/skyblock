@@ -72,6 +72,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private EntityLimits limits;
     private CropGrowth crops;
     private HopperCounter hoppers;
+    private ChunkCollectors collectors;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
 
     public StackingModule(Core core) {
@@ -99,10 +100,12 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         limits = new EntityLimits(this);
         crops = new CropGrowth(this);
         hoppers = new HopperCounter(this);
+        collectors = new ChunkCollectors(this); // owner 4 Nov 2026: Chunk Collectors
+        collectors.load();
         applyConfig();
         spawnerItems.register();
         spawners.load();
-        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety)) {
+        for (Listener listener : List.of(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety, collectors)) {
             Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         }
         indexLoaded();
@@ -132,7 +135,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         if (unlock != null) {
             unlock.flushBlocking();
         }
-        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety)) {
+        for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety, collectors)) {
             if (listener != null) {
                 HandlerList.unregisterAll(listener);
             }

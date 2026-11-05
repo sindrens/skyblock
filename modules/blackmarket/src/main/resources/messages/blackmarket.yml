@@ -148,7 +148,8 @@ offers:
     name: "<rarity:epic>Coinmaster Silks Set Token"
     lore: ["<c:text>A selling armor set."]
   chunk_collector:
-    name: "<rarity:epic>Chunk Collector (tier 3)"
+    name: "<rarity:epic>Chunk Collector"
+    lore: ["<c:text>Place it on your island: it", "<c:text>catches every drop in its chunk.", "<c:text>Put a chest under it. 1 per island."]
   autosell_chest:
     name: "<rarity:epic>Auto-Sell Chest"
     lore: ["<c:text>Place it on your island: it", "<c:text>sells what is in it every 30 s.", "<c:text>Hoppers can feed it. 1 per island."]

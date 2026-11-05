@@ -184,3 +184,14 @@ menu:
     lore:
       - "<c:text>Limit <c:value><max></c:value> <c:muted>(up to <absolute-max>)"
       - "<c:text>Every <c:value><seconds> s"
+
+collector:
+  item:
+    name: "<rarity:epic>Chunk Collector"
+    subtitle: "<c:muted>Island item"
+    about: "<c:text>Catches every item that drops in its chunk (farms, spawners) and passes it on like a hopper."
+    action: "<c:action>Place it on your island <sym:dot> chest under it"
+  placed: "<prefix><c:success><sym:check></c:success> <c:text>Chunk Collector placed. It catches every drop in this chunk."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Chunk Collector on an island you are a member of."
+  one-per-chunk: "<prefix><c:error><sym:cross></c:error> <c:text>This chunk already has a Chunk Collector. Use another chunk."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has the most Chunk Collectors (<c:value><max></c:value>). Break one to move it."

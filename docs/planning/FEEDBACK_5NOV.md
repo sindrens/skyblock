@@ -39,3 +39,9 @@ Status: ⬜ open · 🔧 in progress · ✅ done. Worked in this order (quick fi
 
 ## Plan only (not built yet)
 - ⬜ P1 How to stop boosting (Maarten) → in PLAN_4NOV.md phase 1 (paused by the owner).
+
+## "Coming soon" items built (owner 4 Nov)
+- ✅ Sell Wand (Black Market, 100 uses: right-click a chest or barrel on your island).
+- ✅ Auto-Sell Chest (Black Market, sells its contents every 30 s, 1 per island).
+- ✅ Chunk Collector (Black Market, catches the drops in its chunk, 1 per island).
+- ⬜ Wardrobe Tome, Blueprint (tool skin).

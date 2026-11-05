@@ -1,0 +1,10 @@
+-d
+/tmp/claude-0/-home-claude/b2e37674-3fcb-5387-95f5-a0d24c3ac3f8/scratchpad/jc
+modules/stacking/src/main/java/net/skybornmc/skyblock/stacking/ChunkCollectors.java
+modules/stacking/src/main/java/net/skybornmc/skyblock/stacking/StackingModule.java
+modules/stacking/src/main/java/net/skybornmc/skyblock/stacking/StackingConfig.java
+common/src/main/java/net/skybornmc/skyblock/common/stacking/ChunkCollectorItem.java
+modules/blackmarket/src/main/java/net/skybornmc/skyblock/blackmarket/OfferCatalog.java
+modules/blackmarket/src/main/java/net/skybornmc/skyblock/blackmarket/BlackMarketModule.java
+modules/blackmarket/src/main/java/net/skybornmc/skyblock/blackmarket/Deliveries.java
+modules/blackmarket/src/main/java/net/skybornmc/skyblock/blackmarket/BlackMarketSettings.java
