@@ -404,7 +404,7 @@ invite:
   full: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is full (<c:value><slots></c:value> members). Buy more slots: <click:run_command:'/is upgrade'><c:action>[Upgrades]</c:action></click>"
   # Owner F10: a member left or was kicked recently, so that slot stays locked (members.slot-lock-hours) before a new invite.
   # <time> = until the next slot opens (31h 12m), <hours> = the lock length.
-  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>A slot opens again in <c:value><time></c:value> — a member left recently. <c:muted>(slots stay locked <hours>h after a leave or kick)"
+  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>A slot opens again in <c:value><time></c:value>. A member left recently. <c:muted>(slots stay locked <hours>h after a leave or kick)"
   too-many: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> open invites. Wait until some are answered or expire."
   target-blocked: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't join islands at the moment."
   target-season-limit: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already joined <c:value><max></c:value> islands this season, the max."
@@ -459,7 +459,7 @@ accept:
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."
   # Owner F10: the free slot of that island is locked after a recent leave or kick. <time> <hours>
-  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>That island's free slot opens again in <c:value><time></c:value> — a member left recently."
+  slot-locked: "<prefix><c:error><sym:cross></c:error> <c:text>That island's free slot opens again in <c:value><time></c:value>. A member left recently."
   blocked: "<prefix><c:error><sym:cross></c:error> <c:text>You can't join islands at the moment."
   season-limit: "<prefix><c:error><sym:cross></c:error> <c:text>You already joined <c:value><max></c:value> islands this season, the max."
   joined: "<prefix><c:success><sym:check></c:success> <c:text>You joined <c:value><island></c:value>! <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click> <click:run_command:'/is members'><hover:show_text:'<c:text>See the members'><c:action>[Members]</c:action></hover></click>"

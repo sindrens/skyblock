@@ -2,7 +2,7 @@
 # MiniMessage + style tags (style.yml). Reload: /pack reload or /skyblock reload pack
 kick:
   # Declined the prompt while the pack is required. Shown on the disconnect screen.
-  declined: "<c:warning><bold>The Phoenix resource pack is needed to play</bold></c:warning><newline><newline><c:text>Phoenix Skyblock uses its own menus, rank badges and sounds, and they need the pack to show correctly.<newline><newline><c:text>To turn it on:<newline><c:value>Multiplayer → select Phoenix Skyblock → Edit → Server Resource Packs: Enabled</c:value><newline><newline><c:text>Then join again. It is small and only downloads once."
+  declined: "<c:warning><bold>The Phoenix resource pack is needed to play</bold></c:warning><newline><newline><c:text>Phoenix Skyblock uses its own menus, rank badges and sounds, and they need the pack to show correctly.<newline><newline><c:text>To turn it on:<newline><c:value>Multiplayer > select Phoenix Skyblock > Edit > Server Resource Packs: Enabled</c:value><newline><newline><c:text>Then join again. It is small and only downloads once."
   # The download or loading failed (or took too long).
   failed: "<c:warning><bold>Couldn't download the pack</bold></c:warning><newline><newline><c:text>Couldn't download the pack, please rejoin.<newline><c:muted>If it keeps happening, check your connection and that Server Resource Packs is Enabled for this server."
 
