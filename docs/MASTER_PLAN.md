@@ -82,7 +82,7 @@ worlds (`DepthsWiring`, `worlds.yml:83-218`, messages), hud (`places.depths`, `P
 The owner's own "14 plans still needed" list is not saved in the repo; it is matched against this table when he re-sends it.
 
 ## 5. Owner questions
-Yes/no page (6 Nov). Answers are saved in `docs/OWNER_ANSWERS_6NOV.md` once given.
+Yes/no page: https://claude.ai/artifact/DPYQjLegVypWe3tKqcm3MU (db collection `answers6nov`). Answers are copied to `docs/OWNER_ANSWERS_6NOV.md` once given.
 
 ## 6. Order of work after approval
 1. FX-01 to FX-21 (one batch, one release).
