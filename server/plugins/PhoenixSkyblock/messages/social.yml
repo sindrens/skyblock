@@ -43,6 +43,9 @@ ignore:
 
 # /settings toggles of this module (owner answer 317).
 settings:
+  friend-notices:
+    name: "<c:value>Friend notices"
+    lore: ["<c:text>A chat line when a friend", "<c:text>comes online."]
   hide-ignored-chat:
     name: "<c:value>Hide ignored chat"
     lore: ["<c:text>Hide the public chat of players", "<c:text>you ignore (only for you)."]
@@ -130,3 +133,41 @@ rules:
   - " <c:muted>Private messages attached to a /report are kept 180 days as evidence."
   - " <c:text>Full rules: <click:open_url:'<url>'><hover:show_text:'<c:action>Click to open'><c:sky_ice><u><url></u></c:sky_ice></hover></click>"
   - ""
+
+# /friends (owner 4 Nov 2026): friend list per account, requests, visit a friend's island.
+friends:
+  joined: "<prefix><c:success>●</c:success> <c:value><player></c:value> <c:text>is online."
+  requests-waiting: "<prefix><c:text>You have <c:value><count></c:value> <c:text>friend request(s). <c:action>[Open /friends]"
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player called <c:value><player></c:value> <c:text>has played here."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work (database error). Try again in a moment."
+  self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't add yourself."
+  already: "<prefix><c:text><c:value><player></c:value> <c:text>is already your friend."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><max></c:value> <c:text>friends, the most you can have. Remove one with <c:action>/friends remove</c:action><c:text>."
+  their-limit: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has the most friends they can have."
+  already-requested: "<prefix><c:text>You already asked <c:value><player></c:value><c:text>. They can accept with <c:action>/friends</c:action><c:text>."
+  requested: "<prefix><c:success><sym:check></c:success> <c:text>Friend request sent to <c:value><player></c:value><c:text>."
+  request: "<prefix><c:value><player></c:value> <c:text>wants to be your friend."
+  accept-button: "<c:success><bold>[Accept]</bold>"
+  deny-button: "<c:error><bold>[Deny]</bold>"
+  now: "<prefix><c:success><sym:check></c:success> <c:text>You and <c:value><player></c:value> <c:text>are friends now."
+  denied: "<prefix><c:text>Request of <c:value><player></c:value> <c:text>turned down."
+  not-friend: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not on your friend list."
+  removed: "<prefix><c:text><c:value><player></c:value> <c:text>is no longer your friend."
+  none: "<prefix><c:text>No friends yet. Add one with <c:action>/friends add [name]</c:action><c:text>."
+  list: "<prefix><c:text>Friends (<c:value><count></c:value><c:text>): <c:success>online:</c:success> <c:value><online></c:value> <c:muted><sym:dot> offline: <offline>"
+  menu:
+    title: "Friends"
+    name-online: "<bold><c:success><player></c:success></bold>"
+    name-offline: "<bold><c:muted><player></c:muted></bold>"
+    online: "<c:success>● Online"
+    offline: "<c:muted>Offline"
+    visit: "<bold><c:action>» CLICK</c:action></bold> <c:text>to visit their island"
+    remove: "<c:muted>Shift + right-click: remove"
+    request:
+      name: "<bold><c:action><player></c:action></bold>"
+      subtitle: "<c:muted>Friend request"
+      accept: "<bold><c:action>» CLICK</c:action></bold> <c:text>to accept"
+      deny: "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>to deny"
+    empty:
+      name: "<bold><c:muted>No friends yet"
+      lore: "<c:text>Add one with /friends add [name]"

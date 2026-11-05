@@ -5,6 +5,7 @@
 | `/msg <player> <message>` (`/w`, `/tell`, `/whisper`, `/m`, `/pm`) | Private message; click a name to reply; rate-limited; logged (30 days). Links, IP addresses and phone numbers are refused (chat filter, not the swear list; `dm.contact-filter`); an account still in the tutorial only gets DMs from staff and players it messaged first (`dm.new-player-protection`) | `skyblock.social.msg` | ✅ |
 | `/r <message>` (`/reply`) | Reply to your last private message | `skyblock.social.msg` | ✅ |
 | `/ignore <player>` / `/ignore list` | Ignore a player: no private messages, `/tpa`/`/tpahere`, trade requests or island invites from them (they get the same answer as "requests off"); `/settings → Hide ignored chat` (on by default) also hides their public chat for you only. Staff can't be ignored (owner answers 316/317) | `skyblock.social.ignore` | ✅ |
+| `/friends` (`/friend`) | Your friends (per account): a menu with online status (click = visit their island, shift + right-click = remove) and requests (click = accept, right-click = deny); `/friends add/accept/deny/remove <player>`, `/friends list`. A friend coming online shows one chat line (`/settings → Friend notices`). Most friends: `social.yml friends.max` (50) | `skyblock.social.friends` | ✅ |
 | `/unignore <player>` | Stop ignoring | `skyblock.social.ignore` | ✅ |
 | `/afk` | Toggle AFK (auto after `social.yml → afk.auto-minutes`) | `skyblock.social.afk` | ✅ |
 | `/list` (`/online`, `/who`) | Online players grouped by rank | `skyblock.social.list` | ✅ |

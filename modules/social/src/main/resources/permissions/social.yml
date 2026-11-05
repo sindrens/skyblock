@@ -42,3 +42,6 @@ skyblock.staff.broadcast:
   default: op
 skyblock.staff.unignorable:
   description: Private messages can't be ignored
+skyblock.social.friends:
+  description: Use /friends (friend list, requests, visit a friend's island)
+  default: true

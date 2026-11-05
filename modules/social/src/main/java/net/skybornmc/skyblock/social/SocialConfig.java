@@ -6,6 +6,9 @@ import net.skybornmc.skyblock.common.config.Setting;
 /** Typed settings of {@code social.yml}. */
 public final class SocialConfig extends ModuleConfig {
 
+    @Setting(path = "friends.max", desc = "Owner 4 Nov 2026: most friends per player (/friends).", min = 1, max = 500)
+    public int friendsMax = 50;
+
     @Setting(path = "dm.max-length", desc = "Longest private message (characters).", min = 16, max = 1024)
     public int dmMaxLength = 256;
 

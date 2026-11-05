@@ -101,6 +101,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     /** R3-32: who each account still in the tutorial messaged first (they may answer). */
     private final NewPlayerDms newPlayerDms = new NewPlayerDms();
     private SocialStore store;
+    private Friends friends;
     private Executor main;
     private Scheduler.Task afkTask;
     private volatile PlayerSettings settings;
@@ -133,6 +134,10 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerPlaceholders();
         registerCommands();
+        friends = new Friends(core, config, msg, main); // owner 4 Nov 2026: /friends
+        core.plugin().getServer().getPluginManager().registerEvents(friends, core.plugin());
+        friends.register();
+        friends.loadOnline();
         // ANS3 (owner answers 316/317): one ignore list for tpa, trades, island invites and chat.
         core.services().register(ID, IgnoreService.class, this);
         long now = System.currentTimeMillis();
@@ -160,6 +165,11 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
         service.register(new SettingToggle(ID, SETTING_HIDE_IGNORED, SettingCategory.CHAT, Material.GRAY_DYE,
                 config.hideIgnoredChatDefault, null, ID, "settings." + SETTING_HIDE_IGNORED, false));
+        service.register(new SettingToggle(ID, Friends.SETTING_NOTICES, SettingCategory.SOCIAL, Material.PLAYER_HEAD, true, null,
+                ID, "settings." + Friends.SETTING_NOTICES, false));
+        if (friends != null) {
+            friends.settings(service);
+        }
         settings = service;
     }
 
@@ -186,6 +196,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
             afkTask.cancel();
         }
         HandlerList.unregisterAll(this);
+        if (friends != null) {
+            HandlerList.unregisterAll(friends);
+        }
     }
 
     // ================================================================== commands
