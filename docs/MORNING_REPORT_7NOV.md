@@ -18,7 +18,7 @@ Since about 08:00 the test server refuses my SSH connections ("Connection closed
 | 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
 | 5 | Spawners v2: levels per mob type, limit 4 x level, prestige, 10 s to 5 s speed, no efficiency curve (update129) | built |
 | 6 | Quest line v2: two new quest book chapters (Bramble's Farmhand, Flint's Apprentice), /mailbox, /menu → You gets Quest Book, Mailbox, Friends, Milestones (update130) | built |
-| 7 | /fish | |
+| 7 | /fish: pond, 6 waters, island rod, Fishing Shards, rod enchants, storage, anti-AFK (update131) | built |
 | 8 | /pve | |
 | 9 | Polish (crates, collection, AH, shop) | |
 | 10 | Pack v2, ranks v2 | |
@@ -74,6 +74,14 @@ Since about 08:00 the test server refuses my SSH connections ("Connection closed
 - `/mailbox` opens the item box (`/box` still works).
 - `/menu` → You now also has Quest Book, Mailbox, Friends and Milestones.
 - Not done from the plan's quest line: the NPC chains for /fish and /pve (those areas don't exist yet) and the Kindle island chain (spawner, island size, bank) — the island chapter already covers chest, seeds, generator, Kindle and island level.
+
+## /fish (batch 7, update131)
+- `/fish` (and Travel → The Pond) takes you to a new pond in the grind world. Six waters unlock by catches: Shallows 0, River 500, Lake 2,000, Reef 6,000, Deep 15,000, Abyss 35,000. Each water has its own fish.
+- **Every catch pays money** ($150 in the Shallows up to $450 in the Abyss, Golden Blocks x5). Vanilla fish don't get a big sell price, so AFK fish farms on islands can't print money.
+- **Island Rod**: every island member gets a third island tool. With it a catch gives tool XP, **Fishing Shards** (a new personal shard type, island-only like the others), rod perks (Shard Finder, Lure, Luck of the Sea, Extra Drops, Storage, Auto-Sell ...) and 12 rod enchants (Shard Burst, Big Catch, Golden Fish, Treasure Chest, Keyfinder ...). Sneak + right-click opens its menu (a right-click casts).
+- Catches go into the rod's storage (full = fishing pauses, nothing lost). The scoreboard at the pond shows your water, progress, money earned, storage, events and Fishing level. Fishing and Farming now show in `/skills`.
+- **Anti-exploit**: eight casts in a row from one spot without looking around give nothing, and at most 20 catches a minute count. Bites come in 3-8 seconds; Instant Regrow events make them three times faster (Bite Frenzy).
+- Not yet: an NPC "Marla" at the pond and her quest chain, a Fish Mastery, a rod picture in the pack.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

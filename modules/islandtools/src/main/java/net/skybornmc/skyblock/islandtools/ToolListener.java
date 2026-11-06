@@ -143,8 +143,8 @@ final class ToolListener implements Listener {
     public void onBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
         Kind kind = usable(p, p.getInventory().getItemInMainHand(), event);
-        if (kind == null) {
-            return;
+        if (kind == null || kind == Kind.ROD) {
+            return; // the rod breaks blocks like a plain item
         }
         Block block = event.getBlock();
         // Owner Q-30 (FULL_PLAN.md): at /farm and /mine the drops go into the tool's storage; when it is full the
@@ -405,8 +405,70 @@ final class ToolListener implements Listener {
             return;
         }
         if (event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR) {
+            // Owner 6 Nov 2026: a right-click casts the rod; its menu opens with sneak + right-click (or /tool).
+            if (ToolItems.kindOf(event.getItem()) == Kind.ROD && !event.getPlayer().isSneaking()) {
+                return;
+            }
             event.setCancelled(true);
             m.openHeld(event.getPlayer());
+        }
+    }
+
+    /**
+     * Owner 6 Nov 2026: a catch at /fish with the island rod (after the grind areas made it the player's water's catch):
+     * the rod's enchants, tool XP and Fishing Shards, its Extra Drops and Double Drops, then the rod's storage (then the
+     * bag, never the ground). A full storage gives nothing until it is sold (like the paused /farm and /mine).
+     */
+    /** A full rod storage pauses /fish before anything is counted or paid (owner Q-30: no loss). */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onFishFull(org.bukkit.event.player.PlayerFishEvent event) {
+        if (event.getState() != org.bukkit.event.player.PlayerFishEvent.State.CAUGHT_FISH) {
+            return;
+        }
+        Player p = event.getPlayer();
+        if (!grindWorld(p) || ToolItems.kindOf(p.getInventory().getItemInMainHand()) != Kind.ROD || !m.loaded(p)) {
+            return;
+        }
+        if (m.storage().used(m.profile(p), Kind.ROD) >= m.storage().capacity(p, Kind.ROD)) {
+            event.setCancelled(true);
+            m.msg().actionBar(p, "storage.paused-rod");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onFish(org.bukkit.event.player.PlayerFishEvent event) {
+        if (event.getState() != org.bukkit.event.player.PlayerFishEvent.State.CAUGHT_FISH || !(event.getCaught() instanceof Item caught)
+                || !caught.isValid()) {
+            return;
+        }
+        Player p = event.getPlayer();
+        Kind kind = usable(p, p.getInventory().getItemInMainHand(), null);
+        if (kind != Kind.ROD || !grindWorld(p)) {
+            return;
+        }
+        List<Item> drops = new ArrayList<>(List.of(caught));
+        m.enchants().proc(p, kind, event.getHook().getLocation().getBlock(), drops);
+        m.action(p, kind, false);
+        double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,
+                BonusContext.of(p, p.getInventory().getItemInMainHand(), "island_rod").withTarget(caught.getItemStack().getType().getKey().getKey())))
+                .orElse(1.0);
+        mult *= net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
+                net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_DROPS);
+        ItemStack stack = caught.getItemStack();
+        if (mult > 1.0) {
+            stack.setAmount(Math.max(1, Math.min(stack.getMaxStackSize(), ToolRules.roll(stack.getAmount() * mult, ThreadLocalRandom.current().nextDouble()))));
+        }
+        caught.remove(); // nothing flies to the player: storage first, then the bag
+        if (m.autoSell(p, kind, stack)) {
+            return;
+        }
+        long stored = m.storage().add(p, kind, stack.getType().getKey().getKey(), stack.getAmount());
+        if (stored < stack.getAmount()) {
+            stack.setAmount(stack.getAmount() - (int) stored);
+            Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
+            if (!left.isEmpty()) {
+                warn(p, "storage.full");
+            }
         }
     }
 

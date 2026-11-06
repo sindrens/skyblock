@@ -12,6 +12,9 @@ final class ToolRules {
 
     /** Owner 4 Nov 2026: both island tools are diamond from the start (no wood to netherite tiers any more). */
     static String material(Kind kind) {
+        if (kind == Kind.ROD) {
+            return "fishing_rod"; // there is no diamond rod
+        }
         return ("diamond_" + kind.id()).toLowerCase(Locale.ROOT);
     }
 

@@ -286,6 +286,9 @@ travel:
     crate-yard:
       name: "<c:brand><bold>Crate Yard"
       lore: ["<c:text>Open your crates."]
+    pond:
+      name: "<c:brand><bold>The Pond"
+      lore: ["<c:text>Fish with your island rod.", "<c:text>Every catch pays."]
     market:
       name: "<c:flame><bold>Market"
       lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]

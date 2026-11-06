@@ -92,6 +92,9 @@ public final class EssentialsModule implements SkyblockModule {
         core.configs().load(config);
         core.messages().load(id());
         teleportCommands.reload();
+        if (grind != null) {
+            grind.reloadFish();
+        }
     }
 
     @Override

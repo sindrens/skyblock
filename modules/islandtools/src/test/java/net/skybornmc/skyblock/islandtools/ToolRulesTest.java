@@ -20,7 +20,9 @@ class ToolRulesTest {
 
     @Test
     void onlyHoeAndPickaxeWithTheirOwnShards() {
-        assertEquals(List.of(Kind.HOE, Kind.PICKAXE), List.of(Kind.values()));
+        assertEquals(List.of(Kind.HOE, Kind.PICKAXE, Kind.ROD), List.of(Kind.values()), "owner 6 Nov 2026: the island rod for /fish");
+        assertEquals(Currency.FISHING_SHARDS, Kind.ROD.shards());
+        assertEquals("fishing_rod", ToolRules.material(Kind.ROD));
         assertEquals(Currency.SHARDS, Kind.HOE.shards(), "the hoe earns Farming Shards (the old shards key)");
         assertEquals(Currency.MINING_SHARDS, Kind.PICKAXE.shards());
         assertTrue(Kind.legacy("axe") && Kind.legacy("SWORD"));
@@ -129,7 +131,7 @@ class ToolRulesTest {
     @Test
     void brokenLinesAreSkipped() {
         List<String> problems = new ArrayList<>();
-        Upgrades u = Upgrades.parse(List.of("hoe:x:nope:5:1:10+2", "rod:b:haste:2:1:10/20", "hoe:e:enchant:3:1:5/6/7",
+        Upgrades u = Upgrades.parse(List.of("hoe:x:nope:5:1:10+2", "axe:b:haste:2:1:10/20", "hoe:e:enchant:3:1:5/6/7",
                 "hoe:y:drops:5:1:abc", "hoe:z:drops:5:1:10+2", "hoe:z:drops:5:1:10+2", "hoe:auto_sell:autosell:1:20:1.5"), problems::add);
         assertEquals(6, problems.size(), String.join("\n", problems));
         assertEquals(1, u.of(Kind.HOE).size());

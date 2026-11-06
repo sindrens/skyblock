@@ -66,7 +66,20 @@ public final class IslandToolsConfig extends ModuleConfig {
             "hoe:keyfinder:1000:5:0.001:0.02:1:1:0:36:0",
             "hoe:tornado:1000:5:0.03:0.08:20:28:20:1:1",
             "hoe:meteor_shower:1000:8:0.01:0.03:12:36:60:1:5",
-            "hoe:shard_jackpot:1000:6:0.01:0.04:40:100:0:1:10");
+            "hoe:shard_jackpot:1000:6:0.01:0.04:40:100:0:1:10",
+            // owner 6 Nov 2026: the island rod at /fish (a catch is about 10x rarer than a block, so the chances are higher)
+            "rod:shard_burst:1000:2:4:10:4:8:0:1:0",
+            "rod:scholar:1000:2:0:0:5:25:0:1:0",
+            "rod:big_catch:1000:2:10:40:1:2:0:1:0",
+            "rod:quick_study:1000:2:5:20:1:2:0:5:0",
+            "rod:golden_fish:1000:3:5:20:5:5:0:8:0",
+            "rod:combo:1000:2:0:0:5:20:0:10:0",
+            "rod:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "rod:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "rod:lucky_streak:1000:3:0:0:30:15:0:28:0",
+            "rod:treasure_chest:1000:4:0.5:2:1:1:0:32:0",
+            "rod:keyfinder:1000:5:0.01:0.2:1:1:0:36:0",
+            "rod:shard_jackpot:1000:6:0.1:0.4:40:100:0:1:10");
 
     @Setting(path = "enchants.cap-base", desc = "Highest grind enchant level at prestige 0 (plans/TOOLS_V3.md).", min = 1, max = 100_000)
     public int enchantCapBase = 20;
@@ -140,6 +153,9 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 Mining Shard per relevant block mined with the island pickaxe (over 100 = more than one).", min = 0, max = 1000)
     public double shardPickaxe = 30; // feedback 5 Nov 2026: about 5x faster
 
+    @Setting(path = "shards.chance-rod", desc = "Owner 6 Nov 2026: percent chance of 1 Fishing Shard per catch at /fish with the island rod (over 100 = more than one; a catch is much slower than a block).", min = 0, max = 10_000)
+    public double shardRod = 300;
+
     @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
     public double shardHoe = 40; // feedback 5 Nov 2026: about 5x faster
 
@@ -175,6 +191,24 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds). "
             + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
     public List<String> perks = List.of( // feedback 5 Nov 2026: fewer, bigger steps; the first upgrade within a minute
+            "hoe:shard_finder:shards:100:1:40+6", "hoe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
+            "hoe:extra_drops:drops:100:3:60+8", "hoe:fortune:enchant=fortune:3:5:1500/8000/30000",
+            "hoe:wisdom:wisdom:50:5:80+10", "hoe:growth:growth:100:10:100+10", "hoe:storage:storage:100:10:60+6",
+            "hoe:haste:haste:2:15:5000/30000", "hoe:auto_sell:autosell:1:20:20000", "hoe:sell_bonus:sell:100:25:200+20",
+            "hoe:lucky:lucky:100:30:300+25", "hoe:sweep:sweep:100:45:3000+100:1",
+            "pickaxe:shard_finder:shards:100:1:40+6", "pickaxe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
+            "pickaxe:extra_drops:drops:100:3:60+8", "pickaxe:fortune:enchant=fortune:3:5:1500/8000/30000",
+            "pickaxe:wisdom:wisdom:50:5:80+10", "pickaxe:smelter:smelt:100:10:100+10", "pickaxe:storage:storage:100:10:60+6",
+            "pickaxe:haste:haste:2:15:5000/30000", "pickaxe:auto_sell:autosell:1:20:20000", "pickaxe:sell_bonus:sell:100:25:200+20",
+            "pickaxe:lucky:lucky:100:30:300+25", "pickaxe:vein:sweep:100:45:3000+100:1",
+            // owner 6 Nov 2026: the island rod (/fish)
+            "rod:shard_finder:shards:100:1:40+6", "rod:lure:enchant=lure:3:1:300/2000/9000",
+            "rod:extra_drops:drops:100:3:60+8", "rod:luck:enchant=luck_of_the_sea:3:5:1500/8000/30000",
+            "rod:wisdom:wisdom:50:5:80+10", "rod:storage:storage:100:10:60+6", "rod:auto_sell:autosell:1:20:20000",
+            "rod:sell_bonus:sell:100:25:200+20", "rod:lucky:lucky:100:30:300+25");
+
+    /** {@code perks} v9 (feedback 5 Nov 2026); v11 (owner 6 Nov 2026) adds the island rod. */
+    static final List<String> PERKS_V9 = List.of(
             "hoe:shard_finder:shards:100:1:40+6", "hoe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
             "hoe:extra_drops:drops:100:3:60+8", "hoe:fortune:enchant=fortune:3:5:1500/8000/30000",
             "hoe:wisdom:wisdom:50:5:80+10", "hoe:growth:growth:100:10:100+10", "hoe:storage:storage:100:10:60+6",
@@ -269,6 +303,9 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "island-boost.pickaxe-effect", desc = "The island upgrade whose value is percent more ores for the island pickaxe (on islands and at /mine).")
     public String pickaxeBoostEffect = "mine-fortune";
 
+    @Setting(path = "island-boost.rod-effect", desc = "The island upgrade whose value is percent more catches for the island rod at /fish (empty = none yet).")
+    public String rodBoostEffect = "";
+
     @Setting(path = "tool-worlds", desc = "Worlds besides the islands where the tools work exactly like on an island (level up, perks, shards): the /farm and /mine world.")
     public List<String> toolWorlds = List.of("grind");
 
@@ -343,7 +380,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 10;
+        return 11;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -373,7 +410,9 @@ public final class IslandToolsConfig extends ModuleConfig {
                         Map.entry("hoe.storage-per-level", ValueChange.of(200L, d.storagePerLevel))),
                 // v10 (owner 6-7 Nov 2026, plans/TOOLS_V3.md): personal prestige 50 + rebirths: short, fast levels
                 10, Map.of("levels.xp-base", ValueChange.of(12.0, d.xpBase), "levels.exponent", ValueChange.of(1.6, d.xpExponent),
-                        "levels.prestige-factor", ValueChange.of(0.35, d.xpPrestigeFactor)));
+                        "levels.prestige-factor", ValueChange.of(0.35, d.xpPrestigeFactor)),
+                // v11 (owner 6 Nov 2026): the island rod for /fish
+                11, Map.of("perks", ValueChange.of(PERKS_V9, d.perks), "enchants.list", ValueChange.of(d.enchantList.stream().filter(l -> !l.startsWith("rod:")).toList(), d.enchantList)));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */

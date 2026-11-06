@@ -57,6 +57,7 @@ places:
     variants:
     - Farm=grind-farm
     - Mine=grind-mine
+    - Fish=grind-fish
   spawn:
     # Spawn worlds.
     worlds:

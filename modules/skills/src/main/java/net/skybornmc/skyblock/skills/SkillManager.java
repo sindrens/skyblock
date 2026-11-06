@@ -373,6 +373,12 @@ final class SkillManager implements SkillService, Listener {
             }
             return;
         }
+        if (event.fish()) { // owner 6 Nov 2026: /fish trains Fishing
+            if (config.grindFishXp > 0) {
+                addXp(player, SkillType.FISHING, config.grindFishXp, "grind_fish");
+            }
+            return;
+        }
         String id = event.block().getKey().getKey();
         double mining = tables.xp(SkillType.MINING, id);
         if (mining <= 0 && id.endsWith("_ore")) {

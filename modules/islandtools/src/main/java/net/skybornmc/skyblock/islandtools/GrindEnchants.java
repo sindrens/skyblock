@@ -115,16 +115,16 @@ final class GrindEnchants {
     static Optional<Effect> effectOf(String id) {
         return Optional.ofNullable(switch (id) {
             case "blast", "explode", "lightning", "row_reaper", "meteor", "tornado", "nuke", "meteor_shower" -> Effect.AREA;
-            case "rich_vein", "bountiful" -> Effect.EXTRA_ITEMS;
+            case "rich_vein", "bountiful", "big_catch" -> Effect.EXTRA_ITEMS;
             case "shard_burst", "shard_jackpot" -> Effect.SHARDS;
-            case "cash_vein", "cash_crop", "golden_crop" -> Effect.CASH;
+            case "cash_vein", "cash_crop", "golden_crop", "golden_fish" -> Effect.CASH;
             case "quick_study", "motherlode" -> Effect.PROGRESS;
             case "scholar" -> Effect.SKILL_XP;
             case "keyfinder" -> Effect.KEY;
             case "shard_echo" -> Effect.ECHO;
             case "compound_interest" -> Effect.STREAK_SHARDS;
             case "combo" -> Effect.STREAK_XP;
-            case "geode", "harvest_basket" -> Effect.BASKET;
+            case "geode", "harvest_basket", "treasure_chest" -> Effect.BASKET;
             case "lucky_streak" -> Effect.PITY;
             default -> null;
         });

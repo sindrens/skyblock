@@ -43,7 +43,7 @@ class GrindEnchantsTest {
     @Test
     void everyToolHasEveryKindOfEffectAndThreeStarters() {
         GrindEnchants g = defaults(new ArrayList<>());
-        for (Kind kind : Kind.values()) {
+        for (Kind kind : List.of(Kind.HOE, Kind.PICKAXE)) { // the rod has no area enchants (it breaks no blocks)
             Set<GrindEnchants.Effect> seen = EnumSet.noneOf(GrindEnchants.Effect.class);
             int starters = 0;
             for (GrindEnchants.Def d : g.of(kind)) {
@@ -55,6 +55,17 @@ class GrindEnchantsTest {
             assertEquals(EnumSet.allOf(GrindEnchants.Effect.class), seen, kind + " uses every effect");
             assertEquals(3, starters, kind + ": Shard Burst, the first area enchant and Scholar at level 1");
         }
+    }
+
+    @Test
+    void theRodHasItsOwnSetWithoutAreaEnchants() {
+        GrindEnchants g = defaults(new ArrayList<>());
+        assertEquals(12, g.of(Kind.ROD).size());
+        assertTrue(g.of(Kind.ROD).stream().noneMatch(d -> d.effect() == GrindEnchants.Effect.AREA), "a rod breaks no blocks");
+        assertTrue(g.get(Kind.ROD, "big_catch").isPresent() && g.get(Kind.ROD, "golden_fish").isPresent());
+        List<List<GrindEnchants.Def>> rows = EnchantMenu.groups(g.of(Kind.ROD));
+        assertTrue(rows.getFirst().isEmpty(), "no area row for the rod");
+        assertTrue(rows.stream().allMatch(r -> r.size() <= 7));
     }
 
     @Test
@@ -142,7 +153,7 @@ class GrindEnchantsTest {
     @Test
     void menuRowsFitAndHoldEveryEnchant() {
         GrindEnchants g = defaults(new ArrayList<>());
-        for (Kind kind : Kind.values()) {
+        for (Kind kind : List.of(Kind.HOE, Kind.PICKAXE)) {
             List<List<GrindEnchants.Def>> rows = EnchantMenu.groups(g.of(kind));
             assertEquals(4, rows.size());
             int total = 0;

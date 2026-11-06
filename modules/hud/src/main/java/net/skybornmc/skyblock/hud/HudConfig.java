@@ -71,7 +71,7 @@ public final class HudConfig extends ModuleConfig {
     public String depthsVariantPlaceholder = "grind_area";
 
     @Setting(path = "places.depths.variants", desc = "Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.")
-    public List<String> depthsVariants = List.of("Farm=grind-farm", "Mine=grind-mine");
+    public List<String> depthsVariants = List.of("Farm=grind-farm", "Mine=grind-mine", "Fish=grind-fish");
 
     @Setting(path = "places.spawn.worlds", desc = "Spawn worlds.")
     public List<String> spawnWorlds = List.of("spawn");
@@ -91,7 +91,7 @@ public final class HudConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -111,7 +111,10 @@ public final class HudConfig extends ModuleConfig {
                         "places.depths.layout", ValueChange.of("depths", "grind"),
                         "places.depths.variant-placeholder", ValueChange.of("depths_tier", "grind_area"),
                         "places.depths.variants", ValueChange.of(List.of("The Gate=depths-gate", "Forest=depths-forest", "Combat=depths-combat"),
-                                List.of("Farm=grind-farm", "Mine=grind-mine"))));
+                                List.of("Farm=grind-farm", "Mine=grind-mine"))),
+                // Owner 6 Nov 2026: /fish has its own board.
+                7, java.util.Map.of("places.depths.variants", ValueChange.of(List.of("Farm=grind-farm", "Mine=grind-mine"),
+                        List.of("Farm=grind-farm", "Mine=grind-mine", "Fish=grind-fish"))));
     }
 
     @Override

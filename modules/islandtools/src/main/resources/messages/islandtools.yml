@@ -7,10 +7,12 @@ item:
   name:
     hoe: "Harvester Hoe"
     pickaxe: "Island Pickaxe"
+    rod: "Island Rod"
   # One short line (owner mockup).
   description:
     hoe: "Levels up as your island farms."
     pickaxe: "Levels up as your island mines."
+    rod: "Levels up as you fish at /fish."
   # Bold in the rarity colour (the stars after it). {tool} {stars} {rarity}
   plain-name: "<rarity:{rarity}>{tool}"
   star-name: "<rarity:{rarity}>{tool} <c:flame>{stars}"
@@ -165,6 +167,7 @@ shards:
   name:
     hoe: "Farming Shards"
     pickaxe: "Mining Shards"
+    rod: "Fishing Shards"
   # Found while grinding (action bar). <amount>
   found:
     shards: "<cur:shards>+<amount> <sym:shards> Farming Shards"
@@ -310,6 +313,8 @@ upgrade:
   efficiency: {name: "Efficiency", icon: sugar, lore: ["<c:muted>Breaks blocks faster."]}
   extra_drops: {name: "Extra Drops", icon: chest, lore: ["<c:muted>A few more drops per block."]}
   fortune: {name: "Fortune", icon: lapis_lazuli, lore: ["<c:muted>More ores and crops per block."]}
+  lure: {name: "Lure", icon: string, lore: ["<c:muted>Fish bite sooner."]}
+  luck: {name: "Luck of the Sea", icon: prismarine_crystals, lore: ["<c:muted>Better catches."]}
   haste: {name: "Haste", icon: golden_pickaxe, lore: ["<c:muted>Haste while you hold it."]}
   wisdom: {name: "Wisdom", icon: experience_bottle, lore: ["<c:muted>The tool levels up faster."]}
   growth: {name: "Growth", icon: bone_meal, lore: ["<c:muted>Crops on your island grow faster."]}
@@ -345,6 +350,10 @@ storage:
       name: "<bold><c:muted>Empty"
       lore:
         - "<c:muted>Ores land here when your bag is full."
+    rod:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Your catches at /fish land here."
   item-name: "<bold><c:value><item>"
   item-lore:
     - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><amount>"
@@ -352,6 +361,7 @@ storage:
     - "<c:muted>Shift-click: as much as fits"
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take a stack"
   # Action bar at /farm and /mine: the tool's storage is full, so breaking pauses (nothing is lost).
+  paused-rod: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Sneak + right-click the rod</c:text> <c:muted>»</c:muted> <c:text>Storage</c:text> <c:muted>»</c:muted> <c:text>Sell all.</c:text>"
   paused: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Right-click the tool</c:text> <c:muted>»</c:muted> <c:text>Storage</c:text> <c:muted>»</c:muted> <c:text>Sell all.</c:text>"
   # Action bar: bag and storage are full (at /farm and /mine the rest is lost, never dropped).
   full: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Empty it in the tool menu or /sell."
@@ -398,6 +408,9 @@ enchant:
   combo: {name: "Combo", icon: blaze_powder, lore: ["<c:muted>Keep breaking without a pause", "<c:muted>for more tool XP."]}
   geode: {name: "Geode", icon: amethyst_block, lore: ["<c:muted>One of every ore you have", "<c:muted>unlocked at /mine."]}
   harvest_basket: {name: "Harvest Basket", icon: composter, lore: ["<c:muted>One of every crop you have", "<c:muted>unlocked at /farm."]}
+  big_catch: {name: "Big Catch", icon: cod, lore: ["<c:muted>Extra fish from the catch."]}
+  golden_fish: {name: "Golden Fish", icon: gold_ingot, lore: ["<c:muted>Money: the catch's sell price", "<c:muted>many times over."]}
+  treasure_chest: {name: "Treasure Chest", icon: chest, lore: ["<c:muted>One of every catch of the", "<c:muted>waters you have unlocked."]}
   lucky_streak: {name: "Lucky Streak", icon: rabbit_foot, lore: ["<c:muted>A long time without a rare find?", "<c:muted>The next one is twice as likely."]}
   crate:
     ember: "Ember"
@@ -440,6 +453,7 @@ enchant:
     area:
       hoe: "/farm"
       pickaxe: "/mine"
+      rod: "/fish"
     # <tool>
     header:
       name: "<bold><area:skills><tool> enchants"

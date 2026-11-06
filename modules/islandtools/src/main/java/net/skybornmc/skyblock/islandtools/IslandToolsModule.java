@@ -395,7 +395,11 @@ public final class IslandToolsModule implements SkyblockModule {
         if (island == null) {
             return 0;
         }
-        String effect = kind == Kind.HOE ? config.hoeBoostEffect : config.pickaxeBoostEffect;
+        String effect = switch (kind) {
+            case HOE -> config.hoeBoostEffect;
+            case PICKAXE -> config.pickaxeBoostEffect;
+            case ROD -> config.rodBoostEffect;
+        };
         return core.services().optional(ProgressionService.class).map(s -> s.upgradeEffectValue(island, effect)).orElse(0.0);
     }
 
@@ -704,7 +708,11 @@ public final class IslandToolsModule implements SkyblockModule {
         if (swept && !config.sweepShards) {
             return;
         }
-        double chance = (kind == Kind.HOE ? config.shardHoe : config.shardPickaxe) / 100.0;
+        double chance = switch (kind) {
+            case HOE -> config.shardHoe;
+            case PICKAXE -> config.shardPickaxe;
+            case ROD -> config.shardRod;
+        } / 100.0;
         double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
@@ -737,7 +745,11 @@ public final class IslandToolsModule implements SkyblockModule {
         refreshHandles(island, kind);
         // C-02: the common level-up event (quests "tool levels", the Toolsmith achievements) now comes from these tools.
         net.skybornmc.skyblock.common.tools.ToolInfo info = new net.skybornmc.skyblock.common.tools.ToolInfo(profile(p),
-                kind == Kind.HOE ? net.skybornmc.skyblock.common.tools.ToolKind.HOE : net.skybornmc.skyblock.common.tools.ToolKind.PICKAXE,
+                switch (kind) {
+                    case HOE -> net.skybornmc.skyblock.common.tools.ToolKind.HOE;
+                    case PICKAXE -> net.skybornmc.skyblock.common.tools.ToolKind.PICKAXE;
+                    case ROD -> net.skybornmc.skyblock.common.tools.ToolKind.ROD;
+                },
                 0, after.level(), now.xp(), now.prestige(), 0, List.of(), null, null, false, Map.of());
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.tools.ToolLevelUpEvent(p, info, Math.max(1, after.level() - 1)));
     }

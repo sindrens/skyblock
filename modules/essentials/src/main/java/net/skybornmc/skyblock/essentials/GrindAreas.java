@@ -56,6 +56,12 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     static final int MINE_HALF = 20;
     static final int MINE_DEPTH = 6;
     static final int DUNGEON_HALF = 20;
+    /** Owner 6 Nov 2026: the /fish pond (inside the 6000-block world border). */
+    static final int FISH_X = 2600;
+    static final int FISH_HALF = 14;
+    private static final org.bukkit.NamespacedKey FISHED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_fished");
+    private volatile List<FishRules.Water> waters = List.of();
+    private final java.util.Map<java.util.UUID, FishRules.Guard> fishGuards = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Farm crops in unlock order: block, item it drops, wheat broken in total to unlock it (feedback 3 Nov 2026). */
     record Crop(Material block, Material item, long unlockAt, long bonus) {
@@ -134,12 +140,16 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "farm")));
         core.commands().register(CommandSpec.command("mine").description("Teleport to the mine").category("Teleport")
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "mine")));
+        core.commands().register(CommandSpec.command("fish").description("Teleport to the fishing pond").category("Teleport")
+                .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "fish")));
+        reloadFish();
         // Owner 3 Nov 2026 23:05: no dungeon (the arena stays built but has no command and no monsters).
         // Owner 4 Nov 2026 (plan A item 8): the /farm and /mine scoreboard shows the tier, the progress and this visit's bonus.
         core.placeholders().registerText(MODULE, "grind_area", p -> area(p));
         core.placeholders().registerText(MODULE, "grind_tier", p -> switch (area(p)) {
             case "Farm" -> name(cropFor(farmed(p)).item());
             case "Mine" -> name(oreTier(mined(p), mineUnlocks()).block());
+            case "Fish" -> waterName(p, water(p));
             default -> "";
         });
         core.placeholders().registerText(MODULE, "grind_progress", p -> progressText(p));
@@ -159,6 +169,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         if (Math.abs(x - MINE_X) <= MINE_HALF + 40) {
             return "Mine";
         }
+        if (Math.abs(x - FISH_X) <= FISH_HALF + 40) {
+            return "Fish";
+        }
         return Math.abs(x - FARM_X) <= FARM_HALF + 40 ? "Farm" : "";
     }
 
@@ -171,6 +184,12 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             int i = CROPS.indexOf(crop);
             return i + 1 >= CROPS.size() ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
                     + net.skybornmc.skyblock.common.util.Format.number(cropUnlockAt(i + 1, farmUnlocks()));
+        }
+        if (a.equals("Fish")) {
+            long have = fished(p);
+            FishRules.Water next = FishRules.next(waters, water(p));
+            return next == null ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
+                    + net.skybornmc.skyblock.common.util.Format.number(next.unlockAt());
         }
         if (a.equals("Mine")) {
             long have = mined(p);
@@ -210,6 +229,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             if (world.getBlockAt(FARM_X, base, 0).getType() != Material.FARMLAND) {
                 build();
             }
+            if (world.getBlockAt(FISH_X, base, 0).getType() != Material.WATER) {
+                buildPond(); // owner 6 Nov 2026: /fish (also on worlds built before it)
+            }
             wetFarm(); // owner 5 Nov 2026: every farmland at /farm is wet, as if it had water
             fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
             core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
@@ -235,11 +257,13 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         int x = switch (area) {
             case "mine" -> MINE_X;
             case "dungeon" -> DUNGEON_X;
+            case "fish" -> FISH_X;
             default -> FARM_X;
         };
         int half = switch (area) {
             case "mine" -> MINE_HALF;
             case "dungeon" -> DUNGEON_HALF;
+            case "fish" -> FISH_HALF + 3; // land on the rim, not in the water
             default -> FARM_HALF;
         };
         Location to = new Location(world, x + 0.5, base + 1, -half - 3 + 0.5, 0, 0);
@@ -285,6 +309,29 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             }
         }
         core.plugin().getLogger().info("Essentials: built the farm, mine and dungeon in " + world.getName());
+    }
+
+    /** Owner 6 Nov 2026: the /fish pond: water 3 deep, a 3-block stone-brick rim to stand on and a landing pad. */
+    private void buildPond() {
+        int rim = FISH_HALF + 3;
+        for (int x = -rim; x <= rim; x++) {
+            for (int z = -rim; z <= rim; z++) {
+                boolean water = Math.abs(x) <= FISH_HALF && Math.abs(z) <= FISH_HALF;
+                for (int d = 0; d <= 3; d++) {
+                    world.getBlockAt(FISH_X + x, base - d, z).setType(water && d < 3 ? Material.WATER : Material.STONE_BRICKS, false);
+                }
+                if (!water && (Math.abs(x) == rim || Math.abs(z) == rim)) {
+                    world.getBlockAt(FISH_X + x, base + 1, z).setType(Material.STONE_BRICK_WALL, false);
+                }
+            }
+        }
+        for (int x = -3; x <= 3; x++) { // the entrance in the rim wall and a landing pad in front of it
+            world.getBlockAt(FISH_X + x, base + 1, -rim).setType(Material.AIR, false);
+            for (int z = -rim - 6; z <= -rim - 1; z++) {
+                world.getBlockAt(FISH_X + x, base, z).setType(Material.POLISHED_ANDESITE, false);
+            }
+        }
+        core.plugin().getLogger().info("Essentials: built the /fish pond in " + world.getName());
     }
 
     /** Owner 4 Nov 2026: every block of the pit is the first ore (coal); an older build had stone and random ores. */
@@ -411,6 +458,15 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     @Override
     public List<Material> unlockedDrops(Player p, String area) {
         List<Material> out = new java.util.ArrayList<>();
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FISH.equals(area)) {
+            long fished = fished(p);
+            for (FishRules.Water w : waters) {
+                if (w.unlockAt() <= fished && !w.catches().isEmpty()) {
+                    out.add(w.catches().getFirst().item()); // the water's main catch
+                }
+            }
+            return out;
+        }
         if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(area)) {
             long farmed = farmed(p);
             List<Long> unlocks = farmUnlocks();
@@ -435,6 +491,17 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     @Override
     public void addProgress(Player p, String area, long blocks) {
         if (p == null || blocks <= 0 || world == null || !p.getWorld().equals(world)) {
+            return;
+        }
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FISH.equals(area)) {
+            FishRules.Water before = water(p);
+            long fished = fished(p) + blocks;
+            p.getPersistentDataContainer().set(FISHED, PersistentDataType.LONG, fished);
+            FishRules.Water after = FishRules.waterFor(waters, fished);
+            if (after != before) {
+                msg.send(p, "grind.fish.unlocked", net.skybornmc.skyblock.common.text.Msg.p("water", waterName(p, after)));
+                core.sounds().play(p, "unlock");
+            }
             return;
         }
         if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(area)) {
@@ -705,6 +772,105 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
 
     private static Crop Crop_WHEAT() {
         return CROPS.getFirst();
+    }
+
+    // ------------------------------------------------------------------ /fish (owner 6 Nov 2026)
+
+    /** /skyblock reload essentials: the waters again. */
+    void reloadFish() {
+        waters = FishRules.parse(config.fishWaters, w -> core.plugin().getLogger().warning(w));
+    }
+
+    static long fished(Player p) {
+        Long v = p.getPersistentDataContainer().get(FISHED, PersistentDataType.LONG);
+        return v == null ? 0 : v;
+    }
+
+    private FishRules.Water water(Player p) {
+        return FishRules.waterFor(waters, fished(p));
+    }
+
+    private String waterName(Player p, FishRules.Water w) {
+        return w == null ? "" : net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(
+                msg.component(p, "grind.fish.water." + w.id()));
+    }
+
+    private boolean inPond(org.bukkit.Location at) {
+        return world != null && at.getWorld().equals(world) && Math.abs(at.getBlockX() - FISH_X) <= FISH_HALF && Math.abs(at.getBlockZ()) <= FISH_HALF;
+    }
+
+    /**
+     * A cast and a catch at the pond: the bite comes faster (Bite Frenzy: Instant Regrow makes it nearly instant), the
+     * catch becomes the player's water's catch, pays its money, counts toward the next water and fires the grind event
+     * (skills, quests, island tools). Auto-clickers and more than {@code grind.fish-per-minute} catches get nothing.
+     */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onFish(org.bukkit.event.player.PlayerFishEvent event) {
+        Player p = event.getPlayer();
+        if (world == null || !p.getWorld().equals(world) || staff(p) || waters.isEmpty()) {
+            return;
+        }
+        org.bukkit.entity.FishHook hook = event.getHook();
+        FishRules.Guard guard = fishGuards.computeIfAbsent(p.getUniqueId(), k -> new FishRules.Guard());
+        if (event.getState() == org.bukkit.event.player.PlayerFishEvent.State.FISHING) {
+            org.bukkit.Location l = p.getLocation();
+            guard.cast(l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), config.fishFrozenCasts);
+            int[] wait = waitTicks();
+            boolean frenzy = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.INSTANT_REGROW);
+            hook.setWaitTime(frenzy ? Math.max(10, wait[0] / 3) : wait[0], frenzy ? Math.max(20, wait[1] / 3) : wait[1]);
+            return;
+        }
+        if (event.getState() != org.bukkit.event.player.PlayerFishEvent.State.CAUGHT_FISH || !(event.getCaught() instanceof org.bukkit.entity.Item item)) {
+            return;
+        }
+        if (!inPond(hook.getLocation())) {
+            return; // water somewhere else in the grind world (there is none): vanilla
+        }
+        if (guard.frozen(config.fishFrozenCasts) || !guard.allow(System.currentTimeMillis(), config.fishPerMinute)) {
+            item.remove();
+            event.setExpToDrop(0);
+            net.skybornmc.skyblock.common.hud.ActionBars.show(p, "fish-guard", msg.component(p, "grind.fish.guard"),
+                    net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2500);
+            return;
+        }
+        FishRules.Water before = water(p);
+        FishRules.Catch c = FishRules.roll(before, ThreadLocalRandom.current().nextDouble());
+        item.setItemStack(new ItemStack(c.item(), c.amount()));
+        event.setExpToDrop(1);
+        long fished = fished(p) + 1;
+        p.getPersistentDataContainer().set(FISHED, PersistentDataType.LONG, fished);
+        boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
+        addBonus(p, golden ? Math.round(before.pay() * config.grindEventGolden) : before.pay()); // every catch pays
+        Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FISH, Material.WATER, c.item(), c.amount(), hook.getLocation()));
+        FishRules.Water after = FishRules.waterFor(waters, fished);
+        if (after != before) {
+            msg.send(p, "grind.fish.unlocked", net.skybornmc.skyblock.common.text.Msg.p("water", waterName(p, after)));
+            core.sounds().play(p, "unlock");
+        } else if (fished % 25 == 0) {
+            FishRules.Water next = FishRules.next(waters, before);
+            if (next != null) {
+                net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.fish.progress",
+                        net.skybornmc.skyblock.common.text.Msg.number("have", fished), net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
+                        net.skybornmc.skyblock.common.text.Msg.p("water", waterName(p, next))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
+            }
+        }
+    }
+
+    /** {@code grind.fish-wait-ticks} as {min, max}. */
+    private int[] waitTicks() {
+        try {
+            String[] parts = config.fishWait.split("-", 2);
+            int lo = Math.max(1, Integer.parseInt(parts[0].strip()));
+            int hi = Math.max(lo, Integer.parseInt(parts[1].strip()));
+            return new int[]{lo, hi};
+        } catch (RuntimeException e) {
+            return new int[]{60, 160};
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onFishQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        fishGuards.remove(event.getPlayer().getUniqueId());
     }
 
     private static long farmed(Player p) {

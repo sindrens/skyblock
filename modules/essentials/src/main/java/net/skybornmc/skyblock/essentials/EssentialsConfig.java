@@ -85,6 +85,28 @@ public final class EssentialsConfig extends ModuleConfig {
             + "(coal, iron, gold, redstone, lapis, diamond, emerald; the first is always 0).")
     public List<Integer> grindMineUnlocks = List.of(0, 400, 1_500, 4_000, 8_000, 15_000, 25_000);
 
+    // ------------------------------------------------------------------ /fish (owner 6 Nov 2026, FULL_PLAN.md 2)
+
+    @Setting(path = "grind.fish-waters", desc = "The /fish waters in order: 'id:catches-to-unlock:money-per-catch:item*amount@weight,...'. "
+            + "Every catch pays its water's money (vanilla fish keep a small sell price, so island fish farms never print money).",
+            level = Setting.Level.OWNER)
+    public List<String> fishWaters = List.of(
+            "shallows:0:150:cod@85,salmon@12,ink_sac@3",
+            "river:500:190:salmon@80,cod@12,tropical_fish@8",
+            "lake:2000:240:tropical_fish@75,salmon@17,pufferfish@8",
+            "reef:6000:300:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
+            "deep:15000:370:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
+            "abyss:35000:450:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2");
+
+    @Setting(path = "grind.fish-wait-ticks", desc = "How long a fish takes to bite at /fish, 'min-max' in ticks (vanilla 100-600).", level = Setting.Level.OWNER)
+    public String fishWait = "60-160";
+
+    @Setting(path = "grind.fish-per-minute", desc = "Anti-exploit: most /fish catches per player per minute (more give nothing).", min = 1, max = 600)
+    public int fishPerMinute = 20;
+
+    @Setting(path = "grind.fish-frozen-casts", desc = "Anti-AFK: this many casts in a row from one block with the same look give nothing.", min = 2, max = 100)
+    public int fishFrozenCasts = 8;
+
     @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
     public int grindDungeonMobs = 12;
 

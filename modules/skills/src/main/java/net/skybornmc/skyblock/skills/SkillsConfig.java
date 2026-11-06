@@ -37,7 +37,7 @@ public final class SkillsConfig extends ModuleConfig {
     // ------------------------------------------------------------------ skills
 
     @Setting(path = "available", desc = "Skills that give XP now; the others are hidden in /skills. Farming also opens by itself while island farming is on (crops.yml → enabled, PHASE-7 M7.3).")
-    public List<String> available = List.of("mining", "foraging", "combat");
+    public List<String> available = List.of("mining", "foraging", "combat", "farming", "fishing"); // 7 Nov 2026: /farm and /fish train them
 
     @Setting(path = "combat.spawner-mobs-give-xp", desc = "Mobs from spawners give Combat XP when killed (off: no XP farms from island spawners).")
     public boolean spawnerMobsGiveXp = false;
@@ -50,6 +50,9 @@ public final class SkillsConfig extends ModuleConfig {
 
     @Setting(path = "grind.farm-xp", desc = "Farming XP per crop harvested at /farm (only while the Farming skill is open). Mining XP at /mine uses the xp.mining table (the ore you saw).", min = 0, max = 1000)
     public double grindFarmXp = 1.0;
+
+    @Setting(path = "grind.fish-xp", desc = "Owner 6 Nov 2026: Fishing XP per catch at /fish (a catch takes much longer than a crop).", min = 0, max = 10_000)
+    public double grindFishXp = 8.0;
 
     // ------------------------------------------------------------------ feedback
 
@@ -82,7 +85,7 @@ public final class SkillsConfig extends ModuleConfig {
     /** Version 2 (owner 2 Nov 2026: "Depths requirements are super slow"): a cheaper start (600 to 300) and flatter early levels (1.2 to 1.15); level 35 needs about a sixth of the XP. Owner-edited values stay. */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -90,7 +93,8 @@ public final class SkillsConfig extends ModuleConfig {
         // v3 (owner 3 Nov 2026 "depths mine tier 2 after 50 blocks, way less to progress"): level 5 at ~48 XP (was ~2,000),
         // level 35 at ~46k XP (was ~264k); the late growth is unchanged.
         return java.util.Map.of(2, java.util.Map.of("curve.base", ValueChange.of(600, 300), "curve.early-growth", ValueChange.of(1.2, 1.15)),
-                3, java.util.Map.of("curve.base", ValueChange.of(300, 6), "curve.early-growth", ValueChange.of(1.15, 1.24)));
+                3, java.util.Map.of("curve.base", ValueChange.of(300, 6), "curve.early-growth", ValueChange.of(1.15, 1.24)),
+                4, java.util.Map.of("available", ValueChange.of(List.of("mining", "foraging", "combat"), new SkillsConfig().available)));
     }
 
     @Override

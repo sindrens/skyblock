@@ -90,6 +90,7 @@ travel:
   crate-yard:    {icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
   market:        {icon: barrel,      target: "location spawn 0.5 99 33.5 0 0"}
   forge-quarter: {icon: iron_pickaxe,       target: "command mine"}   # 3 Nov 2026: the Mine (the Depths Forge is retired)
+  pond:          {icon: fishing_rod,     target: "command fish"}   # owner 6 Nov 2026: /fish
   visit-islands: {icon: ender_pearl,       target: "command is visit"}
 
 # Tutorial highlights (GUI-ICONS-FINAL): while the tutorial's current step is `step`, the tile `target` (hub.<button id>

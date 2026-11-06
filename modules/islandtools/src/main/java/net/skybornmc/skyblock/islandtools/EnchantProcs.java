@@ -177,7 +177,11 @@ final class EnchantProcs implements Listener {
             return 0;
         }
         return m.core().services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
-                .map(s -> s.masteryEffectValue(island, kind == Kind.HOE ? "farm-mastery" : "mine-mastery")).orElse(0.0);
+                .map(s -> s.masteryEffectValue(island, switch (kind) {
+                    case HOE -> "farm-mastery";
+                    case PICKAXE -> "mine-mastery";
+                    case ROD -> "fish-mastery";
+                })).orElse(0.0);
     }
 
     /** The placeholders of a refusal message. */
@@ -344,7 +348,25 @@ final class EnchantProcs implements Listener {
     }
 
     private State state(Player p, Kind kind) {
-        return states.computeIfAbsent(kind == Kind.HOE ? hoeKey(p.getUniqueId()) : p.getUniqueId(), k -> new State());
+        return states.computeIfAbsent(stateKey(p.getUniqueId(), kind), k -> new State());
+    }
+
+    /** The grind area of a tool ({@code farm}, {@code mine}, {@code fish}). */
+    static String area(Kind kind) {
+        return switch (kind) {
+            case HOE -> GrindBreakEvent.FARM;
+            case PICKAXE -> GrindBreakEvent.MINE;
+            case ROD -> GrindBreakEvent.FISH;
+        };
+    }
+
+    /** Each tool's streaks live under their own key (a player can switch tools between breaks). */
+    private static UUID stateKey(UUID player, Kind kind) {
+        return switch (kind) {
+            case PICKAXE -> player;
+            case HOE -> hoeKey(player);
+            case ROD -> new UUID(player.getMostSignificantBits() ^ 0x27d4eb2fL, player.getLeastSignificantBits());
+        };
     }
 
     /** The hoe's state lives under a second key (a player can switch tools between breaks). */
@@ -382,7 +404,7 @@ final class EnchantProcs implements Listener {
         if (!m.config().enchantsEnabled || !m.listener().grindWorld(p)) {
             return 1;
         }
-        State st = states.get(kind == Kind.HOE ? hoeKey(p.getUniqueId()) : p.getUniqueId());
+        State st = states.get(stateKey(p.getUniqueId(), kind));
         if (st == null) {
             return 1;
         }
@@ -404,7 +426,7 @@ final class EnchantProcs implements Listener {
         if (!m.config().enchantsEnabled || !m.listener().grindWorld(p)) {
             return 1;
         }
-        State st = states.get(kind == Kind.HOE ? hoeKey(p.getUniqueId()) : p.getUniqueId());
+        State st = states.get(stateKey(p.getUniqueId(), kind));
         GrindEnchants.Def combo = passive(kind, GrindEnchants.Effect.STREAK_XP);
         int lv = levelOf(p, combo);
         if (st == null || lv <= 0 || System.currentTimeMillis() - st.xpAt > m.config().enchantStreakGapXp * 1000L) {
@@ -461,7 +483,7 @@ final class EnchantProcs implements Listener {
             }
             case PROGRESS -> {
                 long blocks = ToolRules.roll(value, rnd.nextDouble());
-                GrindProgress.add(m.core().services(), p, kind == Kind.HOE ? GrindBreakEvent.FARM : GrindBreakEvent.MINE, blocks);
+                GrindProgress.add(m.core().services(), p, area(kind), blocks);
                 bar(p, "enchant.proc.progress", def, Msg.number("amount", blocks));
             }
             case KEY -> {
@@ -490,7 +512,7 @@ final class EnchantProcs implements Listener {
     /** Geode / Harvest Basket: one of every crop or ore the player has unlocked, into the bag (then the tool's storage). */
     private int basket(Player p, Kind kind) {
         List<org.bukkit.Material> items = m.core().services().optional(GrindProgress.class)
-                .map(g -> g.unlockedDrops(p, kind == Kind.HOE ? GrindBreakEvent.FARM : GrindBreakEvent.MINE)).orElse(List.of());
+                .map(g -> g.unlockedDrops(p, area(kind))).orElse(List.of());
         for (org.bukkit.Material mat : items) {
             Map<Integer, ItemStack> left = p.getInventory().addItem(new ItemStack(mat));
             if (!left.isEmpty()) {
@@ -540,6 +562,7 @@ final class EnchantProcs implements Listener {
         Kind kind = switch (event.getSource()) {
             case "grind_crop" -> event.getSkill() == SkillType.FARMING ? Kind.HOE : null;
             case "grind_block" -> event.getSkill() == SkillType.MINING ? Kind.PICKAXE : null;
+            case "grind_fish" -> event.getSkill() == SkillType.FISHING ? Kind.ROD : null;
             default -> null;
         };
         if (kind == null || !m.config().enchantsEnabled || ToolItems.kindOf(event.getPlayer().getInventory().getItemInMainHand()) != kind) {

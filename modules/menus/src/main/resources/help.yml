@@ -334,6 +334,27 @@ topics:
           - "<c:text>enchant levels. Enchants, perks and"
           - "<c:text>shards stay. After 50: rebirths."
 
+  fish:
+    icon: fishing_rod
+    aliases: [fishing, pond, rod]
+    name: "<c:flame>Fishing"
+    summary: ["<c:text>The pond at /fish: catches", "<c:text>pay money and shards."]
+    take-me-there: "fish"
+    commands: [Teleport]
+    pages:
+      - title: "<c:value>The Pond"
+        lines:
+          - "<c:text>Cast into the water at /fish."
+          - "<c:text>Every catch pays money. New"
+          - "<c:text>waters unlock as you fish:"
+          - "<c:text>River, Lake, Reef, Deep, Abyss."
+      - title: "<c:value>Your rod"
+        lines:
+          - "<c:text>Fish with the island rod for"
+          - "<c:text>Fishing Shards, tool XP and"
+          - "<c:text>enchants. Sneak + right-click"
+          - "<c:text>it for its menu."
+
   enchants:
     icon: enchanted_book
     aliases: [enchant, enchanter, enchanting, books, book, scroll, disenchant]

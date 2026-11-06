@@ -72,10 +72,10 @@ class TravelLayoutTest {
             assertTrue(texts.isString("travel.places." + id + ".name"), id + " name");
             assertTrue(texts.isList("travel.places." + id + ".lore"), id + " lore");
         }
-        assertEquals(java.util.List.of("spawn", "my-island", "depths-gate", "crate-yard", "market", "forge-quarter", "visit-islands"),
+        assertEquals(java.util.List.of("spawn", "my-island", "depths-gate", "crate-yard", "market", "forge-quarter", "pond", "visit-islands"),
                 java.util.List.copyOf(travel.getKeys(false)));
         java.util.List<String> problems = new java.util.ArrayList<>();
-        assertEquals(7, WarpLayout.parse(menu, HubButtonsTest.ITEMS, problems::add).warps().size());
+        assertEquals(8, WarpLayout.parse(menu, HubButtonsTest.ITEMS, problems::add).warps().size());
         assertEquals(java.util.List.of(), problems);
         assertInstanceOf(WarpLayout.Command.class, WarpLayout.target(travel.getString("spawn.target")));
         assertEquals("dungeon", travel.getString("depths-gate.reason"));

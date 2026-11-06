@@ -129,6 +129,9 @@ final class TaskSources implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGrindBreak(GrindBreakEvent event) {
+        if (event.fish()) {
+            return; // /fish catches are no island mine or farm tasks
+        }
         TaskType kind = event.farm() ? TaskType.FARM : TaskType.MINE;
         count(event.getPlayer(), event.location(), kind, id(event.block()), 1);
     }

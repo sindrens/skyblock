@@ -54,6 +54,18 @@ categories:
     torchflower: 396
     pitcher_plant: 870
 
+  # Owner 6 Nov 2026 (/fish): small prices on purpose. A catch at /fish pays its water's money directly, so island
+  # AFK fish farms never print money; these are only for the rod storage's "Sell all" and Golden Fish.
+  fish:
+    cod: 3
+    salmon: 4
+    tropical_fish: 6
+    pufferfish: 8
+    ink_sac: 2
+    glow_ink_sac: 10
+    nautilus_shell: 25
+    heart_of_the_sea: 200
+
   # Spawner mob loot. Owner plan 5 Nov 2026 (never shown): one mob is worth about $3 / $6 / $10 / $18 (spawner tiers 1-4),
   # so a spawner pays back its shop price in about 100 h (tier 1) to 150 h (tier 4) before upgrades.
   mob-loot:

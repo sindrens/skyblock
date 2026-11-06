@@ -108,6 +108,9 @@ final class MilestoneEngine implements Listener {
     /** Owner 5 Nov 2026: /farm harvests and /mine ores count as the player's own crop or ore (Farm and Mine milestones). */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGrind(net.skybornmc.skyblock.common.grind.GrindBreakEvent event) {
+        if (event.fish()) {
+            return; // a catch is no block break
+        }
         String action = event.farm() ? GameActionEvent.HARVEST_CROP : GameActionEvent.BREAK_BLOCK;
         count(event.getPlayer(), action, event.block().name(), event.location(), 1);
     }

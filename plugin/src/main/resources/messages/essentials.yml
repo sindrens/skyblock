@@ -291,6 +291,19 @@ grind:
     farm: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Farm</c:value><c:text>. Break ripe wheat, it grows back in seconds. Sell it with <c:value>/sell</c:value><c:text>."
     mine: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Mine</c:value><c:text>. Every block comes back a few seconds after you mine it."
     dungeon: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Dungeon</c:value><c:text>. Monsters keep coming while you're inside. Good luck!"
+    fish: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Pond</c:value><c:text>. Cast your rod into the water: every catch pays, and new waters unlock as you fish."
+  # Owner 6 Nov 2026: /fish. <water> = a water's name below.
+  fish:
+    water:
+      shallows: "Shallows"
+      river: "River"
+      lake: "Lake"
+      reef: "Reef"
+      deep: "Deep"
+      abyss: "Abyss"
+    unlocked: "<prefix><c:success><sym:star></c:success> <c:text>New water unlocked: <c:value><water></c:value><c:text>! Better fish bite for you now."
+    progress: "<c:text>Next water <c:value><water></c:value><c:text>: <c:value><have></c:value><c:muted>/<need> caught"
+    guard: "<c:warning>Move or look around a bit: nothing bites for auto-clickers."
 
 # Start guide (owner 3 Nov 2026, replaces the tutorial). <guide> = the guide NPC's name (messages/npcs.yml roles.guide.name).
 start:

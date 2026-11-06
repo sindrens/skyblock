@@ -118,6 +118,24 @@ scoreboard:
       - "if:objective| <c:bar>|</c:bar> <objective>"
       - " <c:sky_ice>play.skybornmc.net"
 
+  # Owner 6 Nov 2026: /fish. <ph:grind_tier> = your water.
+  grind-fish:
+    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    lines:
+      - "<soft-blank>"
+      - " <bold><c:header>| You</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <bold><c:header>| The Pond</c:header></bold>"
+      - " <c:bar>|</c:bar> <c:text>Water:</c:text> <c:value><ph:grind_tier>"
+      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
+      - " <c:bar>|</c:bar> <c:text>Earned:</c:text> <c:value><ph:grind_bonus_visit>"
+      - " <c:bar>|</c:bar> <c:text>Storage:</c:text> <c:value><ph:tool_storage_rod>"
+      - " <c:bar>|</c:bar> <c:text>Events:</c:text> <c:flame><ph:grind_event>"
+      - " <c:bar>|</c:bar> <c:text>Fishing:</c:text> <c:value>Lv <ph:skill_fishing_level>"
+      - " <c:bar>|</c:bar> <progress:skill_fishing_progress>"
+      - "if:objective| <c:bar>|</c:bar> <objective>"
+      - " <c:sky_ice>play.skybornmc.net"
+
   grind-mine:
     title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
     lines:

@@ -11,7 +11,9 @@ import java.util.Optional;
  */
 enum Kind {
     HOE(Currency.SHARDS),
-    PICKAXE(Currency.MINING_SHARDS);
+    PICKAXE(Currency.MINING_SHARDS),
+    /** Owner 6 Nov 2026: the island rod for /fish (Fishing Shards). */
+    ROD(Currency.FISHING_SHARDS);
 
     private final Currency shards;
 

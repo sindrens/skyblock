@@ -132,7 +132,9 @@ final class ToolItems {
         });
         applyEnchants(stack, kind, m.prog(island, kind));
         BoundItems.mark(stack, profile);
-        m.core().items().retexture(stack, "item/island_" + kind.id() + "_diamond");
+        if (kind != Kind.ROD) { // the pack has no rod model yet: a plain fishing rod look
+            m.core().items().retexture(stack, "item/island_" + kind.id() + "_diamond");
+        }
         m.core().items().render(stack);
         return stack;
     }
