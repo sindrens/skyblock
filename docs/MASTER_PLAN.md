@@ -66,8 +66,8 @@ worlds (`DepthsWiring`, `worlds.yml:83-218`, messages), hud (`places.depths`, `P
 | P-01 | **Spawners v2** (10 s timer, kill levels, sqrt formula B = 100/250/600/1500, limits 4 to 64, delay upgrade, radius 3, prestige +5% x10, premium tier 5 limit 3, one simple menu) | Needs the full Plan Pack text (not saved anywhere) |
 | P-02 | **Spawner payback** (100 h to 150 h, value per mob $2.78 / $5.95 / $10.42 / $18.52, never shown). Today tier 1 pays back in ~9 h, 10x too fast (vanilla loot at farm prices) | Q-01 |
 | P-03 | **Dynamic prices v2** (per-island saturation + weekly global drift max +/-10%) replacing today's global model | Q-03 |
-| P-04 | **Island upgrades done on the island** (I1: farm 1,000 wheat ...) | The research result (RESEARCH_PROMPT.md) |
-| P-05 | **Tool enchants v2** (T2, more enchants; remove axe/sword enchants, dedupe) | The research result |
+| P-04 | **Island upgrades done on the island** (I1: farm 1,000 wheat ...) | Research done (`planning/RESEARCH_6NOV.md` §2); plan next |
+| P-05 | **Tools v3** (one tool, two enchant sets: 17 grind + 7 island, core upgrades, 50 prestiges + infinite rebirths, 6 events) | Draft: `plans/TOOLS_V3.md` (owner review) |
 | P-06 | **Grind inventories** (farm, mine and hoe storage) | Q-30 |
 | P-07 | **/mailbox** | Q-31 |
 | P-08 | **Playtime pay limits** (daily limit on money you receive from /pay, trades and sales, rising at 6 h / 12 h / 24 h playtime; island members exempt; /paytoggle). No $10k rule | Ready to plan (Q-32, `planning/INSPIRATION_6NOV.md`) |
