@@ -11,7 +11,7 @@ Written during the night while you slept. Newest at the top of each section.
 |---|---|---|
 | 1 | Fixes and cleanup | **released** (update121, 02:14) |
 | 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
-| 3 | Tools v4 core: 17 personal grind enchants per tool, personal prestige 50 + rebirths **next release (update125)**; storage rework, old tools module removal next | in progress |
+| 3 | Tools v4 core: 17 personal grind enchants per tool, personal prestige 50 + rebirths **released (update125, 03:22)**; storage rework, old tools module removal next | in progress |
 | 4 | Island v2 | |
 | 5 | Spawners v2 | |
 | 6 | Quest line v2, menus, help, mailbox | |
@@ -20,7 +20,7 @@ Written during the night while you slept. Newest at the top of each section.
 | 9 | Polish (crates, collection, AH, shop) | |
 | 10 | Pack v2, ranks v2 | |
 
-## Tools v4 (batch 3): what you get in update125
+## Tools v4 (batch 3): what you get in update125 (released 03:22)
 - **Your own enchants:** right-click the island pickaxe or hoe, then **Your enchants** (middle of the menu). 17 per tool, levels 1-1000, paid with your own shards, working only at /mine (pickaxe) and /farm (hoe). Rows: area (Blast, Lightning Strike, Meteor, Nuke / Explode, Row Reaper, Tornado, Meteor Shower), shards (Shard Burst, Shard Echo, Compound Interest, Shard Jackpot), loot (Rich Vein/Bountiful, Cash Vein/Cash Crop, Quick Study, Motherlode/Golden Crop, Geode/Harvest Basket), boosts (Scholar, Combo, Lucky Streak, Keyfinder).
 - A "Buy 1 / 10 / 100" button so Bedrock players can buy many levels too (Java: shift = 10, right-click = 100).
 - Area enchants break the blocks around you as **drops only**: no shards, money bonus, quests, contracts, skill XP or unlock progress from those blocks (so they can't multiply everything). Big ones (Nuke, 100 blocks) are spread over a few ticks.
@@ -34,6 +34,7 @@ Written during the night while you slept. Newest at the top of each section.
 - Prestige is no longer owner/co-owner only and no longer takes everyone's shards (it is personal now).
 
 ## Released tonight
+- **update125 (03:22):** Tools v4: 17 personal grind enchants per tool, personal prestige 50 + rebirths, faster tool levels. Jar md5 b4f1700c.
 - **update121 (02:14):** batch 1 + the pay limit + spawner payback. GitHub `main` is now the release-v4 line plus tonight's work (Q-50 done). Jar md5 0a62117c.
 - **update122 (02:30):** grind events, contracts, no Depths tab/tiles. **update123/124 (02:38):** the quest book (tutorial) did not work live: the test server still had the OLD tutorial's config and database tables, so `tutorial.yml` had no chapters and the quest-book tables were never created (every step would have failed). Fixed: the bundled `tutorial.yml` is now live (old one in `~/cfg-backup-7nov/tutorial-old.yml`) and a V004 migration creates the tables. Jar md5 b886b85b.
 - Live fixes on the test server (backups in `~/cfg-backup-7nov/`): the Prospector achievement was skipped live (text too long for Bedrock), and 5 shop items cost less than they sell for (bucket, water/lava bucket, bread, white wool): fixed and reloaded.
