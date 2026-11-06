@@ -153,6 +153,7 @@ final class QuestsMenu extends Menu {
             case VISIT -> Material.COMPASS;
             case LIKE -> Material.POPPY;
             case HARVEST -> Material.WHEAT;
+            case ORE -> Material.IRON_ORE;
         };
     }
 

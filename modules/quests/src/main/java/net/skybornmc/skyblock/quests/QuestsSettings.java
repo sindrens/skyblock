@@ -52,7 +52,9 @@ public final class QuestsSettings extends ModuleConfig {
             + "on your own island, while island farming is on; these need a "
             + "number). Only types you have unlocked are offered; a set never has a type twice or two of visit/like.",
             level = Setting.Level.OWNER)
-    public List<String> dailyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1", "harvest 300");
+    public List<String> dailyPool = List.of("sell", "harvest 300", "ore 300", "tool_levels 1", "visit 3", "like 1");
+
+    static final List<String> DAILY_V1 = List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1", "harvest 300");
 
     // ------------------------------------------------------------------ weekly
 
@@ -80,7 +82,9 @@ public final class QuestsSettings extends ModuleConfig {
     public String weeklyBonusCrate = "blaze";
 
     @Setting(path = "weekly.pool", desc = "Weekly quest pool, same format as daily.pool.", level = Setting.Level.OWNER)
-    public List<String> weeklyPool = List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3",
+    public List<String> weeklyPool = List.of("sell", "harvest 2000", "ore 2000", "tool_levels 3", "enchant 1", "visit 10", "like 3");
+
+    static final List<String> WEEKLY_V1 = List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3",
             "harvest 1500");
 
     // ------------------------------------------------------------------ island missions
@@ -107,7 +111,23 @@ public final class QuestsSettings extends ModuleConfig {
 
     @Setting(path = "island.pool", desc = "Island mission pool, same format as daily.pool (only mine, chop, kill, sell and harvest make "
             + "sense for a whole island).", level = Setting.Level.OWNER)
-    public List<String> islandPool = List.of("mine", "chop", "kill", "sell", "harvest 3000");
+    public List<String> islandPool = List.of("sell", "harvest 3000", "ore 3000");
+
+    static final List<String> ISLAND_V1 = List.of("mine", "chop", "kill", "sell", "harvest 3000");
+
+    /** v2 (FX-12, 6 Nov 2026): the Depths mine, chop and kill quests and forge leave the pools; /mine ores and /farm crops come in. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ModuleConfig.ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "daily.pool", ModuleConfig.ValueChange.of(DAILY_V1, new QuestsSettings().dailyPool),
+                "weekly.pool", ModuleConfig.ValueChange.of(WEEKLY_V1, new QuestsSettings().weeklyPool),
+                "island.pool", ModuleConfig.ValueChange.of(ISLAND_V1, new QuestsSettings().islandPool)));
+    }
 
     // ------------------------------------------------------------------ sizing
 

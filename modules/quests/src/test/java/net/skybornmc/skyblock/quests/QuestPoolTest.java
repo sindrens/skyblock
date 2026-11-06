@@ -79,12 +79,16 @@ class QuestPoolTest {
     }
 
     @Test
-    void harvestQuestsOnlyWhileFarmingIsOn() {
-        List<QuestPool.Entry> pool = pool("sell", "harvest 300");
-        QuestPool.Unlocks off = new QuestPool.Unlocks(true, 2, 1, 1, true, true, true, true, true, false);
-        QuestPool.Unlocks on = new QuestPool.Unlocks(true, 2, 1, 1, true, true, true, true, true, true);
-        assertEquals(List.of(QuestType.SELL), QuestPool.eligible(pool, off).stream().map(QuestPool.Entry::type).toList());
-        assertEquals(List.of(QuestType.SELL, QuestType.HARVEST), QuestPool.eligible(pool, on).stream().map(QuestPool.Entry::type).toList());
+    void harvestAndOreQuestsNeedAnIsland() {
+        // 6 Nov 2026: /farm and /mine count, so harvest and ore need an island (not island farming)
+        List<QuestPool.Entry> pool = pool("sell", "harvest 300", "ore 300");
+        QuestPool.Unlocks noIsland = new QuestPool.Unlocks(false, 0, 0, 0, true, true, true, false, true, false);
+        QuestPool.Unlocks island = new QuestPool.Unlocks(false, 0, 0, 0, true, true, true, true, true, false);
+        assertEquals(List.of(QuestType.SELL), QuestPool.eligible(pool, noIsland).stream().map(QuestPool.Entry::type).toList());
+        assertEquals(List.of(QuestType.SELL, QuestType.HARVEST, QuestType.ORE),
+                QuestPool.eligible(pool, island).stream().map(QuestPool.Entry::type).toList());
+        assertEquals(3, QuestPool.eligible(QuestPool.parse(new QuestsSettings().islandPool, "island", e -> { }), island).size(),
+                "FX-12: three island missions again");
         assertTrue(QuestPool.parse("harvest").isEmpty(), "harvest needs a number");
         assertEquals(new QuestPool.Entry(QuestType.HARVEST, 300), QuestPool.parse("harvest 300").orElseThrow());
         assertFalse(QuestType.HARVEST.social());

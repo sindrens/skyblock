@@ -55,7 +55,9 @@ final class QuestPool {
             case ENCHANT -> u.enchants() && u.tool();
             case VISIT -> u.islands();
             case LIKE -> u.islands() && u.likesAllowed();
-            case HARVEST -> u.farming();
+            // /farm and /mine are open to everyone with an island (6 Nov 2026: harvest needed island farming before)
+            case HARVEST -> u.islands() || u.farming();
+            case ORE -> u.islands();
         };
     }
 

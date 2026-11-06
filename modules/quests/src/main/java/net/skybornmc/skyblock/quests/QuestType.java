@@ -28,8 +28,10 @@ enum QuestType {
     VISIT("visit", null, true),
     /** Like islands. */
     LIKE("like", null, true),
-    /** Harvest ripe crops on your own island (PHASE-7 M7.3; offered while island farming is on). */
-    HARVEST("harvest", null, false);
+    /** Harvest ripe crops on your own island or at /farm (PHASE-7 M7.3, owner 3 Nov 2026). */
+    HARVEST("harvest", null, false),
+    /** Mine ores at /mine (owner 6 Nov 2026: replaces the Depths mine, chop and kill quests). */
+    ORE("ore", null, false);
 
     private final String id;
     private final SkillType wing;
