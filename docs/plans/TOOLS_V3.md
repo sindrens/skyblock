@@ -9,7 +9,7 @@ Sources: owner answers 6 Nov (`planning/TOOL_ENCHANTS_6NOV.md`), research (`plan
   - Pickaxe: Efficiency, Fortune, Shard Finder, Sell Bonus.
   - Hoe: Haste, Fortune (more crops), Shard Finder, Sell Bonus.
 - Old perks that go: Extra Drops (merged into Fortune), Lucky (replaced by Shard Burst), Wisdom (replaced by Scholar), Smelter/Auto-Sell/Storage (move to the farm and mine storage, P-06), Growth (island hoe set), Sweep/Vein (island sets).
-- **Open point:** the tools belong to the island today (4 Nov). Keep that, or make them personal now that each player has their own sets?
+- **Personal tools (owner, 6 Nov):** each player owns, levels and enchants their own pickaxe and hoe (replaces the 4 Nov island-owned tools). Migration: every member starts from the island's current tool levels.
 
 ## 2. Grind sets (17 each, levels 1 to 1000, linear)
 Rules kept from the enchant pages: one area enchant per break; area-broken blocks give drops only; all money enchants together max +25% income; new shard enchants together max +65%; rare finds once per 2,500-10,000 blocks at max; big procs have cooldowns. Every proc shows a short actionbar line and sound ("+30 Shards, Shard Burst"); big ones a title.
