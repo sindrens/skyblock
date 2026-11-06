@@ -221,6 +221,11 @@ final class WardrobeServiceImpl implements WardrobeService {
     }
 
     @Override
+    public CompletableFuture<ItemStack> createTome(String kind, String origin, UUID owner, Actor actor) {
+        return module.tomes().create(kind, origin, owner, actor);
+    }
+
+    @Override
     public void openStaffView(Player staff, UUID target, String targetName, Menu parent) {
         module.staff().open(staff, target, targetName, parent);
     }

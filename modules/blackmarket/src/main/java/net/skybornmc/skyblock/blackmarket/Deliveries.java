@@ -121,7 +121,7 @@ final class Deliveries {
             return true; // unknown kind: perform() fails it (refund)
         }
         return switch (kind) {
-            case SET_TOKEN -> m.core.services().has(WardrobeService.class);
+            case SET_TOKEN, WARDROBE_TOME -> m.core.services().has(WardrobeService.class);
             case ENCHANT_BOOK, SCROLL -> m.core.services().has(EnchantService.class);
             case KEY -> m.core.services().has(CrateKeys.class);
             case SPAWNER -> m.core.services().has(StackingService.class);
@@ -314,6 +314,14 @@ final class Deliveries {
                     wands.add(net.skybornmc.skyblock.common.sell.SellWand.create(m.core, uses));
                 }
                 return CompletableFuture.completedFuture(wands);
+            }
+            case WARDROBE_TOME -> {
+                WardrobeService w = m.core.services().optional(WardrobeService.class).orElseThrow();
+                List<CompletableFuture<ItemStack>> tomes = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    tomes.add(w.createTome(row.ref(), origin, row.account(), actor));
+                }
+                return all(tomes);
             }
             case CHUNK_COLLECTOR -> {
                 List<ItemStack> hoppers = new ArrayList<>();

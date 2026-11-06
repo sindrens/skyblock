@@ -1231,7 +1231,7 @@ autosell:
   item:
     name: "<bold><area:money>Auto-Sell Chest</area:money></bold>"
     subtitle: "<c:muted>Block <sym:dot> Black Market"
-    about: "<c:text>Sells what is in it every 30 s."
+    about: "<c:text>Sells what is in it every few seconds."
     action: "<bold><c:action>» PLACE</c:action></bold> <c:text>it on your island"
   placed: "<prefix><c:success><sym:check></c:success> <c:text>Auto-Sell Chest placed. It sells what is in it every <c:value><seconds> s</c:value><c:text>; hoppers can feed it."
   not-island: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest on your own island."

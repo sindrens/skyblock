@@ -240,17 +240,22 @@ final class ChunkCollectors implements Listener {
         world.remove(pos.chunk());
         event.setDropItems(false);
         Block b = event.getBlock();
+        Player breaker = event.getPlayer();
+        java.util.List<ItemStack> back = new java.util.ArrayList<>();
         if (b.getState() instanceof Hopper hopper) {
             for (ItemStack item : hopper.getInventory().getContents()) {
                 if (item != null && !item.isEmpty()) {
-                    b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 0.5, 0.5), item);
+                    back.add(item.clone());
                 }
             }
             hopper.getInventory().clear();
         }
-        World w = b.getWorld();
-        Bukkit.getScheduler().runTask(module.core().plugin(), () ->
-                w.dropItemNaturally(b.getLocation().add(0.5, 0.5, 0.5), ChunkCollectorItem.create(module.core())));
+        // Batch 10: the collector and its contents go to the breaker (inventory, then /box), never onto the ground where
+        // anyone could take them; the collector stays bound (a bought one is bound, so is the copy that comes back).
+        ItemStack collector = ChunkCollectorItem.create(module.core());
+        net.skybornmc.skyblock.common.item.BoundItems.mark(collector, ProfileService.of(module.core().services()).profileKey(breaker));
+        back.add(collector);
+        net.skybornmc.skyblock.common.box.ItemBox.give(module.core().services(), breaker, net.skybornmc.skyblock.common.box.BoxSource.SPAWNER, back);
         module.core().database().transaction(c -> Sql.update(c, "DELETE FROM stacking_chunk_collectors WHERE world = ? AND x = ? AND y = ? AND z = ?",
                 pos.world(), pos.x(), pos.y(), pos.z()));
     }

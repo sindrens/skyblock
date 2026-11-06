@@ -191,7 +191,7 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
     /** True when the offer's system runs now, so a buy can really be handed out. Main thread. */
     boolean live(OfferCatalog.Offer o) {
         return switch (o.kind()) {
-            case SET_TOKEN -> core.services().has(WardrobeService.class);
+            case SET_TOKEN, WARDROBE_TOME -> core.services().has(WardrobeService.class);
             case ENCHANT_BOOK -> !books(o.ref()).isEmpty();
             case SCROLL -> core.services().has(EnchantService.class);
             case KEY -> core.services().optional(CrateKeys.class).map(k -> k.exists(o.ref())).orElse(false);
@@ -410,6 +410,7 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
             case SELL_WAND -> Material.BLAZE_ROD;
             case AUTOSELL_CHEST -> Material.CHEST;
             case CHUNK_COLLECTOR -> Material.HOPPER;
+            case WARDROBE_TOME -> Material.BOOK;
             case COMING_SOON -> Material.GRAY_DYE;
         };
     }

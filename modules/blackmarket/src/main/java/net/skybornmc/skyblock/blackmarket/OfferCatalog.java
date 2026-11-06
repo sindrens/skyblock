@@ -58,6 +58,8 @@ final class OfferCatalog {
         AUTOSELL_CHEST("autosell-chest", false),
         /** A Chunk Collector (owner 4 Nov 2026). Item. */
         CHUNK_COLLECTOR("chunk-collector", false),
+        /** Batch 10: a Wardrobe Tome, {@code ref} = normal | greater. Item. */
+        WARDROBE_TOME("wardrobe-tome", true),
         /** Not built yet (collectors, auto-sell chests, blueprints, tomes): shown in the config only. */
         COMING_SOON("coming-soon", false);
 

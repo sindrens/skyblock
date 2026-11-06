@@ -143,6 +143,12 @@ public interface WardrobeService {
      */
     CompletableFuture<ItemStack> createToken(String setId, String origin, UUID owner, Actor actor);
 
+    /**
+     * Batch 10: makes a new Wardrobe Tome ({@code normal}) or Greater Tome ({@code greater}) for the Black Market, quests or
+     * staff: database row first, then completes on the main thread with the item. Audited.
+     */
+    CompletableFuture<ItemStack> createTome(String kind, String origin, UUID owner, Actor actor);
+
     /** Opens the staff view of a player's wardrobe (the Wardrobe button in {@code /inspect}). */
     void openStaffView(Player staff, UUID target, String targetName, Menu parent);
 }

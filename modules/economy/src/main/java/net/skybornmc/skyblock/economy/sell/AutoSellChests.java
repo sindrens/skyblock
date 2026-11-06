@@ -168,7 +168,11 @@ public final class AutoSellChests implements Listener {
             }
             chest.getBlockInventory().clear();
         }
-        back.add(create(core));
+        // Batch 10: the chest that comes back stays bound (a bought one is bound; an unbound copy could be traded away).
+        ItemStack again = create(core);
+        net.skybornmc.skyblock.common.item.BoundItems.mark(again,
+                net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(event.getPlayer()));
+        back.add(again);
         // Inventory first, then the mailbox: nothing lies on the ground for others to grab.
         net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), event.getPlayer(), net.skybornmc.skyblock.common.box.BoxSource.SELL, back);
         core.database().transaction(c -> Sql.update(c, "DELETE FROM economy_autosell_chests WHERE world = ? AND x = ? AND y = ? AND z = ?",

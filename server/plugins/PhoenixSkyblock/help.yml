@@ -1413,6 +1413,12 @@ topics:
           - "<c:text>may buy per restock (some per"
           - "<c:text>month or season). Bought items"
           - "<c:text>are bound to your profile."
+      - title: "<c:value>Island helpers"
+        lines:
+          - "<c:text>Sell Wand: right-click a chest to"
+          - "<c:text>sell it all. Auto-Sell Chest and"
+          - "<c:text>Chunk Collector: 1 per island,"
+          - "<c:text>only on your own island."
       - title: "<c:value>Island Charter"
         lines:
           - "<c:text>Grow your island past 9x9, one"

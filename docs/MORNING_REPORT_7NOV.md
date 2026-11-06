@@ -133,6 +133,14 @@ If a buy would go over the seller's daily receive limit, it is refused with a me
 - `/sell all` sells the hotbar too: **works** (the "skip hotbar" switch is off by default since 3 Nov).
 - Bone meal on island crops, one stage every 3 s, no hologram over crops, faster with upgrades: **works**. Bone meal adds 1-3 stages. The Crop Growth island upgrade and the hoe's Growth perk make crops grow faster. Island level itself does not change the speed; the upgrades do.
 
+## Black Market items back (update138, plan: `docs/plans/BATCH10_PLAN.md`)
+- Correction to my Q-71 answer: **Sell Wand, Auto-Sell Chest and Chunk Collector were already built** (on 4 Nov). They were only taken off the Black Market. I fixed two bugs and put them back on sale at their old prices (25 / 120 / 100 crystals):
+  - Breaking an Auto-Sell Chest gave back an **unbound** copy (it could be traded away). It now stays bound.
+  - Breaking a Chunk Collector dropped it and its contents **on the ground** for anyone to take. Now they go to the breaker (inventory, then /box), bound.
+- The **Wardrobe Tome** is sold for real now: Tome (+2,500 set XP, 30 crystals, common slot) and **Greater Tome** (+10,000, 100 crystals, rare slot).
+- Not built (Q-74): **Tool Skins** need held-item models in the resource pack (comes with pack v2). Tell me which skins and which tools. **Hologram** has no description anywhere: what should it be?
+- Q-75: the Tome gives set XP (as built). A 4 Nov note said "+1 wardrobe slot". Which one do you want?
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

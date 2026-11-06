@@ -152,7 +152,7 @@ offers:
     lore: ["<c:text>Place it on your island: it", "<c:text>catches every drop in its chunk.", "<c:text>Put a chest under it. 1 per island."]
   autosell_chest:
     name: "<rarity:epic>Auto-Sell Chest"
-    lore: ["<c:text>Place it on your island: it", "<c:text>sells what is in it every 30 s.", "<c:text>Hoppers can feed it. 1 per island."]
+    lore: ["<c:text>Place it on your island: it", "<c:text>sells what is in it by itself.", "<c:text>Hoppers can feed it. 1 per island."]
   eclipse_key:
     name: "<rarity:legendary>Eclipse Key"
     lore: ["<c:text>One per account per month."]
@@ -185,4 +185,8 @@ offers:
     name: "<rarity:rare>Sell Wand"
     lore: ["<c:text>100 uses. Right-click a chest", "<c:text>on your island: everything", "<c:text>sellable in it is sold."]
   wardrobe_tome:
-    name: "<rarity:rare>Greater Wardrobe Tome"
+    name: "<rarity:rare>Wardrobe Tome"
+    lore: ["<c:text>+2,500 XP for one wardrobe", "<c:text>set. Use it in the set screen."]
+  greater_tome:
+    name: "<rarity:epic>Greater Wardrobe Tome"
+    lore: ["<c:text>+10,000 XP for one wardrobe", "<c:text>set. Use it in the set screen."]

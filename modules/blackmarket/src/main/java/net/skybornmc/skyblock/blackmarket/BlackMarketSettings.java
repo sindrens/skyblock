@@ -154,8 +154,19 @@ public final class BlackMarketSettings extends ModuleConfig {
      * The default offer list (version 5, owner 7 Nov 2026, Q-71): the Sell Wand, Auto-Sell Chest and Chunk Collector are
      * off the Black Market until the owner has tested and approved them (the code stays, items already bought keep working).
      */
-    static final List<String> OFFERS = OFFERS_V4.stream()
+    static final List<String> OFFERS_V5 = OFFERS_V4.stream()
             .filter(line -> !line.startsWith("sell_wand:") && !line.startsWith("autosell_chest:") && !line.startsWith("chunk_collector:"))
+            .toList();
+
+    /**
+     * The default offer list (version 6, batch 10, 7 Nov 2026): the three island items are back (their break bugs are fixed:
+     * the item that comes back stays bound and never lands on the ground), and the Wardrobe Tome is sold for real, with the
+     * Greater Tome in the rare slot.
+     */
+    static final List<String> OFFERS = java.util.stream.Stream.concat(OFFERS_V4.stream()
+                    .map(line -> line.startsWith("wardrobe_tome:")
+                            ? "wardrobe_tome: slot=common price=30 weight=3 reward=wardrobe-tome:normal limit=1/rotation icon=book" : line),
+            java.util.stream.Stream.of("greater_tome: slot=rare price=100 weight=2 reward=wardrobe-tome:greater limit=1/rotation icon=enchanted_book"))
             .toList();
 
     /** The default offer list before ECON-SPAWNERS (version 1). */
@@ -179,7 +190,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     /**
@@ -192,6 +203,7 @@ public final class BlackMarketSettings extends ModuleConfig {
         return java.util.Map.of(2, java.util.Map.of("offers", ValueChange.of(OFFERS_V1, OFFERS)),
                 3, java.util.Map.of("offers", ValueChange.of(OFFERS_V2, OFFERS)),
                 4, java.util.Map.of("offers", ValueChange.of(OFFERS_V3, OFFERS)),
-                5, java.util.Map.of("offers", ValueChange.of(OFFERS_V4, OFFERS)));
+                5, java.util.Map.of("offers", ValueChange.of(OFFERS_V4, OFFERS_V5)),
+                6, java.util.Map.of("offers", ValueChange.of(OFFERS_V5, OFFERS)));
     }
 }

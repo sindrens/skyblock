@@ -18,7 +18,7 @@ class OfferCatalogTest {
         List<String> problems = new ArrayList<>();
         OfferCatalog c = OfferCatalog.parse(new BlackMarketSettings().offers, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(15, c.all().size(), "owner 7 Nov 2026 (Q-71): Sell Wand, Auto-Sell Chest and Chunk Collector are off");
+        assertEquals(19, c.all().size(), "batch 10: Sell Wand, Auto-Sell Chest and Chunk Collector are back, plus the Greater Tome");
         assertEquals(4, c.of(OfferCatalog.Slot.FIXED).size(), "scroll + 3 premium spawners (ECON-SPAWNERS)");
         assertEquals(3, c.of(OfferCatalog.Slot.HEADLINE).size());
     }
@@ -40,10 +40,13 @@ class OfferCatalogTest {
         assertEquals(400, golem.price());
         assertEquals(OfferCatalog.Period.DAY, golem.period());
         assertEquals(8, c.get("scroll").orElseThrow().price());
-        assertTrue(c.get("sell_wand").isEmpty(), "owner 7 Nov 2026 (Q-71): off the Black Market until tested and approved");
-        assertTrue(c.get("chunk_collector").isEmpty());
-        assertTrue(c.get("autosell_chest").isEmpty());
-        assertFalse(c.get("wardrobe_tome").orElseThrow().rollable(), "coming soon is never rolled");
+        // Batch 10 (7 Nov 2026): the three island items are back at their old prices; the tomes are sold for real.
+        assertEquals(25, c.get("sell_wand").orElseThrow().price());
+        assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, c.get("chunk_collector").orElseThrow().kind());
+        assertEquals(OfferCatalog.Kind.AUTOSELL_CHEST, c.get("autosell_chest").orElseThrow().kind());
+        assertEquals(OfferCatalog.Kind.WARDROBE_TOME, c.get("wardrobe_tome").orElseThrow().kind());
+        assertEquals("greater", c.get("greater_tome").orElseThrow().ref());
+        assertTrue(c.get("wardrobe_tome").orElseThrow().rollable());
         OfferCatalog old = OfferCatalog.parse(BlackMarketSettings.OFFERS_V4, w -> { });
         assertEquals(OfferCatalog.Kind.SELL_WAND, old.get("sell_wand").orElseThrow().kind(), "the offer kinds still parse");
         assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, old.get("chunk_collector").orElseThrow().kind());
@@ -80,7 +83,10 @@ class OfferCatalogTest {
         assertEquals(BlackMarketSettings.OFFERS, v4.to());
         var v5 = new BlackMarketSettings().valueChanges().get(5).get("offers");
         assertEquals(BlackMarketSettings.OFFERS_V4, v5.from());
-        assertEquals(BlackMarketSettings.OFFERS, v5.to());
+        assertEquals(BlackMarketSettings.OFFERS_V5, v5.to());
+        var v6 = new BlackMarketSettings().valueChanges().get(6).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V5, v6.from());
+        assertEquals(BlackMarketSettings.OFFERS, v6.to());
     }
 
     @Test
