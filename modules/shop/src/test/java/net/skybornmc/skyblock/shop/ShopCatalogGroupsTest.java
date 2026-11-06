@@ -65,9 +65,9 @@ class ShopCatalogGroupsTest {
     void spawnerGroupsAreTheFourTiers() throws Exception {
         ShopCatalog.Category tab = ShopCatalogTest.catalog().category("spawners").orElseThrow();
         assertEquals(List.of("tier1", "tier2", "tier3", "tier4"), tab.groups().stream().map(ShopCatalog.Group::id).toList());
-        assertEquals(List.of(6, 6, 5, 3), tab.groups().stream().map(g -> g.items().size()).toList(),
-                "owner 7 Nov 2026: hoglin in tier 1, zombified piglin in tier 2");
-        assertEquals(List.of("spawner_pig", "spawner_cow", "spawner_chicken", "spawner_sheep", "spawner_rabbit", "spawner_hoglin"),
+        assertEquals(List.of(5, 4, 2, 3), tab.groups().stream().map(g -> g.items().size()).toList(),
+                "owner 7 Nov 2026: one mob per loot (no copies)");
+        assertEquals(List.of("spawner_pig", "spawner_cow", "spawner_chicken", "spawner_sheep", "spawner_rabbit"),
                 tab.groups().get(0).items());
     }
 
@@ -112,8 +112,8 @@ class ShopCatalogGroupsTest {
     @Test
     void econResultCounts() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog();
-        assertEquals(335, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42)
-        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 20};
+        assertEquals(329, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42)
+        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 14};
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }

@@ -112,7 +112,9 @@ public final class StackingConfig extends ModuleConfig {
     public int spawnerCapPerkMax = 64;
 
     @Setting(path = "spawners.legacy", desc = "Spawner types that left the roster (mob:tier): they keep working with vanilla loot, count in that tier, but are never sold.", level = Setting.Level.OWNER)
-    public List<String> legacy = List.of("squid:2", "magma_cube:3", "glow_squid:4", "piglin:4", "shulker:5", "ravager:5", "breeze:5");
+    public List<String> legacy = List.of("squid:2", "magma_cube:3", "glow_squid:4", "piglin:4", "shulker:5", "ravager:5", "breeze:5",
+            // owner 7 Nov 2026 ("simple, nothing unnecessary"): mobs whose loot copies another mob are no longer sold
+            "hoglin:1", "cave_spider:2", "zombified_piglin:2", "drowned:3", "husk:3", "stray:3");
 
     @Setting(path = "spawners.unlock.tier-2.kills", desc = "Kills of tier 1 mobs on an island before its shop sells tier 2 spawners (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
     public long unlockTier2Kills = 10_000; // owner 7 Nov 2026
@@ -210,13 +212,13 @@ public final class StackingConfig extends ModuleConfig {
     public int frozenMenuLimit = 200;
 
     @Setting(path = "spawners.tier-1", desc = "Tier 1 spawner types (owner SK3, shop).", level = Setting.Level.OWNER)
-    public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"); // owner 7 Nov 2026: hoglin loot is tier 1 money
+    public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit"); // owner 7 Nov 2026: one loot each, no copies
 
     @Setting(path = "spawners.tier-2", desc = "Tier 2 spawner types (Cave; ECON-SPAWNERS: 5 mobs, unlock by tier 1 kills).", level = Setting.Level.OWNER)
-    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "zombified_piglin");
+    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "slime");
 
     @Setting(path = "spawners.tier-3", desc = "Tier 3 spawner types (Wild; unlock by tier 2 kills).", level = Setting.Level.OWNER)
-    public List<String> tier3 = List.of("creeper", "witch", "drowned", "husk", "stray");
+    public List<String> tier3 = List.of("creeper", "witch");
 
     @Setting(path = "spawners.tier-4", desc = "Tier 4 spawner types (Nether; unlock by tier 3 kills).", level = Setting.Level.OWNER)
     public List<String> tier4 = List.of("blaze", "enderman", "guardian");
@@ -311,7 +313,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -328,6 +330,12 @@ public final class StackingConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         StackingConfig d = new StackingConfig();
         return java.util.Map.of(
+                // v7 (owner 7 Nov 2026): one mob per loot, so every mob in a tier earns the same; the copies become legacy
+                7, java.util.Map.of(
+                        "spawners.tier-1", ValueChange.of(List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"), d.tier1),
+                        "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "zombified_piglin"), d.tier2),
+                        "spawners.tier-3", ValueChange.of(List.of("creeper", "witch", "drowned", "husk", "stray"), d.tier3),
+                        "spawners.legacy", ValueChange.of(List.of("squid:2", "magma_cube:3", "glow_squid:4", "piglin:4", "shulker:5", "ravager:5", "breeze:5"), d.legacy)),
                 // v6 (owner 7 Nov 2026, spawner page answer): unlocks 10k / 25k / 50k kills, premium tier 5 after 100k
                 6, java.util.Map.of("spawners.unlock.tier-2.kills", ValueChange.of(1_000L, d.unlockTier2Kills),
                         "spawners.unlock.tier-3.kills", ValueChange.of(5_000L, d.unlockTier3Kills),

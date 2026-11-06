@@ -50,7 +50,8 @@ class ShopCatalogMigrationV7Test {
         List<String> problems = new ArrayList<>();
         ShopCatalog c = ShopCatalogTest.load(live, problems);
         assertTrue(c.item("arrow").isPresent(), "new mob drops are added afterwards");
-        assertEquals(ShopCatalogTest.catalog().size(), c.size(), "same items as a fresh install");
+        // + the 6 copy spawners (owner 7 Nov 2026): v9 removes them only at their x100 prices, and this test file is unscaled
+        assertEquals(ShopCatalogTest.catalog().size() + 6, c.size(), "same items as a fresh install");
         assertTrue(ShopCatalogMigration.itemsV7(live, bundled, ShopCatalogTest.resource(ShopModule.V6_DEFAULTS)).isEmpty(), "once");
     }
 }

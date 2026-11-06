@@ -52,7 +52,7 @@ config-version: 7
 money-scale: 100
 # Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): seeds and crops 10x their sell price, spawners priced by what they
 # earn (~50 h payback). A live file gets these once (an edited price stays); the number below records it.
-catalog-version: 8
+catalog-version: 9
 
 categories:
   # Wood, planks, stone and its crafted variants, earth, Nether, End and ocean blocks, sorted by type.
@@ -467,9 +467,9 @@ categories:
     icon: spawner
     kind: spawners
     groups:
-      tier1: [pig, cow, chicken, sheep, rabbit, hoglin]
-      tier2: [zombie, skeleton, spider, cave_spider, slime, zombified_piglin]
-      tier3: [husk, stray, drowned, creeper, witch]
+      tier1: [pig, cow, chicken, sheep, rabbit]
+      tier2: [zombie, skeleton, spider, slime]
+      tier3: [creeper, witch]
       tier4: [blaze, enderman, guardian]
     items:
       pig: 5000000
@@ -480,18 +480,12 @@ categories:
       zombie: 12500000
       skeleton: 12500000
       spider: 12500000
-      cave_spider: 12500000
       slime: 12500000
       creeper: 30000000
       witch: 30000000
-      drowned: 13500000
-      husk: 12500000
-      stray: 12500000
       blaze: 75000000
       enderman: 75000000
       guardian: 75000000
-      hoglin: 7500000
-      zombified_piglin: 17500000
 
 # Not sold any more (Shop v2); the price is only the block worth for the island level and trade hints.
 worth-only:

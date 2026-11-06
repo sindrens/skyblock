@@ -1251,8 +1251,8 @@ topics:
         lines:
           - "<c:text>Your island gets full price for the"
           - "<c:text>first 3,000 of each item a day, then a"
-          - "<c:text>little less (back at 04:00). Every Monday"
-          - "<c:text>prices move up to 10%. One <c:value>Hot item</c:value>"
+          - "<c:text>little less (back at 04:00). Spawner"
+          - "<c:text>loot always pays full. One <c:value>Hot item</c:value>"
           - "<c:text>a day sells for more. Sell a mix!"
       - title: "<c:value>Sell bonus"
         lines:

@@ -25,13 +25,13 @@ class SpawnerTiersTest {
         SpawnerTiers tiers = SpawnerTiers.load(lists(DEFAULTS), id -> true, problems::add);
         assertEquals(List.of(), problems);
         assertEquals(1, tiers.tier("pig").orElseThrow());
-        assertEquals(2, tiers.tier("cave_spider").orElseThrow());
+        assertEquals(2, tiers.tier("zombie").orElseThrow());
         assertEquals(3, tiers.tier("creeper").orElseThrow());
         assertTrue(tiers.tier("magma_cube").isEmpty(), "ECON-SPAWNERS: magma cube is legacy (not in the tier lists)");
         assertEquals(4, tiers.tier("blaze").orElseThrow());
         assertEquals(5, tiers.tier("iron_golem").orElseThrow());
         assertEquals(5, tiers.tier("minecraft:EVOKER").orElseThrow());
-        assertEquals(23, tiers.types().size()); // ECON-SPAWNERS: 5 + 5 + 5 + 5 + 3 (premium)
+        assertEquals(17, tiers.types().size()); // owner 7 Nov 2026: 5 + 4 + 2 + 3 + 3 (premium)
         assertEquals("pig", tiers.types().getFirst());
     }
 

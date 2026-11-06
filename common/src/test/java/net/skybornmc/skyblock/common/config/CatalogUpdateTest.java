@@ -37,6 +37,17 @@ class CatalogUpdateTest {
     }
 
     @Test
+    void aNullTargetRemovesAnUntouchedEntry() {
+        YamlConfiguration y = new YamlConfiguration();
+        y.set("spawners.hoglin", 7_500_000);
+        y.set("spawners.husk", 9_000_000); // the owner's price: stays
+        CatalogUpdate.apply(y, Map.of(9, Map.of("spawners.hoglin", CatalogUpdate.Change.of(7_500_000L, null),
+                "spawners.husk", CatalogUpdate.Change.of(12_500_000L, null))));
+        assertTrue(!y.contains("spawners.hoglin"));
+        assertEquals(9_000_000, y.getInt("spawners.husk"));
+    }
+
+    @Test
     void numbersCompareByValue() {
         YamlConfiguration y = new YamlConfiguration();
         y.set("crops.wheat", 1200L);

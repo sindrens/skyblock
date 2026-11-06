@@ -205,6 +205,12 @@ Your message after testing ("prestige 6 in 5 minutes", "so few shards", "each le
 - Your page answers (update146): tier unlocks need **10,000 / 25,000 / 50,000** kills of the tier below, and premium tier 5 needs **100,000** tier 4 kills.
 - Live files are updated once (sell.yml catalog-version 3, shop.yml catalog-version 8; a price you changed yourself stays). Every change is in the server log.
 
+## Simpler spawners, no weekly price change, payment fix (update147)
+Your "simple, nothing unnecessary" answer:
+- **Spawners in /shop:** tier 1 pig, cow, chicken, sheep, rabbit ($5M) · tier 2 zombie, skeleton, spider, slime ($12.5M) · tier 3 creeper, witch ($30M) · tier 4 blaze, enderman, guardian ($75M). Every mob in a tier earns the same; each tier about 2.5x the one below; ~50 h payback. Hoglin, cave spider, zombified piglin, drowned, husk and stray are no longer sold (placed ones keep working).
+- **No weekly price change** any more (`sell.weekly.enabled: false`). Only the daily island price stays; spawner loot always pays full.
+- **Fix:** shard and money payments could fail when two hit the same account at once (MariaDB "Record has changed since last read"). They are retried now, safely (every try is a full rollback).
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

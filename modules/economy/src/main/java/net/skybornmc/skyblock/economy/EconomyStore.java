@@ -157,11 +157,15 @@ final class EconomyStore {
         }
     }
 
-    /** Deadlock or lock wait timeout (MariaDB 1213/1205, H2 40001/50200, SQLState class 40). */
+    /**
+     * Deadlock or lock wait timeout (MariaDB 1213/1205, H2 40001/50200, SQLState class 40), and MariaDB 11.8's snapshot
+     * isolation conflict 1020 "Record has changed since last read" (two payments to one account at once; seen live
+     * 7 Nov 2026). Every try is a full rollback, so a retry never pays twice.
+     */
     static boolean retryable(SQLException e) {
         String state = e.getSQLState();
         int code = e.getErrorCode();
-        return (state != null && state.startsWith("40")) || code == 1213 || code == 1205 || code == 40001 || code == 50200;
+        return (state != null && state.startsWith("40")) || code == 1213 || code == 1205 || code == 1020 || code == 40001 || code == 50200;
     }
 
     TxResult run(Connection c, Transaction tx) throws SQLException {

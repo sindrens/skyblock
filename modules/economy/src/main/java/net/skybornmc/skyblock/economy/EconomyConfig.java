@@ -395,8 +395,8 @@ public final class EconomyConfig extends ModuleConfig {
     public int sellDailySaveSeconds = 30;
 
     @Setting(path = "sell.weekly.enabled", desc = "Every Monday 00:00 each item gets a price change for the week, the same for "
-            + "everyone (\"Wheat +6% this week\").", level = Setting.Level.OWNER)
-    public boolean sellWeeklyEnabled = true;
+            + "everyone (\"Wheat +6% this week\"). Owner 7 Nov 2026: off (simple; the daily island price is enough).", level = Setting.Level.OWNER)
+    public boolean sellWeeklyEnabled = false;
 
     @Setting(path = "sell.weekly.max-percent", desc = "The largest weekly change, up or down (percent).", min = 0, max = 50,
             level = Setting.Level.OWNER)
@@ -550,7 +550,7 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 8;
+        return 9;
     }
 
     @Override
@@ -560,7 +560,9 @@ public final class EconomyConfig extends ModuleConfig {
                 // owner 6 Nov 2026: the $10k earned rule is replaced by the playtime pay limit
                 7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)),
                 // dynamic prices v2 (7 Nov 2026): the old global model is retired; sell.daily.* and sell.weekly.* replace it
-                8, java.util.Map.of("sell.dynamic.enabled", ValueChange.of(true, false)));
+                8, java.util.Map.of("sell.dynamic.enabled", ValueChange.of(true, false)),
+                // owner 7 Nov 2026 ("simple, nothing unnecessary"): no weekly price change
+                9, java.util.Map.of("sell.weekly.enabled", ValueChange.of(true, false)));
     }
 
     @Override

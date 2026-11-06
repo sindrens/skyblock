@@ -78,7 +78,7 @@ class BuySellInvariantTest {
         SellCatalog sell = sellCatalog();
         assertTrue(sell.size() > 50, "sell.yml was found");
         Function<String, OptionalDouble> max = maxSell(sell, new EconomyConfig());
-        assertEquals(5.5, max.apply("coal").getAsDouble() / 1000, 1e-9, "defaults (prices v2): x1.10 weekly top, x1.25 hot, x4 cap");
+        assertEquals(5.0, max.apply("coal").getAsDouble() / 1000, 1e-9, "defaults: no weekly change, x1.25 hot, x4 cap");
         List<String> loops = new ArrayList<>();
         for (ShopCatalog.Item item : ShopCatalogTest.catalog().items()) {
             Map<String, Integer> parts = new HashMap<>(item.contains());

@@ -181,6 +181,7 @@ class DynamicPricesV2Test {
     void configDefaultsMatchThePlan() {
         EconomyConfig c = new EconomyConfig();
         assertEquals(D, c.dayPrice());
-        assertEquals(WeeklyDrift.DEFAULTS, c.weeklyDrift());
+        assertEquals(new WeeklyDrift(false, 10, 2, 104_729), c.weeklyDrift(), "owner 7 Nov 2026: the weekly change is off");
+        assertEquals(1.0, c.weeklyDrift().factor(202645, "wheat"));
     }
 }

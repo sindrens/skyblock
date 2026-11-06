@@ -121,8 +121,8 @@ class ShopCatalogTest {
         ShopCatalog c = catalog();
         // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
         // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
-        assertEquals(335, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42)
-        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
+        assertEquals(329, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42), - 6 copy spawners (7 Nov)
+        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 14}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -169,7 +169,7 @@ class ShopCatalogTest {
         assertEquals(12_500_000, catalog().item("spawner_zombie").orElseThrow().price());
         assertEquals(30_000_000, catalog().item("spawner_creeper").orElseThrow().price());
         assertEquals(75_000_000, catalog().item("spawner_blaze").orElseThrow().price());
-        assertEquals(20, tab.items().size());
+        assertEquals(14, tab.items().size()); // owner 7 Nov 2026: 5 + 4 + 2 + 3
     }
 
     @Test
@@ -177,7 +177,7 @@ class ShopCatalogTest {
         List<String> problems = new ArrayList<>();
         ShopCatalog c = ShopCatalog.load(bundled(), ShopCatalogTest::realItem, type -> false, pricing(), problems::add);
         assertTrue(c.category("spawners").orElseThrow().items().isEmpty());
-        assertEquals(20, problems.size(), () -> String.join("\n", problems));
+        assertEquals(14, problems.size(), () -> String.join("\n", problems));
         assertTrue(c.category("spawners").orElseThrow().groups().isEmpty(), "skipped spawners leave their groups silently");
     }
 

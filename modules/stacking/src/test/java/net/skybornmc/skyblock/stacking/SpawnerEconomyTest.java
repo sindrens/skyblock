@@ -157,6 +157,7 @@ class SpawnerEconomyTest {
         YamlConfiguration shop = YamlConfiguration.loadConfiguration(new File("../shop/src/main/resources/shop.yml"));
         List<String> off = new ArrayList<>();
         java.util.Map<Integer, Double> best = new java.util.HashMap<>();
+        java.util.Map<Integer, Double> lowest = new java.util.HashMap<>();
         List<List<String>> tiers = List.of(c.tier1, c.tier2, c.tier3, c.tier4);
         for (int t = 0; t < tiers.size(); t++) {
             for (String mob : tiers.get(t)) {
@@ -171,6 +172,8 @@ class SpawnerEconomyTest {
                     off.add(mob + " $" + (long) cost + " earns $" + (long) perHour + "/h = " + Math.round(hours) + " h");
                 }
                 best.merge(t + 1, perHour, Math::max);
+                java.util.Map<Integer, Double> low = lowest;
+                low.merge(t + 1, perHour, Math::min);
             }
         }
         assertTrue(off.isEmpty(), "paybacks: " + off);
@@ -178,6 +181,9 @@ class SpawnerEconomyTest {
             assertTrue(best.get(t) >= 1.5 * best.get(t - 1), "tier " + t + "'s best spawner earns clearly more than tier " + (t - 1) + "'s");
         }
         assertEquals(List.of("blaze", "enderman", "guardian"), c.tier4);
+        for (int t = 1; t <= 4; t++) {
+            assertTrue(lowest.get(t) >= 0.9 * best.get(t), "owner 7 Nov 2026: every mob in tier " + t + " earns about the same");
+        }
     }
 
     // ------------------------------------------------------------------ payback (ECON-TABLES B)

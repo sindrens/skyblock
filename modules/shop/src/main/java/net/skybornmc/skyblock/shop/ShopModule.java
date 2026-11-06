@@ -110,7 +110,19 @@ public final class ShopModule implements SkyblockModule, Listener {
      * spawners priced by what they earn, hoglin and zombified piglin in the tier 1 and 2 rows. Only untouched values.
      */
     static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
-            java.util.Map.of(8, java.util.Map.ofEntries(
+            java.util.Map.of(
+                    // v9 (owner 7 Nov 2026, "simple"): mobs whose loot copies another mob leave the shop (null = removed)
+                    9, java.util.Map.ofEntries(
+                    java.util.Map.entry("categories.spawners.items.hoglin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(7500000L, null)),
+                    java.util.Map.entry("categories.spawners.items.cave_spider", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(12500000L, null)),
+                    java.util.Map.entry("categories.spawners.items.zombified_piglin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(17500000L, null)),
+                    java.util.Map.entry("categories.spawners.items.drowned", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(13500000L, null)),
+                    java.util.Map.entry("categories.spawners.items.husk", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(12500000L, null)),
+                    java.util.Map.entry("categories.spawners.items.stray", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(12500000L, null)),
+                    java.util.Map.entry("categories.spawners.groups.tier1", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"), java.util.List.of("pig", "cow", "chicken", "sheep", "rabbit"))),
+                    java.util.Map.entry("categories.spawners.groups.tier2", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "zombified_piglin"), java.util.List.of("zombie", "skeleton", "spider", "slime"))),
+                    java.util.Map.entry("categories.spawners.groups.tier3", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("husk", "stray", "drowned", "creeper", "witch"), java.util.List.of("creeper", "witch")))),
+                    8, java.util.Map.ofEntries(
                     java.util.Map.entry("categories.farming.items.wheat_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(150000, 7000)),
                     java.util.Map.entry("categories.farming.items.beetroot_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(250000, 12000)),
                     java.util.Map.entry("categories.farming.items.melon_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(400000, 6000)),

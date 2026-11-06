@@ -20,7 +20,7 @@ public final class CatalogUpdate {
     private CatalogUpdate() {
     }
 
-    /** One changed default: {@code from} (the old bundled value) to {@code to}. Numbers compare by value. */
+    /** One changed default: {@code from} (the old bundled value) to {@code to} (null = the entry is removed). Numbers compare by value. */
     public record Change(Object from, Object to) {
         public static Change of(Object from, Object to) {
             return new Change(from, to);
