@@ -47,7 +47,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Everything else in the world is protected (creative staff can build). Temporary until the grind areas redesign
  * ({@code docs/planning/TOOLS_AREAS_REDESIGN.md}).
  */
-final class GrindAreas extends CommandGroup implements Listener {
+final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.skyblock.common.grind.GrindProgress {
 
     static final int FARM_X = 0;
     static final int MINE_X = 1000;
@@ -158,6 +158,7 @@ final class GrindAreas extends CommandGroup implements Listener {
     void start() {
         events = new GrindEventsImpl(core, msg, () -> config, () -> world);
         core.services().register(MODULE, net.skybornmc.skyblock.common.grind.GrindEvents.class, events);
+        core.services().register(MODULE, net.skybornmc.skyblock.common.grind.GrindProgress.class, this); // owner 6 Nov 2026: Quick Study
         events.start();
         core.placeholders().registerText(MODULE, "grind_event", p -> {
             if (p == null || world == null || !p.getWorld().equals(world) || !config.grindEventsEnabled) {
@@ -298,25 +299,8 @@ final class GrindAreas extends CommandGroup implements Listener {
         }
         if (in(b, FARM_X, FARM_HALF) && b.getY() == base + 1 && b.getType() == Material.WHEAT) {
             Player p = event.getPlayer();
-            // The player's own crop: carrots, potatoes ... drop instead of wheat once unlocked (per player).
-            long farmed = farmed(p) + 1;
-            Crop before = cropFor(farmed - 1);
-            Crop crop = cropFor(farmed);
-            p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
-            rollBonus(p, farmBonus(CROPS.indexOf(before)));
-            Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FARM, crop.block(), crop.item(), 1, b.getLocation()));
-            // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
-            if (crop != before) {
-                msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
-                core.sounds().play(p, "unlock");
-                sendFarm(p);
-            } else if (crop.unlockAt() < CROPS.getLast().unlockAt()) {
-                Crop next = CROPS.get(CROPS.indexOf(crop) + 1);
-                if (farmed % 50 == 0) {
-                    net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
-                            net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
-                            net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item()))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
-                }
+            if (!net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p)) {
+                countFarm(p, b);
             }
             core.scheduler().later("essentials:grind-regrow", regrowTicks(p, config.grindFarmRegrowSeconds), () -> {
                 // Also a crop the hoe replanted (age 0): it would never grow here (no random ticks).
@@ -331,27 +315,8 @@ final class GrindAreas extends CommandGroup implements Listener {
         }
         if (in(b, MINE_X, MINE_HALF) && b.getY() <= base && b.getY() > base - MINE_DEPTH && b.getType() != Material.BEDROCK) {
             Player p = event.getPlayer();
-            List<Long> unlocks = mineUnlocks();
-            Ore before = oreTier(mined(p), unlocks);
-            long mined = mined(p) + 1;
-            p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
-            Ore tier = oreTier(mined, unlocks);
-            rollBonus(p, mineBonus(ORE_TIERS.indexOf(before)));
-            Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.MINE, before.block(), before.drop(), before.amount(),
-                    b.getLocation()));
-            if (tier != before) {
-                msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.block())));
-                core.sounds().play(p, "unlock");
-                core.scheduler().later("essentials:grind-view", 1L, () -> sendMine(p));
-            } else if (mined % 50 == 0) {
-                int next = ORE_TIERS.indexOf(tier) + 1;
-                if (next < ORE_TIERS.size()) {
-                    net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress-ore",
-                            net.skybornmc.skyblock.common.text.Msg.number("have", mined),
-                            net.skybornmc.skyblock.common.text.Msg.number("need", unlockAt(next, unlocks)),
-                            net.skybornmc.skyblock.common.text.Msg.p("ore", name(ORE_TIERS.get(next).block()))),
-                            net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
-                }
+            if (!net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p)) {
+                countMine(p, b);
             }
             core.scheduler().later("essentials:grind-regen", regrowTicks(p, config.grindMineRegenSeconds), () -> {
                 if (b.getType().isAir()) {
@@ -362,6 +327,109 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         event.setCancelled(true);
+    }
+
+    /** A counted /farm harvest: progress, the money bonus roll, the grind event (skills, quests), the unlock. */
+    private void countFarm(Player p, Block b) {
+        // The player's own crop: carrots, potatoes ... drop instead of wheat once unlocked (per player).
+        long farmed = farmed(p) + 1;
+        Crop before = cropFor(farmed - 1);
+        Crop crop = cropFor(farmed);
+        p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
+        rollBonus(p, farmBonus(CROPS.indexOf(before)));
+        Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FARM, crop.block(), crop.item(), 1, b.getLocation()));
+        // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
+        if (crop != before) {
+            msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
+            core.sounds().play(p, "unlock");
+            sendFarm(p);
+        } else if (crop.unlockAt() < CROPS.getLast().unlockAt()) {
+            Crop next = CROPS.get(CROPS.indexOf(crop) + 1);
+            if (farmed % 50 == 0) {
+                net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
+                        net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
+                        net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item()))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
+            }
+        }
+    }
+
+    /** A counted /mine break: progress, the money bonus roll, the grind event (skills, quests, contracts), the unlock. */
+    private void countMine(Player p, Block b) {
+        List<Long> unlocks = mineUnlocks();
+        Ore before = oreTier(mined(p), unlocks);
+        long mined = mined(p) + 1;
+        p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
+        Ore tier = oreTier(mined, unlocks);
+        rollBonus(p, mineBonus(ORE_TIERS.indexOf(before)));
+        Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.MINE, before.block(), before.drop(), before.amount(),
+                b.getLocation()));
+        if (tier != before) {
+            msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.block())));
+            core.sounds().play(p, "unlock");
+            core.scheduler().later("essentials:grind-view", 1L, () -> sendMine(p));
+        } else if (mined % 50 == 0) {
+            int next = ORE_TIERS.indexOf(tier) + 1;
+            if (next < ORE_TIERS.size()) {
+                net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress-ore",
+                        net.skybornmc.skyblock.common.text.Msg.number("have", mined),
+                        net.skybornmc.skyblock.common.text.Msg.number("need", unlockAt(next, unlocks)),
+                        net.skybornmc.skyblock.common.text.Msg.p("ore", name(ORE_TIERS.get(next).block()))),
+                        net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
+            }
+        }
+    }
+
+    /** Owner 6 Nov 2026, Geode / Harvest Basket (GrindProgress): the drops of every unlocked crop or ore. */
+    @Override
+    public List<Material> unlockedDrops(Player p, String area) {
+        List<Material> out = new java.util.ArrayList<>();
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(area)) {
+            long farmed = farmed(p);
+            for (Crop c : CROPS) {
+                if (c.unlockAt() <= farmed) {
+                    out.add(c.item());
+                }
+            }
+            return out;
+        }
+        List<Long> unlocks = mineUnlocks();
+        long mined = mined(p);
+        for (int i = 0; i < ORE_TIERS.size(); i++) {
+            if (unlockAt(i, unlocks) <= mined) {
+                out.add(ORE_TIERS.get(i).drop());
+            }
+        }
+        return out;
+    }
+
+    /** Owner 6 Nov 2026, Quick Study (GrindProgress): extra unlock progress at /farm or /mine, with the unlock message. */
+    @Override
+    public void addProgress(Player p, String area, long blocks) {
+        if (p == null || blocks <= 0 || world == null || !p.getWorld().equals(world)) {
+            return;
+        }
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(area)) {
+            Crop before = cropFor(farmed(p));
+            long farmed = farmed(p) + blocks;
+            p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
+            Crop crop = cropFor(farmed);
+            if (crop != before) {
+                msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
+                core.sounds().play(p, "unlock");
+                sendFarm(p);
+            }
+            return;
+        }
+        List<Long> unlocks = mineUnlocks();
+        Ore before = oreTier(mined(p), unlocks);
+        long mined = mined(p) + blocks;
+        p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
+        Ore tier = oreTier(mined, unlocks);
+        if (tier != before) {
+            msg.send(p, "grind.unlocked-ore", net.skybornmc.skyblock.common.text.Msg.p("ore", name(tier.block())));
+            core.sounds().play(p, "unlock");
+            core.scheduler().later("essentials:grind-view", 1L, () -> sendMine(p));
+        }
     }
 
     /** Owner 5 Nov 2026: farmland at /farm is always fully wet (looks watered, never dries to dirt). */
@@ -548,7 +616,8 @@ final class GrindAreas extends CommandGroup implements Listener {
             return;
         }
         if (in(b, MINE_X, MINE_HALF) && event.getBlockState().getType() == BASE_ORE) {
-            Ore ore = oreTier(mined(p) - 1, mineUnlocks()); // the tier the player saw (onBreak already counted this block)
+            // the tier the player saw (onBreak already counted this block, a drops-only break did not)
+            Ore ore = oreTier(net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p) ? mined(p) : mined(p) - 1, mineUnlocks());
             if (ore.block() == BASE_ORE) {
                 return; // coal: vanilla drops (Fortune counts)
             }

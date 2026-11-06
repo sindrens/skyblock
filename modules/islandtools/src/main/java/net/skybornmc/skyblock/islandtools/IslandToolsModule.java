@@ -69,6 +69,7 @@ public final class IslandToolsModule implements SkyblockModule {
     private volatile Upgrades upgrades = Upgrades.parse(List.of(), w -> { });
     private volatile List<ToolRules.Band> bands = List.of();
     private ToolListener listener;
+    private EnchantProcs enchants;
     private HoeFarming farming;
     private IslandGrowth growth;
     private HoeStorage storage;
@@ -111,6 +112,7 @@ public final class IslandToolsModule implements SkyblockModule {
         msg = core.messages(ID);
         core.messages().load(ID);
         store = new ToolStore(core.database());
+        enchants = new EnchantProcs(this);
         parse();
         items = new ToolItems(this);
         items.register();
@@ -121,6 +123,7 @@ public final class IslandToolsModule implements SkyblockModule {
         listener = new ToolListener(this);
         Bukkit.getPluginManager().registerEvents(listener, core.plugin());
         Bukkit.getPluginManager().registerEvents(farming, core.plugin());
+        Bukkit.getPluginManager().registerEvents(enchants, core.plugin());
         core.services().optional(BonusService.class).ifPresent(b -> b.register("island_tool", (family, ctx) ->
                 family == BonusFamily.EXTRA_DROPS ? dropsBonus(ctx.item()) : 0));
         tasks.add(core.scheduler().repeat("islandtools:effects", 40L, 40L, listener::effectsTick));
@@ -141,6 +144,9 @@ public final class IslandToolsModule implements SkyblockModule {
     private void parse() {
         upgrades = Upgrades.parse(config.perks, w -> core.plugin().getLogger().warning(w));
         bands = ToolRules.bands(config.sweepBands);
+        if (enchants != null) {
+            enchants.parse(config.enchantList);
+        }
     }
 
     @Override
@@ -171,6 +177,10 @@ public final class IslandToolsModule implements SkyblockModule {
             HandlerList.unregisterAll(growth);
             growth.stop();
         }
+        if (enchants != null) {
+            HandlerList.unregisterAll(enchants);
+            enchants.flush();
+        }
         core.services().optional(BonusService.class).ifPresent(b -> b.unregister("island_tool"));
         if (items != null) {
             items.unregister();
@@ -197,6 +207,22 @@ public final class IslandToolsModule implements SkyblockModule {
 
     ToolItems items() {
         return items;
+    }
+
+    ToolListener listener() {
+        return listener;
+    }
+
+    /** Owner 6 Nov 2026: the personal grind enchants. */
+    EnchantProcs enchants() {
+        return enchants;
+    }
+
+    /** Shards found for a profile, paid with the next shard batch. */
+    void addShards(UUID profile, Currency currency, long amount) {
+        if (amount > 0) {
+            pendingShards.computeIfAbsent(profile, k -> new ConcurrentHashMap<>()).merge(currency, amount, Long::sum);
+        }
     }
 
     ToolStore store() {
@@ -381,6 +407,7 @@ public final class IslandToolsModule implements SkyblockModule {
 
     /** Join, profile switch, island change: the handles are checked and the first ones given. */
     void load(Player p) {
+        enchants.load(p);
         UUID island = island(p);
         if (island == null) {
             check(p);
@@ -397,6 +424,7 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     void unload(Player p) {
+        enchants.unload(p);
         storage.unload(profile(p));
         busy.remove(p.getUniqueId());
     }
@@ -404,6 +432,7 @@ public final class IslandToolsModule implements SkyblockModule {
     void unloadProfile(UUID profile) {
         if (profile != null) {
             storage.unload(profile);
+            enchants.unloadProfile(profile);
         }
     }
 
@@ -574,7 +603,8 @@ public final class IslandToolsModule implements SkyblockModule {
             double wisdom = 1 + effect(island, kind, Upgrades.Effect.WISDOM) * config.wisdomPerLevel / 100.0;
             double event = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                     net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_XP); // owner 6 Nov 2026: Double XP
-            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom * event, rnd.nextDouble());
+            double combo = enchants.xpMultiplier(p, kind); // owner 6 Nov 2026: Combo (grind enchant)
+            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom * event * combo, rnd.nextDouble());
             if (xp > 0) {
                 ToolStore.Prog next = prog.withXp(prog.xp() + xp);
                 progs.get(island).put(kind, next);
@@ -593,7 +623,8 @@ public final class IslandToolsModule implements SkyblockModule {
         double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
-        int shards = ToolRules.roll(chance * finder * bonus * doubled, rnd.nextDouble());
+        double streak = enchants.shardMultiplier(p, kind); // owner 6 Nov 2026: Shard Echo + Compound Interest
+        int shards = ToolRules.roll(chance * finder * bonus * doubled * streak, rnd.nextDouble());
         int lucky = effect(island, kind, Upgrades.Effect.LUCKY);
         if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
             int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);
@@ -668,6 +699,7 @@ public final class IslandToolsModule implements SkyblockModule {
 
     /** Pays the found shards in one ledger row per profile and shard type (one action bar line). */
     private void payShards() {
+        enchants.pay();
         EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
         if (economy == null || pendingShards.isEmpty()) {
             return;

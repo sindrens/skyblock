@@ -257,6 +257,17 @@ menu:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
 
+  # Owner 6 Nov 2026: the button to your own grind enchants. <area> <owned> <total>
+  enchants:
+    name: "<bold><area:skills>Your enchants"
+    lore:
+      - "<c:text>Your own enchants for <c:value><area></c:value><c:text>."
+      - "<c:muted>Bought with your own shards."
+      - ""
+      - "<c:bar>| </c:bar><c:text>Owned: </c:text><c:value><owned></c:value><c:muted>/<total>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+
 # Perks. Owner 4 Nov 2026: tiny steps on long tracks; enchant-like perks keep their vanilla levels.
 upgrade:
   shard_finder: {name: "Shard Finder", icon: prismarine_shard, lore: ["<c:muted>More shards while you grind."]}
@@ -320,3 +331,142 @@ storage:
 growth:
   label: "<c:value><crop></c:value> <c:muted>·</c:muted> <c:text><stage>"
   ripe: "Ripe!"
+
+# Owner 6 Nov 2026 (plans/TOOLS_V3.md): personal grind enchants. They are yours (not the island's), bought with your own
+# shards, and work only at /farm (hoe) and /mine (pickaxe). Each: name, icon (an item id), lore (one short line).
+enchant:
+  blast: {name: "Blast", icon: tnt, lore: ["<c:muted>Breaks blocks around the one", "<c:muted>you mine. Drops only."]}
+  explode: {name: "Explode", icon: tnt, lore: ["<c:muted>Harvests crops around the one", "<c:muted>you harvest. Drops only."]}
+  rich_vein: {name: "Rich Vein", icon: raw_gold, lore: ["<c:muted>Extra items from the block."]}
+  bountiful: {name: "Bountiful", icon: hay_block, lore: ["<c:muted>Extra items from the crop."]}
+  shard_burst: {name: "Shard Burst", icon: amethyst_shard, lore: ["<c:muted>A handful of shards."]}
+  shard_jackpot: {name: "Shard Jackpot", icon: amethyst_cluster, lore: ["<c:muted>A big pile of shards", "<c:muted>(once a minute at most)."]}
+  cash_vein: {name: "Cash Vein", icon: gold_nugget, lore: ["<c:muted>Money: the block's sell price", "<c:muted>many times over."]}
+  cash_crop: {name: "Cash Crop", icon: gold_nugget, lore: ["<c:muted>Money: the crop's sell price", "<c:muted>many times over."]}
+  quick_study: {name: "Quick Study", icon: book, lore: ["<c:muted>Counts extra toward your", "<c:muted>next crop or ore."]}
+  scholar: {name: "Scholar", icon: experience_bottle, lore: ["<c:muted>More skill XP here, always on."]}
+  keyfinder: {name: "Keyfinder", icon: tripwire_hook, lore: ["<c:muted>A rare chance at a crate key."]}
+  lightning: {name: "Lightning Strike", icon: lightning_rod, lore: ["<c:muted>Two bolts break the blocks", "<c:muted>around you. Drops only."]}
+  meteor: {name: "Meteor", icon: magma_block, lore: ["<c:muted>A meteor leaves a crater.", "<c:muted>Drops only."]}
+  nuke: {name: "Nuke", icon: tnt_minecart, lore: ["<c:muted>Up to 100 blocks at once.", "<c:muted>Drops only, very rare."]}
+  row_reaper: {name: "Row Reaper", icon: iron_hoe, lore: ["<c:muted>Harvests a short row.", "<c:muted>Drops only."]}
+  tornado: {name: "Tornado", icon: white_wool, lore: ["<c:muted>A ring of crops at once.", "<c:muted>Drops only."]}
+  meteor_shower: {name: "Meteor Shower", icon: fire_charge, lore: ["<c:muted>Meteors over the field.", "<c:muted>Drops only, rare."]}
+  motherlode: {name: "Motherlode", icon: gold_block, lore: ["<c:muted>Counts many times toward", "<c:muted>your next ore."]}
+  golden_crop: {name: "Golden Crop", icon: golden_carrot, lore: ["<c:muted>Money: the crop's sell price", "<c:muted>many times over."]}
+  shard_echo: {name: "Shard Echo", icon: echo_shard, lore: ["<c:muted>After a Shard Burst: more", "<c:muted>shards for a few seconds."]}
+  compound_interest: {name: "Compound Interest", icon: clock, lore: ["<c:muted>Keep breaking without a pause", "<c:muted>for more and more shards."]}
+  combo: {name: "Combo", icon: blaze_powder, lore: ["<c:muted>Keep breaking without a pause", "<c:muted>for more tool XP."]}
+  geode: {name: "Geode", icon: amethyst_block, lore: ["<c:muted>One of every ore you have", "<c:muted>unlocked at /mine."]}
+  harvest_basket: {name: "Harvest Basket", icon: composter, lore: ["<c:muted>One of every crop you have", "<c:muted>unlocked at /farm."]}
+  lucky_streak: {name: "Lucky Streak", icon: rabbit_foot, lore: ["<c:muted>A long time without a rare find?", "<c:muted>The next one is twice as likely."]}
+  crate:
+    ember: "Ember"
+    cinder: "Cinder"
+    blaze: "Blaze"
+    inferno: "Inferno"
+    phoenix: "Phoenix"
+    eclipse: "Eclipse"
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Grind enchants are switched off right now."
+  maxed: "<prefix><c:success><sym:check></c:success> <c:value><enchant></c:value> <c:text>is already at its highest level."
+  # <enchant> <level> <prestige> <have> <cap> <next> <tool>
+  locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your <tool> is level <c:value><have></c:value><c:text>."
+  locked-prestige: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at prestige <c:flame><prestige></c:flame><c:text>."
+  capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Prestige the tool to raise it by 20."
+  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your enchants changed on another screen. Nothing was paid; check the price and click again."
+  # <enchant> <level> <max> <cost>
+  bought: "<prefix><c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max></c:muted> <c:text>for <cost><c:text>."
+  # Action bar when an enchant procs. <enchant> <amount>
+  proc:
+    area: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> blocks"
+    items: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> items"
+    shards: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount>"
+    cash: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount>"
+    progress: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> progress"
+    basket: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> items"
+    # Chat (rare). <enchant> <crate>
+    key: "<prefix><c:flame><sym:star></c:flame> <c:value><enchant></c:value> <c:text>found a <c:value><crate> Key</c:value><c:text>! Open it in</c:text> <c:action>/crates</c:action><c:text>."
+  key-title:
+    title: "<grad:flame><bold>KEY FOUND!"
+    subtitle: "<c:text>+1 <c:value><crate> Key"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
+  menu:
+    crumb: "Enchants"
+    info:
+      - "<c:text>Your own enchants: only you"
+      - "<c:text>have them, on any island."
+      - "<c:muted>They work at /farm and /mine."
+    area:
+      hoe: "/farm"
+      pickaxe: "/mine"
+    # <tool>
+    header:
+      name: "<bold><area:skills><tool> enchants"
+      # <area> <shards> <balance>
+      lore:
+        - "<c:text>They work at <c:value><area></c:value> <c:text>with this tool."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Your <shards>: </c:text><balance>"
+    # <amount> <next>
+    amount:
+      name: "<bold><area:neutral>Buy <amount> at a time"
+      lore:
+        - "<c:text>A click on an enchant buys"
+        - "<c:value><amount></c:value> <c:text>levels (or what is left)."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <c:value><next></c:value> <c:text>at a time"
+    # <name> <level>
+    name: "<bold><area:skills><name> <c:value><level>"
+    name-new: "<bold><area:skills><name>"
+    name-locked: "<bold><area:locked><name>"
+    # <level> <cap> <max>: the cap rises every prestige
+    level-cap: "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<cap> (max <max>)"
+    locked-level:
+      - ""
+      - "<c:error><sym:cross> Locked: tool level <level>"
+      - "<c:muted>Your tool is level <have>."
+    locked-prestige:
+      - ""
+      - "<c:error><sym:cross> Locked: prestige <prestige>"
+    capped:
+      - ""
+      - "<c:warning>At your cap: <cap>"
+      - "<c:muted>Prestige the tool for +20 levels."
+    # <level> <max>
+    level: "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
+    # <now> <next>
+    chance: "<c:bar>| </c:bar><c:text>Chance: </c:text><c:value><now></c:value> <c:muted>» <next>"
+    chance-max: "<c:bar>| </c:bar><c:text>Chance: </c:text><c:value><now>"
+    effect: "<c:bar>| </c:bar><c:text>Gives: </c:text><c:value><now></c:value> <c:muted>» <next>"
+    effect-max: "<c:bar>| </c:bar><c:text>Gives: </c:text><c:value><now>"
+    # <seconds>
+    cooldown: "<c:bar>| </c:bar><c:muted>At most once every <seconds> s"
+    # What one proc gives. {value} {crate}
+    gives:
+      area: "{value} blocks"
+      extra_items: "+{value} items"
+      shards: "{value} shards"
+      cash: "{value}x sell price"
+      progress: "+{value} progress"
+      skill_xp: "+{value}% skill XP"
+      key: "a {crate} Key"
+      echo: "+{value}% shards for a while"
+      streak_shards: "up to +{value}% shards"
+      streak_xp: "up to +{value}% tool XP"
+      basket: "1 of every unlocked item"
+      pity: "after {value} blocks"
+    max:
+      - ""
+      - "<c:success><sym:check> Highest level"
+    # <amount> <cost>
+    price:
+      - "<c:bar>| </c:bar><c:text>Price (<amount>): </c:text><cost>"
+    # Java only. <cost10> <cost100>
+    hint:
+      - "<c:muted>Shift-click: x10 (<cost10><c:muted>)"
+      - "<c:muted>Right-click: x100 (<cost100><c:muted>)"
+    # <amount>
+    buy:
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy <amount>"

@@ -18,6 +18,83 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ levels and prestige
 
+    // ------------------------------------------------------------------ owner 6 Nov 2026: personal grind enchants
+
+    @Setting(path = "enchants.enabled", desc = "Owner 6 Nov 2026: personal grind enchants (bought with your own shards, work only at /farm and /mine).")
+    public boolean enchantsEnabled = true;
+
+    @Setting(path = "enchants.list", desc = "Grind enchants (17 per tool) as 'kind:id:max:cost:chance1:chanceMax:value1:valueMax:cooldownSeconds"
+            + ":unlockLevel:unlockPrestige'. Chance (percent per block) and value grow linearly from level 1 to max; a level costs "
+            + "cost x level^1.2 shards; the unlock is the tool level and prestige needed. Area ids (value = blocks, drops only, one per "
+            + "break): blast, lightning, meteor, nuke / explode, row_reaper, tornado, meteor_shower. rich_vein/bountiful (extra items), "
+            + "shard_burst/shard_jackpot (shards), shard_echo (percent more shards after a Burst), compound_interest (streak: up to "
+            + "value percent more shards), combo (streak: up to value percent more tool XP), cash_vein/cash_crop/golden_crop (money = "
+            + "sell price x value), quick_study/motherlode (extra unlock progress), scholar (percent more skill XP), geode/"
+            + "harvest_basket (one of every unlocked ore/crop), lucky_streak (after value blocks without a rare find the rare chances "
+            + "double), keyfinder (a crate key).", level = Setting.Level.OWNER)
+    public List<String> enchantList = List.of(
+            "pickaxe:blast:1000:2:0.5:1.0:4:18:0:1:0",
+            "pickaxe:shard_burst:1000:2:0.4:1.0:3:6:0:1:0",
+            "pickaxe:scholar:1000:2:0:0:5:25:0:1:0",
+            "pickaxe:rich_vein:1000:2:1:5:1:2:0:3:0",
+            "pickaxe:quick_study:1000:2:1:5:1:1:0:5:0",
+            "pickaxe:cash_vein:1000:3:0.5:2.0:5:5:0:8:0",
+            "pickaxe:combo:1000:2:0:0:5:20:0:10:0",
+            "pickaxe:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "pickaxe:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "pickaxe:lightning:1000:3:0.05:0.15:9:18:20:20:0",
+            "pickaxe:motherlode:1000:3:0.2:0.6:10:10:0:24:0",
+            "pickaxe:lucky_streak:1000:3:0:0:100:50:0:28:0",
+            "pickaxe:geode:1000:4:0.05:0.2:1:1:0:32:0",
+            "pickaxe:keyfinder:1000:5:0.001:0.02:1:1:0:36:0",
+            "pickaxe:meteor:1000:5:0.03:0.08:15:25:20:1:1",
+            "pickaxe:nuke:1000:8:0.003:0.01:40:100:300:1:5",
+            "pickaxe:shard_jackpot:1000:6:0.01:0.04:40:75:0:1:10",
+            "hoe:explode:1000:2:0.5:1.0:4:18:0:1:0",
+            "hoe:shard_burst:1000:2:0.4:1.0:3:6:0:1:0",
+            "hoe:scholar:1000:2:0:0:5:25:0:1:0",
+            "hoe:bountiful:1000:2:1:5:1:2:0:3:0",
+            "hoe:quick_study:1000:2:1:5:1:1:0:5:0",
+            "hoe:cash_crop:1000:3:0.5:2.0:5:5:0:8:0",
+            "hoe:combo:1000:2:0:0:5:20:0:10:0",
+            "hoe:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "hoe:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "hoe:row_reaper:1000:3:0.3:0.7:4:7:0:20:0",
+            "hoe:golden_crop:1000:3:0.1:0.4:5:5:0:24:0",
+            "hoe:lucky_streak:1000:3:0:0:100:50:0:28:0",
+            "hoe:harvest_basket:1000:4:0.05:0.2:1:1:0:32:0",
+            "hoe:keyfinder:1000:5:0.001:0.02:1:1:0:36:0",
+            "hoe:tornado:1000:5:0.03:0.08:20:28:20:1:1",
+            "hoe:meteor_shower:1000:8:0.01:0.03:12:36:60:1:5",
+            "hoe:shard_jackpot:1000:6:0.01:0.04:40:100:0:1:10");
+
+    @Setting(path = "enchants.cap-base", desc = "Highest grind enchant level at prestige 0 (plans/TOOLS_V3.md).", min = 1, max = 100_000)
+    public int enchantCapBase = 20;
+
+    @Setting(path = "enchants.cap-per-prestige", desc = "The grind enchant level cap rises by this much every prestige (20: 1000 at prestige 49-50).", min = 0, max = 100_000)
+    public int enchantCapPerPrestige = 20;
+
+    @Setting(path = "enchants.streak-step-percent", desc = "Compound Interest and Combo: percent bonus per block in a streak (up to the enchant's value).", min = 0, max = 100)
+    public double enchantStreakStep = 0.1;
+
+    @Setting(path = "enchants.streak-gap-shards", desc = "Compound Interest: seconds without a block that end the streak.", min = 1, max = 60)
+    public int enchantStreakGapShards = 3;
+
+    @Setting(path = "enchants.streak-gap-xp", desc = "Combo: seconds without a block that end the streak.", min = 1, max = 60)
+    public int enchantStreakGapXp = 2;
+
+    @Setting(path = "enchants.echo-seconds", desc = "Shard Echo: seconds of more shards after a Shard Burst.", min = 1, max = 120)
+    public int enchantEchoSeconds = 10;
+
+    @Setting(path = "enchants.shard-bonus-cap", desc = "Shard Echo and Compound Interest together give at most this many percent more shards (events come on top).", min = 0, max = 1000)
+    public double enchantShardCap = 65;
+
+    @Setting(path = "enchants.area-per-tick", desc = "Area enchants break at most this many blocks per tick (the rest follow next ticks).", min = 1, max = 500)
+    public int enchantAreaPerTick = 30;
+
+    @Setting(path = "enchants.key-crate", desc = "Crate whose key Keyfinder finds.", level = Setting.Level.OWNER)
+    public String enchantKeyCrate = "ember";
+
     @Setting(path = "levels.max", desc = "Owner 4 Nov 2026: highest tool level; at this level the island owner/co-owner can prestige the tool.", min = 2, max = 1000)
     public int maxLevel = 50;
 

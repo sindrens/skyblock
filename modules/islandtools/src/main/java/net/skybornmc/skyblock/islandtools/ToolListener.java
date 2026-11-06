@@ -53,7 +53,8 @@ import java.util.concurrent.ThreadLocalRandom;
 final class ToolListener implements Listener {
 
     /** A break by an island tool, waiting for its drops. */
-    private record Pending(Player player, Kind kind, UUID island, boolean crop, boolean burst, boolean natural, boolean swept) {
+    private record Pending(Player player, Kind kind, UUID island, boolean crop, boolean burst, boolean natural, boolean swept,
+                           boolean area) {
     }
 
     private static final Map<Material, Material> SMELT = Map.of(
@@ -91,7 +92,7 @@ final class ToolListener implements Listener {
     }
 
     /** The /farm and /mine world (tool-worlds): loot never lands on the ground there. */
-    private boolean grindWorld(Player p) {
+    boolean grindWorld(Player p) {
         return m.config().toolWorlds.stream().anyMatch(w -> w.equalsIgnoreCase(p.getWorld().getName()));
     }
 
@@ -161,7 +162,9 @@ final class ToolListener implements Listener {
         Location key = block.getLocation();
         boolean natural = !placed.isPlaced(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ(), System.currentTimeMillis());
         placed.forget(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
-        pending.put(key, new Pending(p, kind, island, crop, burst, natural, nested));
+        // Owner 6 Nov 2026: a Blast/Explode block is drops only (no tool XP, shards, enchants or /farm /mine progress).
+        boolean area = net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p);
+        pending.put(key, new Pending(p, kind, island, crop, burst, natural, nested, area));
         Bukkit.getScheduler().runTask(m.core().plugin(), () -> pending.remove(key)); // no drop event (nothing dropped): forget it
         if (nested) {
             return;
@@ -227,6 +230,63 @@ final class ToolListener implements Listener {
         });
     }
 
+    /**
+     * Owner 6 Nov 2026, Blast (pickaxe) / Explode (hoe): the player breaks up to {@code count} blocks around
+     * {@code origin} next tick, drops only. The pickaxe takes any natural relevant block in a cube, the hoe ripe crops on
+     * its layer; the grind areas refuse blocks outside them. Returns how many blocks were found.
+     */
+    int blast(Player p, Block origin, Kind kind, int count) {
+        if (count <= 0) {
+            return 0;
+        }
+        int r = Math.max(2, m.config().sweepRadius);
+        long now = System.currentTimeMillis();
+        List<Block> found = new ArrayList<>();
+        for (int d = 1; d <= r && found.size() < count; d++) {
+            for (int dx = -d; dx <= d && found.size() < count; dx++) {
+                for (int dz = -d; dz <= d && found.size() < count; dz++) {
+                    for (int dy = kind == Kind.HOE ? 0 : -d; dy <= (kind == Kind.HOE ? 0 : d) && found.size() < count; dy++) {
+                        if (Math.max(Math.abs(dx), Math.max(Math.abs(dz), Math.abs(dy))) != d) {
+                            continue;
+                        }
+                        Block b = origin.getRelative(dx, dy, dz);
+                        boolean ok = kind == Kind.HOE ? ripe(b) : !b.getType().isAir() && b.getType() != Material.BEDROCK
+                                && relevant(kind, b.getType().getKey().getKey())
+                                && !placed.isPlaced(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), now);
+                        if (ok) {
+                            found.add(b);
+                        }
+                    }
+                }
+            }
+        }
+        if (found.isEmpty()) {
+            return 0;
+        }
+        int per = Math.max(1, m.config().enchantAreaPerTick);
+        for (int from = 0, tick = 1; from < found.size(); from += per, tick++) {
+            List<Block> part = found.subList(from, Math.min(found.size(), from + per));
+            Bukkit.getScheduler().runTaskLater(m.core().plugin(), () -> {
+                if (!p.isOnline() || !grindWorld(p) || ToolItems.kindOf(p.getInventory().getItemInMainHand()) != kind
+                        || !expanding.add(p.getUniqueId())) {
+                    return;
+                }
+                try {
+                    net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p, () -> {
+                        for (Block b : part) {
+                            if (kind == Kind.HOE ? ripe(b) : !b.getType().isAir() && b.getType() != Material.BEDROCK) {
+                                p.breakBlock(b);
+                            }
+                        }
+                    });
+                } finally {
+                    expanding.remove(p.getUniqueId());
+                }
+            }, tick); // big areas (Nuke) are spread over a few ticks
+        }
+        return found.size();
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDrops(BlockDropItemEvent event) {
         Pending pd = pending.remove(event.getBlock().getLocation());
@@ -240,7 +300,12 @@ final class ToolListener implements Listener {
             magnet(p, event); // owner 4 Nov 2026: Magnet is built in, also for plain blocks
             return;
         }
-        m.action(p, kind, pd.swept());
+        if (!pd.swept() && grindWorld(p)) {
+            m.enchants().proc(p, kind, event.getBlock(), event.getItems()); // owner 6 Nov 2026: personal grind enchants
+        }
+        if (!pd.area()) {
+            m.action(p, kind, pd.swept());
+        }
         UUID island = pd.island();
         int smelt = kind == Kind.PICKAXE ? m.effect(island, kind, Upgrades.Effect.SMELT) : 0;
         double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,

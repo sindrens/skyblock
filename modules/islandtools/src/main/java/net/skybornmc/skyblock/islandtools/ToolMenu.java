@@ -21,7 +21,7 @@ import java.util.UUID;
  * <pre>
  *  . . . S T P . . .      3 the tool's storage, 4 the tool (level, XP, prestige), 5 prestige
  *  . . E E E E . . .      row 1: enchant-like perks and one-time unlocks, centred
- *  . . . . . . . . .
+ *  . . . . X . . . .      22 your own grind enchants (owner 6 Nov 2026)
  *  . L L L L L L . .      rows 3-4: the long tracks, centred
  *  . . L L L L L . .
  *  nav bar                47 get your handle (only without one)
@@ -34,6 +34,7 @@ final class ToolMenu extends Menu {
     static final int SLOT_TOOL = 4;
     static final int SLOT_PRESTIGE = 5;
     static final int SLOT_HANDLE = 47;
+    static final int SLOT_ENCHANTS = 22;
 
     private final IslandToolsModule m;
     private final Kind kind;
@@ -105,6 +106,13 @@ final class ToolMenu extends Menu {
         set(SLOT_STORAGE, service.item(Material.BARREL, viewer, IslandToolsModule.ID, "menu.storage",
                 Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("used", Format.number(used)), Msg.p("cap", Format.number(cap)),
                 Msg.mm("bar", StorageMenu.bar(used, cap))), click -> openChild(new StorageMenu(m, kind)));
+        List<GrindEnchants.Def> grind = m.enchants().defs().of(kind);
+        if (m.config().enchantsEnabled && !grind.isEmpty()) {
+            long owned = grind.stream().filter(d -> m.enchants().level(viewer, d) > 0).count();
+            set(SLOT_ENCHANTS, service.item(Material.ENCHANTING_TABLE, viewer, IslandToolsModule.ID, "menu.enchants",
+                    Msg.p("area", m.raw("enchant.menu.area." + kind.id())), Msg.number("owned", owned), Msg.number("total", grind.size())),
+                    click -> openChild(new EnchantMenu(m, kind)));
+        }
 
         List<Upgrades.Def> once = new ArrayList<>();
         List<Upgrades.Def> tracks = new ArrayList<>();

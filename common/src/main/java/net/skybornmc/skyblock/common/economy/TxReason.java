@@ -62,6 +62,12 @@ public final class TxReason {
     /** Crystals paid for an island tool tier-up or upgrade (Complete Developer Spec T7); a sink. */
     public static final String ISLAND_TOOL_UPGRADE = "island_tool_upgrade";
 
+    /** Owner 6 Nov 2026: shards paid for a personal grind enchant level (Tools v4, plans/TOOLS_V3.md); a sink. */
+    public static final String GRIND_ENCHANT = "grind_enchant";
+
+    /** Owner 6 Nov 2026: money from the Cash Vein / Cash Crop grind enchants at /mine and /farm; new money, batched. */
+    public static final String GRIND_ENCHANT_CASH = "grind_enchant_cash";
+
     /** Owner 3 Nov 2026: shards found while grinding with an island tool (and its Shard Finder upgrade); batched. */
     public static final String ISLAND_TOOL_SHARD = "island_tool_shard";
 
