@@ -37,3 +37,11 @@ The owner accepted the master plan (`MASTER_PLAN.md`). Where an answer below cha
 ## Still needed from the owner
 - ~~Q-60: the full Plan Pack text~~ Resolved: the owner does not have it, and it is not on the Mac or GitHub. The spawner numbers in MASTER_PLAN P-01/P-02 (from his 5 Nov message) are the source; the P-01..P-19 list in MASTER_PLAN replaces the "14 plans" list.
 - Q-61: the result of the research prompt, if it was run.
+
+## Night of 6-7 Nov (owner going to sleep: "full plan, no questions, then full implementation")
+- Release finished batches to the test server, write a morning report; anything truly unknown goes in the morning report. Watch dupes and exploits. "Make it fun, addictive psychology."
+- **Bigger numbers: yes**, but balanced: /farm must not out-earn the island; island upgrades must matter to get better (e.g. PvE tasks as requirements for /mine perks in /upgrade). Improve island upgrades, /collection, /ah and the rest with research on the biggest similar plugins.
+- **/fish: yes**, the rod is a third tool; **a sword for PvE** is the fourth.
+- **Tool model refined:** every tool has an **island enchant set that is shared by the island members** (the island tools' enchants), and **personal enchants** that work inside /mine, /farm, /pve, /fish.
+- **PvE v1: arena + bosses** (tiered arena, a personal boss per tier).
+- Progress must feel fast: many levels, enchant levels, prestiges and rebirths, big numbers, no "3 levels of 50 hours each". GUIs: simple, clean, **no glass panes**, perfect info without overdoing it, professional simple explanations; easy crates, reasonable rewards; be critical.
