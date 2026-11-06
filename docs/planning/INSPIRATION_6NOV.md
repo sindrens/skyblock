@@ -25,3 +25,28 @@ Plus `/paytoggle` (block incoming payments). → **P-08: playtime pay-limit ladd
 - **P-13 Ranks / store:** clear rank tiers with 3-4 bullet perks; bundles with badges (POPULAR, BEST VALUE, NEW); cart-reward bar. Avoid pay-to-win perks (sell multipliers, OP pets) seen there.
 - **P-17 PvE:** MCHub tags gear "Used in: Island PvE" and keeps spawner kills separate from the PvE tally. No other PvE shown; research still needed.
 - **Island modes (Casual / Comp, EnchantedMC):** seen, but the owner dropped modes (Q-33).
+
+## Visual review (6 Nov, the 67 screenshots that are on the Mac, looked at as pictures)
+The numbered `1.png`-`15.png` (3 Nov, ColorGens store / MC-Complex) are only in Drive and were read as text only.
+
+**Best things seen**
+- **GUI:** EnchantedMC's Credit Store is the only custom-textured GUI: one flat dark panel, one accent colour, balance at the top, tier icons that grow (one gem → a chest of gems), `- 0 +` steppers on each tile. MCHub's small pixel-caps **title plate** makes even a vanilla grey chest look designed. These two are the direction for pack v2 (P-19).
+- **Lore:** before → after (`50x50 -> 60x60`), Current / Next lists, one "Used in: Island / PvE" scope line, `x / y` progress, one fixed action line at the bottom.
+- **Scoreboard:** ColorGens: about 10 lines, two blocks (EVENT, STATISTICS), muted label + white value, a coloured bar per row, an event countdown on top ("EVENT IN: 14m 59s" → "REMAINING: 11s"). A pixel-art logo as the title (EnchantedMC). A community goal line ("Vote Party 14/200").
+- **HUD:** slim boss bar per active buff: name, multiplier, time, slots (`Fishing Luck x1.5 · 11m (2/3)`); a "+90k XP | 68% to level 107" line above the hotbar after every gain; short action-bar hints ("Hold your hoe to harvest here").
+- **Chat:** one server prefix on every system message; framed announcement blocks (rule line, title, one effect line, one `» action «`, rule line) for events, store and level-ups; every big title is repeated in chat; key nouns and amounts highlighted.
+- **Titles:** big word + one subtitle, colour by meaning (rare = gold, event = theme); "RARE DROP" + the item.
+- **NPCs:** distinct custom skins that show the role (miner cap, farmer, ferryman); short, funny, in-character lines (one or two lines); name colour per NPC, used in the title and the chat copy; quests hand you from NPC to NPC; gate lines name what is missing.
+- **Holograms:** title + one benefit line + one action line (`↓ Click to interact ↓`); machines show live status (Island Collector: sell price, status, range).
+- **Features:** vote streak ladder (day 5 ... 30) with the next reward visible; island statistics menu; one backpack item that holds all mob drops; a pet/reward showcase room; pay-limit ladder (past / you are here / unlocks in ...).
+
+**Avoid (seen there)**
+- Rainbow on everything (titles, prefixes, signs, rank badges): nothing stands out, and Bedrock shows only one colour. Keep gradients for the server name and big moments.
+- 15-line tooltips; the gate line at the bottom (put "Island level 2 required" first); "CLICK HERE" said twice; vanilla attribute lines left on menu items.
+- Mostly empty chests and rows of red 🚫 placeholders (use one dim padlock with a one-line hint).
+- A colour per tooltip with no rule; whole tooltips tinted red (looks like an error); red hints.
+- Dialog bands and titles that cover a third of the screen; pixel fonts scaled too large; no "click to continue".
+- Dense or semi-transparent scoreboards, a date line, numbers like `$30QT`.
+- Error spam without cooldown; three or four different chat styles at once; emoji glyphs (🔥 🚫) that break on Bedrock.
+
+**Conclusion:** our `UI_STYLE.md` text rules (palette, lore template, one red frame colour) are already stronger than what these servers do. The gap is **visual**: a custom GUI background, a title plate, custom icons and a logo, plus the HUD pieces above (buff boss bars, XP line, event countdown). That goes into P-19 (pack v2 + GUI pass) and P-11.

@@ -8,6 +8,7 @@ Sources: owner answers 6 Nov (`planning/TOOL_ENCHANTS_6NOV.md`), research (`plan
 - **Core upgrades** (always on, both places, 4 per tool) sit on a third tab:
   - Pickaxe: Efficiency, Fortune, Shard Finder, Sell Bonus.
   - Hoe: Haste, Fortune (more crops), Shard Finder, Sell Bonus.
+- **Shards are personal (owner, 6 Nov):** Farming, Mining and (later) Fishing Shards belong to the player, like the tools; they are never shared with the island. A player can **pay** shards to a member of their own island (`/pay <member> <amount> shards` and the island menu), never to anyone else. Today's code already keeps shards per profile; the pay-to-member path is new (atomic, audit-logged, tab-completes only members).
 - Old perks that go: Extra Drops (merged into Fortune), Lucky (replaced by Shard Burst), Wisdom (replaced by Scholar), Smelter/Auto-Sell/Storage (move to the farm and mine storage, P-06), Growth (island hoe set), Sweep/Vein (island sets).
 - **Personal tools (owner, 6 Nov):** each player owns, levels and enchants their own pickaxe and hoe (replaces the 4 Nov island-owned tools). Migration: every member starts from the island's current tool levels.
 
