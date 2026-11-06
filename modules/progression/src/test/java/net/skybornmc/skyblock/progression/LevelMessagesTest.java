@@ -128,7 +128,7 @@ class LevelMessagesTest {
         }
         assertTrue(inner(LevelMenu.SLOT_RECALCULATE));
         assertEquals(LevelMenu.SOURCES.size(), LevelMenu.SOURCE_SLOTS.size());
-        assertEquals(LevelSource.values().length, LevelMenu.slots().size());
+        assertEquals(LevelSource.values().length - 2, LevelMenu.slots().size(), "every source but pillars and the Depths (6 Nov 2026)");
         Set<Integer> top = new HashSet<>(List.of(TopMenu.SLOT_LEVEL, TopMenu.SLOT_WEEKLY, TopMenu.SLOT_VALUE, TopMenu.SLOT_PILLARS,
                 TopMenu.SLOT_BOARD));
         assertEquals(5, top.size(), "top row slots used twice");

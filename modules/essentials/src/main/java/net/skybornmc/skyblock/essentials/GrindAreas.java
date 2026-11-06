@@ -83,6 +83,12 @@ final class GrindAreas extends CommandGroup implements Listener {
     /** Bonus money waiting to be paid (main thread); paid every 3 s in one transaction per player. */
     private final java.util.Map<java.util.UUID, Long> pendingBonus = new java.util.HashMap<>();
     private World world;
+    /** Owner 6 Nov 2026: the grind-area events (published as GrindEvents). */
+    private GrindEventsImpl events;
+
+    GrindEventsImpl events() {
+        return events;
+    }
     private int base; // y of the ground surface
     private boolean spawningOurs;
 
@@ -150,6 +156,17 @@ final class GrindAreas extends CommandGroup implements Listener {
 
     /** After enable: the world (created by the worlds module from worlds.yml), the areas built once, the dungeon spawner. */
     void start() {
+        events = new GrindEventsImpl(core, msg, () -> config, () -> world);
+        core.services().register(MODULE, net.skybornmc.skyblock.common.grind.GrindEvents.class, events);
+        events.start();
+        core.placeholders().registerText(MODULE, "grind_event", p -> {
+            if (p == null || world == null || !p.getWorld().equals(world) || !config.grindEventsEnabled) {
+                return "";
+            }
+            String key = events.active().isEmpty() ? "grind.events.scoreboard-next" : "grind.events.scoreboard-live";
+            return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(
+                    msg.component(p, key, net.skybornmc.skyblock.common.text.Msg.number("seconds", events.secondsLeft())));
+        });
         if (!config.grindEnabled) {
             return;
         }
@@ -301,7 +318,7 @@ final class GrindAreas extends CommandGroup implements Listener {
                             net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item()))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
                 }
             }
-            core.scheduler().later("essentials:grind-regrow", config.grindFarmRegrowSeconds * 20L, () -> {
+            core.scheduler().later("essentials:grind-regrow", regrowTicks(p, config.grindFarmRegrowSeconds), () -> {
                 // Also a crop the hoe replanted (age 0): it would never grow here (no random ticks).
                 if ((b.getType().isAir() || b.getType() == Material.WHEAT) && b.getRelative(0, -1, 0).getType() == Material.FARMLAND) {
                     ripe(b);
@@ -336,7 +353,7 @@ final class GrindAreas extends CommandGroup implements Listener {
                             net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
                 }
             }
-            core.scheduler().later("essentials:grind-regen", config.grindMineRegenSeconds * 20L, () -> {
+            core.scheduler().later("essentials:grind-regen", regrowTicks(p, config.grindMineRegenSeconds), () -> {
                 if (b.getType().isAir()) {
                     b.setType(BASE_ORE, false);
                     showLater(b);
@@ -463,9 +480,16 @@ final class GrindAreas extends CommandGroup implements Listener {
 
     /** Owner 4 Nov 2026: the money bonus comes now and then ({@code grind.bonus-chance-percent}) and grows with the tier. */
     private void rollBonus(Player p, long amount) {
-        if (amount > 0 && ThreadLocalRandom.current().nextDouble(100) < config.grindBonusChance) {
-            addBonus(p, amount);
+        // Owner 6 Nov 2026: Golden Blocks makes the bonus come every time and worth more.
+        boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
+        if (amount > 0 && (golden || ThreadLocalRandom.current().nextDouble(100) < config.grindBonusChance)) {
+            addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount);
         }
+    }
+
+    /** Ticks until a broken crop or ore comes back: one tick during Instant Regrow (owner 6 Nov 2026). */
+    private long regrowTicks(Player p, int seconds) {
+        return events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.INSTANT_REGROW) ? 2L : seconds * 20L;
     }
 
     /** The mine as the player sees it: their unlocked ores on the real stone (client side only). */

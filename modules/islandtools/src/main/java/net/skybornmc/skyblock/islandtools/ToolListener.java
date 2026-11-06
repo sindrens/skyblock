@@ -170,7 +170,8 @@ final class ToolListener implements Listener {
             m.farming().burstShow(p, block.getLocation());
         }
         boolean counts = kind == Kind.HOE ? ripe(block) : natural && relevant(kind, block.getType().getKey().getKey());
-        double chance = counts ? m.sweepChance(island, kind) : 0;
+        double chance = counts ? m.sweepChance(island, kind) * net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
+                net.skybornmc.skyblock.common.grind.GrindEvents.Kind.PROC_FRENZY) : 0; // owner 6 Nov 2026: Proc Frenzy
         if (chance > 0 && ThreadLocalRandom.current().nextDouble(100) < chance) {
             ToolRules.Band band = m.band(island, kind);
             sweep(p, block, kind, band == null ? 0 : band.blocks());
@@ -245,6 +246,8 @@ final class ToolListener implements Listener {
         double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,
                 BonusContext.of(p, p.getInventory().getItemInMainHand(), "island_" + kind.id()).withTarget(blockId))).orElse(1.0);
         mult *= 1 + Math.max(0, m.islandBoost(p, kind)) / 100.0; // the island's farm/mine boost, stronger than any perk
+        mult *= net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
+                net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_DROPS); // owner 6 Nov 2026: Double Drops
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         for (Iterator<Item> it = event.getItems().iterator(); it.hasNext(); ) {
             Item entity = it.next();

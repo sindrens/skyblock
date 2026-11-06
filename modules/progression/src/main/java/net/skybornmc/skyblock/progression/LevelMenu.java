@@ -26,8 +26,8 @@ import java.util.UUID;
  * Refreshes every 2 s while open.
  * <pre>
  *  R O B B ✦ B B O R      4 level, progress, board position
- *  B ▥ ⚒ ◆ ▤ . . 📖 B      10 pillars, 11 upgrades, 12 achievements, 13 collections, 16 challenge book (M5.3)
- *  B ⚗ ⛏ $ ◇ . ⟳ . B      19 skills, 20 Depths, 21 bank, 22 blocks, 24 recalculate
+ *  B ⚒ ◆ ▤ . . . 📖 B      10 upgrades, 11 achievements, 12 collections, 16 challenge book (M5.3)
+ *  B ⚗ $ ◇ . . ⟳ . B      19 skills, 20 bank, 21 blocks, 24 recalculate
  *  B ⛏ 🪓 🌾 ⚔ ⚑ . . B      28-32 Mining, Foraging, Farming, Combat, Conquest
  *  B . . . . . . . B
  *  ← O B ? ✘ H B O R      45 back, 48 info, 49 close, 50 help
@@ -38,9 +38,10 @@ final class LevelMenu extends Menu {
     static final int SLOT_HEADER = 4;
     static final int SLOT_RECALCULATE = 24;
     static final int SLOT_TASKS = 16;
-    static final List<LevelSource> SOURCES = List.of(LevelSource.PILLARS, LevelSource.UPGRADES, LevelSource.ACHIEVEMENTS,
-            LevelSource.COLLECTIONS, LevelSource.SKILLS, LevelSource.DEPTHS, LevelSource.BANK, LevelSource.BLOCKS);
-    static final List<Integer> SOURCE_SLOTS = List.of(10, 11, 12, 13, 19, 20, 21, 22);
+    // Owner 6 Nov 2026 (Q-17): no Depths tile (the Depths are gone, it always showed 0) and no pillar points tile (0 by default).
+    static final List<LevelSource> SOURCES = List.of(LevelSource.UPGRADES, LevelSource.ACHIEVEMENTS, LevelSource.COLLECTIONS,
+            LevelSource.SKILLS, LevelSource.BANK, LevelSource.BLOCKS);
+    static final List<Integer> SOURCE_SLOTS = List.of(10, 11, 12, 19, 20, 21);
     static final List<Integer> PILLAR_SLOTS = List.of(28, 29, 30, 31, 32);
     static final List<SkillType> WINGS = List.of(SkillType.MINING, SkillType.FORAGING, SkillType.COMBAT);
 

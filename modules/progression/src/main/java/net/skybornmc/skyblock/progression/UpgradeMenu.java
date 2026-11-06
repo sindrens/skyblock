@@ -116,12 +116,17 @@ final class UpgradeMenu extends Menu {
         if (bank < 0 && !fetching) {
             fetchBank();
         }
-        UpgradeTab[] tabs = UpgradeTab.values();
-        for (int i = 0; i < tabs.length && i < TAB_SLOTS.length; i++) {
-            if (tabs[i] == UpgradeTab.MASTERIES && !mastersOpen()) {
+        int slot = 0;
+        for (UpgradeTab t : UpgradeTab.values()) {
+            if (t == UpgradeTab.MASTERIES && !mastersOpen()) {
                 continue; // GUI-2: hidden while masteries are off
             }
-            set(TAB_SLOTS[i], tabButton(tabs[i]));
+            if (t == UpgradeTab.DEPTHS) {
+                continue; // owner 6 Nov 2026 (Q-17): the Depths are gone; its two upgrades were "coming soon" only
+            }
+            if (slot < TAB_SLOTS.length) {
+                set(TAB_SLOTS[slot++], tabButton(t));
+            }
         }
         if (tab == UpgradeTab.MASTERIES && mastersOpen()) {
             buildMasteries();

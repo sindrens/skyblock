@@ -572,7 +572,9 @@ public final class IslandToolsModule implements SkyblockModule {
         ToolRules.Level before = level(prog);
         if (!before.maxed()) {
             double wisdom = 1 + effect(island, kind, Upgrades.Effect.WISDOM) * config.wisdomPerLevel / 100.0;
-            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom, rnd.nextDouble());
+            double event = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
+                    net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_XP); // owner 6 Nov 2026: Double XP
+            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom * event, rnd.nextDouble());
             if (xp > 0) {
                 ToolStore.Prog next = prog.withXp(prog.xp() + xp);
                 progs.get(island).put(kind, next);
@@ -589,7 +591,9 @@ public final class IslandToolsModule implements SkyblockModule {
         }
         double chance = (kind == Kind.HOE ? config.shardHoe : config.shardPickaxe) / 100.0;
         double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
-        int shards = ToolRules.roll(chance * finder * bonus, rnd.nextDouble());
+        double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
+                net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
+        int shards = ToolRules.roll(chance * finder * bonus * doubled, rnd.nextDouble());
         int lucky = effect(island, kind, Upgrades.Effect.LUCKY);
         if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
             int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);

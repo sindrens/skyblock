@@ -49,6 +49,10 @@ quest:
     name: "<c:value>Harvest <target> ripe crops"
     name-one: "<c:value>Harvest a ripe crop"
     short: "Harvest crops"
+  ore:
+    name: "<c:value>Mine <target> ores at /mine"
+    name-one: "<c:value>Mine an ore at /mine"
+    short: "Mine ores"
 
 # Progress dots in the menu: 10 dots, done ones in the first look.
 bar:
@@ -100,7 +104,7 @@ swap:
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>Your daily quests are still loading. Try again in a moment."
   done: "<prefix><c:error><sym:cross></c:error> <c:text>That quest is done already, so it can't be swapped."
   none-left: "<prefix><c:error><sym:cross></c:error> <c:text>No free swaps left today. New quests come at 00:00 (Oslo time)."
-  no-other: "<prefix><c:error><sym:cross></c:error> <c:text>There is no other quest you can do yet. Unlock more of the Depths first."
+  no-other: "<prefix><c:error><sym:cross></c:error> <c:text>There is no other quest you can do yet. Come back after the next reset."
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your quests just changed. Have a look and try again."
 
 # The scoreboard placeholder %quest_next% (the open quest closest to done). Plain text.
@@ -117,7 +121,7 @@ menu:
     lore: ["<c:text>This board is turned off for now."]
   nothing-yet:
     name: "<c:muted>No quests for you yet"
-    lore: ["<c:text>Reach the Depths first (finish the tutorial)."]
+    lore: ["<c:text>Get your island first: <c:value>/is</c:value><c:text>."]
   island:
     no-island:
       name: "<c:muted>You have no island"

@@ -268,6 +268,20 @@ command-hints:
 # Temporary grind areas: /farm, /mine, /dungeon (owner 3 Nov 2026).
 grind:
   bonus: "<c:success>+<amount></c:success> <c:muted>bonus"
+  # Owner 6 Nov 2026: events at /farm and /mine. <events> = the names joined by the separator, <seconds> = how long.
+  events:
+    start: "<prefix><c:flame><bold>Events!</bold></c:flame> <events> <c:muted>for <seconds> s"
+    separator: "<c:muted>, "
+    bar: "<event> <c:muted>· <seconds> s"
+    scoreboard-next: "in <seconds> s"
+    scoreboard-live: "live · <seconds> s"
+    name:
+      double_xp: "<c:success>Double XP"
+      double_drops: "<c:value>Double Drops"
+      double_shards: "<cur:shards>Double Shards"
+      instant_regrow: "<c:text>Instant Regrow"
+      proc_frenzy: "<c:flame>Proc Frenzy"
+      golden_blocks: "<cur:money>Golden Blocks"
   unlocked: "<prefix><c:success><sym:star></c:success> <c:text>New crop unlocked: <c:value><crop></c:value><c:text>! The farm now grows it for you."
   progress: "<c:text>Next crop <c:value><crop></c:value><c:text>: <c:value><have></c:value><c:muted>/<need> harvested"
   unlocked-ore: "<prefix><c:success><sym:star></c:success> <c:text>New ore unlocked: <c:value><ore></c:value><c:text>! The whole mine is that ore for you now."

@@ -397,10 +397,10 @@ tasks:
     name-done: "<c:success><sym:check> <task>"
     type:
       mine:
-        - "<c:muted>Depths ore or your island."
+        - "<c:muted>At /mine or on your island."
         - "<c:muted>Placed blocks don't count."
       chop:
-        - "<c:muted>Depths logs or your island."
+        - "<c:muted>Logs on your island."
         - "<c:muted>Placed logs don't count."
       farm:
         - "<c:muted>Ripe crops on your island."
@@ -557,8 +557,8 @@ upgrades:
     bank-capacity-level: "Bank capacity level <value>"
     bank-interest-level: "Bank interest level <value>"
     sell-bonus: "+<value>% sell prices"
-    mine-fortune: "+<value>% Depths ore drops"
-    lumberjack: "+<value>% Depths log drops"
+    mine-fortune: "+<value>% ore drops"
+    lumberjack: "+<value>% log drops"
     xp-boost: "+<value>% skill XP"
     spawner-stack: "<value> spawners per block"
     spawner-rate: "+<value>% spawner output"

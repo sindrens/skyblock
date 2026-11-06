@@ -331,7 +331,7 @@ categories:
   essentials:
     icon: crafting_table
     groups:
-      basics: [torch, scaffolding, white_bed, bread]
+      basics: [torch, scaffolding, bread, white_bed]
       tools: [flint_and_steel, shears, fishing_rod, bucket, water_bucket, lava_bucket]
       workstations: [crafting_table, furnace, smoker, stonecutter, blast_furnace, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
       storage: [ladder, glass_pane, composter, chest, barrel, painting, armor_stand]
@@ -364,7 +364,7 @@ categories:
       torch: 4
       scaffolding: 5
       white_bed: 30
-      bread: 250
+      bread: 15
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone

@@ -405,6 +405,7 @@ derive:
   # Never derived and never sellable (* = any characters). bone_meal: owner price S7 would break the shop x7.5 rule.
   exclude:
   - "bone_meal"
+  - "bread"   # owner price decision: bread costs $15 in /shop; selling it above that would be a loop
   - "*_pickaxe"
   - "*_axe"
   - "*_shovel"

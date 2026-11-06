@@ -38,6 +38,39 @@ public final class EssentialsConfig extends ModuleConfig {
             + "harvest and /mine ore (was every block).", min = 0, max = 100)
     public double grindBonusChance = 4;
 
+    // ------------------------------------------------------------------ owner 6 Nov 2026: grind-area events
+
+    @Setting(path = "grind.events.enabled", desc = "Owner 6 Nov 2026: short random events at /farm and /mine (2 to 4 at once, about 30 s, then a break).")
+    public boolean grindEventsEnabled = true;
+
+    @Setting(path = "grind.events.duration-seconds", desc = "How long one round of events runs.", min = 5, max = 600)
+    public int grindEventSeconds = 30;
+
+    @Setting(path = "grind.events.active-min", desc = "Fewest events in one round.", min = 1, max = 6)
+    public int grindEventActiveMin = 2;
+
+    @Setting(path = "grind.events.active-max", desc = "Most events in one round.", min = 1, max = 6)
+    public int grindEventActiveMax = 4;
+
+    @Setting(path = "grind.events.break-min-seconds", desc = "Shortest break between two rounds.", min = 5, max = 3600)
+    public int grindEventBreakMin = 30;
+
+    @Setting(path = "grind.events.break-max-seconds", desc = "Longest break between two rounds.", min = 5, max = 3600)
+    public int grindEventBreakMax = 60;
+
+    @Setting(path = "grind.events.kinds", desc = "Events that can run: double_xp (tool XP), double_drops, double_shards, instant_regrow, "
+            + "proc_frenzy (Sweep/Vein and enchant procs), golden_blocks (the money bonus is worth more).")
+    public List<String> grindEventKinds = List.of("double_xp", "double_drops", "double_shards", "instant_regrow", "proc_frenzy", "golden_blocks");
+
+    @Setting(path = "grind.events.double", desc = "Multiplier of Double XP, Double Drops and Double Shards.", min = 1, max = 10)
+    public double grindEventDouble = 2.0;
+
+    @Setting(path = "grind.events.proc-frenzy", desc = "Multiplier on proc chances during Proc Frenzy.", min = 1, max = 10)
+    public double grindEventProcs = 2.0;
+
+    @Setting(path = "grind.events.golden", desc = "Golden Blocks: the farm/mine money bonus is this many times bigger and always comes.", min = 1, max = 100)
+    public double grindEventGolden = 5.0;
+
     @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot): small at the start, bigger later.")
     public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200);
 
