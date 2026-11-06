@@ -136,7 +136,7 @@ final class BoostersMenu extends Menu {
         String name = m.typeName(type);
         Optional<GlobalQueue.Entry> active = m.global().active(type);
         if (active.isEmpty()) {
-            return service.item(Material.GRAY_STAINED_GLASS_PANE, service.text(viewer, BoostersModule.ID, "menu.global.idle.name",
+            return service.item(Material.GRAY_DYE, service.text(viewer, BoostersModule.ID, "menu.global.idle.name",
                     Msg.p("type", name)), service.lines(viewer, BoostersModule.ID, "menu.global.idle.lore", Msg.p("type", name)));
         }
         GlobalQueue.Entry e = active.get();

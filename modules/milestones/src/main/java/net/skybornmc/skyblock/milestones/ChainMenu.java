@@ -91,7 +91,7 @@ final class ChainMenu extends Menu {
             long target = chain.target(tier);
             ItemStack tile;
             if (tier <= claimed) {
-                tile = service.item(Material.LIME_STAINED_GLASS_PANE, viewer, MilestonesModule.ID, "menu.tier.claimed",
+                tile = service.item(Material.LIME_DYE, viewer, MilestonesModule.ID, "menu.tier.claimed",
                         Msg.number("tier", tier), Msg.c("perk", MilestonesMenu.perkText(service, viewer, chain, tier)));
                 set(slot, tile);
             } else if (tier <= completed) {
@@ -101,16 +101,16 @@ final class ChainMenu extends Menu {
                 int t = tier;
                 set(slot, tile, click -> m.claims().claim(viewer, chain, t).thenAccept(o -> reload()));
             } else if (tier == completed + 1) {
-                tile = service.item(Material.YELLOW_STAINED_GLASS_PANE, viewer, MilestonesModule.ID, "menu.tier.current",
+                tile = service.item(Material.YELLOW_DYE, viewer, MilestonesModule.ID, "menu.tier.current",
                         Msg.number("tier", tier), Msg.p("progress", Format.number(total)), Msg.p("target", Format.number(target)),
                         Msg.p("bar", MilestonesMenu.bar(total, chain.target(tier - 1), target)), Msg.c("perk", MilestonesMenu.perkText(service, viewer, chain, tier)));
                 set(slot, tile);
             } else if (tier <= shownUpTo) {
-                tile = service.item(Material.GRAY_STAINED_GLASS_PANE, viewer, MilestonesModule.ID, "menu.tier.next",
+                tile = service.item(Material.GRAY_DYE, viewer, MilestonesModule.ID, "menu.tier.next",
                         Msg.number("tier", tier), Msg.p("target", Format.number(target)), Msg.c("perk", MilestonesMenu.perkText(service, viewer, chain, tier)));
                 set(slot, tile);
             } else {
-                set(slot, service.item(Material.BLACK_STAINED_GLASS_PANE, viewer, MilestonesModule.ID, "menu.tier.hidden", Msg.number("tier", tier)));
+                set(slot, service.item(Material.GRAY_DYE, viewer, MilestonesModule.ID, "menu.tier.hidden", Msg.number("tier", tier)));
             }
         }
     }

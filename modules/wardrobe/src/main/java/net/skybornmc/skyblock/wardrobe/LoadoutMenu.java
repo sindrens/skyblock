@@ -101,7 +101,7 @@ final class LoadoutMenu extends Menu {
                     }
                 });
             } else if (i < slots) {
-                set(slot, service.item(Material.LIME_STAINED_GLASS_PANE, viewer, WardrobeModule.ID, "menu.loadout.empty",
+                set(slot, service.item(Material.LIME_DYE, viewer, WardrobeModule.ID, "menu.loadout.empty",
                         Msg.p("n", i + 1)), click -> module.loadouts().saveNew(viewer, index));
             } else {
                 set(slot, service.item(Material.GRAY_DYE, viewer, WardrobeModule.ID, "menu.loadout.locked-slot", Msg.p("n", i + 1)));

@@ -141,7 +141,7 @@ final class ArmorEntryMenu extends Menu {
             case EMPTY -> set(menuSlot, service.item(mythic ? Material.NETHER_STAR : Material.BOOK, viewer, EnchantsModule.ID,
                     mythic ? "menu.armor-entry.mythic-empty" : "menu.armor-entry.empty", Msg.p("slot", slot)),
                     click -> openChild(new ArmorBookPickMenu(module, entryId, piece, slot)));
-            case LOCKED -> set(menuSlot, service.item(mythic ? Material.GRAY_DYE : Material.GRAY_STAINED_GLASS_PANE, viewer, EnchantsModule.ID,
+            case LOCKED -> set(menuSlot, service.item(mythic ? Material.GRAY_DYE : Material.GRAY_DYE, viewer, EnchantsModule.ID,
                     mythic ? "menu.armor-entry.mythic-locked" : "menu.armor-entry.locked", Msg.p("slot", slot),
                     Msg.p("level", rules.slots().unlockLevel(slot)), Msg.p("have", entry.level())), click -> service.sound(viewer, "error"));
         }

@@ -84,7 +84,7 @@ final class SellMenu extends Menu {
             TagResolver[] p = new TagResolver[money.length + 1];
             System.arraycopy(money, 0, p, 0, money.length);
             p[money.length] = Msg.p("time", Format.duration(d));
-            Material icon = key.equals(Pricing.defaultDuration(module.config)) ? Material.LIME_CONCRETE : Material.LIME_STAINED_GLASS_PANE;
+            Material icon = key.equals(Pricing.defaultDuration(module.config)) ? Material.LIME_CONCRETE : Material.LIME_DYE;
             set(FIRST_DURATION + i, service.item(icon, viewer, AuctionModule.ID, "sell.duration", p), click -> {
                 if (used) {
                     return;

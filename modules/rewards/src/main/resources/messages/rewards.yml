@@ -150,6 +150,20 @@ menu:
   # /rewards (spec 5.2). State words with icon and word (golden rule 8).
   rewards:
     title: "Rewards"
+    # GUI pass (7 Nov 2026): places that had no tile in /menu.
+    shortcut:
+      crates:
+        name: "<c:flame><bold>Crates"
+        lore: ["<c:text>Open your crate keys.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+      vote:
+        name: "<c:value><bold>Vote"
+        lore: ["<c:text>Vote for the server for keys", "<c:text>and a streak reward.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+      boosters:
+        name: "<c:enchant><bold>Boosters"
+        lore: ["<c:text>Start a booster or see the", "<c:text>ones running.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+      black-market:
+        name: "<c:flame><bold>Black Market"
+        lore: ["<c:text>Rare items for crystals.", "<c:text>New stock twice a day.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     info: ["<c:text>Every reward you can claim,", "<c:text>in one place. Unclaimed daily,", "<c:text>weekly and monthly rewards", "<c:text>are lost when they reset."]
     summary:
       name: "<c:value><bold>Your rewards"

@@ -183,9 +183,9 @@ final class MasteryDetailMenu extends Menu {
                 Msg.p("cost", Format.money(rank.cost())), Msg.p("tier", rank.tier()), Msg.p("island-level", rank.islandLevel()),
                 Msg.c("pillar", menus.masteries().pillarName(viewer, def)), Msg.p("pillar-level", rank.pillarLevel())};
         Material icon = switch (state) {
-            case "bought" -> Material.LIME_STAINED_GLASS_PANE;
-            case "next" -> Material.YELLOW_STAINED_GLASS_PANE;
-            default -> Material.GRAY_STAINED_GLASS_PANE;
+            case "bought" -> Material.LIME_DYE;
+            case "next" -> Material.YELLOW_DYE;
+            default -> Material.GRAY_DYE;
         };
         List<Component> lore = new ArrayList<>(lines("masteries.detail.rank.lore", p));
         if (def.pillar() != null && rank.pillarLevel() > 0) {

@@ -166,7 +166,7 @@ final class DailyMenu extends Menu {
             Component reward = RewardText.describe(m, viewer, spec, ctx);
             ItemStack item;
             if (day <= upTo) {
-                item = service.item(Material.LIME_STAINED_GLASS_PANE, service.text(viewer, RewardsModule.ID, "menu.day.claimed.name",
+                item = service.item(Material.LIME_DYE, service.text(viewer, RewardsModule.ID, "menu.day.claimed.name",
                         Msg.number("day", day)), service.lines(viewer, RewardsModule.ID, "menu.day.claimed.lore", Msg.c("reward", reward)));
             } else if (day == next && !claimed) {
                 item = service.item(icon(spec), service.text(viewer, RewardsModule.ID, "menu.day.today.name", Msg.number("day", day)),
@@ -181,7 +181,7 @@ final class DailyMenu extends Menu {
                 item = service.item(icon(spec), service.text(viewer, RewardsModule.ID, "menu.day.tomorrow.name", Msg.number("day", day)),
                         service.lines(viewer, RewardsModule.ID, "menu.day.tomorrow.lore", Msg.c("reward", reward), Msg.p("time", reset)));
             } else {
-                item = service.item(Material.GRAY_STAINED_GLASS_PANE, service.text(viewer, RewardsModule.ID, "menu.day.later.name",
+                item = service.item(Material.GRAY_DYE, service.text(viewer, RewardsModule.ID, "menu.day.later.name",
                         Msg.number("day", day)), service.lines(viewer, RewardsModule.ID, "menu.day.later.lore", Msg.c("reward", reward)));
             }
             item.setAmount(Math.max(1, Math.min(64, day)));

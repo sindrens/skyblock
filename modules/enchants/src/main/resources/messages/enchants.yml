@@ -202,7 +202,7 @@ menu:
       lore: ["<c:text>Every enchant, what it does", "<c:text>and where it drops.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
     crystals:
       name: "<cur:crystals><sym:crystals> <crystals></cur:crystals> <c:text>crystals"
-      lore: ["<c:muted>Earn crystals on your island", "<c:muted>and in The Depths."]
+      lore: ["<c:muted>Earn crystals from quests,", "<c:muted>contracts and the island book."]
     next-book:
       name: "<c:value>Next guaranteed book"
       lore: ["<c:text>Mine <c:value><mining></c:value> <c:muted>blocks", "<c:text>Forest <c:value><foraging></c:value> <c:muted>logs", "<c:text>Combat <c:value><combat></c:value> <c:muted>kills", "", "<c:muted>Books also drop by luck.", "<c:muted>Use the right custom tool."]
@@ -298,7 +298,7 @@ menu:
     info: ["<c:text>Books that fit this slot are", "<c:text>at the top. The others say", "<c:text>why not."]
     empty:
       name: "<c:muted>No enchant books"
-      lore: ["<c:text>Armor books drop in The", "<c:text>Depths combat zones."]
+      lore: ["<c:text>Armor books come from crates", "<c:text>and the Black Market."]
   armor-enchant:
     info: ["<c:text>Upgrade with crystals or a", "<c:text>book. A scroll gives the book", "<c:text>back; shatter destroys it."]
     now: ["<c:muted><piece>", "<c:muted>Max <max> · set allows <gate>", "<c:muted>Put in: <sym:crystals> <invested>"]
@@ -309,7 +309,7 @@ menu:
     tool: ["", "<c:text>The book goes into <c:value>slot <slot></c:value>."]
     empty:
       name: "<c:muted>No enchant books"
-      lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
+      lore: ["<c:text>Find books in crates or", "<c:text>roll one in the Book shop."]
     fits: ["<c:success><sym:check> Fits", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to apply"]
   upgrade:
     info: ["<c:text>Crystals raise it one level.", "<c:text>A book of the same level is", "<c:text>cheaper but uses the book."]
@@ -342,7 +342,7 @@ menu:
     info: ["<c:text>Two books of the same enchant", "<c:text>and level make one book a", "<c:text>level higher."]
     empty:
       name: "<c:muted>No enchant books"
-      lore: ["<c:text>Find books in The Depths or", "<c:text>roll one in the Book shop."]
+      lore: ["<c:text>Find books in crates or", "<c:text>roll one in the Book shop."]
     hint:
       name: "<c:value>Book onto a tool?"
       lore: ["<c:text>To add a book to an enchant", "<c:text>on a tool, use Upgrade.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open Upgrade"]
@@ -553,7 +553,7 @@ enchant:
     effect: "-{percent}% fall damage."
   night_eye:
     name: "Night Eye"
-    effect: "Night vision in The Depths and on islands."
+    effect: "Night vision in dark places."
   fortitude:
     name: "Fortitude"
     effect: "-{percent}% damage from mobs."

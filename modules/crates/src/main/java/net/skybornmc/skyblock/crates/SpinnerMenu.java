@@ -155,10 +155,9 @@ final class SpinnerMenu extends Menu {
     }
 
     private void showResult() {
-        ItemStack dim = service.item(Material.GRAY_STAINED_GLASS_PANE, Component.empty(), List.of());
         for (int k = 0; k < SpinnerMath.WINDOW; k++) {
             if (k != SpinnerMath.CENTER) {
-                set(FIRST_SLOT + k, dim);
+                set(FIRST_SLOT + k, (net.skybornmc.skyblock.common.menu.MenuButton) null); // GUI pass: no glass, only the prize
             }
         }
         set(FIRST_SLOT + SpinnerMath.CENTER, item(-1));

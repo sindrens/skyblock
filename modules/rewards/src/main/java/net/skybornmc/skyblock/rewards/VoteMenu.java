@@ -104,7 +104,7 @@ final class VoteMenu extends Menu {
                 open++;
             }
             ItemStack item = done
-                    ? service.item(Material.LIME_STAINED_GLASS_PANE, service.text(viewer, RewardsModule.ID, "menu.vote.site.done.name",
+                    ? service.item(Material.LIME_DYE, service.text(viewer, RewardsModule.ID, "menu.vote.site.done.name",
                     Msg.p("site", site.name())), service.lines(viewer, RewardsModule.ID, "menu.vote.site.done.lore", Msg.c("reward", reward),
                     Msg.p("time", Format.duration(Duration.ofMillis(wait)))))
                     : service.item(Material.PAPER, service.text(viewer, RewardsModule.ID, "menu.vote.site.open.name", Msg.p("site", site.name())),

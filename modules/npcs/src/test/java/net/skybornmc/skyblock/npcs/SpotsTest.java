@@ -81,7 +81,7 @@ class SpotsTest {
         assertEquals("bank", bank.ref());
         assertEquals("bank", bank.role());
         assertEquals(180f, bank.yaw());
-        assertEquals("forge", spots.npcs().get(1).role(), "ids are lower-cased and mapped");
+        assertEquals("sage", spots.npcs().get(1).role(), "ids are lower-cased and mapped (FX-21: blacksmith = Sage)");
         assertEquals("blacksmith", spots.npcs().get(1).id());
         assertEquals("wardrobe", spots.npcs().get(2).role(), "metadata role wins");
 

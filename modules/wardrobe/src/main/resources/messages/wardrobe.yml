@@ -215,7 +215,7 @@ filter:
 # Gate requirement (lore and chat): {wing}, {need}, {have}.
 gate:
   tier: "<c:value>{wing} tier {need}</c:value> <c:muted>▸ {have}/{need}"
-  tier-any: "<c:value>Depths tier {need}</c:value> <c:muted>▸ {have}/{need}"
+  tier-any: "<c:value>Tier {need}</c:value> <c:muted>▸ {have}/{need}"
   any-skill: "<c:value>Any skill {need}</c:value> <c:muted>▸ {have}/{need}"
   skill: "<c:value>{wing} {need}</c:value> <c:muted>▸ {have}/{need}"
   none: "<c:value>nothing"

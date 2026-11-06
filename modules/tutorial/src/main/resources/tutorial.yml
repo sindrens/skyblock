@@ -119,7 +119,7 @@ chapters:
         target: farm
         amount: 50
         text: "Harvest 50 crops at /farm"
-        hint: "Break ripe wheat with your harvester hoe."
+        hint: "Break ripe wheat with your island hoe."
         place: farm
         icon: iron_hoe
       sell:

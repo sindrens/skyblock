@@ -739,7 +739,7 @@ topics:
         lines:
           - "<c:text>Click an NPC to open what it"
           - "<c:text>does: the Banker opens the bank, the"
-          - "<c:text>Blacksmith your tool menu."
+          - "<c:text>Tinker your tool menu."
           - "<c:text>Help NPCs explain on every click."
       - title: "<c:value>Help NPCs"
         lines:

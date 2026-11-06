@@ -29,6 +29,10 @@ final class RewardsMenu extends Menu {
     /** Build plan slice 4: the Milestones card (ready tiers of the island and the profile). */
     static final int SLOT_MILESTONES = 15;
     static final int SLOT_CLAIM_ALL = 38;
+    /** GUI pass (7 Nov 2026): the reward places that had no tile in /menu, one row: Crates, Vote, Boosters, Black Market. */
+    static final int[] SHORTCUT_SLOTS = {19, 21, 23, 25};
+    static final String[][] SHORTCUTS = {{"crates", "crates", "TRIPWIRE_HOOK"}, {"vote", "vote", "PAPER"},
+            {"boosters", "boosters", "BLAZE_POWDER"}, {"black-market", "blackmarket", "AMETHYST_SHARD"}};
     static final int SLOT_SUMMARY = 4;
 
     private final RewardsModule m;
@@ -85,6 +89,7 @@ final class RewardsMenu extends Menu {
         periodic(SLOT_MONTHLY, PeriodicRules.Period.MONTH, now);
         pass();
         milestones();
+        shortcuts();
         if (ready > 0) {
             set(SLOT_CLAIM_ALL, glint(service.item(Material.LIME_DYE, service.text(viewer, RewardsModule.ID, "menu.rewards.claim-all.name"),
                     service.lines(viewer, RewardsModule.ID, "menu.rewards.claim-all.lore", Msg.number("count", ready)))),
@@ -166,6 +171,24 @@ final class RewardsMenu extends Menu {
                 m.sound(viewer, "error");
             }
         });
+    }
+
+    /** One tile per reward place whose command exists on this server (a missing feature leaves no tile, owner G2). */
+    private void shortcuts() {
+        int i = 0;
+        for (String[] s : SHORTCUTS) {
+            if (org.bukkit.Bukkit.getCommandMap().getCommand(s[1]) == null) {
+                continue;
+            }
+            String command = s[1];
+            Material icon = Material.matchMaterial(s[2]);
+            set(SHORTCUT_SLOTS[i++], service.item(icon == null ? Material.CHEST : icon,
+                    service.text(viewer, RewardsModule.ID, "menu.rewards.shortcut." + s[0] + ".name"),
+                    service.lines(viewer, RewardsModule.ID, "menu.rewards.shortcut." + s[0] + ".lore")), click -> {
+                click.player().closeInventory();
+                click.player().performCommand(command);
+            });
+        }
     }
 
     private void pass() {

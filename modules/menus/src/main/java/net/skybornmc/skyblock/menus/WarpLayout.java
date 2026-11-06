@@ -53,7 +53,7 @@ public record WarpLayout(List<Warp> warps) {
     }
 
     /** Most places the 3-row Travel menu shows (one centred row of 7). */
-    static final int MAX_PLACES = 8; // 7 Nov 2026: + the /fish pond
+    static final int MAX_PLACES = 9; // 7 Nov 2026: + the /fish pond and the /pve arena (two centred rows)
 
     static WarpLayout parse(YamlConfiguration yaml, String sectionName, java.util.function.Predicate<String> items,
                             Consumer<String> problem) {

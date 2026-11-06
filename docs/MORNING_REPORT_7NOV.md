@@ -95,7 +95,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 ## Still to do (in this order)
 1. Dynamic prices v2 (per-island daily sell curve and weekly drift; needs your Q-70 answer). Money x100 is done (update139, see above).
 2. Batch 10: pack v2, ranks v2.
-3. Small fixes: FX-05 (Sell Wand and Auto-Sell: waits until those items are made), FX-21 (Tinker and Sage at spawn still need a spot, see below).
+3. Small fixes: FX-05 (Sell Wand / Auto-Sell sale order, check on the test server).
 
 ## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
 - **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
@@ -159,6 +159,16 @@ If a buy would go over the seller's daily receive limit, it is refused with a me
   3. `/is level` shows about the same level as before.
   4. A shop price and a /sell price are both 100x.
   5. `/ah` listings are 100x.
+
+## GUI pass, tool names, Tinker and Sage (update140, plan: `docs/plans/GUI_PASS.md`)
+Your message before bed: "&a colour on hoe and pickaxe, change names, ALL GUIs". What I did (defaults, easy to change):
+- **Tool names are green (&a)**: Island Hoe (was "Harvester Hoe"), Island Pickaxe, Island Rod, Island Sword; prestige stars stay orange after the name. The join message now names all four tools.
+- **No glass panes as decoration**: removed from the /p punish menu (full gray fill and red divider), the battle pass empty tiles and the crate spin result. Status tiles in about 15 menus (daily, vote, milestones, pass, upgrade and mastery levels, guide tasks, loadouts, enchant slots, boosters, top list, AH durations, island permissions) use dyes now: lime = done, yellow = now, gray = later/locked.
+- **Kept on purpose (Q-76)**: the sell chest, trash bin and trade window still use a pane row or pane slots, because those menus take real items and the bar shows where items can't go. Removing them safely needs a slot-protection check on the live server first. Do you want them gone too?
+- **Everything reachable from /menu**: the Rewards menu has a row with Crates, Vote, Boosters and Black Market; Travel has **The Arena** (/pve) next to the Pond.
+- **Old Depths/Forge texts gone from menus**: skills (Mining at /mine, Foraging = grown island logs, Combat at /pve), enchanter lore, settings, profile switching, mailbox sources, wardrobe gates.
+- **Boss names** now live in the messages file (`grind.pve.boss.names`).
+- **Tinker and Sage at spawn (FX-21, done)**: the two Forge Quarter NPCs both opened /tool. The quartermaster is now **Tinker** (tools) and the blacksmith is **Sage** (skills), so the quest line can send players to them.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

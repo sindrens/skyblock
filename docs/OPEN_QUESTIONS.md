@@ -1,6 +1,7 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- **Q-76 (7 Nov 2026, GUI pass):** the sell chest, trash bin and trade window keep their pane bar/slots (they take real items; the panes mark where items can't go). Remove those too? Tool names are green "Island Hoe/Pickaxe/Rod/Sword" now: other names wanted? (default: as built)
 - **Q-74 (7 Nov 2026, batch 10):** Tool Skins: which skins (the pack has Frostbite, Phoenix Flame, Royal Gold icons) and for which tools? They need held-item models (pack v2). And the Hologram item: what should it do? (default: neither sold yet)
 - **Q-75 (7 Nov 2026):** Wardrobe Tome: set XP (built: +2,500 / Greater +10,000) or +1 wardrobe slot (4 Nov note)? (default: XP)
 - **Q-73 (shop click, 7 Nov 2026, batch 9):** FULL_PLAN says "one click buy, shift for 64"; your GUI-1 answer said "a click opens the buy page". Kept GUI-1: click = buy page, shift-click = one stack. Should a plain click buy 1 instead? Also the AH: a buy over the seller's daily receive limit is refused (not parked in the mailbox as the plan says), because a refusal can never lose money. Keep? (default: both as built)

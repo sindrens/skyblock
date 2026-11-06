@@ -35,7 +35,7 @@ profiles:
 sources:
   sell: "<c:value>Sell chest"
   shop: "<c:value>Shop"
-  forge: "<c:value>The Forge"
+  forge: "<c:value>Tools"
   tools: "<c:value>Tools"
   enchanter: "<c:value>Enchanter"
   wardrobe: "<c:value>Wardrobe"
@@ -55,7 +55,7 @@ sources:
   rewards: "<c:value>Daily rewards"
   returned: "<c:value>Returned"
   tutorial: "<c:value>Tutorial"
-  depths: "<c:value>The Depths (satchel full)"
+  depths: "<c:value>An area (bag full)"
   spawner-restore: "<c:value>Staff (frozen spawners restored)"
   black-market: "<c:value>Black Market"
   shard-block: "<c:value>Shard block"

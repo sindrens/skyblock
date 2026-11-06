@@ -299,6 +299,18 @@ grind:
     locked: "<c:warning>Ring <tier> is locked.</c:warning> <c:text>Ring <open>: <c:value><need></c:value> <c:text>kills to open the next."
     # Owner 7 Nov 2026: personal bosses (docs/plans/BATCH8_BOSSES.md). <boss> <tier> <have> <every> <seconds> <money> <crate>
     boss:
+      # The ring bosses (ring 1 to 10), also used by /collection.
+      names:
+        1: "Rotting King"
+        2: "Desert Tyrant"
+        3: "Bone Archer"
+        4: "Brood Mother"
+        5: "Frost Wraith"
+        6: "Tide Caller"
+        7: "Bastion Warlord"
+        8: "Infernal Core"
+        9: "Wither Knight"
+        10: "Ravager Alpha"
       name: "<c:error><bold><boss>"
       bar: "<c:error><bold><boss></bold></c:error> <c:muted>· <seconds> s"
       sigil: "<prefix><c:flame><sym:star></c:flame> <c:text>Boss Sigil of ring <c:value><tier></c:value><c:text>! You have <c:value><have></c:value><c:text>. Summon <c:value><boss></c:value> <c:text>with</c:text> <click:run_command:'/pve boss'><c:action>/pve boss</c:action></click><c:text>."

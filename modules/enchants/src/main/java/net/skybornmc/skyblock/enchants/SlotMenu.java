@@ -158,7 +158,7 @@ final class SlotMenu extends Menu {
                 ToolPerk perk = EnchantRules.perkAt(tool, slot).orElseThrow();
                 Optional<EnchantDef> def = module.registry().get(perk.id());
                 if (state == EnchantRules.SlotState.COVERED) {
-                    set(menuSlot, service.item(Material.PURPLE_STAINED_GLASS_PANE, viewer, EnchantsModule.ID, "menu.slots.covered",
+                    set(menuSlot, service.item(Material.PURPLE_DYE, viewer, EnchantsModule.ID, "menu.slots.covered",
                             Msg.p("slot", slot), Msg.p("enchant", module.text().name(perk.id()))));
                     return;
                 }
@@ -203,7 +203,7 @@ final class SlotMenu extends Menu {
                 if (prestige) {
                     set(menuSlot, service.item(Material.GRAY_DYE, viewer, EnchantsModule.ID, "menu.slots.prestige-locked"));
                 } else {
-                    set(menuSlot, service.item(Material.GRAY_STAINED_GLASS_PANE, viewer, EnchantsModule.ID, "menu.slots.locked",
+                    set(menuSlot, service.item(Material.GRAY_DYE, viewer, EnchantsModule.ID, "menu.slots.locked",
                             Msg.p("slot", slot), Msg.p("level", rules.unlockLevel(slot)), Msg.p("have", tool.level())));
                 }
             }

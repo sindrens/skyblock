@@ -45,6 +45,12 @@ final class PveBosses implements Listener {
 
     static final List<String> NAMES = List.of("Rotting King", "Desert Tyrant", "Bone Archer", "Brood Mother", "Frost Wraith",
             "Tide Caller", "Bastion Warlord", "Infernal Core", "Wither Knight", "Ravager Alpha");
+    /** The boss name of a ring (messages/essentials.yml grind.pve.boss.names.<ring>; the built-in name when missing). */
+    String name(int ring) {
+        String raw = areas.core().messages().raw("essentials", "grind.pve.boss.names." + ring);
+        return raw != null && !raw.isBlank() ? raw : NAMES.get(Math.max(0, Math.min(NAMES.size() - 1, ring - 1)));
+    }
+
     static final double HEALTH = 30;
     static final double DAMAGE = 1.5;
     static final long PAY = 60;
@@ -111,7 +117,7 @@ final class PveBosses implements Listener {
         long[] s = sigils(p);
         s[tier - 1]++;
         setSigils(p, s);
-        areas.msg().send(p, "grind.pve.boss.sigil", Msg.number("tier", tier), Msg.p("boss", NAMES.get(tier - 1)), Msg.number("have", s[tier - 1]));
+        areas.msg().send(p, "grind.pve.boss.sigil", Msg.number("tier", tier), Msg.p("boss", name(tier)), Msg.number("have", s[tier - 1]));
         areas.core().sounds().play(p, "unlock");
     }
 
@@ -163,7 +169,7 @@ final class PveBosses implements Listener {
             }
             arena.prepare(le, tier, t.health() * HEALTH, t.damage() * DAMAGE);
             le.getPersistentDataContainer().set(BOSS, PersistentDataType.STRING, p.getUniqueId().toString());
-            le.customName(areas.msg().component(p, "grind.pve.boss.name", Msg.p("boss", NAMES.get(tier - 1))));
+            le.customName(areas.msg().component(p, "grind.pve.boss.name", Msg.p("boss", name(tier))));
             le.setCustomNameVisible(true);
             le.setGlowing(true);
             for (Player other : w.getPlayers()) {
@@ -171,14 +177,14 @@ final class PveBosses implements Listener {
                     other.hideEntity(areas.core().plugin(), le);
                 }
             }
-            BossBar bar = BossBar.bossBar(Component.text(NAMES.get(tier - 1)), 1f, BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
+            BossBar bar = BossBar.bossBar(Component.text(name(tier)), 1f, BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
             p.showBossBar(bar);
             bosses.put(le.getUniqueId(), new Live(p.getUniqueId(), tier, System.currentTimeMillis() + SECONDS * 1000, bar));
             if (le instanceof Mob mob) {
                 mob.setTarget(p);
             }
         });
-        areas.msg().send(p, "grind.pve.boss.summoned", Msg.p("boss", NAMES.get(tier - 1)), Msg.number("seconds", SECONDS));
+        areas.msg().send(p, "grind.pve.boss.summoned", Msg.p("boss", name(tier)), Msg.number("seconds", SECONDS));
         areas.core().sounds().play(p, "tool-prestige");
     }
 
@@ -198,7 +204,7 @@ final class PveBosses implements Listener {
                 if (owner != null) {
                     owner.hideBossBar(b.bar());
                     if (now >= b.endsAt()) {
-                        areas.msg().send(owner, "grind.pve.boss.escaped", Msg.p("boss", NAMES.get(b.tier() - 1)));
+                        areas.msg().send(owner, "grind.pve.boss.escaped", Msg.p("boss", name(b.tier())));
                     }
                 }
                 it.remove();
@@ -208,7 +214,7 @@ final class PveBosses implements Listener {
             float progress = max == null ? 1f : (float) Math.max(0, Math.min(1, le.getHealth() / max.getValue()));
             long left = Math.max(0, (b.endsAt() - now) / 1000);
             b.bar().progress(progress);
-            b.bar().name(areas.msg().component(owner, "grind.pve.boss.bar", Msg.p("boss", NAMES.get(b.tier() - 1)),
+            b.bar().name(areas.msg().component(owner, "grind.pve.boss.bar", Msg.p("boss", name(b.tier())),
                     Msg.number("seconds", left)));
             Location l = le.getLocation();
             if (PveArena.ringAt(l.getBlockX() - PveArena.X, l.getBlockZ()) != b.tier() || l.getY() < base - 2) {
@@ -270,8 +276,8 @@ final class PveBosses implements Listener {
         areas.core().audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "pve_boss",
                 net.skybornmc.skyblock.common.audit.Actor.player(p), p.getUniqueId(), p.getName(), t.pay() * PAY, p.getLocation(),
                 java.util.Map.of("ring", b.tier(), "key", key));
-        areas.msg().title(p, "grind.pve.boss.defeated-title", Msg.p("boss", NAMES.get(b.tier() - 1)));
-        areas.msg().send(p, key ? "grind.pve.boss.defeated-key" : "grind.pve.boss.defeated", Msg.p("boss", NAMES.get(b.tier() - 1)),
+        areas.msg().title(p, "grind.pve.boss.defeated-title", Msg.p("boss", name(b.tier())));
+        areas.msg().send(p, key ? "grind.pve.boss.defeated-key" : "grind.pve.boss.defeated", Msg.p("boss", name(b.tier())),
                 Msg.p("money", net.skybornmc.skyblock.common.util.Format.money(t.pay() * PAY)), Msg.p("crate", crate.substring(0, 1).toUpperCase() + crate.substring(1)));
         areas.core().sounds().play(p, "tool-max");
         return true;
@@ -386,7 +392,7 @@ final class PveBosses implements Listener {
                 PveArena.Tier t = PveArena.TIER_LIST.get(i);
                 Material icon = locked ? Material.GRAY_DYE : s[i] > 0 ? Material.NETHER_STAR : Material.FIREWORK_STAR;
                 String key = locked ? "grind.pve.boss.menu.locked" : s[i] > 0 ? "grind.pve.boss.menu.ready" : "grind.pve.boss.menu.empty";
-                set(slot, service.item(icon, viewer, EssentialsModule.ID, key, Msg.number("tier", tier), Msg.p("boss", NAMES.get(i)),
+                set(slot, service.item(icon, viewer, EssentialsModule.ID, key, Msg.number("tier", tier), Msg.p("boss", name(i + 1)),
                         Msg.number("have", s[i]), Msg.number("every", areas.pveSigilEvery()),
                         Msg.p("money", net.skybornmc.skyblock.common.util.Format.money(t.pay() * PAY)),
                         Msg.p("crate", crate(tier).substring(0, 1).toUpperCase() + crate(tier).substring(1))), click -> {

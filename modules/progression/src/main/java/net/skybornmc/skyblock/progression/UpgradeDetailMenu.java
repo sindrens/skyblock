@@ -158,9 +158,9 @@ final class UpgradeDetailMenu extends Menu {
                 Msg.p("cost", Format.money(level.cost())), Msg.p("tier", level.tier()), Msg.p("island-level", level.minIslandLevel())};
         String state = n <= current ? "bought" : n == current + 1 ? "next" : "later";
         Material icon = switch (state) {
-            case "bought" -> Material.LIME_STAINED_GLASS_PANE;
-            case "next" -> Material.YELLOW_STAINED_GLASS_PANE;
-            default -> Material.GRAY_STAINED_GLASS_PANE;
+            case "bought" -> Material.LIME_DYE;
+            case "next" -> Material.YELLOW_DYE;
+            default -> Material.GRAY_DYE;
         };
         List<Component> lore = new ArrayList<>(lines("upgrades.detail.level.lore", p));
         if (level.minIslandLevel() > 0) {

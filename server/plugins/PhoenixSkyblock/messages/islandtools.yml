@@ -5,7 +5,7 @@ loading: "<prefix><c:muted>Your island's tools are loading, try again in a momen
 
 item:
   name:
-    hoe: "Harvester Hoe"
+    hoe: "Island Hoe"
     pickaxe: "Island Pickaxe"
     rod: "Island Rod"
     sword: "Island Sword"
@@ -15,9 +15,9 @@ item:
     pickaxe: "Levels up as your island mines."
     rod: "Levels up as you fish at /fish."
     sword: "Levels up as you fight at /pve."
-  # Bold in the rarity colour (the stars after it). {tool} {stars} {rarity}
-  plain-name: "<rarity:{rarity}>{tool}"
-  star-name: "<rarity:{rarity}>{tool} <c:flame>{stars}"
+  # Owner 7 Nov 2026: tool names are green (&a), the prestige stars after them. {tool} {stars} {rarity}
+  plain-name: "<green>{tool}"
+  star-name: "<green>{tool} <c:flame>{stars}"
   # {stars}
   subtitle: "<c:muted>Tool · Diamond"
   subtitle-prestige: "<c:muted>Tool · Prestige <c:flame>{stars}"
@@ -47,7 +47,7 @@ effect:
   sweep: "for {blocks} more"
 
 starter:
-  given: "<prefix><c:success><sym:check></c:success> <c:text>Your island's <c:value>Harvester Hoe</c:value> <c:text>and <c:value>Pickaxe</c:value> <c:text>are in your bag. Right-click the air with one (or type <click:run_command:'/tool'><c:action>/tool</c:action></click><c:text>) for its perks."
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Your island's <c:value>Hoe</c:value><c:text>, <c:value>Pickaxe</c:value><c:text>, <c:value>Rod</c:value> <c:text>and <c:value>Sword</c:value> <c:text>are in your bag. Right-click the air with one (or type <click:run_command:'/tool'><c:action>/tool</c:action></click><c:text>) for its perks."
 
 tool:
   # <tool> = axe or sword

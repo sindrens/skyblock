@@ -52,8 +52,8 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Setting(path = "npcs.roles", desc = "NPC id -> role, as 'id: role' lines (NPCs whose id is already a role need no line; a 'role' key in the build metadata wins).")
     public List<String> npcRoles = List.of(
-            "quartermaster: forge",
-            "blacksmith: forge",
+            "quartermaster: tinker",
+            "blacksmith: sage",
             "help: info",
             "ah: auction",
             "depths_forge: forge",
@@ -85,6 +85,20 @@ public final class NpcsConfig extends ModuleConfig {
             "sage: command skills",
             "fish_merchant: command sell",
             "arena_master: command pve boss");
+
+    /**
+     * {@code npcs.roles} before v11 (FX-21, 7 Nov 2026): the two Forge Quarter NPCs both opened /tool. Now the quartermaster
+     * is Tinker (tools) and the blacksmith is Sage (skills), so the quest line's Tinker and Sage have a place at spawn.
+     */
+    static final List<String> ROLES_V10 = List.of(
+            "quartermaster: forge",
+            "blacksmith: forge",
+            "help: info",
+            "ah: auction",
+            "depths_forge: forge",
+            "depths_sell: sell",
+            "depths_guide: dungeon",
+            "mine_foreman: foreman");
 
     /** {@code npcs.actions} v9 (before Marla at /fish and Warden Hale at /pve, 7 Nov 2026). */
     static final List<String> ACTIONS_V9 = List.of(
@@ -209,9 +223,9 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
     public List<String> heldItems = List.of(
-            "blacksmith: iron_pickaxe",
+            "blacksmith: book",
             "depths_forge: iron_pickaxe",
-            "quartermaster: wooden_sword",
+            "quartermaster: iron_pickaxe",
             "enchanter: enchanted_book",
             "bank: gold_ingot");
 
@@ -370,7 +384,7 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 10;
+        return 11;
     }
 
     /**
@@ -395,7 +409,8 @@ public final class NpcsConfig extends ModuleConfig {
                         "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)),
                 9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, ACTIONS_V9)),
                 10, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V9, new NpcsConfig().roleActions),
-                        "npcs.skins", ValueChange.of(SKINS_V8, SKINS_V10)));
+                        "npcs.skins", ValueChange.of(SKINS_V8, SKINS_V10)),
+                11, java.util.Map.of("npcs.roles", ValueChange.of(ROLES_V10, new NpcsConfig().npcRoles)));
     }
 
     private static List<String> sources() {

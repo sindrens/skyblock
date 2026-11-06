@@ -245,7 +245,7 @@ final class TopMenu extends Menu {
     }
 
     private ItemStack empty(int place) {
-        return service.item(new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE), text("top-menu.empty.name", Msg.p("place", place)),
+        return service.item(new ItemStack(Material.GRAY_DYE), text("top-menu.empty.name", Msg.p("place", place)),
                 lines(weekly() ? "top-menu.empty.lore-weekly" : "top-menu.empty.lore"));
     }
 

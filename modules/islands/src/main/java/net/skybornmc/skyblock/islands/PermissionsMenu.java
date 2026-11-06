@@ -168,7 +168,7 @@ final class PermissionsMenu extends Menu {
     private net.skybornmc.skyblock.common.menu.MenuButton cell(PermRole role, IslandPerm perm, Role editor) {
         TagResolver[] names = {Msg.p("role", roleName(role)), Msg.p("perm", permName(perm))};
         if (!perm.appliesTo(role)) {
-            return net.skybornmc.skyblock.common.menu.MenuButton.display(service.item(new ItemStack(Material.GRAY_STAINED_GLASS_PANE),
+            return net.skybornmc.skyblock.common.menu.MenuButton.display(service.item(new ItemStack(Material.GRAY_DYE),
                     text("perms.cell.name", names), lines("perms.cell.not-applicable", names)));
         }
         boolean editable = editable(editor, role, perm);
@@ -178,7 +178,7 @@ final class PermissionsMenu extends Menu {
         boolean changed = island.perms().override(role, perm) != null;
         Material material = editable
                 ? (allowed ? Material.LIME_CONCRETE : Material.RED_CONCRETE)
-                : (allowed ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS);
+                : (allowed ? Material.LIME_DYE : Material.GRAY_DYE);
         TagResolver[] p = {Msg.p("role", roleName(role)), Msg.p("perm", permName(perm)),
                 Msg.p("action", module.raw("protection.actions." + perm.key()))};
         List<Component> lore = new ArrayList<>(lines("perms.cell.lore", p));

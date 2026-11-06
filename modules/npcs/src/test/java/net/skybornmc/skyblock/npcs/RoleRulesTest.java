@@ -15,7 +15,7 @@ class RoleRulesTest {
         NpcsConfig c = new NpcsConfig();
         RoleRules rules = RoleRules.parse(c.npcRoles, c.roleActions);
         assertEquals(List.of(), rules.problems());
-        assertEquals("forge", rules.roleOf("blacksmith", null));
+        assertEquals("sage", rules.roleOf("blacksmith", null), "FX-21: the blacksmith is Sage now");
         assertEquals("auction", rules.roleOf("ah", null));
         assertEquals("bank", rules.roleOf("bank", null), "an id without a mapping is its own role");
         assertEquals(RoleRules.Type.COMMAND, rules.actionOf("bank").type());

@@ -130,7 +130,7 @@ final class GuideTasksMenu extends Menu {
         String nameKey = story ? "tasks.story-name" : trades ? "tasks.trade-name" : "tasks.errand-name";
         Component name = m.msg().component(viewer, nameKey, Msg.p("item", pretty(e.cost().keySet().iterator().next())),
                 Msg.number("amount", e.cost().values().iterator().next()), Msg.p("reward", rewardPlain(e.rewards().getFirst())));
-        ItemStack base = new ItemStack(done ? Material.LIME_STAINED_GLASS_PANE : icon == null ? Material.PAPER : icon);
+        ItemStack base = new ItemStack(done ? Material.LIME_DYE : icon == null ? Material.PAPER : icon);
         return service.item(base, name, lore);
     }
 

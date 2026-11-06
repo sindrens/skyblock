@@ -343,15 +343,8 @@ final class PunishMenus {
         @Override
         protected void build() {
             PunishConfig.MenuLayout l = layout();
-            ItemStack filler = service.filler(l.filler());
-            for (int slot = 0; slot < rows() * 9; slot++) {
-                set(slot, filler);
-            }
-            navBar(); // GUI-BUGS: the framework bar (45 Back, 48 ?, 49 Close, 50 Main menu) like every other menu
-            ItemStack divider = service.filler(l.divider());
-            for (int slot : l.dividerSlots()) {
-                set(slot, divider);
-            }
+            // GUI pass (owner 7 Nov 2026): no glass panes as filler or divider; the divider slots simply stay empty.
+            navBar(); // the framework bar like every other menu
             WarnRules.Settings rules = module.templates().config().warnRules();
             WarnRules.Counter counter = WarnRules.counter(target.history(), target.suggestions(), rules, System.currentTimeMillis());
             Punishment undoable = module.service().undoable(viewer, target.history());

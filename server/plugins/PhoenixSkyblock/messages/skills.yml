@@ -5,16 +5,16 @@
 skill:
   mining:
     name: "<pillar:mining>Mining"
-    description: ["<c:text>Break ore in the Mine of", "<c:text>The Depths."]
-    how: [" <pillar:mining><sym:bullet> <c:text>Mine ore in The Depths", " <pillar:mining><sym:bullet> <c:text>Better tiers give more XP"]
+    description: ["<c:text>Break ore at /mine and", "<c:text>on your island."]
+    how: [" <pillar:mining><sym:bullet> <c:text>Mine ore at /mine", " <pillar:mining><sym:bullet> <c:text>Better ores give more XP"]
   foraging:
     name: "<pillar:foraging>Foraging"
-    description: ["<c:text>Chop logs in the Forest of", "<c:text>The Depths."]
-    how: [" <pillar:foraging><sym:bullet> <c:text>Chop logs in The Depths", " <pillar:foraging><sym:bullet> <c:text>Better tiers give more XP"]
+    description: ["<c:text>Chop logs that grow on", "<c:text>your island."]
+    how: [" <pillar:foraging><sym:bullet> <c:text>Chop grown logs on your island", " <pillar:foraging><sym:bullet> <c:text>Placed logs give nothing"]
   combat:
     name: "<pillar:combat>Combat"
-    description: ["<c:text>Defeat monsters in the", "<c:text>Combat zones."]
-    how: [" <pillar:combat><sym:bullet> <c:text>Kill monsters yourself", " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP", " <pillar:combat><sym:bullet> <c:text>Only in Depths combat zones"]
+    description: ["<c:text>Defeat monsters in the", "<c:text>/pve arena."]
+    how: [" <pillar:combat><sym:bullet> <c:text>Kill monsters yourself", " <pillar:combat><sym:bullet> <c:text>Stronger mobs give more XP", " <pillar:combat><sym:bullet> <c:text>Fight at /pve"]
   farming:
     name: "<pillar:farming>Farming"
     description: ["<c:text>Grow and harvest crops on", "<c:text>your island."]
@@ -94,9 +94,9 @@ menu:
   title: "Skills"
   title-other: "<player>"
   info:
-    - "<c:text>Your skill levels. Mine, chop"
-    - "<c:text>and fight to level up and"
-    - "<c:text>unlock new Depths tiers."
+    - "<c:text>Your skill levels. Farm, mine,"
+    - "<c:text>fish and fight to level up;"
+    - "<c:text>each level helps a little."
   head:
     name: "<c:value><player>"
     lore:

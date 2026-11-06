@@ -289,6 +289,9 @@ travel:
     pond:
       name: "<c:brand><bold>The Pond"
       lore: ["<c:text>Fish with your island rod.", "<c:text>Every catch pays."]
+    arena:
+      name: "<c:error><bold>The Arena"
+      lore: ["<c:text>Ten rings of mobs and their", "<c:text>bosses. Bring your sword."]
     market:
       name: "<c:flame><bold>Market"
       lore: ["<c:text>Shop, Sell, Auction House", "<c:text>and the Bank."]
@@ -372,7 +375,7 @@ settings:
       lore: ["<c:text>Cosmetic particles of", "<c:text>other players."]
     show-players:
       name: "<c:value>Show players"
-      lore: ["<c:text>Who you see in The Depths", "<c:text>and the AFK pool. Staff always", "<c:text>shows."]
+      lore: ["<c:text>Who you see in the areas", "<c:text>and the AFK pool. Staff always", "<c:text>shows."]
       choices:
         everyone: "Everyone"
         friends: "Friends + island"

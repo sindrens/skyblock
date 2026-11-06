@@ -191,15 +191,15 @@ final class PassMenu extends Menu {
         String base = overflow ? "menu.level.overflow-" : "menu.level.";
         int shown = overflow ? tier - curve.max() : tier;
         if (tier <= reached) {
-            return service.item(Material.LIME_STAINED_GLASS_PANE, viewer, PassModule.ID, base + "reached", Msg.number("level", shown));
+            return service.item(Material.LIME_DYE, viewer, PassModule.ID, base + "reached", Msg.number("level", shown));
         }
         long need = curve.xpFor(tier) - xp;
         if (tier == reached + 1) {
             long[] p = curve.progress(xp);
-            return service.item(Material.YELLOW_STAINED_GLASS_PANE, viewer, PassModule.ID, base + "current", Msg.number("level", shown),
+            return service.item(Material.YELLOW_DYE, viewer, PassModule.ID, base + "current", Msg.number("level", shown),
                     Msg.number("step", p[0]), Msg.number("need", p[1]), Msg.number("left", need), Msg.mm("bar", bar(p[0], p[1])));
         }
-        return service.item(Material.GRAY_STAINED_GLASS_PANE, viewer, PassModule.ID, base + "later", Msg.number("level", shown),
+        return service.item(Material.GRAY_DYE, viewer, PassModule.ID, base + "later", Msg.number("level", shown),
                 Msg.number("left", need));
     }
 
@@ -208,7 +208,7 @@ final class PassMenu extends Menu {
         List<PassTable.Reward> rewards = table.rewards(track, tier, curve.max());
         PassRules.Block block = PassRules.block(track, tier, xp, curve, table, claimed, premium, m::available);
         if (block == PassRules.Block.NOTHING) {
-            set(slot, service.filler(Material.BLACK_STAINED_GLASS_PANE));
+            set(slot, (net.skybornmc.skyblock.common.menu.MenuButton) null); // GUI pass: no glass filler
             return;
         }
         boolean overflow = tier > curve.max();
