@@ -696,6 +696,20 @@ final class ToolListener implements Listener {
         m.unload(p);
     }
 
+    /**
+     * Feedback 3 Nov 2026 ("when joining an island ... make sure they get the right tools"): the new island's hoe, pickaxe,
+     * rod and sword are handed out right after the join (they used to come only at the next login).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandJoined(net.skybornmc.skyblock.common.island.IslandJoinedEvent event) {
+        Player p = event.getPlayer();
+        Bukkit.getScheduler().runTaskLater(m.core().plugin(), () -> {
+            if (p.isOnline()) {
+                m.load(p);
+            }
+        }, 20L);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfile(ProfileSwitchedEvent event) {
         Player p = event.getPlayer();

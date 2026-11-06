@@ -125,6 +125,14 @@ The full plan says "one click buy, shift for 64", but your GUI-1 answer was "a c
 ### Auction house note
 If a buy would go over the seller's daily receive limit, it is refused with a message (nobody loses money). The plan said the extra should wait in the mailbox. I kept the refusal because it is safer; tell me if you want the mailbox way.
 
+## Your 3 Nov feedback list, checked again (update137)
+- Invite a new player who already has their starter island: **works** since 3 Nov (fix 11a0a969). Only a player on a team island (2+ members) gets "already has an island". Accepting asks them to replace their solo island.
+- Joining an island empties the inventory: **works** (joining wipes the profile; the fresh profile starts empty).
+- The right tools after joining: **fixed now**. The new island's hoe, pickaxe, rod and sword used to come only at the next login; now they are handed out right after the join.
+- Start with $1,000 after joining: **works** (`lifecycle.profile-reset.join-money: 1000`).
+- `/sell all` sells the hotbar too: **works** (the "skip hotbar" switch is off by default since 3 Nov).
+- Bone meal on island crops, one stage every 3 s, no hologram over crops, faster with upgrades: **works**. Bone meal adds 1-3 stages. The Crop Growth island upgrade and the hoe's Growth perk make crops grow faster. Island level itself does not change the speed; the upgrades do.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).
