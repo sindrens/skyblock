@@ -37,6 +37,10 @@ Written during the night while you slept. Newest at the top of each section.
 - At /farm and /mine every drop goes into the tool's storage first (then your bag). When the storage is full, breaking pauses with an action bar line ("Storage full! Right-click the tool » Storage » Sell all"), so nothing is lost. The scoreboard has a "Storage: 1,200/5,000 (24%)" line.
 - /farm has a fifth crop: **nether wart** at 60,000 harvests (sells for more than beetroot). The crop thresholds are now in `essentials.yml → grind.farm-unlocks` (FX-09).
 
+## Cleanup done (your Q-50-52)
+- GitHub: the 4 dead branches (`q/econ-v2`, `docs/full-spec`, `docs/specs`, `design/gui-round1`) are deleted. Each was saved first as a tag `archive/<name>` on GitHub, so nothing is lost.
+- Old docs moved to `docs/archive/` (Depths, old PvE plan, join tutorial, pack v1 art briefs, superseded plans, the old morning report). Nothing was deleted. Still to do: merging the owner-answer files and shortening OPEN_QUESTIONS.md.
+
 ## Released tonight
 - **update126:** tool storage first at /farm and /mine (full = pause, no loss), storage on the scoreboard, nether wart as the fifth crop, farm thresholds in the config.
 - **update125 (03:22):** Tools v4: 17 personal grind enchants per tool, personal prestige 50 + rebirths, faster tool levels. Jar md5 b4f1700c.
