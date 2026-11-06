@@ -33,7 +33,12 @@ Written during the night while you slept. Newest at the top of each section.
 - **Collector** (pickaxe #15, "+collection progress") became **Geode** (one of every ore you have unlocked): the collection log only records the first find, there is no progress to boost. Collection rework is batch 9.
 - Prestige is no longer owner/co-owner only and no longer takes everyone's shards (it is personal now).
 
+## Storage and the fifth crop (update126, released)
+- At /farm and /mine every drop goes into the tool's storage first (then your bag). When the storage is full, breaking pauses with an action bar line ("Storage full! Right-click the tool » Storage » Sell all"), so nothing is lost. The scoreboard has a "Storage: 1,200/5,000 (24%)" line.
+- /farm has a fifth crop: **nether wart** at 60,000 harvests (sells for more than beetroot). The crop thresholds are now in `essentials.yml → grind.farm-unlocks` (FX-09).
+
 ## Released tonight
+- **update126:** tool storage first at /farm and /mine (full = pause, no loss), storage on the scoreboard, nether wart as the fifth crop, farm thresholds in the config.
 - **update125 (03:22):** Tools v4: 17 personal grind enchants per tool, personal prestige 50 + rebirths, faster tool levels. Jar md5 b4f1700c.
 - **update121 (02:14):** batch 1 + the pay limit + spawner payback. GitHub `main` is now the release-v4 line plus tonight's work (Q-50 done). Jar md5 0a62117c.
 - **update122 (02:30):** grind events, contracts, no Depths tab/tiles. **update123/124 (02:38):** the quest book (tutorial) did not work live: the test server still had the OLD tutorial's config and database tables, so `tutorial.yml` had no chapters and the quest-book tables were never created (every step would have failed). Fixed: the bundled `tutorial.yml` is now live (old one in `~/cfg-backup-7nov/tutorial-old.yml`) and a V004 migration creates the tables. Jar md5 b886b85b.
@@ -78,4 +83,4 @@ Written during the night while you slept. Newest at the top of each section.
 - Two sessions deploy to the same test server. From tonight only this one releases. Please stop the old session (it works in `skyblock-wt-tutfix`) so it does not overwrite these releases.
 
 ## Waiting for you
-(nothing yet)
+- **Q-70, /mine and /farm tiers (8 crops, 10 ores):** I stopped at 5 crops and the 7 ores because the next vanilla items sell for LESS than the tier before (sweet berries $6, melon slice $2, pumpkin $10 after beetroot $20; diamond $61 a block is below lapis $180 and redstone $132 a block; emerald, the top ore, is not sellable at all because of the villager loop). Options: (a) custom grind items with their own prices ("Golden Wheat", "Ember Ore" ...) in the economy pass (my pick), (b) change the vanilla sell prices (also changes island farms), (c) keep 5 and 7. Until you answer, the top /mine tier gives emeralds that can't be sold: (a) would fix that too.
