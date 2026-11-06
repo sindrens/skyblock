@@ -258,7 +258,7 @@ hologram-help:
   mining:
     - "<c:text>Top players by Mining XP. Updates every few minutes."
   foraging:
-    - "<c:text>Top players by Foraging XP. Updates every few minutes."
+    - "<c:text>Top players by tool prestiges (a rebirth counts 50)."
   combat:
     - "<c:text>Top players by Combat XP. Updates every few minutes."
   farming:
@@ -303,6 +303,8 @@ leaderboard:
     cycle-team: "<value> <c:muted>Team"
     # F13a milestone boards. <points> completed milestone tiers
     milestones: "<c:value><points> pts"
+    # Owner 7 Nov 2026: Top Tools. <score> prestiges, a rebirth counting 50
+    tool-prestige: "<c:flame><score> ★"
   titles:
     island_top_solo: "Top Islands <c:muted>· Solo"
     island_top_team: "Top Islands <c:muted>· Team"
@@ -310,7 +312,7 @@ leaderboard:
     weekly_pillar_gain: "Pillar Gain <c:muted>· Week"
     boss_damage: "Island Worth"
     mining: "Top Mining"
-    foraging: "Top Foraging"
+    foraging: "Top Tools"
     combat: "Top Combat"
     farming: "Top Farming"
     fishing: "Top Fishing"

@@ -218,6 +218,11 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Your picks, part 1 (update156, plan: `docs/plans/OWNER_PICKS_7NOV.md`)
+- **Shard Finder shows its number again** ("+111% shards") on the tool and in the perk menu.
+- **Top Tools board** in the Hall of Heroes (the old Foraging board): players by tool prestiges, a rebirth counts 50.
+- **Auto-Compactor** (hoe and pickaxe perk, tool level 15, 40,000 shards): 9 wheat become a hay bale, 9 ingots a block (coal, redstone, lapis, diamond, gold, emerald, melon, slime too), in your bag and in the tool storage. A block sells as exactly 9 items and counts as 9 for the daily price, so it never changes what you earn.
+
 ## /fish and /pve contracts (update154)
 - **Fix (update155):** the test server's contracts still used the very first pools (Depths mine/chop/kill, which are never offered since the Depths are gone), so you only got sell, tool levels, visit and like. They now use the current pools: harvest, ore, fish, fight, sell, tool levels, enchant, visit, like.
 - New contract types: "Catch 25 fish at /fish" and "Kill 100 mobs at /pve" (daily), 150 / 700 (weekly), 250 / 1,000 (island missions). The weekly island missions pick 3 of the 5 kinds.

@@ -199,6 +199,7 @@ public final class SellServiceImpl implements SellService {
     }
 
     Optional<SellRules.Reason> reason(ItemStack stack) {
+        stack = probe(stack); // a plain hay bale sells as 9 wheat (Auto-Compactor, owner 7 Nov 2026)
         EconomyConfig c = config.get();
         return SellRules.check(facts(stack), catalog.get(), c.sellBlockedIds, c.sellCustomTypes);
     }
@@ -213,9 +214,14 @@ public final class SellServiceImpl implements SellService {
         return reason(stack).map(SellRules.Reason::key);
     }
 
+    /** A plain compact block stands for one of its item (the amount is x9 in quotes). */
+    private static ItemStack probe(ItemStack stack) {
+        return net.skybornmc.skyblock.common.sell.Compact.itemOf(stack).map(ItemStack::new).orElse(stack);
+    }
+
     /** The price table key of a sellable stack, or null. */
     String keyOf(ItemStack stack) {
-        SellRules.ItemFacts f = facts(stack);
+        SellRules.ItemFacts f = facts(probe(stack));
         EconomyConfig c = config.get();
         return SellRules.check(f, catalog.get(), c.sellBlockedIds, c.sellCustomTypes).isEmpty() ? f.key() : null;
     }
@@ -318,7 +324,8 @@ public final class SellServiceImpl implements SellService {
         List<Long> amounts = new ArrayList<>(stacks.size());
         for (ItemStack stack : stacks) {
             keys.add(stack == null ? null : keyOf(stack));
-            amounts.add(stack == null ? 0L : (long) stack.getAmount());
+            amounts.add(stack == null ? 0L : (long) stack.getAmount() * (net.skybornmc.skyblock.common.sell.Compact.isBlock(stack)
+                    ? net.skybornmc.skyblock.common.sell.Compact.SIZE : 1));
         }
         List<String> sc = scopesOf(profileKey);
         DayPrice day = dayPrice();

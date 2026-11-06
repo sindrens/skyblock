@@ -154,6 +154,10 @@ final class Leaderboards {
             case BoardSource.Money m -> services.optional(EconomyService.class)
                     .map(eco -> eco.top(m.currency(), size).thenApply(list -> players(list, v -> money(eco, m.currency(), v))))
                     .orElse(CompletableFuture.completedFuture(List.of()));
+            case BoardSource.ToolPrestige t -> services.optional(net.skybornmc.skyblock.common.tools.ToolTop.class)
+                    .map(tt -> tt.top(t.kind(), size).thenApply(list -> players(list, v -> module.text("leaderboard.value.tool-prestige",
+                            Msg.number("score", v)))))
+                    .orElse(CompletableFuture.completedFuture(List.of()));
             case BoardSource.Skill s -> services.optional(SkillService.class)
                     .map(sk -> sk.top(s.skill(), size).thenApply(list -> players(list, xp -> module.text("leaderboard.value.skill",
                             Msg.number("level", sk.levelFor(xp)), Msg.number("xp", xp)))))

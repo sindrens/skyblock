@@ -81,6 +81,14 @@ sealed interface BoardSource {
         }
     }
 
+    /** Owner 7 Nov 2026 (Top Tools board): tool prestiges of one island tool or {@code all}, a rebirth counting extra. */
+    record ToolPrestige(String kind) implements BoardSource {
+        @Override
+        public String key() {
+            return "tool_prestige:" + kind;
+        }
+    }
+
     /** One source text; empty = invalid. */
     static Optional<BoardSource> parse(String text) {
         if (text == null || text.isBlank()) {
@@ -115,6 +123,9 @@ sealed interface BoardSource {
                 }
                 return IslandTop.Board.byId(p[i]).map(b -> new IslandWeekly(kind, b, false));
             }
+            case "tool_prestige":
+                return p.length == 2 && java.util.Set.of("all", "hoe", "pickaxe", "rod", "sword").contains(p[1])
+                        ? Optional.of(new ToolPrestige(p[1])) : Optional.empty();
             case "milestones":
                 if (p.length != 2) {
                     return Optional.empty();

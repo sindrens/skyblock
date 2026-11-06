@@ -119,6 +119,11 @@ final class HoeStorage {
 
     /** Stores what fits; returns how many of {@code amount} were stored. Main thread. */
     long add(Player p, Kind kind, String item, long amount) {
+        return add(p, kind, item, amount, false);
+    }
+
+    /** {@link #add(Player, Kind, String, long)}; with {@code compact} every 9 of a compactable item become a block (Auto-Compactor). */
+    long add(Player p, Kind kind, String item, long amount, boolean compact) {
         UUID profile = m.profile(p);
         Box box = boxes.get(profile);
         if (box == null || !box.loaded || amount <= 0) {
@@ -130,6 +135,17 @@ final class HoeStorage {
             String k = key(kind, item);
             box.amounts.merge(k, take, Long::sum);
             box.pending.merge(k, take, Long::sum);
+            org.bukkit.Material mat = org.bukkit.Material.matchMaterial(item);
+            org.bukkit.Material block = mat == null ? null : net.skybornmc.skyblock.common.sell.Compact.BLOCK_OF.get(mat);
+            long blocks = compact && block != null ? box.amounts.getOrDefault(k, 0L) / net.skybornmc.skyblock.common.sell.Compact.SIZE : 0;
+            if (blocks > 0) {
+                long used = blocks * net.skybornmc.skyblock.common.sell.Compact.SIZE;
+                box.amounts.merge(k, -used, Long::sum);
+                box.pending.merge(k, -used, Long::sum);
+                String kb = key(kind, block.getKey().getKey());
+                box.amounts.merge(kb, blocks, Long::sum);
+                box.pending.merge(kb, blocks, Long::sum);
+            }
         }
         return take;
     }

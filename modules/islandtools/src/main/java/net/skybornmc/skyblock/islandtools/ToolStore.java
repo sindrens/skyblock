@@ -291,4 +291,31 @@ final class ToolStore {
         return Sql.update(c, "UPDATE island_tool_storage SET amount = amount - ? WHERE profile_key = ? AND item = ? AND amount >= ?",
                 amount, Sql.toBytes(profile), item, amount) == 1;
     }
+
+    /**
+     * Owner 7 Nov 2026 (Top Tools board): players by tool prestiges ({@code kind} or all four), a rebirth counting
+     * {@code rebirthWeight}; the best profile of each player, names from {@code players}. Database thread.
+     */
+    static java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine> top(Connection c, String kind, int limit, int rebirthWeight,
+            java.util.function.Function<Map<UUID, Long>, java.util.List<net.skybornmc.skyblock.common.profile.BestProfile.Entry>> best)
+            throws SQLException {
+        if (limit <= 0) {
+            return java.util.List.of();
+        }
+        boolean all = kind == null || kind.equals("all");
+        String sql = "SELECT profile_id, SUM(prestige + rebirth * ?) AS score FROM island_tool_personal" + (all ? "" : " WHERE kind = ?")
+                + " GROUP BY profile_id HAVING SUM(prestige + rebirth * ?) > 0 ORDER BY score DESC LIMIT ?";
+        Object[] args = all ? new Object[]{rebirthWeight, rebirthWeight, limit * 4 + 10} : new Object[]{rebirthWeight, kind, rebirthWeight, limit * 4 + 10};
+        Map<UUID, Long> values = new java.util.LinkedHashMap<>();
+        for (Object[] row : Sql.query(c, sql, rs -> new Object[]{Sql.uuid(rs, "profile_id"), rs.getLong("score")}, args)) {
+            values.put((UUID) row[0], (Long) row[1]);
+        }
+        java.util.List<net.skybornmc.skyblock.common.profile.BestProfile.Entry> ranked = best.apply(values);
+        java.util.List<net.skybornmc.skyblock.common.leaderboard.TopLine> out = new java.util.ArrayList<>();
+        for (net.skybornmc.skyblock.common.profile.BestProfile.Entry e : ranked.subList(0, Math.min(limit, ranked.size()))) {
+            String name = Sql.queryOne(c, "SELECT name FROM players WHERE uuid = ?", rs -> rs.getString(1), e.owner()).orElse(null);
+            out.add(new net.skybornmc.skyblock.common.leaderboard.TopLine(e.owner(), name, e.value()));
+        }
+        return out;
+    }
 }

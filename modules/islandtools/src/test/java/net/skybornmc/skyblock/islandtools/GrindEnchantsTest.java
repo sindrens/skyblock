@@ -249,6 +249,6 @@ class GrindEnchantsTest {
         }
         assertEquals(600, C.shardHoe);
         assertEquals(2_500, C.luckyMax);
-        assertEquals(15, C.version());
+        assertEquals(16, C.version());
     }
 }

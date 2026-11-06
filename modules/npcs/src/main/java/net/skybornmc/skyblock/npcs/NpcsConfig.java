@@ -325,8 +325,25 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "leaderboards.size", desc = "Players listed per board.", min = 3, max = 15)
     public int size = 10;
 
-    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or shards, credits; crystals are never on a public list, C1-R1-28), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team), 'id: milestones <island|personal>' (most completed milestone tiers) or 'id: none' (shows Coming soon).")
+    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or shards, credits; crystals are never on a public list, C1-R1-28), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team), 'id: milestones <island|personal>' (most completed milestone tiers), 'id: tool_prestige <all|hoe|pickaxe|rod|sword>' (tool prestiges, a rebirth counts 50) or 'id: none' (shows Coming soon).")
     public List<String> sources = List.of(
+            "island_top_solo: island_level solo",
+            "island_top_team: island_level team",
+            "weekly_island_gain: island_gain this_week cycle",
+            "weekly_pillar_gain: pillar_gain this_week cycle",
+            "boss_damage: island_value all", // owner 7 Nov 2026: the "Coming soon" board shows the richest islands by worth
+            "mining: skill mining",
+            "foraging: tool_prestige all", // owner 7 Nov 2026: Top Tools (no axe, no foraging skill to show)
+            "combat: skill combat",
+            "farming: skill farming",
+            "fishing: skill fishing",
+            "baltop: money",
+            "money: money",
+            "milestones_island: milestones island",
+            "milestones_personal: milestones personal");
+
+    /** {@code leaderboards.sources} v12 (before the Top Tools board). */
+    static final List<String> SOURCES_V12 = List.of(
             "island_top_solo: island_level solo",
             "island_top_team: island_level team",
             "weekly_island_gain: island_gain this_week cycle",
@@ -436,7 +453,7 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 12;
+        return 13;
     }
 
     /**
@@ -468,6 +485,7 @@ public final class NpcsConfig extends ModuleConfig {
         out.put(12, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V11, new NpcsConfig().roleActions),
                 "npcs.extra-spots", ValueChange.of(SPOTS_V11, new NpcsConfig().extraSpots),
                 "leaderboards.sources", ValueChange.of(SOURCES_V11, sources())));
+        out.put(13, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V12, sources()))); // owner 7 Nov 2026: Top Tools
         return out;
     }
 

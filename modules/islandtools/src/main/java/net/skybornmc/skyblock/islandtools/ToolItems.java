@@ -90,7 +90,7 @@ final class ToolItems {
             switch (u.effect()) {
                 case ENCHANT -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), n == 0 ? "-" : IslandToolsModule.roman(n));
                 // owner 7 Nov 2026: the Shard Finder shows its level, not how much it adds
-                case SHARDS -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), n == 0 ? "-" : m.raw("menu.level-short").replace("{level}", String.valueOf(n)));
+                case SHARDS -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), n == 0 ? "-" : "+" + ToolMenu.pct(n * c.shardFinderPerLevel)); // owner 7 Nov 2026
                 case DROPS -> lore.stat("", m.raw("upgrade." + u.id() + ".name"), "+" + ToolMenu.pct(n * c.dropsPerLevel));
                 default -> { }
             }

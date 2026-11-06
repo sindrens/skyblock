@@ -218,6 +218,9 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "rebirth.xp-percent", desc = "Owner 6 Nov 2026: every rebirth needs this many percent more tool XP per level.", min = 0, max = 1000)
     public double rebirthXpPercent = 10;
 
+    @Setting(path = "rebirth.board-weight", desc = "Owner 7 Nov 2026: on the Top Tools board a rebirth counts as this many prestiges.", min = 1, max = 1000)
+    public int rebirthBoardWeight = 50;
+
     @Setting(path = "prestige.discount-percent", desc = "Perks of a prestiged tool are this much cheaper per prestige.", min = 0, max = 100)
     public double prestigeDiscount = 5;
 
@@ -275,9 +278,29 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "perks", desc = "Owner 4 Nov 2026: perks per tool, 'kind:id:effect:max:unlock-level:costs[:prestige]'. costs 'base+step' = a long "
             + "track (price of level L = base + step x L^prices.exponent, nice-rounded) or 'a/b/c' = the price of each level. Effects: "
             + "enchant=<vanilla id>, haste, smelt, drops (Extra Drops), storage (hoe), shards (Shard Finder), autosell (Auto-Sell), growth "
-            + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds). "
+            + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds), compact (Auto-Compactor: 9 items become a block). "
             + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
     public List<String> perks = List.of( // owner 7 Nov 2026 (tools v5): personal, long tracks, priced for ~13 blocks a second
+            "hoe:shard_finder:shards:2500:1:80+12", "hoe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
+            "hoe:extra_drops:drops:1000:3:120+16", "hoe:fortune:enchant=fortune:3:5:3000/16000/60000",
+            "hoe:wisdom:wisdom:500:5:160+20", "hoe:growth:growth:500:10:200+20", "hoe:storage:storage:500:10:120+12",
+            "hoe:haste:haste:2:15:10000/60000", "hoe:auto_sell:autosell:1:20:40000", "hoe:sell_bonus:sell:500:25:400+40",
+            "hoe:lucky:lucky:1000:30:600+50", "hoe:sweep:sweep:100:45:6000+200:1", "hoe:compactor:compact:1:15:40000",
+            "pickaxe:shard_finder:shards:2500:1:80+12", "pickaxe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
+            "pickaxe:extra_drops:drops:1000:3:120+16", "pickaxe:fortune:enchant=fortune:3:5:3000/16000/60000",
+            "pickaxe:wisdom:wisdom:500:5:160+20", "pickaxe:smelter:smelt:100:10:200+20", "pickaxe:storage:storage:500:10:120+12",
+            "pickaxe:haste:haste:2:15:10000/60000", "pickaxe:auto_sell:autosell:1:20:40000", "pickaxe:sell_bonus:sell:500:25:400+40",
+            "pickaxe:lucky:lucky:1000:30:600+50", "pickaxe:vein:sweep:100:45:6000+200:1", "pickaxe:compactor:compact:1:15:40000",
+            "rod:shard_finder:shards:2500:1:80+12", "rod:lure:enchant=lure:3:1:600/4000/18000",
+            "rod:extra_drops:drops:1000:3:120+16", "rod:luck:enchant=luck_of_the_sea:3:5:3000/16000/60000",
+            "rod:wisdom:wisdom:500:5:160+20", "rod:storage:storage:500:10:120+12", "rod:auto_sell:autosell:1:20:40000",
+            "rod:sell_bonus:sell:500:25:400+40", "rod:lucky:lucky:1000:30:600+50",
+            "sword:shard_finder:shards:2500:1:80+12", "sword:sharpness:enchant=sharpness:5:1:300/1200/4000/12000/30000",
+            "sword:looting:enchant=looting:3:5:3000/16000/60000", "sword:wisdom:wisdom:500:5:160+20",
+            "sword:sweeping:enchant=sweeping_edge:3:10:2000/10000/40000", "sword:lucky:lucky:1000:30:600+50");
+
+    /** {@code perks} v15 (before the Auto-Compactor, owner 7 Nov 2026). */
+    static final List<String> PERKS_V15 = List.of(
             "hoe:shard_finder:shards:2500:1:80+12", "hoe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
             "hoe:extra_drops:drops:1000:3:120+16", "hoe:fortune:enchant=fortune:3:5:3000/16000/60000",
             "hoe:wisdom:wisdom:500:5:160+20", "hoe:growth:growth:500:10:200+20", "hoe:storage:storage:500:10:120+12",
@@ -580,7 +603,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 15;
+        return 16;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -639,6 +662,7 @@ public final class IslandToolsConfig extends ModuleConfig {
                         Map.entry("effects.sell-per-level", ValueChange.of(0.1, d.sellPerLevel)),
                         Map.entry("effects.lucky-chance-per-level", ValueChange.of(0.01, d.luckyPerLevel)),
                         Map.entry("sweep.shards", ValueChange.of(false, d.sweepShards))));
+        out.put(16, Map.of("perks", ValueChange.of(PERKS_V15, d.perks))); // owner 7 Nov 2026: + Auto-Compactor
         return out;
     }
 

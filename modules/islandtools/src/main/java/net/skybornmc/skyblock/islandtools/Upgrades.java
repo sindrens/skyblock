@@ -27,7 +27,7 @@ final class Upgrades {
 
     /** What an upgrade does. ENCHANT uses {@code arg} = the vanilla enchantment id. */
     enum Effect {
-        ENCHANT, HASTE, SMELT, DROPS, STORAGE, SHARDS, AUTOSELL, GROWTH, SWEEP, WISDOM, SELL, LUCKY;
+        ENCHANT, HASTE, SMELT, DROPS, STORAGE, SHARDS, AUTOSELL, GROWTH, SWEEP, WISDOM, SELL, LUCKY, COMPACT;
 
         static Optional<Effect> of(String s) {
             try {

@@ -35,9 +35,6 @@ item:
 # Short words after a perk's value in the menus ("+1.2% shards").
 effect:
   shards: "shards"
-  # Owner 7 Nov 2026: the Shard Finder shows no numbers, only that it helps.
-  shards-more: "More shards"
-  shards-next: "Even more shards"
   drops: "drops"
   growth: "crop growth"
   items: "items"
@@ -45,6 +42,7 @@ effect:
   wisdom: "tool XP"
   sell: "sell price"
   lucky: "pouch chance"
+  compact: "9 items become a block"
   auto-sell: "Drops are sold"
   # {blocks}
   sweep: "for {blocks} more"
@@ -338,6 +336,7 @@ upgrade:
   lucky: {name: "Lucky", icon: rabbit_foot, lore: ["<c:muted>A chance to find a Shard Pouch."]}
   sweep: {name: "Sweep", icon: wheat, lore: ["<c:muted>A chance to harvest nearby ripe", "<c:muted>crops too. Better every prestige."]}
   smelter: {name: "Smelter", icon: furnace, lore: ["<c:muted>A chance to smelt what you mine."]}
+  compactor: {name: "Auto-Compactor", icon: piston, lore: ["<c:muted>9 wheat become a hay bale,", "<c:muted>9 ingots a block. Same money."]}
   vein: {name: "Vein", icon: raw_iron, lore: ["<c:muted>A chance to mine nearby ores of", "<c:muted>the same kind. Better every prestige."]}
 
 storage:

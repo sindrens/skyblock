@@ -156,7 +156,7 @@ final class ToolMenu extends Menu {
                     : "menu.perk-locked-prestige", Msg.number("level", d.unlock()), Msg.number("prestige", Math.max(1, d.prestige()))));
         } else {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.perk-price",
-                    Msg.p("next", d.effect() == Upgrades.Effect.SHARDS ? m.raw("effect.shards-next") : effectText(prog, d, lv + 1)),
+                    Msg.p("next", effectText(prog, d, lv + 1)),
                     Msg.mm("cost", m.shardText(kind, m.price(prog, d, 1)))));
             lore.add(Component.empty());
             if (d.track() && d.max() > 1) {
@@ -209,7 +209,7 @@ final class ToolMenu extends Menu {
         }
         return switch (d.effect()) {
             case ENCHANT, HASTE -> m.raw("upgrade." + d.id() + ".name") + " " + IslandToolsModule.roman(lv);
-            case SHARDS -> m.raw("effect.shards-more"); // owner 7 Nov 2026: no number, only that it gets better
+            case SHARDS -> "+" + pct(lv * c.shardFinderPerLevel) + " " + m.raw("effect.shards"); // owner 7 Nov 2026: the number again
             case DROPS -> "+" + pct(lv * c.dropsPerLevel) + " " + m.raw("effect.drops");
             case GROWTH -> "+" + pct(lv * c.growthPerLevel) + " " + m.raw("effect.growth");
             case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storagePerLevel)) + " " + m.raw("effect.items");
@@ -218,6 +218,7 @@ final class ToolMenu extends Menu {
             case SELL -> "+" + pct(lv * c.sellPerLevel) + " " + m.raw("effect.sell");
             case LUCKY -> pct(lv * c.luckyPerLevel) + " " + m.raw("effect.lucky");
             case AUTOSELL -> m.raw("effect.auto-sell");
+            case COMPACT -> m.raw("effect.compact");
             case SWEEP -> {
                 ToolRules.Band band = m.band(viewer, kind);
                 yield band == null ? "-" : pct(ToolRules.sweepChance(band, lv, d.max())) + " " + m.raw("effect.sweep")

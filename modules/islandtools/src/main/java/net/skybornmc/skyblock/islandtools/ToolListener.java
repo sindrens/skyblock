@@ -340,6 +340,8 @@ final class ToolListener implements Listener {
         mult *= net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_DROPS); // owner 6 Nov 2026: Double Drops
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        boolean compact = m.effect(p, kind, Upgrades.Effect.COMPACT) > 0; // owner 7 Nov 2026: Auto-Compactor
+        java.util.Set<Material> compactable = java.util.EnumSet.noneOf(Material.class);
         for (Iterator<Item> it = event.getItems().iterator(); it.hasNext(); ) {
             Item entity = it.next();
             ItemStack stack = entity.getItemStack();
@@ -357,13 +359,16 @@ final class ToolListener implements Listener {
                 continue;
             }
             // Owner 7 Nov 2026: the bag first, then the tool's storage, everywhere; at /farm and /mine never the ground.
+            if (net.skybornmc.skyblock.common.sell.Compact.BLOCK_OF.containsKey(stack.getType())) {
+                compactable.add(stack.getType());
+            }
             Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
             if (left.isEmpty()) {
                 it.remove();
                 continue;
             }
             ItemStack rest = left.values().iterator().next();
-            long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount());
+            long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount(), compact);
             if (stored >= rest.getAmount()) {
                 it.remove();
                 continue;
@@ -376,9 +381,40 @@ final class ToolListener implements Listener {
                 entity.setItemStack(rest);
             }
         }
+        if (compact) {
+            compactable.forEach(mat -> compactBag(p, mat));
+        }
         if (pd.crop()) {
             BlockState before = event.getBlockState();
             m.farming().replant(event.getBlock().getLocation(), before.getType(), p, island, pd.burst());
+        }
+    }
+
+    /** Owner 7 Nov 2026 (Auto-Compactor): every 9 of an item in the bag become one block (it sells for exactly 9). */
+    static void compactBag(Player p, Material item) {
+        Material block = net.skybornmc.skyblock.common.sell.Compact.BLOCK_OF.get(item);
+        if (block == null) {
+            return;
+        }
+        org.bukkit.inventory.PlayerInventory inv = p.getInventory();
+        ItemStack plain = new ItemStack(item);
+        int have = 0;
+        for (ItemStack s : inv.getStorageContents()) {
+            if (s != null && s.isSimilar(plain)) {
+                have += s.getAmount();
+            }
+        }
+        int blocks = have / net.skybornmc.skyblock.common.sell.Compact.SIZE;
+        if (blocks <= 0) {
+            return;
+        }
+        ItemStack take = plain.clone();
+        take.setAmount(blocks * net.skybornmc.skyblock.common.sell.Compact.SIZE);
+        if (!inv.removeItem(take).isEmpty()) {
+            return; // never happens: counted from the same slots
+        }
+        for (ItemStack left : inv.addItem(new ItemStack(block, blocks)).values()) {
+            inv.addItem(new ItemStack(item, left.getAmount() * net.skybornmc.skyblock.common.sell.Compact.SIZE)); // no room: back as items
         }
     }
 

@@ -81,8 +81,8 @@ class ToolRulesTest {
         List<String> problems = new ArrayList<>();
         Upgrades u = Upgrades.parse(C.perks, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(12, u.of(Kind.HOE).size());
-        assertEquals(12, u.of(Kind.PICKAXE).size(), "with the pickaxe storage");
+        assertEquals(13, u.of(Kind.HOE).size()); // + Auto-Compactor
+        assertEquals(13, u.of(Kind.PICKAXE).size(), "with the pickaxe storage and the Auto-Compactor");
         assertTrue(u.get(Kind.HOE, "magnet").isEmpty(), "owner 4 Nov 2026: Magnet is built in");
         assertTrue(u.get(Kind.HOE, "row").isEmpty(), "Row became Sweep");
         Upgrades.Def sweep = u.get(Kind.HOE, "sweep").orElseThrow();
