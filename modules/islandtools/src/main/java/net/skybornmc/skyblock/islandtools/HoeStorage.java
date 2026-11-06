@@ -85,7 +85,7 @@ final class HoeStorage {
     }
 
     long capacity(Player p, Kind kind) {
-        return ToolRules.storage(m.effect(m.island(p), kind, Upgrades.Effect.STORAGE), m.config().storageBase, m.config().storagePerLevel);
+        return ToolRules.storage(m.effect(p, kind, Upgrades.Effect.STORAGE), m.config().storageBase, m.config().storagePerLevel);
     }
 
     long used(UUID profile, Kind kind) {
@@ -249,7 +249,7 @@ final class HoeStorage {
             return;
         }
         snapshot.forEach((k, n) -> box.amounts.merge(k, -n, Long::sum));
-        double bonus = sell.bonusPercent(p) + m.sellBonus(m.island(p), kind);
+        double bonus = sell.bonusPercent(p) + m.sellBonus(p, kind);
         SellRequest request = new SellRequest(p.getUniqueId(), p.getName(), profile, stacks, bonus, kind.id() + "_storage", Actor.player(p));
         flush(profile, box).thenCompose(v -> sell.sell(request, c -> {
             for (Map.Entry<String, Long> e : snapshot.entrySet()) {

@@ -6,6 +6,9 @@
 mob-name: "<c:value><name></c:value> <c:ember>x<count>"
 item-name: "<c:value><name></c:value> <c:ember>x<count>"
 spawner-label: "<c:ember><bold><count>x</bold></c:ember> <c:value><name></c:value> <c:text>Spawner"
+# Owner 7 Nov 2026: the second line. <level> <left> (kills still needed) <more> (spawners the next level adds)
+spawner-label-level: "<c:muted>Lv <level> · </c:muted><c:value><left></c:value> <c:muted>kills to +<more>"
+spawner-label-top: "<c:muted>Lv <level> · </c:muted><c:success>top level"
 
 # Things you can't do with a stack of mobs.
 stack:
@@ -63,7 +66,8 @@ spawner:
   # ECON-SPAWNERS step 7: the island already has the most tier <tier> spawners allowed. <max> <tier>
   cap-reached: "<prefix><c:error><sym:cross></c:error> <c:text>This island holds <c:value><max></c:value> <c:text>tier <tier> spawners."
   # Spawners v2: the island's limit of this mob type. <mob> <max> <level>
-  limit-reached: "<prefix><c:error><sym:cross></c:error> <c:text>Your island can hold <c:value><max></c:value> <mob> <c:text>spawners (level <c:value><level></c:value><c:text>). Kill mobs from your own spawners to level it up."
+  # <left> kills still needed for the next level, <more> spawners it adds
+  limit-reached: "<prefix><c:error><sym:cross></c:error> <c:text>Your island holds <c:value><max></c:value> <mob> <c:text>spawners (level <c:value><level></c:value><c:text>). Kill <c:value><left></c:value> <c:text>more from your spawners for <c:value>+<more></c:value><c:text>, or buy Spawner Capacity in </c:text><click:run_command:'/is upgrade'><c:action>/is upgrade</c:action></click><c:text>."
   # <mob> <level> <limit>
   level-up: "<prefix><c:success><sym:star></c:success> <mob> <c:text>spawners reached level <c:value><level></c:value><c:text>: your island can now hold <c:value><limit></c:value><c:text>."
   level-max: "<prefix><c:flame><sym:star></c:flame> <mob> <c:text>spawners reached the top level <c:value><level></c:value><c:text>! Prestige them in the spawner menu for more drops."
@@ -155,14 +159,20 @@ menu:
   # Spawners v2 (owner plan 5 Nov 2026): level, kills, placed / limit, speed. <level> <max-level> <bar> <percent> <kills>
   # <need> <placed> <limit> <prestige> <max-prestige> <bonus> <count> <max> <seconds> <next> <status>
   spawner:
-    name: "<c:value><mob></c:value> <c:text>Spawner <c:muted>Lv <level>"
+    name: "<bold><area:skills><mob> Spawner"
     lore:
-      - "<c:text>Level <c:value><level>/<max-level></c:value> <c:muted>Prestige <prestige>/<max-prestige>"
-      - "<bar> <c:value><percent>%"
-      - "<c:text>Kills <c:value><kills>/<need>"
-      - "<c:text>On your island <c:value><placed>/<limit>"
-      - "<c:text>Every <c:value><seconds> s</c:value> <c:muted>(next in <next>s)"
-      - "<c:text>Status <status>"
+      - "<c:muted>Tier <tier> · Prestige <prestige>/<max-prestige>"
+      - ""
+      - "<bold><c:header>| Level</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max-level>"
+      - "<c:bar>| </c:bar><bar> <c:value><percent>%"
+      - "<c:bar>| </c:bar><c:text>Kills: </c:text><c:value><kills></c:value><c:muted>/<need>"
+      - "<c:bar>| </c:bar><c:text>Next: </c:text><c:value><left></c:value> <c:muted>kills, +<more> spawners"
+      - ""
+      - "<bold><c:header>| On your island</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Placed: </c:text><c:value><placed></c:value><c:muted>/<limit>"
+      - "<c:bar>| </c:bar><c:text>Spawns: </c:text><c:value>every <seconds> s"
+      - "<c:bar>| </c:bar><c:text>Status: </c:text><status>"
       - ""
       - "<c:muted>Kills of mobs from your own"
       - "<c:muted>spawners on your island count."

@@ -30,12 +30,23 @@ class SpawnerLevelRulesTest {
     }
 
     @Test
-    void limitIsFourPerLevelUpToSixtyFour() {
-        assertEquals(4, SpawnerLevelRules.limit(1, 0, false, 4, 64, 3, 16));
-        assertEquals(40, SpawnerLevelRules.limit(10, 0, false, 4, 64, 3, 16));
-        assertEquals(64, SpawnerLevelRules.limit(16, 0, false, 4, 64, 3, 16));
-        assertEquals(64, SpawnerLevelRules.limit(1, 1, false, 4, 64, 3, 16), "a prestige never takes placed spawners away");
-        assertEquals(3, SpawnerLevelRules.limit(16, 0, true, 4, 64, 3, 16), "premium tier 5");
+    void limitIsSixtyFourThenThirtyTwoALevel() {
+        assertEquals(64, SpawnerLevelRules.limit(1, 0, false, 64, 32, 544, 3, 16), "owner 7 Nov 2026: 64 at the first level");
+        assertEquals(96, SpawnerLevelRules.limit(2, 0, false, 64, 32, 544, 3, 16));
+        assertEquals(128, SpawnerLevelRules.limit(3, 0, false, 64, 32, 544, 3, 16));
+        assertEquals(544, SpawnerLevelRules.limit(16, 0, false, 64, 32, 544, 3, 16));
+        assertEquals(544, SpawnerLevelRules.limit(1, 1, false, 64, 32, 544, 3, 16), "a prestige never takes placed spawners away");
+        assertEquals(3, SpawnerLevelRules.limit(16, 0, true, 64, 32, 544, 3, 16), "premium tier 5");
+        assertEquals(SpawnerLevelRules.limit(16, 0, false, C.limitBase, C.limitPerLevel, C.limitMax, C.premiumLimit, C.levelMax), C.limitMax);
+        assertTrue(C.spawnerStackStart >= C.limitMax + 320, "one block holds the whole limit with Spawner Capacity");
+    }
+
+    @Test
+    void burningMeatIsCooked() {
+        assertEquals(org.bukkit.Material.COOKED_BEEF, SpawnerDrops.cooked(org.bukkit.Material.BEEF));
+        assertEquals(org.bukkit.Material.COOKED_PORKCHOP, SpawnerDrops.cooked(org.bukkit.Material.PORKCHOP));
+        assertEquals(org.bukkit.Material.LEATHER, SpawnerDrops.cooked(org.bukkit.Material.LEATHER));
+        assertEquals(org.bukkit.Material.ROTTEN_FLESH, SpawnerDrops.cooked(org.bukkit.Material.ROTTEN_FLESH));
     }
 
     @Test
@@ -51,7 +62,7 @@ class SpawnerLevelRulesTest {
     @Test
     void defaultsFollowThePlan() {
         assertEquals(List.of(100L, 250L, 600L, 1500L), C.levelBase);
-        assertEquals(64, C.spawnerStackMax);
+        assertEquals(2048, C.spawnerStackMax);
         assertEquals(3, C.spawnRange);
         assertEquals("10", C.speedSteps.getFirst());
         assertEquals("5", C.speedSteps.getLast(), "Spawner Speed level 10: every 5 s");

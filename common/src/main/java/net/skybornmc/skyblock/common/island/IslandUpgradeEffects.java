@@ -16,6 +16,11 @@ import java.util.UUID;
 public interface IslandUpgradeEffects {
 
     /** Spawners one stacked spawner block may hold; empty = the start value of {@code stacking.yml}. */
+    /** Owner 7 Nov 2026: extra spawners per mob type the island may place (Spawner Capacity upgrade; 0 = none). */
+    default int spawnerCapacity(UUID islandId) {
+        return 0;
+    }
+
     default OptionalInt spawnerStackLimit(UUID islandId) {
         return OptionalInt.empty();
     }

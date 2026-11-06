@@ -228,7 +228,7 @@ final class UpgradeCatalog {
                         errors.add("level " + n + ": member-slots value must be a whole number 1-64 (leader included)");
                     }
                 }
-                case WARP_SLOTS, ISLAND_VAULT, SPAWNER_STACK, BANK_CAPACITY, BANK_INTEREST, GENERATOR, FUEL_TANK -> {
+                case WARP_SLOTS, ISLAND_VAULT, SPAWNER_STACK, SPAWNER_CAPACITY, BANK_CAPACITY, BANK_INTEREST, GENERATOR, FUEL_TANK -> {
                     if (!whole) {
                         errors.add("level " + n + ": " + effect.id() + " value must be a whole number");
                     }

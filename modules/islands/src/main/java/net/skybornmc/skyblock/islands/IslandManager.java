@@ -864,6 +864,12 @@ final class IslandManager implements IslandService {
     }
 
     @Override
+    public int spawnerCapacity(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : e.spawnerCapacity(islandId);
+    }
+
+    @Override
     public java.util.OptionalInt spawnerStackLimit(UUID islandId) {
         var e = effects(islandId);
         return e == null ? java.util.OptionalInt.empty() : e.spawnerStackLimit(islandId);

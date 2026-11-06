@@ -143,6 +143,11 @@ public interface IslandService {
      * Empty = the start value from {@code stacking.yml} ({@code spawners.stack-start}, 8); the stacking module clamps any
      * value to {@code spawners.stack-max} (512). Called on the main thread when a spawner is placed or added to.
      */
+    /** Owner 7 Nov 2026: extra spawners per mob type from the island's Spawner Capacity upgrade (0 = none). Main thread. */
+    default int spawnerCapacity(UUID islandId) {
+        return 0;
+    }
+
     default java.util.OptionalInt spawnerStackLimit(UUID islandId) {
         return java.util.OptionalInt.empty();
     }

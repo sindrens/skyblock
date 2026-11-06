@@ -55,7 +55,7 @@ class ToolStoreTest {
     void oldIslandLevelsSeedTheNewRowOnce() {
         db.run(c -> Sql.update(c, "INSERT INTO island_tool_levels (island_id, kind, tier, upgrades, updated_at) VALUES (?, ?, 2, ?, 0)",
                 Sql.toBytes(island), "hoe", "shard_finder=3,row=4")).join();
-        Upgrades perks = Upgrades.parse(new IslandToolsConfig().perks, w -> { });
+        Upgrades perks = Upgrades.parse(IslandToolsConfig.PERKS_V14, w -> { });
         Map<Kind, ToolStore.Prog> first = store.loadIsland(island, (k, old) -> Upgrades.encode(ToolRules.migrate(k, old, perks))).join();
         assertEquals("shard_finder=30", first.get(Kind.HOE).upgrades(), "carried over, row dropped, tier gone");
         assertEquals(ToolStore.Prog.EMPTY, first.get(Kind.PICKAXE));

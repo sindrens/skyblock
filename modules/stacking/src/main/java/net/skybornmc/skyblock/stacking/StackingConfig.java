@@ -85,10 +85,10 @@ public final class StackingConfig extends ModuleConfig {
     // ------------------------------------------------------------------ spawners
 
     @Setting(path = "spawners.stack-start", desc = "Spawners one block holds (Spawners v2: 64, the island's limit per mob type decides).", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerStackStart = 64; // Spawners v2: one block can hold the whole type limit
+    public int spawnerStackStart = 2048; // owner 7 Nov 2026: one block holds the whole type limit (544 + Spawner Capacity)
 
     @Setting(path = "spawners.stack-max", desc = "Spawners one block can ever hold, with the Spawner Stack Limit upgrade (ECON-SPAWNERS S4: 32; was 512). Blocks above it keep their spawners but can't grow.", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerStackMax = 64;
+    public int spawnerStackMax = 2048;
 
     @Setting(path = "spawners.interval-jitter-percent", desc = "Random spread of each spawn interval in percent (0 = exact; a little desyncs many spawners).", min = 0, max = 50)
     public int spawnerIntervalJitterPercent = 0;
@@ -235,11 +235,14 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.level.max", desc = "Highest spawner level (the prestige level).", min = 1, max = 100, level = Setting.Level.OWNER)
     public int levelMax = 16;
 
-    @Setting(path = "spawners.level.limit-per-level", desc = "Spawners of one mob type an island may place per level.", min = 1, max = 1000, level = Setting.Level.OWNER)
-    public int limitPerLevel = 4;
+    @Setting(path = "spawners.level.limit-base", desc = "Owner 7 Nov 2026: spawners of one mob type an island may place at the first level.", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int limitBase = 64;
 
-    @Setting(path = "spawners.level.limit-max", desc = "Most spawners of one mob type on an island.", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int limitMax = 64;
+    @Setting(path = "spawners.level.limit-per-level", desc = "More spawners of one mob type per level after the first (owner 7 Nov 2026: 64, 96, 128 ...).", min = 0, max = 1000, level = Setting.Level.OWNER)
+    public int limitPerLevel = 32;
+
+    @Setting(path = "spawners.level.limit-max", desc = "Most spawners of one mob type from levels (the island's Spawner Capacity upgrade comes on top).", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int limitMax = 544;
 
     @Setting(path = "spawners.level.premium-limit", desc = "Premium tier 5 spawners (Black Market) per mob type on an island; no levels.", min = 0, max = 1000, level = Setting.Level.OWNER)
     public int premiumLimit = 3;
@@ -313,7 +316,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 7;
+        return 8;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -330,6 +333,11 @@ public final class StackingConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         StackingConfig d = new StackingConfig();
         return java.util.Map.of(
+                // v8 (owner 7 Nov 2026): 64 spawners of a mob type at the first level, +32 a level, one block holds them all
+                8, java.util.Map.of("spawners.level.limit-per-level", ValueChange.of(4, d.limitPerLevel),
+                        "spawners.level.limit-max", ValueChange.of(64, d.limitMax),
+                        "spawners.stack-start", ValueChange.of(64, d.spawnerStackStart),
+                        "spawners.stack-max", ValueChange.of(64, d.spawnerStackMax)),
                 // v7 (owner 7 Nov 2026): one mob per loot, so every mob in a tier earns the same; the copies become legacy
                 7, java.util.Map.of(
                         "spawners.tier-1", ValueChange.of(List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"), d.tier1),

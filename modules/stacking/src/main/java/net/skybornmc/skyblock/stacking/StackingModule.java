@@ -117,6 +117,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         registerCommand();
         tasks.add(core.scheduler().repeat("stacking-spawners", 20L, 1L, spawners::tick));
         tasks.add(core.scheduler().repeat("stacking-crops", 40L, 1L, crops::tick));
+        tasks.add(core.scheduler().repeat("stacking-labels", 40L, 40L, spawners::refreshLabels)); // owner 7 Nov 2026: kills to go
         tasks.add(core.scheduler().repeat("stacking-mob-merge", 40L, Math.max(10, config.naturalMergeIntervalTicks), mobs::mergeMoving));
         tasks.add(core.scheduler().repeat("stacking-perf", 1200L, 1200L, perf::report));
         long save = 20L * Math.max(5, config.unlockSaveSeconds);
@@ -330,8 +331,20 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     /** The most spawners of this mob type the island may place (Spawners v2). */
     int spawnerLimit(java.util.UUID island, String mob) {
         SpawnerLevels.State s = levels.peek(island, mob);
+        int bonus = premium(mob) ? 0 : islands().map(i -> i.spawnerCapacity(island)).orElse(0); // Spawner Capacity upgrade
         return SpawnerLevelRules.limit(SpawnerLevelRules.level(s.kills, levelBase(mob), config.levelMax), s.prestige, premium(mob),
-                config.limitPerLevel, config.limitMax, config.premiumLimit, config.levelMax);
+                config.limitBase, config.limitPerLevel, config.limitMax, config.premiumLimit, config.levelMax) + Math.max(0, bonus);
+    }
+
+    /** Owner 7 Nov 2026: kills of this mob type still needed for the next level (0 at the top or for premium). */
+    long killsToNext(java.util.UUID island, String mob) {
+        long base = levelBase(mob);
+        if (island == null || base <= 0 || levels == null) {
+            return 0;
+        }
+        SpawnerLevels.State s = levels.peek(island, mob);
+        int lv = SpawnerLevelRules.level(s.kills, base, config.levelMax);
+        return lv >= config.levelMax ? 0 : Math.max(0, SpawnerLevelRules.killsFor(lv + 1, base) - s.kills);
     }
 
     /**

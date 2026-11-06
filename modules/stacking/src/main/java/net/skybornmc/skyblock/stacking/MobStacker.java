@@ -497,8 +497,9 @@ final class MobStacker implements Listener {
                 // Owner 7 Nov 2026: spawner mobs drop 1 of each of their items (x the island's Mob Loot level).
                 event.getDrops().clear();
                 extras = new ArrayList<>();
+                boolean burning = burning(entity, event.getDamageSource().getDamageType().getKey().getKey(), weapon);
                 for (SpawnerDrops.Drop d : custom) {
-                    customDrop(d, at, entity.getType(), killed, rolls, extras);
+                    customDrop(d, at, entity.getType(), killed, rolls, extras, burning);
                 }
             } else {
                 if (spawnerMob) {
@@ -588,8 +589,9 @@ final class MobStacker implements Listener {
             List<Drop> loot;
             if (!custom.isEmpty()) {
                 loot = new ArrayList<>();
+                boolean burning = burning(stack, null, weapon);
                 for (SpawnerDrops.Drop d : custom) {
-                    customDrop(d, at, stack.getType(), killed, rolls, loot);
+                    customDrop(d, at, stack.getType(), killed, rolls, loot, burning);
                 }
             } else {
                 if (spawnerMob) {
@@ -671,7 +673,17 @@ final class MobStacker implements Listener {
     }
 
     /** ECON-SPAWNERS step 8: the custom drop of {@code killed} spawner mobs (+ extra loot rolls) at the island's loot level. */
-    private void customDrop(SpawnerDrops.Drop drop, Location at, EntityType type, long killed, long rolls, List<Drop> out) {
+    /** Damage types that cook the meat (owner 7 Nov 2026: lava, fire, burning, Fire Aspect). */
+    private static final java.util.Set<String> FIRE = java.util.Set.of("lava", "in_fire", "on_fire", "campfire", "hot_floor",
+            "fireball", "unattributed_fireball");
+
+    /** True when the mob dies burning: on fire, killed by fire or lava, or hit with a Fire Aspect weapon. */
+    static boolean burning(org.bukkit.entity.Entity mob, String damageType, ItemStack weapon) {
+        return mob.getFireTicks() > 0 || (damageType != null && FIRE.contains(damageType))
+                || (weapon != null && weapon.containsEnchantment(org.bukkit.enchantments.Enchantment.FIRE_ASPECT));
+    }
+
+    private void customDrop(SpawnerDrops.Drop drop, Location at, EntityType type, long killed, long rolls, List<Drop> out, boolean burning) {
         double loot = module.lootMultiplier(at, type);
         long amount = SpawnerDrops.amount(killed, rolls, drop.perMob(), loot, () -> ThreadLocalRandom.current().nextDouble());
         if (amount <= 0) {
@@ -683,7 +695,7 @@ final class MobStacker implements Listener {
         }
         org.bukkit.Material vanilla = SpawnerDrops.vanilla(drop.item());
         if (vanilla != null) {
-            out.add(new Drop(new ItemStack(vanilla), amount));
+            out.add(new Drop(new ItemStack(burning ? SpawnerDrops.cooked(vanilla) : vanilla), amount));
         }
     }
 

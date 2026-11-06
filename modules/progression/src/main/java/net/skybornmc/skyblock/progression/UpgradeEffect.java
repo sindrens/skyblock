@@ -36,6 +36,8 @@ enum UpgradeEffect {
     XP_BOOST("xp-boost", false),
     /** Spawners per stacked spawner block (stacking module). */
     SPAWNER_STACK("spawner-stack", true),
+    /** Owner 7 Nov 2026: extra spawners per mob type the island may place (stacking module, on top of the type's level). */
+    SPAWNER_CAPACITY("spawner-capacity", true),
     /** +% spawner output (stacking module, spawner rate multiplier). */
     SPAWNER_RATE("spawner-rate", true),
     /** +% spawner drops: no hook in the stacking module yet. */

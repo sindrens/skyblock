@@ -136,6 +136,8 @@ final class SpawnerMenu extends Menu {
                 Msg.number("percent", (long) Math.floor(progress * 100)),
                 Msg.p("kills", Format.number(st.kills)),
                 Msg.p("need", Format.number(need)),
+                Msg.p("left", Format.number(spawner.island == null ? 0 : module.killsToNext(spawner.island, spawner.type))),
+                Msg.number("more", module.config().limitPerLevel),
                 Msg.p("placed", Format.number(placed)),
                 Msg.p("limit", Format.number(s.cap())),
                 Msg.number("prestige", s.prestige()),

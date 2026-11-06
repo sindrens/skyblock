@@ -64,6 +64,7 @@ tasks:
     unlocks:
       - upgrade.xp_boost.1
       - upgrade.spawner_stack_limit.1
+      - upgrade.spawner_capacity.1
       - upgrade.spawner_rate.1
       - upgrade.spawner_rate.2
       - upgrade.mob_loot.1
@@ -103,6 +104,7 @@ tasks:
     unlocks:
       - upgrade.island_vault.1
       - upgrade.spawner_stack_limit.1
+      - upgrade.spawner_capacity.1
       - upgrade.fuel_tank.1
       - upgrade.harvest_yield.1
   t1_sell:
@@ -223,6 +225,7 @@ tasks:
       - upgrade.member_slots.1
       - upgrade.xp_boost.2
       - upgrade.spawner_stack_limit.2
+      - upgrade.spawner_capacity.2
       - mastery.warrior.1
       - mastery.beast_tamer.1
       - upgrade.spawner_rate.3
@@ -263,6 +266,7 @@ tasks:
     unlocks:
       - upgrade.warp_slots.1
       - upgrade.spawner_stack_limit.2
+      - upgrade.spawner_capacity.2
       - upgrade.fuel_tank.2
       - upgrade.harvest_yield.2
   t2_sell:
@@ -393,6 +397,7 @@ tasks:
     unlocks:
       - upgrade.xp_boost.3
       - upgrade.spawner_stack_limit.3
+      - upgrade.spawner_capacity.3
       - mastery.lucky_strike.1
       - upgrade.spawner_rate.4
       - upgrade.mob_loot.4
@@ -434,6 +439,7 @@ tasks:
     unlocks:
       - upgrade.island_vault.2
       - upgrade.spawner_stack_limit.3
+      - upgrade.spawner_capacity.3
       - upgrade.fuel_tank.3
       - upgrade.harvest_yield.3
   t3_sell:
@@ -557,6 +563,7 @@ tasks:
       - upgrade.member_slots.2
       - upgrade.xp_boost.4
       - upgrade.spawner_stack_limit.4
+      - upgrade.spawner_capacity.4
       - mastery.warrior.2
       - upgrade.spawner_rate.5
       - upgrade.mob_loot.5
@@ -595,6 +602,7 @@ tasks:
     unlocks:
       - upgrade.warp_slots.2
       - upgrade.spawner_stack_limit.4
+      - upgrade.spawner_capacity.4
       - upgrade.fuel_tank.4
       - mastery.homestead.1
       - mastery.wings.1
@@ -730,6 +738,7 @@ tasks:
       - upgrade.entity_limits.1
       - upgrade.xp_boost.5
       - upgrade.spawner_stack_limit.5
+      - upgrade.spawner_capacity.5
       - mastery.lucky_strike.2
       - mastery.beast_tamer.2
       - upgrade.spawner_rate.6
@@ -773,6 +782,7 @@ tasks:
     unlocks:
       - upgrade.island_vault.3
       - upgrade.spawner_stack_limit.5
+      - upgrade.spawner_capacity.5
       - upgrade.fuel_tank.5
       - upgrade.harvest_yield.6
   t5_sell:
@@ -892,6 +902,7 @@ tasks:
       - upgrade.member_slots.3
       - upgrade.xp_boost.6
       - upgrade.spawner_stack_limit.6
+      - upgrade.spawner_capacity.6
       - upgrade.spawner_rate.7
       - upgrade.spawner_rate.8
       - upgrade.mob_loot.7
@@ -931,6 +942,7 @@ tasks:
     unlocks:
       - upgrade.warp_slots.3
       - upgrade.spawner_stack_limit.6
+      - upgrade.spawner_capacity.6
       - upgrade.fuel_tank.6
       - upgrade.harvest_yield.7
   t6_sell:
@@ -1055,6 +1067,7 @@ tasks:
     unlocks:
       - upgrade.xp_boost.7
       - upgrade.spawner_stack_limit.7
+      - upgrade.spawner_capacity.7
       - mastery.warrior.3
       - upgrade.spawner_rate.9
       - upgrade.mob_loot.8
@@ -1093,6 +1106,7 @@ tasks:
     unlocks:
       - upgrade.island_vault.4
       - upgrade.spawner_stack_limit.7
+      - upgrade.spawner_capacity.7
       - upgrade.fuel_tank.7
       - upgrade.harvest_yield.8
   t7_sell:
@@ -1219,6 +1233,7 @@ tasks:
       - upgrade.member_slots.4
       - upgrade.xp_boost.8
       - upgrade.spawner_stack_limit.8
+      - upgrade.spawner_capacity.8
       - mastery.lucky_strike.3
       - mastery.beast_tamer.3
       - upgrade.spawner_rate.10
@@ -1260,6 +1275,7 @@ tasks:
     unlocks:
       - upgrade.warp_slots.4
       - upgrade.spawner_stack_limit.8
+      - upgrade.spawner_capacity.8
       - upgrade.fuel_tank.8
       - mastery.homestead.2
       - upgrade.harvest_yield.9
@@ -1383,6 +1399,7 @@ tasks:
     unlocks:
       - upgrade.xp_boost.9
       - upgrade.spawner_stack_limit.9
+      - upgrade.spawner_capacity.9
   t9_farm:
     tier: 9
     type: farm
@@ -1416,6 +1433,7 @@ tasks:
     unlocks:
       - upgrade.island_vault.5
       - upgrade.spawner_stack_limit.9
+      - upgrade.spawner_capacity.9
       - upgrade.fuel_tank.9
       - upgrade.harvest_yield.10
   t9_sell:
@@ -1536,6 +1554,7 @@ tasks:
     unlocks:
       - upgrade.xp_boost.10
       - upgrade.spawner_stack_limit.10
+      - upgrade.spawner_capacity.10
       - mastery.warrior.4
       - mastery.lucky_strike.4
   t10_farm:
@@ -1567,6 +1586,7 @@ tasks:
     unlocks:
       - upgrade.warp_slots.5
       - upgrade.spawner_stack_limit.10
+      - upgrade.spawner_capacity.10
       - upgrade.fuel_tank.10
   t10_sell:
     tier: 10

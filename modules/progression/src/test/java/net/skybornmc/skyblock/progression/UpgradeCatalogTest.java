@@ -35,7 +35,7 @@ class UpgradeCatalogTest {
     @Test
     void bundledCatalogFollowsThePlan() throws Exception {
         UpgradeCatalog c = UpgradeStoreTest.bundled();
-        assertEquals(18, c.size());
+        assertEquals(19, c.size()); // owner 7 Nov 2026: + Spawner Capacity
         UpgradeCatalog.Def size = c.get("island_size").orElseThrow();
         assertEquals(List.of(5.0, 7.0, 9.0), size.levels().stream().map(UpgradeCatalog.Level::value).toList(), "3x3 -> 9x9 (owner 157)");
         assertEquals(List.of(335_000L, 2_290_000L, 15_700_000L), size.levels().stream().map(UpgradeCatalog.Level::cost).toList());

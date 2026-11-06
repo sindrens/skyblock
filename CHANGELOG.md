@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Tools v5 and spawners (update150):** personal perks on 500-2,500-level tracks priced for 13 blocks a second (every broken block rolls shards), no chat spam on buys; spawners 64 +32 a level, Spawner Capacity upgrade, kills-to-go on the hologram and menu, cooked meat from burning mobs.
 - **Shards x10 and breakthroughs (update149):** every shard found, price and balance is 10 times bigger (same value); every enchant jumps x1.5 / x2 / x2.5 / x3 at 2% / 10% / 30% / 100% of its max level, the menu shows the next one.
 - **Dynamic prices v2:** each island gets full price for the first 3,000 of an item a day, then 1% less per 100 (down to 60%); half the excess carries past the 04:00 reset. Every Monday each item moves -10% to +10% for the week. The sell chest shows "Price today" when a sale goes past the 3,000.
 - **Money x100:** every price, reward and balance is 100 times bigger (scaled once on the live server, with backups).

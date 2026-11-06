@@ -329,9 +329,11 @@ final class ToolListener implements Listener {
         }
         if (!pd.area()) {
             m.action(p, kind, pd.swept(), event.getBlock().getLocation());
+        } else {
+            m.areaShards(p, kind, event.getBlock().getLocation()); // tools v5: area blocks give shards too (no tool XP)
         }
         UUID island = pd.island();
-        int smelt = kind == Kind.PICKAXE ? m.effect(island, kind, Upgrades.Effect.SMELT) : 0;
+        int smelt = kind == Kind.PICKAXE ? m.effect(p, kind, Upgrades.Effect.SMELT) : 0;
         double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,
                 BonusContext.of(p, p.getInventory().getItemInMainHand(), "island_" + kind.id()).withTarget(blockId))).orElse(1.0);
         mult *= 1 + Math.max(0, m.islandBoost(p, kind)) / 100.0; // the island's farm/mine boost, stronger than any perk
@@ -564,7 +566,7 @@ final class ToolListener implements Listener {
             if (!working) {
                 continue;
             }
-            int haste = m.effect(island, kind, Upgrades.Effect.HASTE);
+            int haste = m.effect(p, kind, Upgrades.Effect.HASTE);
             if (haste > 0) {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 60, haste - 1, true, false, true));
             }

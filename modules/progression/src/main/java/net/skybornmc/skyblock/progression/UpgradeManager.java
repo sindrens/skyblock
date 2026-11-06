@@ -727,6 +727,11 @@ final class UpgradeManager implements Listener {
     private final class Effects implements IslandUpgradeEffects {
 
         @Override
+        public int spawnerCapacity(UUID islandId) {
+            return UpgradeRules.whole(catalog, of(islandId), UpgradeEffect.SPAWNER_CAPACITY);
+        }
+
+        @Override
         public OptionalInt spawnerStackLimit(UUID islandId) {
             return UpgradeRules.spawnerStack(catalog, of(islandId));
         }

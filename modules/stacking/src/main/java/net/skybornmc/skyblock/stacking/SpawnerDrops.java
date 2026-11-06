@@ -110,4 +110,18 @@ final class SpawnerDrops {
         double fraction = expected - whole;
         return whole + (fraction > 0 && random.getAsDouble() < fraction ? 1 : 0);
     }
+
+    /** Owner 7 Nov 2026: the cooked form of raw meat (a mob that dies burning drops it cooked); other items stay. Pure. */
+    static org.bukkit.Material cooked(org.bukkit.Material raw) {
+        return switch (raw) {
+            case BEEF -> org.bukkit.Material.COOKED_BEEF;
+            case PORKCHOP -> org.bukkit.Material.COOKED_PORKCHOP;
+            case CHICKEN -> org.bukkit.Material.COOKED_CHICKEN;
+            case MUTTON -> org.bukkit.Material.COOKED_MUTTON;
+            case RABBIT -> org.bukkit.Material.COOKED_RABBIT;
+            case COD -> org.bukkit.Material.COOKED_COD;
+            case SALMON -> org.bukkit.Material.COOKED_SALMON;
+            default -> raw;
+        };
+    }
 }

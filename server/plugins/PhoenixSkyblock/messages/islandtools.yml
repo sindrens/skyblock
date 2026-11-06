@@ -67,7 +67,7 @@ buy:
   no-island: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools belong to an island. Make or join one first: <click:run_command:'/is'><c:action>/is</c:action></click>"
   no-economy: "<prefix><c:error><sym:cross></c:error> <c:text>Shards can't be paid right now (the economy is not running). Tell staff."
   # <perk> <level> <have>
-  locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><perk></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your island's tool is level <c:value><have></c:value><c:text>."
+  locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><perk></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your tool is level <c:value><have></c:value><c:text>."
   # <perk> <prestige>
   locked-prestige: "<prefix><c:error><sym:cross></c:error> <c:value><perk></c:value> <c:text>unlocks at prestige <c:flame><prestige></c:flame><c:text>. Reach the top level and prestige the tool first."
   # <perk>
@@ -76,12 +76,11 @@ buy:
   # <cost> <have> <shards>
   poor: "<prefix><c:error><sym:cross></c:error> <c:text>Not enough <shards>: this costs <cost><c:text>, you have <have><c:text>. Farm or mine with this tool to find more."
   # <tool>
-  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Someone on your island just changed the <c:value><tool></c:value><c:text>. Nothing was paid; check the new price and click again."
+  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your <c:value><tool></c:value> <c:text>changed on another screen. Nothing was paid; check the price and click again."
   error: "<prefix><c:error><sym:cross></c:error> <c:text>The database did not answer, so nothing was paid or changed. Try again in a moment; if it keeps happening, tell staff."
   # <perk> <level> <tool> <cost>
-  done: "<prefix><c:success><sym:check></c:success> <c:value><perk> <level></c:value> <c:text>on the <c:value><tool></c:value> <c:text>for <cost><c:text>. Everyone on your island has it now."
-  # To the other members. <player> <perk> <level> <tool>
-  island: "<prefix><c:value><player></c:value> <c:text>upgraded the island <c:value><tool></c:value><c:text>: <c:value><perk> <level></c:value><c:text>."
+  # Action bar (tools v5: no chat line per click)
+  done: "<c:success><sym:check></c:success> <c:value><perk> <level></c:value> <c:muted>· </c:muted><cost>"
 
 copy:
   # <tool>
@@ -115,13 +114,10 @@ level:
   can-rebirth: "<prefix><c:success><sym:star></c:success> <c:text>Your <c:value><tool></c:value> <c:text>has every prestige. A <c:flame>rebirth</c:flame> <c:text>waits in its menu: <click:run_command:'/tool'><c:action>/tool</c:action></click>"
 
 # Lucky perk: a Shard Pouch. <amount> <shards>
+# Tools v5 (owner 7 Nov 2026): a Shard Pouch floats up from the block (no title: no spam). <amount>
 lucky:
-  found:
-    title: "<c:flame><bold>SHARD POUCH!"
-    subtitle: "<amount> <c:text><shards>"
-    fade-in: 5
-    stay: 30
-    fade-out: 10
+  popup: "<grad:flame><bold>POUCH!</bold></grad> <amount>"
+  bar: "<grad:flame><bold>SHARD POUCH!</bold></grad> <amount>"
 
 prestige:
   # <tool>
@@ -208,7 +204,7 @@ menu:
   tool-name: "<bold><area:skills><tool> <c:flame><stars>"
   # <level> <max> <percent> <stars> <shards>
   tool-lore:
-    - "<c:muted>Your own level · island perks."
+    - "<c:muted>Your own level and perks."
     - ""
     - "<bold><c:header>| Tool</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max> (<percent>%)"
@@ -217,7 +213,7 @@ menu:
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   # <level> <max> <xp> <need> <percent> <prestige> <stars> <bonus> <discount> <boost> <shards>
   tool:
-    - "<c:muted>Your own level · island perks."
+    - "<c:muted>Your own level and perks."
     - ""
     - "<bold><c:header>| Level</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
@@ -226,7 +222,7 @@ menu:
     - "<c:bar>| </c:bar><c:text>Prestige: </c:text><c:flame><stars></c:flame> <c:muted>+<bonus> XP, <shards>"
     - "<c:bar>| </c:bar><c:text>Island boost: </c:text><c:value>+<boost> <c:muted>drops"
   tool-max:
-    - "<c:muted>Your own level · island perks."
+    - "<c:muted>Your own level and perks."
     - ""
     - "<bold><c:header>| Level</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:success><level>/<max> <sym:check>"
@@ -449,7 +445,17 @@ enchant:
   capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Prestige the tool (+20) or get your island's Mastery (+100 a rank): <click:run_command:'/is masteries'><c:action>/is masteries</c:action></click>"
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your enchants changed on another screen. Nothing was paid; check the price and click again."
   # <enchant> <level> <max> <cost>
-  bought: "<prefix><c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max></c:muted> <c:text>for <cost><c:text>."
+  # Action bar (tools v5: no chat line per click)
+  bought: "<c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max> · </c:muted><cost>"
+  # owner 7 Nov 2026: a breakthrough. <enchant> <multiplier> <level>
+  breakthrough:
+    title:
+      title: "<grad:flame><bold>BREAKTHROUGH!"
+      subtitle: "<c:value><enchant></c:value> <c:muted>· <c:value>x<multiplier></c:value> <c:text>as strong"
+      fade-in: 5
+      stay: 50
+      fade-out: 15
+    chat: "<prefix><c:success><sym:star></c:success> <c:text>Breakthrough! </c:text><c:value><enchant></c:value> <c:text>is now </c:text><c:value>x<multiplier></c:value> <c:text>as strong (level <level>)."
   # Action bar when an enchant procs. <enchant> <amount>
   proc:
     area: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> blocks"
@@ -520,6 +526,9 @@ enchant:
     effect-max: "<c:bar>| </c:bar><c:text>Gives: </c:text><c:value><now>"
     # <seconds>
     cooldown: "<c:bar>| </c:bar><c:muted>At most once every <seconds> s"
+    # owner 7 Nov 2026: <multiplier> <level> <left> (the next breakthrough) / <now> (all reached)
+    breakthrough: "<c:bar>| </c:bar><c:text>Breakthrough: </c:text><c:value>x<multiplier></c:value> <c:muted>at <level> (<left> to go)"
+    breakthrough-done: "<c:bar>| </c:bar><c:success>All breakthroughs: x<now>"
     # What one proc gives. {value} {crate}
     gives:
       area: "{value} blocks"

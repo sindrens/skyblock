@@ -132,7 +132,7 @@ public final class IslandToolsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(farming, core.plugin());
         Bukkit.getPluginManager().registerEvents(enchants, core.plugin());
         core.services().optional(BonusService.class).ifPresent(b -> b.register("island_tool", (family, ctx) ->
-                family == BonusFamily.EXTRA_DROPS ? dropsBonus(ctx.item()) : 0));
+                family == BonusFamily.EXTRA_DROPS ? dropsBonus(ctx.player(), ctx.item()) : 0));
         tasks.add(core.scheduler().repeat("islandtools:effects", 40L, 40L, listener::effectsTick));
         tasks.add(core.scheduler().repeat("islandtools:regrow", 20L, 10L, farming::tick));
         tasks.add(core.scheduler().repeat("islandtools:growth", 20L, 10L, growth::tick));
@@ -298,7 +298,7 @@ public final class IslandToolsModule implements SkyblockModule {
 
     boolean loaded(Player p) {
         UUID island = island(p);
-        return island != null && progs.containsKey(island) && personal.containsKey(profile(p));
+        return island != null && progs.containsKey(island) && personal.containsKey(profile(p)) && enchants.loaded(p);
     }
 
     /** A profile's own tool (null while loading). */
@@ -314,10 +314,120 @@ public final class IslandToolsModule implements SkyblockModule {
     ToolStore.Prog view(UUID island, UUID profile, Kind kind) {
         ToolStore.Prog isl = prog(island, kind);
         ToolStore.Personal own = personal(profile, kind);
-        if (isl == null || own == null) {
+        String perks = perkCode(profile, kind);
+        if (isl == null || own == null || perks == null) {
             return null;
         }
-        return new ToolStore.Prog(own.xp(), own.prestige(), isl.upgrades(), isl.version(), own.rebirth());
+        return new ToolStore.Prog(own.xp(), own.prestige(), perks, isl.version(), own.rebirth());
+    }
+
+    // ------------------------------------------------------------------ tools v5: personal perks (owner 7 Nov 2026)
+
+    /** The row prefix of a personal perk in {@code island_tool_enchants} ({@code perk.shard_finder}). */
+    static final String PERK = "perk.";
+    /** The one-time seed marker row (kind hoe): the island's old shared levels were copied to this profile. */
+    static final String SEED = "perk._v5";
+
+    private final Map<UUID, Map<Kind, String>> perkCodes = new ConcurrentHashMap<>();
+
+    /** The personal perk levels of a profile as an upgrades code ("shard_finder=37,..."), null while loading. */
+    String perkCode(UUID profile, Kind kind) {
+        if (profile == null || kind == null) {
+            return null;
+        }
+        Map<String, Integer> rows = enchants.rows(profile);
+        if (rows == null) {
+            return null;
+        }
+        return perkCodes.computeIfAbsent(profile, k -> new ConcurrentHashMap<>()).computeIfAbsent(kind, k -> {
+            String prefix = kind.id() + ":" + PERK;
+            Map<String, Integer> levels = new java.util.TreeMap<>();
+            rows.forEach((key, lv) -> {
+                if (key.startsWith(prefix) && lv > 0 && !key.equals(kind.id() + ":" + SEED)) {
+                    levels.put(key.substring(prefix.length()), lv);
+                }
+            });
+            return Upgrades.encode(levels);
+        });
+    }
+
+    void forgetPerks(UUID profile) {
+        if (profile != null) {
+            perkCodes.remove(profile);
+        }
+    }
+
+    /**
+     * Tools v5 (owner 7 Nov 2026): perks are personal now. The first time a profile that already played loads, it gets
+     * the island's old shared levels as its own, converted to the same effect on the new long tracks (once, a marker row
+     * stops a second copy). New players start at 0.
+     */
+    void perksLoaded(Player p, UUID profile) {
+        forgetPerks(profile);
+        Map<String, Integer> rows = enchants.rows(profile);
+        if (rows == null || rows.containsKey(Kind.HOE.id() + ":" + SEED)) {
+            refreshOwnHandles(p);
+            return;
+        }
+        UUID island = island(p);
+        boolean ready = island != null && progs.containsKey(island) && personal.containsKey(profile);
+        if (!ready) {
+            if (island != null && p.isOnline() && seedTries.merge(profile, 1, Integer::sum) <= 30) {
+                Bukkit.getScheduler().runTaskLater(core.plugin(), () -> { if (p.isOnline()) { perksLoaded(p, profile); } }, 40L);
+            }
+            return;
+        }
+        seedTries.remove(profile);
+        boolean played = java.util.Arrays.stream(Kind.values()).map(k -> personal(profile, k))
+                .anyMatch(o -> o != null && (o.xp() > 0 || o.prestige() > 0 || o.rebirth() > 0));
+        Map<String, Integer> seed = new java.util.LinkedHashMap<>();
+        if (played) {
+            for (Kind k : Kind.values()) {
+                ToolStore.Prog isl = prog(island, k);
+                if (isl == null) {
+                    continue;
+                }
+                isl.levels().forEach((id, lv) -> upgrades.get(k, id).ifPresent(d -> {
+                    int to = PerkSeed.convert(d.effect(), lv, d.max());
+                    if (to > 0) {
+                        seed.put(k.id() + ":" + PERK + id, to);
+                    }
+                }));
+            }
+        }
+        core.database().transaction(c -> {
+            for (Map.Entry<String, Integer> e : seed.entrySet()) {
+                String[] kp = e.getKey().split(":", 2);
+                EnchantStore.set(c, profile, Kind.of(kp[0]).orElseThrow(), kp[1], 0, e.getValue());
+            }
+            return EnchantStore.set(c, profile, Kind.HOE, SEED, 0, 1);
+        }).whenComplete((ok, error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.WARNING, "Island tools: could not copy the island perks to " + profile, error);
+                return;
+            }
+            Map<String, Integer> now = enchants.rows(profile);
+            if (now != null && Boolean.TRUE.equals(ok)) {
+                seed.forEach((k, v) -> now.merge(k, v, Math::max));
+                now.put(Kind.HOE.id() + ":" + SEED, 1);
+                core.audit().logPlayer(AuditCategory.ITEM, "island_tool_perks_seeded", Actor.SYSTEM, p.getUniqueId(), p.getName(),
+                        (long) seed.size(), p.getLocation(), Map.of("island", island.toString(), "perks", String.valueOf(seed)));
+            }
+            forgetPerks(profile);
+            if (p.isOnline()) {
+                refreshOwnHandles(p);
+            }
+        }));
+    }
+
+    private final Map<UUID, Integer> seedTries = new ConcurrentHashMap<>();
+
+    /** The player's own handles get their own enchant-like perks (Efficiency, Fortune ...). */
+    void refreshOwnHandles(Player p) {
+        UUID island = island(p);
+        if (island != null) {
+            refreshHandles(p, island, null);
+        }
     }
 
     ToolStore.Prog view(Player p, Kind kind) {
@@ -343,8 +453,13 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     /** Level of the first perk with this effect on the island's tool (0 = none). */
-    int effect(UUID island, Kind kind, Upgrades.Effect effect) {
-        ToolStore.Prog prog = prog(island, kind);
+    int effect(Player p, Kind kind, Upgrades.Effect effect) {
+        return p == null ? 0 : effect(island(p), profile(p), kind, effect);
+    }
+
+    /** Level of the first perk with this effect on a profile's own tool (tools v5: personal; 0 = none or loading). */
+    int effect(UUID island, UUID profile, Kind kind, Upgrades.Effect effect) {
+        ToolStore.Prog prog = view(island, profile, kind);
         if (prog == null) {
             return 0;
         }
@@ -373,17 +488,23 @@ public final class IslandToolsModule implements SkyblockModule {
     double sweepChance(Player p, Kind kind) {
         ToolRules.Band band = band(p, kind);
         Upgrades.Def def = upgrades.byEffect(kind, Upgrades.Effect.SWEEP).orElse(null);
-        return def == null ? 0 : ToolRules.sweepChance(band, effect(island(p), kind, Upgrades.Effect.SWEEP), def.max());
+        return def == null ? 0 : ToolRules.sweepChance(band, effect(p, kind, Upgrades.Effect.SWEEP), def.max());
     }
 
     /** Growth (hoe perk): percent faster crop growth on {@code island}. */
     double growthPercent(UUID island) {
-        return effect(island, Kind.HOE, Upgrades.Effect.GROWTH) * config.growthPerLevel;
+        int best = 0; // tools v5: the best Growth of the members online
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (island.equals(island(p))) {
+                best = Math.max(best, effect(island, profile(p), Kind.HOE, Upgrades.Effect.GROWTH));
+            }
+        }
+        return best * config.growthPerLevel;
     }
 
-    /** Sell Bonus (perk) in percent for sales made by the island's tool. */
-    double sellBonus(UUID island, Kind kind) {
-        return effect(island, kind, Upgrades.Effect.SELL) * config.sellPerLevel;
+    /** Sell Bonus (perk) in percent for sales made by the player's own tool. */
+    double sellBonus(Player p, Kind kind) {
+        return effect(p, kind, Upgrades.Effect.SELL) * config.sellPerLevel;
     }
 
     /**
@@ -405,10 +526,11 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     /** The tool's own Extra Drops (percent) for the bonus service, only for a handle of a loaded island. */
-    private double dropsBonus(ItemStack item) {
+    private double dropsBonus(Player p, ItemStack item) {
         Kind kind = ToolItems.kindOf(item);
         UUID island = ToolItems.islandOf(item);
-        return kind == null ? 0 : effect(island, kind, Upgrades.Effect.DROPS) * config.dropsPerLevel;
+        return kind == null || p == null || island == null || !island.equals(island(p)) ? 0
+                : effect(p, kind, Upgrades.Effect.DROPS) * config.dropsPerLevel;
     }
 
     /** The shown value of a perk level: roman numerals for enchant-like perks, "132/1000" for tracks. */
@@ -485,6 +607,8 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     void unload(Player p) {
+        forgetPerks(profile(p));
+        seedTries.remove(profile(p));
         enchants.unload(p);
         personal.remove(profile(p));
         storage.unload(profile(p));
@@ -494,6 +618,7 @@ public final class IslandToolsModule implements SkyblockModule {
     void unloadProfile(UUID profile) {
         if (profile != null) {
             storage.unload(profile);
+            forgetPerks(profile);
             enchants.unloadProfile(profile);
             personal.remove(profile);
         }
@@ -633,21 +758,25 @@ public final class IslandToolsModule implements SkyblockModule {
     /** Re-renders the handles of an island (one kind, or both with null) in every online member's inventory. */
     void refreshHandles(UUID island, Kind only) {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!island.equals(island(p))) {
+            if (island.equals(island(p))) {
+                refreshHandles(p, island, only);
+            }
+        }
+    }
+
+    /** One player's handles of {@code island} get the player's own enchant-like perks. */
+    void refreshHandles(Player p, UUID island, Kind only) {
+        PlayerInventory inv = p.getInventory();
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            Kind kind = ToolItems.kindOf(s);
+            if (kind == null || (only != null && kind != only) || !island.equals(ToolItems.islandOf(s))) {
                 continue;
             }
-            PlayerInventory inv = p.getInventory();
-            for (int i = 0; i < inv.getSize(); i++) {
-                ItemStack s = inv.getItem(i);
-                Kind kind = ToolItems.kindOf(s);
-                if (kind == null || (only != null && kind != only) || !island.equals(ToolItems.islandOf(s))) {
-                    continue;
-                }
-                ItemStack copy = s.clone();
-                items.applyEnchants(copy, kind, prog(island, kind));
-                core.items().render(copy);
-                inv.setItem(i, copy);
-            }
+            ItemStack copy = s.clone();
+            items.applyEnchants(copy, kind, view(island, profile(p), kind));
+            core.items().render(copy);
+            inv.setItem(i, copy);
         }
     }
 
@@ -695,7 +824,7 @@ public final class IslandToolsModule implements SkyblockModule {
         double bonus = prestigeBonus(p, kind);
         ToolRules.Level before = level(prog);
         if (!before.maxed()) {
-            double wisdom = 1 + effect(island, kind, Upgrades.Effect.WISDOM) * config.wisdomPerLevel / 100.0;
+            double wisdom = 1 + effect(island, profile, kind, Upgrades.Effect.WISDOM) * config.wisdomPerLevel / 100.0;
             double event = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                     net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_XP); // owner 6 Nov 2026: Double XP
             double combo = enchants.xpMultiplier(p, kind); // owner 6 Nov 2026: Combo (grind enchant)
@@ -715,25 +844,50 @@ public final class IslandToolsModule implements SkyblockModule {
         if (swept && !config.sweepShards) {
             return;
         }
+        rollShards(p, island, profile, kind, bonus, at, rnd);
+    }
+
+    /**
+     * Tools v5 (owner 7 Nov 2026): a block broken by an area enchant (Explode, Blast ...) rolls for shards too (no tool
+     * XP), so the shard math holds at the speed players really break blocks.
+     */
+    void areaShards(Player p, Kind kind, org.bukkit.Location at) {
+        if (!config.areaShards) {
+            return;
+        }
+        UUID island = island(p);
+        UUID profile = profile(p);
+        if (view(island, profile, kind) == null) {
+            return;
+        }
+        rollShards(p, island, profile, kind, prestigeBonus(p, kind), at, ThreadLocalRandom.current());
+    }
+
+    private void rollShards(Player p, UUID island, UUID profile, Kind kind, double bonus, org.bukkit.Location at, ThreadLocalRandom rnd) {
         double chance = switch (kind) {
             case HOE -> config.shardHoe;
             case PICKAXE -> config.shardPickaxe;
             case ROD -> config.shardRod;
             case SWORD -> config.shardSword;
         } / 100.0;
-        double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
+        double finder = 1 + effect(island, profile, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
         double streak = enchants.shardMultiplier(p, kind); // owner 6 Nov 2026: Shard Echo + Compound Interest
         int shards = ToolRules.roll(chance * finder * bonus * doubled * streak, rnd.nextDouble());
-        int lucky = effect(island, kind, Upgrades.Effect.LUCKY);
+        int lucky = effect(island, profile, kind, Upgrades.Effect.LUCKY);
         if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
             int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);
             shards += pouch;
-            msg.title(p, "lucky.found", Msg.mm("amount", shardText(kind, pouch)), Msg.p("shards", raw("shards.name." + kind.id())));
-            core.sounds().play(p, "tool-lucky");
-            core.audit().logPlayer(AuditCategory.ECONOMY, "island_tool_lucky", Actor.SYSTEM, p.getUniqueId(), p.getName(), (long) pouch,
-                    p.getLocation(), Map.of("kind", kind.id(), "currency", kind.shards().key()));
+            core.sounds().play(p, "tool-lucky"); // tools v5: a pouch is a popup and a sound, no title (no spam at 13 blocks a second)
+            pendingShards.computeIfAbsent(profile(p), k -> new ConcurrentHashMap<>()).merge(kind.shards(), (long) pouch, Long::sum);
+            if (config.shardPopups && at != null) {
+                net.skybornmc.skyblock.common.hud.Popups.show(core.plugin(), p, at.clone().add(0, 0.4, 0),
+                        msg.component(p, "lucky.popup", Msg.mm("amount", shardText(kind, pouch))));
+            } else {
+                msg.actionBar(p, "lucky.bar", Msg.mm("amount", shardText(kind, pouch)));
+            }
+            shards -= pouch;
         }
         if (shards > 0) {
             pendingShards.computeIfAbsent(profile(p), k -> new ConcurrentHashMap<>()).merge(kind.shards(), (long) shards, Long::sum);
@@ -882,8 +1036,7 @@ public final class IslandToolsModule implements SkyblockModule {
 
     /** True when this drop is taken by Auto-Sell (the island's tool has it and the item can be sold). */
     boolean autoSell(Player p, Kind kind, ItemStack stack) {
-        UUID island = island(p);
-        if (effect(island, kind, Upgrades.Effect.AUTOSELL) <= 0) {
+        if (effect(p, kind, Upgrades.Effect.AUTOSELL) <= 0) {
             return false;
         }
         var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class).orElse(null);
@@ -891,7 +1044,7 @@ public final class IslandToolsModule implements SkyblockModule {
             return false;
         }
         autoSell.computeIfAbsent(p.getUniqueId(), k -> new ConcurrentHashMap<>()).merge(stack.getType(), stack.getAmount(), Integer::sum);
-        autoSellBonus.put(p.getUniqueId(), sellBonus(island, kind));
+        autoSellBonus.put(p.getUniqueId(), sellBonus(p, kind));
         return true;
     }
 
@@ -967,7 +1120,7 @@ public final class IslandToolsModule implements SkyblockModule {
         return def.sumCost(prog.level(def.id()), count, config.priceExponent, priceFactor(prog));
     }
 
-    /** Buys up to {@code count} levels of a perk: one shard payment and the island row change in one transaction. */
+    /** Buys up to {@code count} levels of a personal perk (tools v5): one shard payment and the level row in one transaction. */
     void buy(Player p, Kind kind, String perkId, int count, Runnable done) {
         EconomyService economy = core.services().optional(EconomyService.class).orElse(null);
         Upgrades.Def def = upgrades.get(kind, perkId).orElse(null);
@@ -987,7 +1140,7 @@ public final class IslandToolsModule implements SkyblockModule {
         }
         UUID island = island(p);
         UUID profile = profile(p);
-        ToolStore.Prog before = view(p, kind); // the island's perks and version, the buyer's prestige discount
+        ToolStore.Prog before = view(p, kind); // the player's own perks and prestige discount
         int have = before.level(def.id());
         int n = def.buyable(have, count);
         long cost = price(before, def, n);
@@ -997,20 +1150,17 @@ public final class IslandToolsModule implements SkyblockModule {
             poor(p, kind, cost, balance);
             return;
         }
-        Map<String, Integer> levels = new java.util.TreeMap<>(before.levels());
-        levels.put(def.id(), have + n);
-        String newLevels = Upgrades.encode(levels);
         UUID batch = UUID.randomUUID();
         Transaction tx = Transaction.withdraw(AccountRef.player(profile), kind.shards(), cost, TxReason.ISLAND_TOOL_UPGRADE)
                 .actor(Actor.player(p)).reference("island_tool:" + batch).idempotencyKey("island_tool:" + batch)
                 .detail("kind", kind.id()).detail("upgrade", def.id()).detail("levels", n);
-        economy.executeBatch(List.of(tx), c -> ToolStore.buy(c, island, kind, before.version(), newLevels))
+        economy.executeBatch(List.of(tx), c -> EnchantStore.set(c, profile, kind, PERK + def.id(), have, have + n))
                 .whenComplete((BatchResult result, Throwable error) -> Bukkit.getScheduler().runTask(core.plugin(), () -> {
                     busy.remove(p.getUniqueId());
                     if (error != null || result == null || !result.ok()) {
                         failed(p, kind, cost, result == null ? null : result.status(), error);
                     } else {
-                        bought(p, island, kind, def, have, n, cost, newLevels);
+                        bought(p, island, profile, kind, def, have, n, cost);
                     }
                     if (done != null && p.isOnline()) {
                         done.run();
@@ -1050,23 +1200,21 @@ public final class IslandToolsModule implements SkyblockModule {
         core.sounds().play(p, "error");
     }
 
-    private void bought(Player p, UUID island, Kind kind, Upgrades.Def def, int have, int n, long cost, String newLevels) {
-        Map<Kind, ToolStore.Prog> map = progs.get(island);
-        ToolStore.Prog now = map == null ? null : map.get(kind);
-        if (map != null && now != null) {
-            map.put(kind, now.withUpgrades(newLevels));
+    private void bought(Player p, UUID island, UUID profile, Kind kind, Upgrades.Def def, int have, int n, long cost) {
+        Map<String, Integer> rows = enchants.rows(profile);
+        if (rows != null) {
+            rows.put(kind.id() + ":" + PERK + def.id(), have + n);
         }
-        refreshHandles(island, kind);
+        forgetPerks(profile);
+        if (!p.isOnline()) {
+            return;
+        }
+        refreshHandles(p, island, kind);
         String perk = raw("upgrade." + def.id() + ".name");
         String tool = raw("item.name." + kind.id());
         String level = levelText(def, have + n);
-        msg.send(p, "buy.done", Msg.p("perk", perk), Msg.mm("level", level), Msg.p("tool", tool), Msg.mm("cost", shardText(kind, cost)));
+        msg.actionBar(p, "buy.done", Msg.p("perk", perk), Msg.mm("level", level), Msg.p("tool", tool), Msg.mm("cost", shardText(kind, cost)));
         core.sounds().play(p, "unlock");
-        for (Player other : Bukkit.getOnlinePlayers()) {
-            if (other != p && island.equals(island(other))) {
-                msg.send(other, "buy.island", Msg.p("player", p.getName()), Msg.p("perk", perk), Msg.mm("level", level), Msg.p("tool", tool));
-            }
-        }
         core.audit().logPlayer(AuditCategory.ITEM, "island_tool_upgrade", Actor.player(p), p.getUniqueId(), p.getName(), cost,
                 p.getLocation(), Map.of("kind", kind.id(), "upgrade", def.id(), "from", have, "to", have + n, "island", island.toString(),
                         "currency", kind.shards().key()));

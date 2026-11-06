@@ -218,6 +218,16 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Tools v5 and spawners (update150, plan: `docs/plans/TOOLS_V5.md`)
+Your answers before you went to sleep:
+- **Perks are your own now** (Shard Finder, Extra Drops, Efficiency, Fortune, Storage ...), bought with your own shards, and they work everywhere: your island, /farm, /mine, /fish, /pve. Everyone who already played got the island's old levels as their own, converted to the same strength. New players start at 0.
+- **Long tracks:** Shard Finder 2,500 levels (up to 26x shards), Extra Drops 1,000 (+150%), Wisdom 500 (+500% tool XP), Sell Bonus 500 (+100%), Growth 500, Storage 500, Lucky 1,000.
+- **Balanced at 13 blocks a second:** every block the tool breaks counts for shards now (also Sweep and Explode/Blast blocks). Base 6 shards a block. Simulated: a new upgrade every few seconds at the start, Shard Finder ~50 after 1 hour, ~500 after 50 hours, everything maxed after ~200 hours; popups go from "+6" to "+500". Prices are about 5x lower than this evening.
+- **No spam:** buying a perk or enchant level is an action bar line; a Shard Pouch floats up from the block (no title).
+- **Spawners:** 64 of a mob type at the first level, +32 a level (96, 128 ... 544). New island upgrade **Spawner Capacity** (/is upgrade, Production): +32 of every mob type per level, 10 levels. One block holds them all.
+- **Kills to go:** the hologram above every spawner shows "Lv 3 · 1,240 kills to +32", the spawner menu shows the same (new layout in the tool style), and the "limit reached" message tells how many kills are left.
+- **Cooked meat:** spawner mobs that die burning (lava, fire, Fire Aspect) drop cooked meat.
+
 ## Bigger shard numbers and breakthroughs (update149, plan: `docs/plans/SHARDS_X10_BREAKTHROUGHS.md`)
 Your "only 1-3 shards even maxed ... low to high ... goodies that suddenly feel a lot stronger":
 - **Every shard x10, same value:** a ripe crop now gives about 6 shards (was 0.6), so you see "+6", "+20", "+60" instead of "+1". Prices x10 too (Shard Finder level 1: 460, Explode level 1: 200). **Balances x10 once** (database migration for all four shard types), shard notes and shard block pay (10 a break) too. Shard Burst 30-60, Jackpot 400-1,000, Lucky pouch 250-2,500. Tutorial shard rewards 1,000 / 5,000.

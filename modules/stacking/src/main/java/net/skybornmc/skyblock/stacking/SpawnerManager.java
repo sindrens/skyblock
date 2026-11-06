@@ -107,7 +107,7 @@ final class SpawnerManager implements Listener {
      * not saved with the world (spawned again while the spawner runs), updated when the amount changes.
      */
     private final Map<Pos, org.bukkit.entity.TextDisplay> labels = new HashMap<>();
-    private final Map<Pos, Integer> labelAmount = new HashMap<>();
+    private final Map<Pos, String> labelAmount = new HashMap<>();
     static final String LABEL_TAG = "phoenix_spawner_label";
 
     SpawnerManager(StackingModule module) {
@@ -257,8 +257,7 @@ final class SpawnerManager implements Listener {
      * (32) and never more than the island's cap of the tier (ECON-SPAWNERS S4).
      */
     int limit(Spawner sp) {
-        OptionalInt mastery = sp.island == null ? OptionalInt.empty()
-                : module.islands().map(s -> s.spawnerStackLimit(sp.island)).orElse(OptionalInt.empty());
+        OptionalInt mastery = OptionalInt.empty(); // owner 7 Nov 2026: one block holds the whole type limit (Spawner Capacity raises that)
         int cap = module.spawnerCapFor(sp.island);
         int max = cap > 0 ? Math.min(module.config().spawnerStackMax, cap) : module.config().spawnerStackMax;
         return StackMath.stackLimit(mastery, module.config().spawnerStackStart, max);
@@ -393,8 +392,11 @@ final class SpawnerManager implements Listener {
             return;
         }
         org.bukkit.entity.TextDisplay display = labels.get(sp.pos);
-        Integer shown = labelAmount.get(sp.pos);
-        if (display != null && display.isValid() && shown != null && shown == sp.amount) {
+        // Owner 7 Nov 2026: the second line shows the level and the kills still needed for more spawners of this type.
+        int level = sp.island == null ? 0 : module.spawnerLevel(sp.island, sp.type);
+        long left = sp.island == null ? 0 : module.killsToNext(sp.island, sp.type);
+        String signature = sp.amount + ":" + level + ":" + left;
+        if (display != null && display.isValid() && signature.equals(labelAmount.get(sp.pos))) {
             return;
         }
         EntityType type = module.entityType(sp.type);
@@ -402,6 +404,12 @@ final class SpawnerManager implements Listener {
                 Msg.c("name", type == null ? net.kyori.adventure.text.Component.text(sp.type)
                         : net.kyori.adventure.text.Component.translatable(type.translationKey())),
                 Msg.p("count", net.skybornmc.skyblock.common.util.Format.number(sp.amount)));
+        if (sp.island != null && module.levelBase(sp.type) > 0) {
+            text = text.append(net.kyori.adventure.text.Component.newline()).append(module.msg().component(
+                    net.kyori.adventure.audience.Audience.empty(), left > 0 ? "spawner-label-level" : "spawner-label-top",
+                    Msg.number("level", level), Msg.p("left", net.skybornmc.skyblock.common.util.Format.number(left)),
+                    Msg.number("more", module.config().limitPerLevel)));
+        }
         if (display == null || !display.isValid()) {
             Location at = sp.pos.center(world).add(0, 0.9, 0);
             display = world.spawn(at, org.bukkit.entity.TextDisplay.class, t -> {
@@ -414,7 +422,7 @@ final class SpawnerManager implements Listener {
             labels.put(sp.pos, display);
         }
         display.text(text);
-        labelAmount.put(sp.pos, sp.amount);
+        labelAmount.put(sp.pos, signature);
     }
 
     void removeLabel(Pos pos) {
@@ -422,6 +430,17 @@ final class SpawnerManager implements Listener {
         labelAmount.remove(pos);
         if (display != null && display.isValid()) {
             display.remove();
+        }
+    }
+
+    /** Owner 7 Nov 2026: the kills line of every shown label follows the island's kills (every 2 s, only what changed). */
+    void refreshLabels() {
+        for (Pos pos : java.util.List.copyOf(labels.keySet())) {
+            Spawner sp = spawners.get(pos);
+            org.bukkit.entity.TextDisplay display = labels.get(pos);
+            if (sp != null && display != null && display.isValid()) {
+                label(sp, display.getWorld());
+            }
         }
     }
 
@@ -651,7 +670,8 @@ final class SpawnerManager implements Listener {
             if (SpawnerRules.room(owned, cap) < 1) {
                 event.setCancelled(true);
                 deny(player, "spawner.limit-reached", mob(type.get()), Msg.p("max", Format.number(cap)),
-                        Msg.number("level", module.spawnerLevel(island, type.get())));
+                        Msg.number("level", module.spawnerLevel(island, type.get())),
+                        Msg.p("left", Format.number(module.killsToNext(island, type.get()))), Msg.number("more", module.config().limitPerLevel));
                 capRefused(player, island, tier, owned, cap, block.getLocation());
                 return;
             }
@@ -862,7 +882,8 @@ final class SpawnerManager implements Listener {
             long capRoom = SpawnerRules.room(owned, cap);
             if (capRoom < 1) {
                 deny(player, "spawner.limit-reached", mob(sp.type), Msg.p("max", Format.number(cap)),
-                        Msg.number("level", module.spawnerLevel(sp.island, sp.type)));
+                        Msg.number("level", module.spawnerLevel(sp.island, sp.type)),
+                        Msg.p("left", Format.number(module.killsToNext(sp.island, sp.type))), Msg.number("more", module.config().limitPerLevel));
                 World w = Bukkit.getWorld(sp.pos.world());
                 capRefused(player, sp.island, tier, owned, cap, w == null ? null : sp.pos.center(w));
                 return;

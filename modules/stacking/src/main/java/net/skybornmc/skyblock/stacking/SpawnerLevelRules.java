@@ -43,13 +43,17 @@ final class SpawnerLevelRules {
         return Math.max(0, Math.min(1, (kills - from) / (double) Math.max(1, to - from)));
     }
 
-    /** The most spawners of one mob type on the island. */
-    static int limit(int level, int prestige, boolean premium, int perLevel, int limitMax, int premiumLimit, int maxLevel) {
+    /**
+     * The most spawners of one mob type on the island from its level (owner 7 Nov 2026): {@code base} at level 1,
+     * {@code perLevel} more each level after it (64, 96, 128 ...), at most {@code limitMax}; after a prestige the top.
+     */
+    static int limit(int level, int prestige, boolean premium, int base, int perLevel, int limitMax, int premiumLimit, int maxLevel) {
         if (premium) {
             return premiumLimit;
         }
-        int lv = prestige > 0 ? maxLevel : level;
-        return Math.max(1, Math.min(limitMax, perLevel * lv));
+        int lv = prestige > 0 ? maxLevel : Math.max(1, level);
+        long n = (long) base + (long) perLevel * (lv - 1);
+        return (int) Math.max(1, Math.min(limitMax, n));
     }
 
     /** True when the type can prestige now (top level, below the prestige cap). */

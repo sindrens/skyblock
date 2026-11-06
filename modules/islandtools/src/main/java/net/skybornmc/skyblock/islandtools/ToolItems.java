@@ -131,7 +131,7 @@ final class ToolItems {
             pdc.set(KIND, PersistentDataType.STRING, kind.id());
             pdc.set(ISLAND, PersistentDataType.STRING, island.toString());
         });
-        applyEnchants(stack, kind, m.prog(island, kind));
+        applyEnchants(stack, kind, m.view(island, profile, kind)); // tools v5: the player's own perks
         BoundItems.mark(stack, profile);
         if (kind != Kind.ROD && kind != Kind.SWORD) { // the pack has no rod or sword model yet: the vanilla look
             m.core().items().retexture(stack, "item/island_" + kind.id() + "_diamond");

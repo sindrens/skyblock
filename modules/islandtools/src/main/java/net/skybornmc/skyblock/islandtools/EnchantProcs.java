@@ -98,6 +98,7 @@ final class EnchantProcs implements Listener {
                     }
                     if (p.isOnline() && profile.equals(m.profile(p))) {
                         levels.put(profile, new ConcurrentHashMap<>(map));
+                        m.perksLoaded(p, profile); // tools v5: personal perks (and their one-time seed from the island)
                     }
                 }));
     }
@@ -117,6 +118,11 @@ final class EnchantProcs implements Listener {
 
     boolean loaded(Player p) {
         return levels.containsKey(m.profile(p));
+    }
+
+    /** Owner 7 Nov 2026 (tools v5): the cached rows of a profile (enchants and personal perks), null while loading. */
+    Map<String, Integer> rows(UUID profile) {
+        return profile == null ? null : levels.get(profile);
     }
 
     int level(Player p, GrindEnchants.Def def) {
@@ -247,7 +253,7 @@ final class EnchantProcs implements Listener {
             map.put(def.key(), have + n);
         }
         if (p.isOnline()) {
-            m.msg().send(p, "enchant.bought", Msg.p("enchant", name(def)), Msg.number("level", have + n), Msg.number("max", def.max()),
+            m.msg().actionBar(p, "enchant.bought", Msg.p("enchant", name(def)), Msg.number("level", have + n), Msg.number("max", def.max()),
                     Msg.mm("cost", m.shardText(kind, cost)));
             m.core().sounds().play(p, "enchant");
             if (def.crosses(have, have + n)) { // owner 7 Nov 2026: a breakthrough is a moment

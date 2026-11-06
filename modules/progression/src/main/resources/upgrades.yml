@@ -411,6 +411,43 @@ upgrades:
       - tier: 12
         cost: 92400000000
         value: 512
+  # Owner 7 Nov 2026: more spawners of every mob type on the island (on top of the type's level: 64, +32 a level).
+  spawner_capacity:
+    tab: production
+    icon: "spawner"
+    order: 1
+    effect: spawner-capacity
+    levels:
+      - tier: 1
+        cost: 40000000
+        value: 32
+      - tier: 2
+        cost: 90000000
+        value: 64
+      - tier: 3
+        cost: 200000000
+        value: 96
+      - tier: 4
+        cost: 450000000
+        value: 128
+      - tier: 5
+        cost: 1000000000
+        value: 160
+      - tier: 6
+        cost: 2200000000
+        value: 192
+      - tier: 7
+        cost: 5000000000
+        value: 224
+      - tier: 8
+        cost: 11000000000
+        value: 256
+      - tier: 9
+        cost: 25000000000
+        value: 288
+      - tier: 10
+        cost: 55000000000
+        value: 320
   spawner_rate:
     tab: production
     icon: "clock"

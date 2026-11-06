@@ -90,11 +90,11 @@ class ToolRulesTest {
         assertEquals(100, sweep.max());
         assertEquals(1, u.get(Kind.PICKAXE, "vein").orElseThrow().prestige());
         // Feedback 5 Nov 2026: fewer, bigger steps (100 levels of 1% instead of 1,000 of 0.1%); the first level is cheap.
-        assertEquals(100, u.get(Kind.HOE, "shard_finder").orElseThrow().max());
+        assertEquals(2500, u.get(Kind.HOE, "shard_finder").orElseThrow().max(), "tools v5: long tracks");
         assertEquals(1, u.get(Kind.HOE, "shard_finder").orElseThrow().unlock(), "Shard Finder from level 1");
         assertTrue(u.get(Kind.HOE, "shard_finder").orElseThrow().cost(1, C.priceExponent, 1) <= 1_000, "the first Shard Finder within a minute or two (shards x10)");
-        assertEquals(100, u.get(Kind.HOE, "extra_drops").orElseThrow().max());
-        assertEquals(100, u.get(Kind.HOE, "growth").orElseThrow().max());
+        assertEquals(1000, u.get(Kind.HOE, "extra_drops").orElseThrow().max());
+        assertEquals(500, u.get(Kind.HOE, "growth").orElseThrow().max());
         Upgrades.Def fortune = u.get(Kind.HOE, "fortune").orElseThrow();
         assertEquals(3, fortune.max(), "enchant-like perks keep their vanilla levels");
         assertEquals(Upgrades.Effect.ENCHANT, fortune.effect());
@@ -152,7 +152,7 @@ class ToolRulesTest {
         assertEquals(1000, ToolRules.carryOver(5, 5, 1000));
         assertEquals(1, ToolRules.carryOver(1, 3, 3));
         assertEquals(0, ToolRules.carryOver(0, 3, 3));
-        Upgrades u = Upgrades.parse(C.perks, w -> { });
+        Upgrades u = Upgrades.parse(IslandToolsConfig.PERKS_V14, w -> { }); // the shared island perks of that time
         Map<String, Integer> hoe = ToolRules.migrate(Kind.HOE, "row=4,magnet=1,shard_finder=3,fortune=2,storage=10", u);
         assertEquals(Map.of("shard_finder", 30, "fortune", 2, "storage", 100), hoe, "row and magnet are dropped (4 Nov 2026 perk maxima)");
         Map<String, Integer> pick = ToolRules.migrate(Kind.PICKAXE, "smelter=5,experience=5,extra_drops=1", u);
