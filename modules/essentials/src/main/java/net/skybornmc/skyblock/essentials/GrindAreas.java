@@ -276,7 +276,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         }
         if (area.equals("pve")) {
             teleports.request(player, pve.start(world, base), TeleportReason.SPAWN, TeleportOptions.to(area,
-                    () -> msg.send(player, "grind.arrived.pve")));
+                    () -> welcome(player, "pve")));
             return;
         }
         int x = switch (area) {
@@ -293,7 +293,16 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         };
         Location to = new Location(world, x + 0.5, base + 1, -half - 3 + 0.5, 0, 0);
         teleports.request(player, to, TeleportReason.SPAWN, TeleportOptions.to(area,
-                () -> msg.send(player, "grind.arrived." + area)));
+                () -> welcome(player, area)));
+    }
+
+    /** Owner 7 Nov 2026 ("no spam"): the welcome line once per area and session. */
+    private final java.util.Set<String> welcomed = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void welcome(Player player, String area) {
+        if (welcomed.add(player.getUniqueId() + ":" + area)) {
+            msg.send(player, "grind.arrived." + area);
+        }
     }
 
     // ------------------------------------------------------------------ building (once)

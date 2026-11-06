@@ -374,7 +374,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
                 for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
                     if (islands().flatMap(i -> i.islandOf(p.getUniqueId())).map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::id)
                             .filter(info.id()::equals).isPresent()) {
-                        msg.send(p, after >= config.levelMax ? "spawner.level-max" : "spawner.level-up", SpawnerManager.mob(mob),
+                        if (after >= config.levelMax) msg.send(p, "spawner.level-max", SpawnerManager.mob(mob),
+                                net.skybornmc.skyblock.common.text.Msg.number("level", after), net.skybornmc.skyblock.common.text.Msg.number("limit", limit));
+                        else msg.actionBar(p, "spawner.level-up", SpawnerManager.mob(mob), // owner 7 Nov 2026: no chat spam
                                 net.skybornmc.skyblock.common.text.Msg.number("level", after), net.skybornmc.skyblock.common.text.Msg.number("limit", limit));
                         core.sounds().play(p, "level-up");
                     }

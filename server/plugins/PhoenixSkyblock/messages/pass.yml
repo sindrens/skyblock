@@ -12,8 +12,8 @@ changed: "<prefix><c:error><sym:cross></c:error> <c:text>Your pass just changed.
 
 # Pass level-up (chat line + sound). <ready> = tiers ready to claim now.
 level-up:
-  line: "<prefix><c:flame><sym:star></c:flame> <c:text>Battle pass level <c:value><level></c:value><c:text>! Claim your rewards in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
-  overflow: "<prefix><c:flame><sym:star></c:flame> <c:text>Bonus reward unlocked! Claim it in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
+  line: "<c:flame><sym:star></c:flame> <c:text>Battle pass level <c:value><level></c:value><c:text>! Claim your rewards in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
+  overflow: "<c:flame><sym:star></c:flame> <c:text>Bonus reward unlocked! Claim it in</c:text> <c:action>/pass</c:action> <c:muted>(<ready> ready)"
 
 premium:
   unlocked: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value>Premium Pass</c:value> <c:text>is unlocked for this season. Claim its cosmetics in</c:text> <c:action>/pass</c:action><c:text>."
@@ -157,7 +157,7 @@ menu:
 # /pass admin (staff, P10-41).
 admin:
   loading: "<prefix><c:error><sym:cross></c:error> <c:text>The pass of <c:value><player></c:value> <c:text>is loading. Try again in a moment."
-  view: "<c:header><bold>| Pass of <player></bold> <c:muted>(profile <profile>, season <season>)</c:muted><newline><c:bar>|</c:bar> <c:text>Level <c:value><level></c:value> <c:muted><sym:dot></c:muted> <c:value><xp></c:value> <c:text>XP <c:muted><sym:dot></c:muted> <c:text>free claimed <c:value><free></c:value> <c:muted><sym:dot></c:muted> <c:text>premium <c:value><premium></c:value> <c:muted>(<premium-claimed> claimed)</c:muted> <c:muted><sym:dot></c:muted> <c:text>ready <c:value><ready>"
+  view: "<c:header><bold>| Pass of <player></bold> <c:muted>(profile <profile>, season <season>)</c:muted><newline><c:bar>| </c:bar><c:text>Level <c:value><level></c:value> <c:muted><sym:dot></c:muted> <c:value><xp></c:value> <c:text>XP <c:muted><sym:dot></c:muted> <c:text>free claimed <c:value><free></c:value> <c:muted><sym:dot></c:muted> <c:text>premium <c:value><premium></c:value> <c:muted>(<premium-claimed> claimed)</c:muted> <c:muted><sym:dot></c:muted> <c:text>ready <c:value><ready>"
   xp-range: "<prefix><c:error><sym:cross></c:error> <c:text>Give between 1 and <c:value><max></c:value> <c:text>XP at once."
   xp-given: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><xp></c:value> <c:text>pass XP to <c:value><player></c:value><c:text>."
   reset: "<prefix><c:success><sym:check></c:success> <c:text>Pass XP of <c:value><player></c:value> <c:text>is 0 now. Claimed tiers stay claimed."

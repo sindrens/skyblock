@@ -72,7 +72,7 @@ class BoardSourceTest {
         assertEquals(new BoardSource.IslandLevel(IslandTop.Kind.LEVEL, IslandTop.Board.TEAM), all.get("island_top_team"));
         assertEquals(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_GAIN, IslandTop.Board.SOLO, true), all.get("weekly_island_gain"));
         assertEquals(new BoardSource.IslandWeekly(IslandTop.Kind.WEEKLY_PILLARS, IslandTop.Board.SOLO, true), all.get("weekly_pillar_gain"));
-        assertInstanceOf(BoardSource.None.class, all.get("boss_damage"));
+        assertInstanceOf(BoardSource.IslandLevel.class, all.get("boss_damage"), "owner 7 Nov 2026: island worth, no Coming soon board");
         assertEquals(new BoardSource.Money(Currency.MONEY), all.get("baltop"));
 
         Map<String, BoardSource> broken = BoardSource.parseAll(List.of("a: skill cooking", "nope"), problems);

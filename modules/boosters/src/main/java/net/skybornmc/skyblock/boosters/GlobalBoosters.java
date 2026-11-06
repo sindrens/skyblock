@@ -182,8 +182,8 @@ final class GlobalBoosters {
             m.audit("global_end", Actor.SYSTEM, e.starter, e.starterName, (long) e.percent, Map.of("id", id, "type", e.type.id(),
                     "thanks", e.thanked.size()));
             if (m.settings.announce) {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    m.msg.send(p, "global.ended", Msg.p("type", m.typeName(e.type)), Msg.number("percent", e.percent),
+                for (Player p : Bukkit.getOnlinePlayers()) { // owner 7 Nov 2026: no chat line for an ending booster (no spam)
+                    m.msg.actionBar(p, "global.ended", Msg.p("type", m.typeName(e.type)), Msg.number("percent", e.percent),
                             Msg.p("name", e.starterName), Msg.number("thanks", e.thanked.size()));
                 }
             }
@@ -439,14 +439,7 @@ final class GlobalBoosters {
                             Msg.number("position", queue.queued(row.type()).indexOf(e) + 1), Msg.p("wait", BoosterRules.time(wait)));
                     m.sound(online, m.settings.startSound);
                 }
-                if (m.settings.announce) {
-                    for (Player other : Bukkit.getOnlinePlayers()) {
-                        if (!other.getUniqueId().equals(player)) {
-                            m.msg.send(other, "global.queued-all", Msg.p("name", name), Msg.p("type", m.typeName(row.type())),
-                                    Msg.number("percent", row.percent()), Msg.p("wait", BoosterRules.time(wait)));
-                        }
-                    }
-                }
+                // owner 7 Nov 2026 ("no spam"): the start of a booster is announced, joining the queue is not
             }
             if (online != null) {
                 m.refreshMenu(online);

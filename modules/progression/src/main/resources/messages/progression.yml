@@ -41,7 +41,7 @@ milestone:
 # Hover text of the lines above. <pillar> <level> <percent> <bonus>
 summary:
   header: "<c:header><bold>Island Pillars"
-  line: "<c:bar>|</c:bar> <pillar> <c:value><level></c:value> <c:muted>(<percent>%)"
+  line: "<c:bar>| </c:bar><pillar> <c:value><level></c:value> <c:muted>(<percent>%)"
   bonus: "<c:muted>Island XP bonus: <c:value>+<bonus>%"
 
 # /settings toggle
@@ -506,11 +506,11 @@ tasks:
       island-level:
         - "<c:muted>Your island's level."
     progress:
-      - "<c:bar>|</c:bar> <c:text>Progress: <c:value><progress></c:value><c:muted>/<goal> (<percent>%)"
+      - "<c:bar>| </c:bar><c:text>Progress: <c:value><progress></c:value><c:muted>/<goal> (<percent>%)"
     done:
-      - "<c:bar>|</c:bar> <c:success><sym:check> Done"
+      - "<c:bar>| </c:bar><c:success><sym:check> Done"
     rewards:
-      - "<c:bar>|</c:bar> <c:header>Rewards"
+      - "<c:bar>| </c:bar><c:header>Rewards"
     reward-crystals:
       - "  <c:success>[+]</c:success> <cur:crystals><sym:crystals> <crystals></cur:crystals> <c:muted>each member"
     reward-pillar:

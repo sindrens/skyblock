@@ -142,7 +142,7 @@ eco:
         - "<c:muted>Ends in <left>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to allow or deny"
-    confirm-crumb: "Allow?"
+    confirm-crumb: "Confirm Permission"
     confirm:
       - "<c:text>Yes: allow and apply it now."
       - "<c:text>No: deny it, nothing changes."
@@ -365,7 +365,7 @@ sell:
   sold-big-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
   breakdown:
     header: "<bold><c:header>| Sale</c:header></bold>"
-    line: "<c:bar>| </c:bar><c:text><item> <c:muted>x<amount></c:muted> <c:bar>|</c:bar> <value>"
+    line: "<c:bar>| </c:bar><c:text><item> <c:muted>x<amount></c:muted> <c:bar>| </c:bar><value>"
     more: "<c:bar>| </c:bar><c:muted>+<count> more items"
     subtotal: "<c:text>Before bonus: <value>"
     bonus: "<c:text>Sell bonus: <c:value><bonus>%"
@@ -1227,7 +1227,7 @@ sell-wand:
   name: "<bold><area:money>Sell Wand</area:money></bold>"
   subtitle: "<c:muted>Tool <sym:dot> Black Market"
   about: "<c:text>Sells everything sellable in a chest."
-  uses: "<c:bar>|</c:bar> <c:text>Uses left: <c:value><uses>"
+  uses: "<c:bar>| </c:bar><c:text>Uses left: <c:value><uses>"
   action: "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a chest on your island"
   sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> <c:text>items from the chest for <c:value><amount></c:value><c:text>. Uses left: <c:value><uses>"
   nothing: "<prefix><c:text>Nothing in that chest can be sold."

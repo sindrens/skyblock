@@ -185,7 +185,7 @@ menu:
       lore: ["<c:text>Something else? Describe it", "<c:text>in one line.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to type"]
     # QOL3: confirm before a report is sent. <player>, <reason>, <details> (only when typed).
     confirm:
-      crumb: "Report <player>?"
+      crumb: "Confirm Report"
       shown: "<c:value><bold>Report <player></bold></c:value>"
       details:
         - "<c:ember>Player</c:ember> <c:value><player>"
@@ -329,7 +329,7 @@ menu:
       lore: ["<c:warning><player> is frozen.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to unfreeze"]
     # QOL3: confirm before Freeze / Unfreeze. <player>, <location> (world x y z when the button was clicked).
     freeze-confirm:
-      crumb: "Freeze <player>?"
+      crumb: "Confirm Freeze"
       shown:
         name: "<c:sky_ice><bold>Freeze <player></bold></c:sky_ice>"
         lore: []
@@ -340,7 +340,7 @@ menu:
         - "<c:ember>Where</c:ember> <c:value><location>"
         - "<c:muted>Logging out counts as refusing the check."
     unfreeze-confirm:
-      crumb: "Unfreeze <player>?"
+      crumb: "Confirm Unfreeze"
       shown:
         name: "<c:sky_ice><bold>Unfreeze <player></bold></c:sky_ice>"
         lore: []

@@ -44,19 +44,19 @@ public final class EssentialsConfig extends ModuleConfig {
     public boolean grindEventsEnabled = true;
 
     @Setting(path = "grind.events.duration-seconds", desc = "How long one round of events runs.", min = 5, max = 600)
-    public int grindEventSeconds = 30;
+    public int grindEventSeconds = 60; // owner 7 Nov 2026: one clear event at a time, then a real break
 
     @Setting(path = "grind.events.active-min", desc = "Fewest events in one round.", min = 1, max = 6)
-    public int grindEventActiveMin = 2;
+    public int grindEventActiveMin = 1;
 
     @Setting(path = "grind.events.active-max", desc = "Most events in one round.", min = 1, max = 6)
-    public int grindEventActiveMax = 4;
+    public int grindEventActiveMax = 1;
 
     @Setting(path = "grind.events.break-min-seconds", desc = "Shortest break between two rounds.", min = 5, max = 3600)
-    public int grindEventBreakMin = 30;
+    public int grindEventBreakMin = 180;
 
     @Setting(path = "grind.events.break-max-seconds", desc = "Longest break between two rounds.", min = 5, max = 3600)
-    public int grindEventBreakMax = 60;
+    public int grindEventBreakMax = 300;
 
     @Setting(path = "grind.events.kinds", desc = "Events that can run: double_xp (tool XP), double_drops, double_shards, instant_regrow, "
             + "proc_frenzy (Sweep/Vein and enchant procs), golden_blocks (the money bonus is worth more).")
@@ -283,13 +283,20 @@ public final class EssentialsConfig extends ModuleConfig {
     /** Version 2 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): the /farm money bonus is halved (untouched lists only). */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         EssentialsConfig d = new EssentialsConfig();
-        return java.util.Map.of(2, java.util.Map.of("grind.farm-bonus",
+        return java.util.Map.of(
+                // v4 (owner 7 Nov 2026, "better events, no spam"): one event at a time for 60 s, then 3-5 minutes off
+                4, java.util.Map.of("grind.events.duration-seconds", ValueChange.of(30, d.grindEventSeconds),
+                        "grind.events.active-min", ValueChange.of(2, d.grindEventActiveMin),
+                        "grind.events.active-max", ValueChange.of(4, d.grindEventActiveMax),
+                        "grind.events.break-min-seconds", ValueChange.of(30, d.grindEventBreakMin),
+                        "grind.events.break-max-seconds", ValueChange.of(60, d.grindEventBreakMax)),
+                2, java.util.Map.of("grind.farm-bonus",
                 ValueChange.of(List.of(4000, 7000, 12000, 20000, 30000), List.of(2000, 3500, 6000, 10000, 15000))),
                 // v3 (owner 7 Nov 2026): money / 4, Golden Blocks no longer pays on every block
                 3, java.util.Map.of("grind.farm-bonus", ValueChange.of(List.of(2000, 3500, 6000, 10000, 15000), d.grindFarmBonus),

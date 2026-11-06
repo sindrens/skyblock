@@ -65,7 +65,7 @@ trash:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to destroy"
   confirm:
-    crumb: "Destroy <amount> items?"
+    crumb: "Confirm Destroy"
     shown:
       name: "<c:error><amount> item(s)"
       lore: []
@@ -117,7 +117,7 @@ freerank:
       lore: ["<c:text>Free with your rank.", "<c:text>Yours forever.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick"]
   # Confirm before the permanent pick (details on the middle item, GUI_DESIGN §4).
   confirm:
-    crumb: "Pick this tag?"
+    crumb: "Confirm Tag"
     details: ["<c:text>Give you <tag> <c:text>for good.", "<c:warning>You can't change this pick later."]
 
 # Ranks V2: /rankrewards (weekly kit per profile, monthly tag per account).

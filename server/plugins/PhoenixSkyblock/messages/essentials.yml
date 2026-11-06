@@ -272,7 +272,20 @@ grind:
   bonus-popup: "<cur:money><bold>+<amount>"
   # Owner 6 Nov 2026: events at /farm and /mine. <events> = the names joined by the separator, <seconds> = how long.
   events:
-    start: "<prefix><c:flame><bold>Events!</bold></c:flame> <events> <c:muted>for <seconds> s"
+    # Owner 7 Nov 2026: one event at a time, shown as a title (no chat). <events> <desc> <seconds>
+    start-title:
+      title: "<bold><events>"
+      subtitle: "<desc> <c:muted>· <seconds> s"
+      fade-in: 5
+      stay: 40
+      fade-out: 10
+    desc:
+      double_xp: "<c:text>Tool XP x2"
+      double_drops: "<c:text>Every drop x2"
+      double_shards: "<c:text>Shards x2"
+      instant_regrow: "<c:text>Blocks come back at once"
+      proc_frenzy: "<c:text>Enchants and Sweep proc x2"
+      golden_blocks: "<c:text>The money bonus comes 3x as often"
     separator: "<c:muted>, "
     bar: " <c:muted>· <seconds> s"
     scoreboard-next: "in <seconds> s"

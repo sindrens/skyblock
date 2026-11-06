@@ -106,13 +106,13 @@ menu:
     no-permission: "<c:locked><sym:cross> Needs the upgrade permission"
 
 confirm:
-  crumb: "Buy this?"
+  crumb: "Confirm Purchase"
   offer:
     - "<c:text>You get: <c:value><amount>x</c:value> <offer>"
     - "<c:text>Price: <cur:crystals><price>"
     - "<c:text>You have: <c:value><balance>"
   bound: ["<c:muted>Bound to your profile (no trading)."]
-  charter-crumb: "Grow your island?"
+  charter-crumb: "Confirm Island Charter"
   charter:
     - "<c:text>Your island grows to <c:value><size></c:value><c:text>."
     - "<c:text>Price: <c:value><price>"

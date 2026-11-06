@@ -626,7 +626,9 @@ final class LevelManager implements Listener {
         for (UUID member : islands.members(islandId).keySet()) {
             profiles.onlinePlayer(member).ifPresent(p -> {
                 msg.title(p, "level.up.title", Msg.p("level", level));
-                msg.send(p, "level.up.chat", Msg.p("level", level));
+                if (!config.xpMode() || PillarManager.crossedMultiple(oldBest, level, 5)) { // owner 7 Nov 2026: chat every 5 levels
+                    msg.send(p, "level.up.chat", Msg.p("level", level));
+                }
                 core.sounds().play(p, config.levelUpSound);
             });
         }

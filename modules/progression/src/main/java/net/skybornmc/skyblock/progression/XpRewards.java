@@ -139,7 +139,7 @@ final class XpRewards {
             ProfileService profiles = ProfileService.of(core.services());
             for (UUID member : members) {
                 profiles.onlinePlayer(member).ifPresent(p -> {
-                    msg.send(p, "level.reward.money", Msg.p("money", Format.money(moneyTotal)), Msg.number("level", level));
+                    msg.actionBar(p, "level.reward.money", Msg.p("money", Format.money(moneyTotal)), Msg.number("level", level));
                     if (crystalTotal > 0 || keyTotal > 0) {
                         msg.send(p, "level.reward.bonus", Msg.p("crystals", Format.number(crystalTotal)), Msg.number("keys", keyTotal),
                                 Msg.p("crate", config.rewardKeyCrate == null ? "" : config.rewardKeyCrate));

@@ -181,8 +181,8 @@ staff:
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player named <c:value><player></c:value> <c:text>has joined before."
   info:
     header: "<c:header><bold>| Profiles of <player></bold></c:header> <c:muted>(<count>, <online>)"
-    line: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:muted>· island <island> · <playtime>"
-    line-active: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:success>(active)</c:success> <c:muted>· island <island> · <playtime>"
+    line: "<c:bar>| </c:bar><c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:muted>· island <island> · <playtime>"
+    line-active: "<c:bar>| </c:bar><c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:success>(active)</c:success> <c:muted>· island <island> · <playtime>"
   reset:
     online: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is online. Kick them first (/kick), then reset."
     self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't reset your own profile. Ask another admin or use the console."
@@ -199,11 +199,11 @@ wipe:
   summary:
     text:
       - "<c:header><bold>| Profile wiped</bold></c:header> <c:muted>(<why>)"
-      - "<c:bar>|</c:bar> <c:text>Gone: <c:error><money></c:error> <c:text>money, <c:error><shards></c:error> <c:text>shards, <c:error><items></c:error> <c:text>items,"
-      - "<c:bar>|</c:bar> <c:text>all tools, skills, quests, collection and milestones."
-      - "<c:bar>|</c:bar> <c:text>Kept: <c:success>credits, rank, achievements and cosmetics</c:success><c:text>."
-      - "<c:bar>|</c:bar> <c:text>You start again on a new island. <c:muted>Got an invite? Accept it instead:</c:muted> <click:run_command:'/is invites'><hover:show_text:'<c:text>Your island invites'><c:action>[Invites]</c:action></hover></click>"
-      - "<c:bar>|</c:bar> <c:muted>A mistake? Staff can restore it for <days> days.</c:muted>"
+      - "<c:bar>| </c:bar><c:text>Gone: <c:error><money></c:error> <c:text>money, <c:error><shards></c:error> <c:text>shards, <c:error><items></c:error> <c:text>items,"
+      - "<c:bar>| </c:bar><c:text>all tools, skills, quests, collection and milestones."
+      - "<c:bar>| </c:bar><c:text>Kept: <c:success>credits, rank, achievements and cosmetics</c:success><c:text>."
+      - "<c:bar>| </c:bar><c:text>You start again on a new island. <c:muted>Got an invite? Accept it instead:</c:muted> <click:run_command:'/is invites'><hover:show_text:'<c:text>Your island invites'><c:action>[Invites]</c:action></hover></click>"
+      - "<c:bar>| </c:bar><c:muted>A mistake? Staff can restore it for <days> days.</c:muted>"
     no-island: "your island"
     unknown: "?"
   # Why the profile was wiped (in the summary). <island>
@@ -222,8 +222,8 @@ wipe:
 snapshots:
   none: "<prefix><c:text><c:value><player></c:value> <c:text>has no wiped profiles."
   header: "<c:header><bold>| Snapshots of <player></bold></c:header> <c:muted>(<count>, kept <days> days)"
-  line: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status>"
-  line-open: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status> <click:suggest_command:'/profiles restore <player> <slot> <id>'><hover:show_text:'<c:text>Put this profile back'><c:action>[Restore]</c:action></hover></click>"
+  line: "<c:bar>| </c:bar><c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status>"
+  line-open: "<c:bar>| </c:bar><c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status> <click:suggest_command:'/profiles restore <player> <slot> <id>'><hover:show_text:'<c:text>Put this profile back'><c:action>[Restore]</c:action></hover></click>"
   # <time> = time left, <by> = who restored it
   status:
     open: "<c:success>open (<time> left)</c:success>"

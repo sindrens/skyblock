@@ -300,7 +300,8 @@ final class Leaderboards {
         List<Line> out = new ArrayList<>(size);
         for (int place = 1; place <= size; place++) {
             Row row = rows != null && place <= rows.size() ? rows.get(place - 1) : null;
-            out.add(new Line(row == null ? "leaderboard.empty-place" : rankKey(place), place, row));
+            boolean empty = rows != null && rows.isEmpty(); // read and empty (not "not read yet")
+            out.add(new Line(row != null ? rankKey(place) : empty && place == 1 ? "leaderboard.be-first" : "leaderboard.empty-place", place, row));
         }
         return out;
     }

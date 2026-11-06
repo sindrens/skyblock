@@ -151,6 +151,8 @@ final class GrindEventsImpl implements GrindEvents {
         updateBars(c, w, now);
     }
 
+    private Set<Kind> last = Set.of();
+
     private void startRound(EssentialsConfig c, World w) {
         List<Kind> kinds = enabled(c.grindEventKinds);
         if (kinds.isEmpty()) {
@@ -159,7 +161,9 @@ final class GrindEventsImpl implements GrindEvents {
         }
         int lo = Math.max(1, Math.min(c.grindEventActiveMin, c.grindEventActiveMax));
         int hi = Math.max(lo, c.grindEventActiveMax);
-        Set<Kind> chosen = pick(kinds, ThreadLocalRandom.current().nextInt(lo, hi + 1), ThreadLocalRandom.current());
+        List<Kind> pool = kinds.size() > 1 ? kinds.stream().filter(k -> !last.contains(k)).toList() : kinds; // never the same twice
+        Set<Kind> chosen = pick(pool.isEmpty() ? kinds : pool, ThreadLocalRandom.current().nextInt(lo, hi + 1), ThreadLocalRandom.current());
+        last = chosen;
         active = Collections.unmodifiableSet(chosen);
         roundEnds = System.currentTimeMillis() + 1000L * Math.max(5, c.grindEventSeconds);
         List<Component> list = new ArrayList<>();
@@ -171,8 +175,11 @@ final class GrindEventsImpl implements GrindEvents {
         }
         Component joined = Component.join(net.kyori.adventure.text.JoinConfiguration.separator(
                 msg.component(Audience.empty(), "grind.events.separator")), list);
-        for (Player p : w.getPlayers()) {
-            msg.send(p, "grind.events.start", Msg.c("events", joined), Msg.number("seconds", Math.max(5, c.grindEventSeconds)));
+        Component desc = chosen.size() == 1 ? msg.component(Audience.empty(), "grind.events.desc." + chosen.iterator().next().id())
+                : Component.empty();
+        for (Player p : w.getPlayers()) { // owner 7 Nov 2026: a title once, no chat line
+            msg.title(p, "grind.events.start-title", Msg.c("events", joined), Msg.c("desc", desc),
+                    Msg.number("seconds", Math.max(5, c.grindEventSeconds)));
             core.sounds().play(p, "unlock");
         }
     }

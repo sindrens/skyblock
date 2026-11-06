@@ -569,7 +569,7 @@ public final class PassModule implements SkyblockModule, Listener {
         if (to > from && online != null) {
             int level = curve.level(r.after());
             boolean overflow = to > curve.max();
-            msg.send(online, overflow ? "level-up.overflow" : "level-up.line", Msg.number("level", level),
+            msg.actionBar(online, overflow ? "level-up.overflow" : "level-up.line", Msg.number("level", level), // no chat (owner 7 Nov 2026)
                     Msg.number("ready", claimableTiers(online, COUNT_LIMIT).size()));
             sound(online, settings.levelUpSound);
             if (settings.autoClaim) {

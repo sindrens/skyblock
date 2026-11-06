@@ -18,11 +18,11 @@ class GrindEventsTest {
         EssentialsConfig c = new EssentialsConfig();
         assertEquals(List.of(Kind.values()), GrindEventsImpl.enabled(c.grindEventKinds));
         assertEquals(List.of(Kind.DOUBLE_XP), GrindEventsImpl.enabled(List.of("Double_XP", "nope", "double_xp")), "unknown and doubles skipped");
-        assertEquals(30, c.grindEventSeconds);
-        assertEquals(2, c.grindEventActiveMin);
-        assertEquals(4, c.grindEventActiveMax);
-        assertEquals(30, c.grindEventBreakMin);
-        assertEquals(60, c.grindEventBreakMax);
+        assertEquals(60, c.grindEventSeconds, "owner 7 Nov 2026: one clear event at a time");
+        assertEquals(1, c.grindEventActiveMin);
+        assertEquals(1, c.grindEventActiveMax);
+        assertEquals(180, c.grindEventBreakMin);
+        assertEquals(300, c.grindEventBreakMax);
     }
 
     @Test

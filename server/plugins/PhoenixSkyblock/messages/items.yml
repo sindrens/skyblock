@@ -26,7 +26,7 @@ lore:
   progress-bar-filled: "●"
   progress-bar-empty: "●"
   rewards: "<bold><c:header>| Rewards</c:header></bold>"
-  reward: "<rarity:{rarity}>★ {name}</rarity:{rarity}> <c:muted>(x{amount})</c:muted> <c:bar>|</c:bar> <c:value>{chance}%"
+  reward: "<rarity:{rarity}>★ {name}</rarity:{rarity}> <c:muted>(x{amount})</c:muted> <c:bar>| </c:bar><c:value>{chance}%"
   quest-reward: "<c:success><bold>[+]</bold></c:success> <c:text>{reward}"
   action: "<bold><c:action>» {input}</c:action></bold> <c:text>{text}"
   # Danger tiles (I9 section 5): red action line.

@@ -94,7 +94,7 @@ public final class CollectionSettings extends ModuleConfig {
     public boolean noticeTitle = true;
 
     @Setting(path = "notice.chat", desc = "Send a chat line on a new find and on a milestone.")
-    public boolean noticeChat = true;
+    public boolean noticeChat = false; // owner 7 Nov 2026: the title says it (no chat line per find)
 
     @Setting(path = "notice.find-sound", desc = "Sound (sounds.yml) on a new find (empty = none).")
     public String findSound = "notify";
@@ -126,14 +126,15 @@ public final class CollectionSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /** v2 (batch 9, 7 Nov 2026, FX-20): the pages of the four grind areas replace the Depths pages. */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("pages.order", ValueChange.of(PAGES_V1, PAGES_V2),
-                "pages.mine", ValueChange.of(MINE_V1, new CollectionSettings().mine)));
+                "pages.mine", ValueChange.of(MINE_V1, new CollectionSettings().mine)),
+                3, java.util.Map.of("notice.chat", ValueChange.of(true, false)));
     }
 
     /** The Depths mine page (before v2). */

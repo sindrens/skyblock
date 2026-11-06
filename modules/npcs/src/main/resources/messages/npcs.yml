@@ -171,15 +171,15 @@ holograms:
   signpost_market_square: "<c:flame><bold>Market Square"
   signpost_tavern: "<c:flame><bold>Tavern"
   signpost_hall_of_heroes: "<c:flame><bold>Hall of Heroes"
-  portal_to_warzone: "<c:flame><bold>Warzone <c:muted>· Soon"
+  portal_to_warzone: "<c:flame><bold>Warzone <c:muted>· Closed"
   portal_to_depths: "<c:flame><bold>Farm & Mine <c:muted>· /farm /mine"
   portal_to_island: "<c:flame><bold>Your Island"
-  portal_to_outposts: "<c:flame><bold>Outposts <c:muted>· Soon"
-  portal_to_events: "<c:flame><bold>Events <c:muted>· Soon"
+  portal_to_outposts: "<c:flame><bold>The Pond <c:muted>· /fish"
+  portal_to_events: "<c:flame><bold>The Arena <c:muted>· /pve"
   event_board:
-    - "<c:flame><bold>Events"
-    - "<c:text>Bosses, KOTH and envoys"
-    - "<c:muted>Coming soon"
+    - "<c:flame><bold>Grind Events"
+    - "<c:text>Double Drops, Double XP and more"
+    - "<c:text>every few minutes at /farm and /mine"
   key_board:
     - "<c:flame><bold>Crate Keys"
     - "<c:text>Get keys from the daily"
@@ -212,10 +212,9 @@ holograms:
     - "<c:flame><bold>Join us"
     - "<c:text>Discord: <c:value>/discord"
   dungeon_board:
-    - "<c:flame><bold>The Depths"
-    - "<c:text>Mine, chop and fight"
-    - "<c:text>through the tiers."
-    - "<c:text>Travel: <c:value>/dungeon"
+    - "<c:flame><bold>Farm & Mine"
+    - "<c:text>Money and shards for your tools"
+    - "<c:text>Travel: <c:value>/farm /mine"
 
 # Format of a build's own text (ids without a text above). <text> the builder's text, never parsed.
 hologram-fallback: "<c:flame><bold><text>"
@@ -231,7 +230,7 @@ hologram-names:
   spawn_map: "Spawn map"
   key_board: "Crate keys"
   blueprint_wall: "Blueprints"
-  dungeon_board: "The Depths"
+  dungeon_board: "Farm & Mine"
   ah_board: "Auction House"
   vote_party: "Vote Party"
 hologram-help:
@@ -249,8 +248,8 @@ hologram-help:
     - "<c:text>Your tool's enchants work"
     - "<c:text>at /farm and /mine: <c:value>/tool"
   dungeon_board:
-    - "<c:text>Each tier opens with a skill level."
-    - "<c:text>Pick a tier: <c:value>/dungeon"
+    - "<c:text>New crops and ores unlock as you go."
+    - "<c:text>Go: <c:value>/farm</c:value> <c:text>or <c:value>/mine"
   ah_board:
     - "<c:text>List an item: hold it and type <c:value>/ah sell"
   vote_party:
@@ -262,6 +261,10 @@ hologram-help:
     - "<c:text>Top players by Foraging XP. Updates every few minutes."
   combat:
     - "<c:text>Top players by Combat XP. Updates every few minutes."
+  farming:
+    - "<c:text>Top players by Farming XP. Updates every few minutes."
+  fishing:
+    - "<c:text>Top players by Fishing XP. Updates every few minutes."
 
 # ------------------------------------------------------------------ leaderboards (V2 style, like messages/items.yml hologram.*)
 leaderboard:
@@ -274,6 +277,8 @@ leaderboard:
   place: "<c:muted>#<place></c:muted> <c:value><player></c:value> <c:muted>·</c:muted> <value>"
   # A place nobody holds yet (keeps the board the same height).
   empty-place: "<c:locked>#<place> -"
+  # Owner 7 Nov 2026: an empty board says so on its first line.
+  be-first: "<c:muted>#1</c:muted> <c:value>Be the first!"
   coming-soon: "<c:muted>Coming soon"
   # <minutes> leaderboards.refresh-minutes
   footer: "<c:muted>Updates every <minutes> min"
@@ -291,7 +296,7 @@ leaderboard:
     # island_value boards (block worth). <amount> with the money symbol
     island-value: "<c:money><amount>"
     # PHASE-5 M5.7 weekly boards: island_gain <points> (earned level points this week), pillar_gain <levels>
-    island-gain: "<c:value>+<points> pts"
+    island-gain: "<c:value>+<points> XP"
     pillar-gain: "<c:value>+<levels> lv"
     # Boards set to 'cycle' switch Solo/Team every few seconds; this tag says which one is shown. <value> the line above
     cycle-solo: "<value> <c:muted>Solo"
@@ -303,7 +308,7 @@ leaderboard:
     island_top_team: "Top Islands <c:muted>· Team"
     weekly_island_gain: "Island Gain <c:muted>· Week"
     weekly_pillar_gain: "Pillar Gain <c:muted>· Week"
-    boss_damage: "Boss Damage"
+    boss_damage: "Island Worth"
     mining: "Top Mining"
     foraging: "Top Foraging"
     combat: "Top Combat"

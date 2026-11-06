@@ -75,6 +75,31 @@ public final class NpcsConfig extends ModuleConfig {
             "crates: command crates",
             "dungeon: help",
             "foreman: help",
+            "black_market: command blackmarket",
+            "quests: command contracts",
+            "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
+            "sage: command skills",
+            "fish_merchant: command sell",
+            "arena_master: command pve boss");
+
+    /** {@code npcs.actions} v11 (before 7 Nov 2026 night: the Black Market and Contract Board NPCs only showed help). */
+    static final List<String> ACTIONS_V11 = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command tool",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "crates: command crates",
+            "dungeon: help",
+            "foreman: help",
             "black_market: help",
             "quests: help",
             "daily: command daily",
@@ -219,6 +244,16 @@ public final class NpcsConfig extends ModuleConfig {
             "bramble: farm_merchant grind 3.5 100 -31.5 90",
             "flint: mine_merchant grind 1003.5 100 -21.5 90",
             "marla: fish_merchant grind 2603.5 100 -18.5 90",
+            "warden_hale: arena_master grind -1496.5 100 -61.5 90",
+            // owner 7 Nov 2026: the Crate Keeper in the Crate Yard and the Tailor in the Market Square
+            "crate_keeper: crates spawn 78.5 100 -38.5 -90",
+            "tailor: wardrobe spawn -19.5 99 63.5 -90");
+
+    /** {@code npcs.extra-spots} v11 (only the grind-area NPCs). */
+    static final List<String> SPOTS_V11 = List.of(
+            "bramble: farm_merchant grind 3.5 100 -31.5 90",
+            "flint: mine_merchant grind 1003.5 100 -21.5 90",
+            "marla: fish_merchant grind 2603.5 100 -18.5 90",
             "warden_hale: arena_master grind -1496.5 100 -61.5 90");
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
@@ -292,6 +327,23 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or shards, credits; crystals are never on a public list, C1-R1-28), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team), 'id: milestones <island|personal>' (most completed milestone tiers) or 'id: none' (shows Coming soon).")
     public List<String> sources = List.of(
+            "island_top_solo: island_level solo",
+            "island_top_team: island_level team",
+            "weekly_island_gain: island_gain this_week cycle",
+            "weekly_pillar_gain: pillar_gain this_week cycle",
+            "boss_damage: island_value all", // owner 7 Nov 2026: the "Coming soon" board shows the richest islands by worth
+            "mining: skill mining",
+            "foraging: skill foraging",
+            "combat: skill combat",
+            "farming: skill farming",
+            "fishing: skill fishing",
+            "baltop: money",
+            "money: money",
+            "milestones_island: milestones island",
+            "milestones_personal: milestones personal");
+
+    /** {@code leaderboards.sources} v11 (the Boss Damage board said "Coming soon"). */
+    static final List<String> SOURCES_V11 = List.of(
             "island_top_solo: island_level solo",
             "island_top_team: island_level team",
             "weekly_island_gain: island_gain this_week cycle",
@@ -384,7 +436,7 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 11;
+        return 12;
     }
 
     /**
@@ -399,7 +451,7 @@ public final class NpcsConfig extends ModuleConfig {
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())),
+        java.util.Map<Integer, java.util.Map<String, ValueChange>> out = new java.util.HashMap<>(java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())),
                 3, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V2, new NpcsConfig().roleActions)),
                 4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, SOURCES_V4)),
                 5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())),
@@ -410,7 +462,13 @@ public final class NpcsConfig extends ModuleConfig {
                 9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, ACTIONS_V9)),
                 10, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V9, new NpcsConfig().roleActions),
                         "npcs.skins", ValueChange.of(SKINS_V8, SKINS_V10)),
-                11, java.util.Map.of("npcs.roles", ValueChange.of(ROLES_V10, new NpcsConfig().npcRoles)));
+                11, java.util.Map.of("npcs.roles", ValueChange.of(ROLES_V10, new NpcsConfig().npcRoles))));
+        // v12 (owner 7 Nov 2026, FINISH_PLAN batch A): Crate Keeper and Tailor at spawn, Black Market and Contract Board
+                // NPCs open their menus, the Boss Damage board shows island worth
+        out.put(12, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V11, new NpcsConfig().roleActions),
+                "npcs.extra-spots", ValueChange.of(SPOTS_V11, new NpcsConfig().extraSpots),
+                "leaderboards.sources", ValueChange.of(SOURCES_V11, sources())));
+        return out;
     }
 
     private static List<String> sources() {

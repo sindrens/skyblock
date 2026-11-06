@@ -138,7 +138,7 @@ prestige:
   chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value><tool></c:value> <c:text>is prestige <c:flame><stars></c:flame><c:text>: +<bonus>% XP and shards for good, enchants up to level <c:value><cap></c:value><c:text>."
   # Every 10th prestige, to everyone else. <player> <tool> <prestige>
   broadcast: "<prefix><c:value><player></c:value> <c:text>reached prestige <c:flame><prestige></c:flame> <c:text>on their <tool>!"
-  confirm-crumb: "Prestige?"
+  confirm-crumb: "Confirm Prestige"
   # <tool> <shards>
   confirm-details:
     - "<c:text>Your tool goes back to level 1."
@@ -157,7 +157,7 @@ rebirth:
   chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Rebirth <c:flame><rebirth></c:flame> <c:text>on your <c:value><tool></c:value><c:text>! Back to prestige 0 with +<bonus>% XP and shards for good. Enchants stay."
   # <player> <tool> <rebirth>
   broadcast: "<prefix><c:value><player></c:value> <c:text>did rebirth <c:flame><rebirth></c:flame> <c:text>on their <tool>!"
-  confirm-crumb: "Rebirth?"
+  confirm-crumb: "Confirm Rebirth"
   confirm-details:
     - "<c:text>Your tool goes back to prestige 0."
     - "<c:success>Enchants, caps, perks and shards stay."

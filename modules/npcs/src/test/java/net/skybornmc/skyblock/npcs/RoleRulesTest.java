@@ -85,7 +85,8 @@ class RoleRulesTest {
         assertEquals("crates", rules.actionOf("crates").command());
         assertEquals(RoleRules.Type.COMMAND, rules.actionOf("crates").type());
         assertEquals("daily", rules.actionOf("daily").command());
-        assertEquals(RoleRules.Type.HELP, rules.actionOf("quests").type(), "quests are not built yet");
+        assertEquals("contracts", rules.actionOf("quests").command(), "owner 7 Nov 2026: the Contract Board opens /contracts");
+        assertEquals("blackmarket", rules.actionOf("black_market").command());
         var change = new NpcsConfig().valueChanges().get(3).get("npcs.actions");
         assertTrue(change.matches(new java.util.ArrayList<>(NpcsConfig.ACTIONS_V2)), "an untouched live list is upgraded");
         assertEquals(new NpcsConfig().roleActions, change.to());

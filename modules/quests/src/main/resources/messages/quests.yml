@@ -94,7 +94,7 @@ done:
 
 # Swapping a daily quest (free swaps per day).
 swap:
-  crumb: "Swap this quest?"
+  crumb: "Confirm Swap"
   details:
     - "<quest>"
     - "<c:text>Progress <c:value><progress>/<target></c:value> <c:text>is lost."
@@ -199,8 +199,8 @@ crates:
 admin:
   view:
     header: "<c:header><bold>| Quests of <player></bold> <c:muted>(profile <profile>)"
-    board: "<c:bar>|</c:bar> <c:text><board>: <c:value><done>/<total></c:value> <c:muted>done <sym:dot> swaps <swaps> <sym:dot> bonus <bonus>"
-    none: "<c:bar>|</c:bar> <c:text><board>: <c:muted>not loaded"
+    board: "<c:bar>| </c:bar><c:text><board>: <c:value><done>/<total></c:value> <c:muted>done <sym:dot> swaps <swaps> <sym:dot> bonus <bonus>"
+    none: "<c:bar>| </c:bar><c:text><board>: <c:muted>not loaded"
     quest: "  <c:muted><slot>.</c:muted> <quest> <c:muted><progress>/<target>"
     quest-done: "  <c:muted><slot>.</c:muted> <c:success><sym:check></c:success> <quest>"
   reset: "<prefix><c:success><sym:check></c:success> <c:text>Rolled new <c:value><board></c:value> <c:text>quests for <c:value><player></c:value><c:text>."

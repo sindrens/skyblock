@@ -66,7 +66,7 @@ public final class SkillsConfig extends ModuleConfig {
     public boolean levelUpTitle = true;
 
     @Setting(path = "level-up.chat", desc = "Send a chat line on level-up (with the next unlock).")
-    public boolean levelUpChat = true;
+    public boolean levelUpChat = false; // owner 7 Nov 2026: no spam, the title says it
 
     @Setting(path = "level-up.sound", desc = "Sound name from sounds.yml played on level-up (empty = none).")
     public String levelUpSound = "level-up";
@@ -85,7 +85,7 @@ public final class SkillsConfig extends ModuleConfig {
     /** Version 2 (owner 2 Nov 2026: "Depths requirements are super slow"): a cheaper start (600 to 300) and flatter early levels (1.2 to 1.15); level 35 needs about a sixth of the XP. Owner-edited values stay. */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -94,7 +94,8 @@ public final class SkillsConfig extends ModuleConfig {
         // level 35 at ~46k XP (was ~264k); the late growth is unchanged.
         return java.util.Map.of(2, java.util.Map.of("curve.base", ValueChange.of(600, 300), "curve.early-growth", ValueChange.of(1.2, 1.15)),
                 3, java.util.Map.of("curve.base", ValueChange.of(300, 6), "curve.early-growth", ValueChange.of(1.15, 1.24)),
-                4, java.util.Map.of("available", ValueChange.of(List.of("mining", "foraging", "combat"), new SkillsConfig().available)));
+                4, java.util.Map.of("available", ValueChange.of(List.of("mining", "foraging", "combat"), new SkillsConfig().available)),
+                5, java.util.Map.of("level-up.chat", ValueChange.of(true, false))); // owner 7 Nov 2026: no spam
     }
 
     @Override

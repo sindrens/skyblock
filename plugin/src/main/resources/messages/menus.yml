@@ -118,7 +118,7 @@ toggle:
 # Two-step confirms (disband, delete profile, permanent ban) swap the sides on the second screen.
 # Confirm (I9 section 5, 3 rows): lime Confirm tile 11, details 13, red Cancel tile 15; the second check swaps them.
 confirm:
-  crumb: "Are you sure?"
+  crumb: "Confirm"
   # <step>/<steps> after the title of a two-step confirm.
   step: " <#8B8B8B>(<step>/<steps>)</#8B8B8B>"
   shown:

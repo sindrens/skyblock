@@ -155,7 +155,7 @@ final class EntityLimits implements Listener {
         }
         event.setCancelled(true);
         if (player != null) {
-            module.msg().send(player, "limit.reached", Msg.p("limit", limit),
+            module.msg().actionBar(player, "limit.reached", Msg.p("limit", limit), // owner 7 Nov 2026: no chat line per click
                     Msg.c("what", module.msg().component(player, "limit.kind." + kind.key)));
             module.core().sounds().play(player, "error");
         }

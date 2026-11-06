@@ -20,12 +20,13 @@ class ExtraSpotsTest {
         List<String> problems = new ArrayList<>();
         List<BuildPoint> extra = ExtraSpots.parse(c.extraSpots, problems);
         assertEquals(List.of(), problems);
-        assertEquals(List.of("bramble", "flint", "marla", "warden_hale"), extra.stream().map(BuildPoint::id).toList());
-        assertTrue(extra.stream().allMatch(p -> p.world().equals("grind")));
+        assertEquals(List.of("bramble", "flint", "marla", "warden_hale", "crate_keeper", "tailor"), extra.stream().map(BuildPoint::id).toList());
+        assertTrue(extra.subList(0, 4).stream().allMatch(p -> p.world().equals("grind")));
+        assertTrue(extra.subList(4, 6).stream().allMatch(p -> p.world().equals("spawn")), "owner 7 Nov 2026: Crate Keeper and Tailor at spawn");
 
         Spots spots = Spots.from(ExtraSpots.over(new SpotsTest.FakePoints(List.of()), extra),
                 RoleRules.parse(c.npcRoles, c.roleActions), Set.of());
-        assertEquals(List.of("farm_merchant", "mine_merchant", "fish_merchant", "arena_master"),
+        assertEquals(List.of("farm_merchant", "mine_merchant", "fish_merchant", "arena_master", "crates", "wardrobe"),
                 spots.npcs().stream().map(Spots.Npc::role).toList());
         RoleRules rules = RoleRules.parse(c.npcRoles, c.roleActions);
         assertEquals("sell", rules.actionOf("fish_merchant").command());

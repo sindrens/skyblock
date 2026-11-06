@@ -218,6 +218,12 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Less spam, clearer events, spawn fixes (update152)
+- **Grind events:** one event at a time for 60 s, then 3-5 minutes off (was 2-4 at once for 30 s every minute). It starts with a title that says what it does ("DOUBLE DROPS · Every drop x2 · 60 s"), one boss bar, no chat line, never the same event twice in a row.
+- **No more chat spam:** buying perks/enchants, Battle Pass levels, spawner levels, island limit warnings, booster endings and island level rewards are action bar lines; skill level-ups are a title only; collection finds are a title only; the island level-up chat comes every 5 levels; the /farm /mine /fish /pve welcome comes once per session; joining the booster queue is no longer broadcast.
+- **GUI pass:** every menu row uses the tool style ("| Label: value"), and confirm screens have noun titles ("Confirm Prestige" instead of "Prestige?").
+- **Spawn:** the Crate Keeper stands in the Crate Yard and the Tailor in the Market Square; the Black Market NPC opens /blackmarket and the Contract Board opens /contracts. Gatehouse portals say "The Pond · /fish", "The Arena · /pve", "Warzone · Closed"; the Events board explains the grind events; the old Depths board is now "Farm & Mine". The "Coming soon" leaderboard shows Island Worth; empty boards say "Be the first!".
+
 ## Island level v2 (update151, plan: `docs/plans/TOOLS_V5.md` section 3)
 - **Island level = island XP**, and it updates by itself within a few seconds (no Recalculate button, no waiting). Island XP comes from everything members do: crops on the island and at /farm, ores from generators and blocks at /mine, catches at /fish, kills at /pve, and every spawner mob that dies on the island (0.1 each, lava farms too). Bank, skills, achievements and block worth no longer count (block worth stays as the "Value" tab of /is top).
 - **Each level needs a bit more:** level 10 = 47,000 XP (about an hour alone at 13 blocks a second), level 50 = 530,000.

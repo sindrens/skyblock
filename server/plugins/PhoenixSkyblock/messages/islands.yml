@@ -424,7 +424,7 @@ invite:
   expired-inviter: "<prefix><c:muted>Your island invite to <player> expired."
   expired-target: "<prefix><c:muted>Your invite to <island> expired."
   solo:
-    crumb: "Make it a Team Island?"
+    crumb: "Confirm Team Island"
     shown:
       name: "<c:warning><bold>Invite <player>"
       lore:
@@ -593,7 +593,7 @@ transfer:
     - "<c:text>You become an <c:value>Admin</c:value>."
     - "<c:muted>One more confirmation follows."
   final:
-    crumb: "Are you really sure?"
+    crumb: "Final Confirm"
     shown:
       name: "<c:error><bold>Final step: <player> leads"
       lore:
@@ -846,7 +846,7 @@ perms:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     confirm:
-      crumb: "Use <preset>?"
+      crumb: "Confirm Preset"
       shown: "<c:warning>Use the <preset> preset"
       details:
         - "<c:text>Replace your own permission changes"

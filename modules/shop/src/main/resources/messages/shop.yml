@@ -108,12 +108,12 @@ category:
 # get one muted hint; Bedrock viewers none.
 tooltip:
   # Owner 3 Nov 2026: the item mockup format: | label gray, value white, one colour per job.
-  buy: "<c:bar>|</c:bar> <c:text>Buy:</c:text> <c:value>{price}</c:value> <c:muted>each"
-  sell: "<c:bar>|</c:bar> <c:text>Sell:</c:text> <c:value>{price}</c:value> <c:muted>each"
-  not-sellable: "<c:bar>|</c:bar> <c:text>Sell:</c:text> <c:muted>not bought back"
-  falling: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:warning>-{pct}%</c:warning> <c:muted>today"
-  rising: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>today"
-  hot: "<c:bar>|</c:bar> <c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>hot today"
+  buy: "<c:bar>| </c:bar><c:text>Buy:</c:text> <c:value>{price}</c:value> <c:muted>each"
+  sell: "<c:bar>| </c:bar><c:text>Sell:</c:text> <c:value>{price}</c:value> <c:muted>each"
+  not-sellable: "<c:bar>| </c:bar><c:text>Sell:</c:text> <c:muted>not bought back"
+  falling: "<c:bar>| </c:bar><c:text>Price:</c:text> <c:warning>-{pct}%</c:warning> <c:muted>today"
+  rising: "<c:bar>| </c:bar><c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>today"
+  hot: "<c:bar>| </c:bar><c:text>Price:</c:text> <c:success>+{pct}%</c:success> <c:muted>hot today"
   # ONE muted Java hint per tile (MENUS-V3 D6): hint-sell when the item sells, else hint-stack. Shift + Right-click and
   # middle click still sell every one you carry (taught in /help shop and by the sell GUI's Sell all button).
   hint-sell: "Right-click to sell"
