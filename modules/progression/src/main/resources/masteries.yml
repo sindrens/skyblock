@@ -17,7 +17,7 @@
 #              deep-pockets (+% satchel size), crystal-rush (+% crystals), lucky-strike (+% rare finds),
 #              fuel-efficiency, beast-tamer, angler, homestead (extra shared island homes), wings (island fly for
 #              everyone on the island), treasury (bank fee step: 2% -> 1.5% -> 1.0% -> 0.5%),
-#              market-contacts (+% sell prices, inside the +300% sell cap), farm-mastery / mine-mastery (+value levels
+#              market-contacts (+% sell prices, inside the +300% sell cap), farm-mastery / mine-mastery / fish-mastery / combat-mastery (+value levels
 #              on the members' /farm hoe or /mine pickaxe enchant cap)
 #   pillar:    pillar whose level the ranks need (mining, foraging, farming, combat), or leave out
 #   requires-maxed: upgrade ids that must be fully upgraded first (Market Contacts: sell_multiplier)
@@ -431,6 +431,111 @@ masteries:
     order: 15
     effect: mine-mastery
     pillar: mining
+    enabled: true
+    ranks:
+      - tier: 1
+        cost: 15000
+        value: 100
+        pillar-level: 5
+        island-level: 2
+      - tier: 2
+        cost: 60000
+        value: 200
+        pillar-level: 10
+        island-level: 5
+      - tier: 3
+        cost: 200000
+        value: 300
+        pillar-level: 15
+        island-level: 8
+      - tier: 4
+        cost: 600000
+        value: 400
+        pillar-level: 20
+        island-level: 12
+      - tier: 5
+        cost: 1800000
+        value: 500
+        pillar-level: 25
+        island-level: 16
+      - tier: 6
+        cost: 5000000
+        value: 600
+        pillar-level: 30
+        island-level: 21
+      - tier: 7
+        cost: 14000000
+        value: 700
+        pillar-level: 35
+        island-level: 27
+      - tier: 8
+        cost: 40000000
+        value: 800
+        pillar-level: 40
+        island-level: 34
+      - tier: 10
+        cost: 110000000
+        value: 900
+        pillar-level: 45
+        island-level: 42
+      - tier: 12
+        cost: 300000000
+        value: 1000
+        pillar-level: 50
+        island-level: 50
+  # Owner 7 Nov 2026 (FULL_PLAN.md section 4): Fish Mastery: every rank +100 levels on the members' /fish rod enchant cap. Needs island level.
+  fish_mastery:
+    icon: "fishing_rod"
+    order: 16
+    effect: fish-mastery
+    enabled: true
+    ranks:
+      - tier: 1
+        cost: 15000
+        value: 100
+        island-level: 2
+      - tier: 2
+        cost: 60000
+        value: 200
+        island-level: 5
+      - tier: 3
+        cost: 200000
+        value: 300
+        island-level: 8
+      - tier: 4
+        cost: 600000
+        value: 400
+        island-level: 12
+      - tier: 5
+        cost: 1800000
+        value: 500
+        island-level: 16
+      - tier: 6
+        cost: 5000000
+        value: 600
+        island-level: 21
+      - tier: 7
+        cost: 14000000
+        value: 700
+        island-level: 27
+      - tier: 8
+        cost: 40000000
+        value: 800
+        island-level: 34
+      - tier: 10
+        cost: 110000000
+        value: 900
+        island-level: 42
+      - tier: 12
+        cost: 300000000
+        value: 1000
+        island-level: 50
+  # Owner 7 Nov 2026 (FULL_PLAN.md section 4): Combat Mastery: every rank +100 levels on the members' /pve sword enchant cap. Needs the island's combat pillar and island level.
+  combat_mastery:
+    icon: "golden_sword"
+    order: 17
+    effect: combat-mastery
+    pillar: combat
     enabled: true
     ranks:
       - tier: 1

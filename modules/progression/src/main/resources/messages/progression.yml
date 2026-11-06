@@ -748,6 +748,8 @@ masteries:
     market_contacts: "Market Contacts"
     farm_mastery: "Farm Mastery"
     mine_mastery: "Mine Mastery"
+    fish_mastery: "Fish Mastery"
+    combat_mastery: "Combat Mastery"
   # What a rank gives. <value> the rank's value, <fee> (treasury) the bank fee in percent from bank.yml
   effect:
     timber: "+<value>% logs"
@@ -765,6 +767,8 @@ masteries:
     market-contacts: "+<value>% sell prices"
     farm-mastery: "+<value> hoe enchant levels (/farm)"
     mine-mastery: "+<value> pickaxe enchant levels (/mine)"
+    fish-mastery: "+<value> rod enchant levels (/fish)"
+    combat-mastery: "+<value> sword enchant levels (/pve)"
   menu:
     crumb: "Masteries"
   # Extra lines of the mastery item. <requires> upgrades to max first, <pillar> <pillar-level>

@@ -47,7 +47,11 @@ enum MasteryEffect {
      */
     FARM_MASTERY("farm-mastery", true, null, null),
     /** Owner 6-7 Nov 2026 (Area Masteries): raises the members' /mine pickaxe enchant cap by the value. */
-    MINE_MASTERY("mine-mastery", true, null, null);
+    MINE_MASTERY("mine-mastery", true, null, null),
+    /** Owner 7 Nov 2026 (Area Masteries): raises the members' /fish rod enchant cap by the value. */
+    FISH_MASTERY("fish-mastery", true, null, null),
+    /** Owner 7 Nov 2026 (Area Masteries): raises the members' /pve sword enchant cap by the value. */
+    COMBAT_MASTERY("combat-mastery", true, null, null);
 
     private final String id;
     private final boolean live;

@@ -34,7 +34,7 @@ class MasteryCatalogTest {
     @Test
     void bundledCatalogFollowsThePlan() throws Exception {
         MasteryCatalog catalog = bundled();
-        assertEquals(15, catalog.size(), "MA1-MA12 without MA5, plus Treasury, Market Contacts, Farm and Mine Mastery");
+        assertEquals(17, catalog.size(), "MA1-MA12 without MA5, plus Treasury, Market Contacts and the four Area Masteries");
         MasteryCatalog.Def wings = catalog.get("wings").orElseThrow();
         assertEquals(1, wings.maxRank());
         assertEquals(20, wings.rank(1).islandLevel(), "P5-20: Wings at island level 20");
@@ -71,7 +71,7 @@ class MasteryCatalogTest {
         Set<String> shown = new HashSet<>();
         bundled().shown().forEach(d -> shown.add(d.id()));
         assertEquals(Set.of("warrior", "deep_pockets", "crystal_rush", "lucky_strike", "homestead", "wings", "treasury", "market_contacts",
-                "farm_mastery", "mine_mastery"), shown,
+                "farm_mastery", "mine_mastery", "fish_mastery", "combat_mastery"), shown,
                 "GUI-2: Timber, Swift Hands, Fuel Efficiency, Beast Tamer and Angler stay hidden until their feature reads them");
     }
 
