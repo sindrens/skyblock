@@ -54,6 +54,7 @@ rewards:
   ember:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
+    crystal_jackpot: "Crystal Jackpot (<amount>)"
     fuel: "Island Fuel (<amount>)"
     book: "Common Enchant Book"
     sell_booster: "Sell Booster +25%, 10 min"
@@ -66,6 +67,7 @@ rewards:
   cinder:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
+    crystal_jackpot: "Crystal Jackpot (<amount>)"
     book: "Uncommon Enchant Book"
     fuel: "Island Fuel (<amount>)"
     sell_booster: "Sell Booster +50%, 10 min"
@@ -80,6 +82,7 @@ rewards:
   blaze:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
+    crystal_jackpot: "Crystal Jackpot (<amount>)"
     book: "Rare Enchant Book"
     sell_booster: "Sell Booster +50%, 30 min"
     xp_booster: "Skill XP Booster +50%, 30 min"
@@ -98,6 +101,7 @@ rewards:
   inferno:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
+    crystal_jackpot: "Crystal Jackpot (<amount>)"
     book: "Epic Enchant Book"
     sell_booster: "Sell Booster +100%, 30 min"
     spawner_t4: "Tier 4 Spawner"
@@ -179,12 +183,13 @@ rewards:
     combat_epic_book: "Epic Enchant Book"
     aegis_token: "Conqueror Aegis Set Token"
     combat_legendary_book: "Legendary Enchant Book"
+    crystals: "Crystal Pouch (<amount>)"
 
 open:
   single: "<prefix><c:success><sym:check></c:success> <crate><c:text>: <reward>"
   single-top: "<prefix><c:flame><sym:star></c:flame> <crate><c:text>: you won <reward><c:text>!"
   fallback-note: "<c:muted>Not live yet, so you got its crystal value: <cur:crystals><amount></cur:crystals><c:muted>."
-  pity-fired: "<c:muted>Your luck meter was full: a top reward for sure."
+  pity-fired: "<c:muted>Your luck bar was full: a top reward for sure."
   summary-header: "<prefix><c:success><sym:check></c:success> <c:text>You opened <c:value><count></c:value> <crate><c:text>s:"
   summary-line: " <c:muted><sym:bullet></c:muted> <reward> <c:muted>x<times>"
   summary-line-top: " <c:flame><sym:star></c:flame> <reward> <c:muted>x<times>"
@@ -219,7 +224,8 @@ menu:
   crate:
     lore:
       - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
-      - "<c:text>Luck meter: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+      - "<c:text>Luck: <bar>"
+      - "<c:flame><sym:star></c:flame> <c:text>Top reward in <c:value><left></c:value> <c:text>opens"
       - ""
     lore-no-pity:
       - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
@@ -237,8 +243,7 @@ menu:
     lore:
       - "<c:text>You carry: <c:value><have></c:value> <c:muted>fragments"
       - "<c:text><need> fragments make 1 <key><c:text>."
-      - "<c:muted>Found while mining and chopping in"
-      - "<c:muted>Depths tier 11+. Tradeable."
+      - "<c:muted>Tradeable."
       - ""
     actions:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to combine <need> into 1 key"
@@ -252,14 +257,16 @@ preview:
   info:
     - "<c:text>Every reward with its chance."
     - "<c:flame><sym:star></c:flame> <c:text>marks the top rewards. When your"
-    - "<c:text>luck meter is full, the next open"
+    - "<c:text>luck bar is full, that open"
     - "<c:text>gives one for sure."
   gone:
     name: "<c:muted>This crate is not available"
     lore: []
   status:
     - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
-    - "<c:text>Luck meter: <c:value><pity>/<max></c:value> <c:muted><sym:dot> top rewards <top>%"
+    - "<c:text>Luck: <bar>"
+    - "<c:flame><sym:star></c:flame> <c:text>Top reward in <c:value><left></c:value> <c:text>opens"
+    - "<c:muted>Top rewards: <top>% per open"
     - ""
     - "<c:muted>Untradeable keys are used first."
     - "<c:muted>What they give can't be traded."
@@ -327,7 +334,7 @@ preview:
     - "<c:muted>Own them all: its crystal value."
   pouch:
     - ""
-    - "<c:muted>Grows with your Depths tier."
+    - "<c:muted>Grows with your best area skill."
 
 result:
   title: "Opened <count>"
@@ -339,7 +346,8 @@ result:
   summary:
     - "<c:text>Opened: <c:value><count></c:value>"
     - "<c:text>Top rewards: <c:value><top>"
-    - "<c:text>Luck meter now: <c:value><pity>/<max>"
+    - "<c:text>Luck: <bar>"
+    - "<c:text>Top reward in <c:value><left></c:value> <c:text>opens"
   line: ["<c:text>Won <c:value><times></c:value><c:text>x"]
   line-top: ["<c:flame><sym:star></c:flame> <c:text>Top reward, won <c:value><times></c:value><c:text>x"]
   more:

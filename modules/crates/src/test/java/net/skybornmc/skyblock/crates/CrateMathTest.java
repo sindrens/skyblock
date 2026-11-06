@@ -86,4 +86,21 @@ class CrateMathTest {
         assertEquals("0.25", CrateMath.percent(0.25));
         assertEquals("33.33", CrateMath.percent(100.0 / 3));
     }
+
+    /** Batch 9: "Top reward in N opens" matches RollEngine (forced when counter + 1 >= pity). */
+    @Test
+    void pityBarAndOpensLeft() {
+        assertEquals(30, CrateMath.opensLeft(0, 30));
+        assertEquals(1, CrateMath.opensLeft(29, 30), "the next open is sure");
+        assertEquals(1, CrateMath.opensLeft(40, 30), "never 0 or less");
+        assertEquals(0, CrateMath.opensLeft(5, 0), "no pity");
+        for (int counter = 0; counter < 30; counter++) {
+            int left = CrateMath.opensLeft(counter, 30);
+            assertEquals(counter + left >= 30, true);
+            assertEquals(counter + left - 1 + 1 >= 30, counter + left >= 30);
+        }
+        assertEquals(0, CrateMath.pityBar(0, 30).chars().filter(c -> c == 0x25cf).count() - 10);
+        assertTrue(CrateMath.pityBar(15, 30).startsWith("<c:flame>\u25cf\u25cf\u25cf\u25cf\u25cf</c:flame>"));
+        assertTrue(CrateMath.pityBar(99, 30).endsWith("<c:locked></c:locked>"), "full, never more than 10");
+    }
 }

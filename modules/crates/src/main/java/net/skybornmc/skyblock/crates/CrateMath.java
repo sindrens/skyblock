@@ -127,6 +127,20 @@ final class CrateMath {
     }
 
     /** A chance as shown in the preview: {@code 12}, {@code 1.5}, {@code 0.25} (at most 2 decimals, no trailing zeros). */
+    /**
+     * Batch 9 (7 Nov 2026): opens until a top reward is certain. {@link RollEngine} forces the top band when
+     * {@code counter + 1 >= pity}, so with {@code counter} opens without one the {@code (pity - counter)}th open is sure.
+     */
+    static int opensLeft(int counter, int pity) {
+        return pity <= 0 ? 0 : Math.max(1, pity - Math.max(0, counter));
+    }
+
+    /** The pity bar: 10 dots filled by {@code counter / pity} (MiniMessage, Bedrock-safe). */
+    static String pityBar(int counter, int pity) {
+        int filled = pity <= 0 ? 0 : (int) Math.min(10, (long) Math.max(0, counter) * 10 / pity);
+        return "<c:flame>" + "\u25cf".repeat(filled) + "</c:flame><c:locked>" + "\u25cf".repeat(10 - filled) + "</c:locked>";
+    }
+
     static String percent(double value) {
         double rounded = Math.round(value * 100.0) / 100.0;
         if (rounded == Math.rint(rounded)) {

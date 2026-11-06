@@ -40,6 +40,7 @@ class CratesMigrationTest {
         YamlConfiguration bundledYaml = Fixtures.resource("crates.yml");
         // Same order as CratesModule: the v2 catalog migration, then the Eclipse switch to the tiered pool.
         assertTrue(EclipseMigration.migrate(old, bundledYaml).changed());
+        assertTrue(ComingSoonMigration.migrate(old).changed(), "then v3 (batch 9): coming-soon rows out");
         Map<String, Map<String, Double>> migrated = chances(old);
         Map<String, Map<String, Double>> bundled = chances(bundledYaml);
         for (String crate : bundled.keySet()) {
@@ -52,6 +53,41 @@ class CratesMigrationTest {
         }
         assertFalse(migrated.get("conqueror").containsKey("shards"), "no crate pays shards");
         assertFalse(migrated.get("phoenix").containsKey("spawner_t5"));
+    }
+
+    /** Batch 9: the v2 bundled file (git before 7 Nov 2026) becomes today's tables; top shares and crystal value stay. */
+    @Test
+    void comingSoonRowsBecomeCrystalsAndTheTopBandKeepsItsShare() {
+        YamlConfiguration v2 = Fixtures.resource("crates-v2.yml");
+        Map<String, Double> topBefore = topShares(v2);
+        assertTrue(ComingSoonMigration.needed(v2));
+        assertTrue(ComingSoonMigration.migrate(v2).changed());
+        YamlConfiguration bundledYaml = Fixtures.resource("crates.yml");
+        assertEquals(chances(bundledYaml), chances(v2));
+        assertEquals(topBefore, topShares(v2), "pity keeps its odds");
+        for (String crate : v2.getConfigurationSection(CrateCatalog.ROOT).getKeys(false)) {
+            assertFalse(v2.getConfigurationSection(CrateCatalog.ROOT + "." + crate).getMapList("rewards").stream()
+                    .anyMatch(r -> "coming-soon".equals(String.valueOf(r.get("type")))), crate);
+        }
+        Map<String, Map<String, Double>> once = chances(v2);
+        assertFalse(ComingSoonMigration.migrate(v2).changed());
+        assertEquals(once, chances(v2));
+        assertEquals(3, v2.getInt(CatalogMigration.VERSION_KEY));
+    }
+
+    private static Map<String, Double> topShares(YamlConfiguration yaml) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        ConfigurationSection root = yaml.getConfigurationSection(CrateCatalog.ROOT);
+        for (String crate : root.getKeys(false)) {
+            double top = 0;
+            for (Map<?, ?> r : root.getConfigurationSection(crate).getMapList("rewards")) {
+                if (Boolean.TRUE.equals(r.get("top")) && !r.containsKey("band")) {
+                    top += ((Number) r.get("chance")).doubleValue();
+                }
+            }
+            out.put(crate, Math.round(top * 1000) / 1000.0);
+        }
+        return out;
     }
 
     @Test

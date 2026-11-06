@@ -48,9 +48,9 @@ public final class CratesSettings extends ModuleConfig {
     public List<String> tradeableSources = List.of("quest", "quest_daily", "quest_weekly", "pass", "event", "weekly_top",
             "fragment", "koth");
 
-    @Setting(path = "fragments.enabled", desc = "R3-18: the Key Fragments button in /crates turns fragments (Depths tier 11+ "
-            + "drops) into keys.")
-    public boolean fragmentsEnabled = true;
+    @Setting(path = "fragments.enabled", desc = "R3-18: the Key Fragments button in /crates turns fragments into keys. Off since "
+            + "7 Nov 2026: fragments dropped in the Depths, which are gone (the button hides).")
+    public boolean fragmentsEnabled = false;
 
     @Setting(path = "fragments.per-key", desc = "R3-18: fragments for one key (owner: 3).", min = 1, max = 64,
             level = Setting.Level.OWNER)
@@ -59,7 +59,7 @@ public final class CratesSettings extends ModuleConfig {
     @Setting(path = "fragments.crate", desc = "R3-18: crate whose key the fragments make (owner: phoenix).", level = Setting.Level.OWNER)
     public String fragmentsCrate = "phoenix";
 
-    @Setting(path = "fragments.item", desc = "Custom item id of a fragment (the Depths drop item).")
+    @Setting(path = "fragments.item", desc = "Custom item id of a fragment.")
     public String fragmentsItem = "depths_key_fragment";
 
     @Setting(path = "fragments.max-keys-per-click", desc = "Most keys one 'Combine all' click makes.", min = 1, max = 1_000)
@@ -82,11 +82,10 @@ public final class CratesSettings extends ModuleConfig {
     public int keyItemMaxPerWithdraw = 64;
 
     @Setting(path = "tier.stage-skills", desc = "Skills whose highest level decides the opener's tier for money and crystal "
-            + "pouches (the same rule the AFK pool uses).")
-    public List<String> stageSkills = List.of("mining", "foraging", "combat");
+            + "pouches (7 Nov 2026: the four area skills).")
+    public List<String> stageSkills = List.of("farming", "mining", "fishing", "combat");
 
-    @Setting(path = "tier.tier-levels", desc = "Skill level that unlocks tiers 1-12 (the Depths unlock levels, "
-            + "ECONOMY_BALANCE §3.4).", level = Setting.Level.OWNER)
+    @Setting(path = "tier.tier-levels", desc = "Skill level that unlocks tiers 1-12 (ECONOMY_BALANCE §3.4).", level = Setting.Level.OWNER)
     public List<String> tierLevels = List.of("0", "5", "10", "15", "20", "25", "30", "35", "42", "50", "58", "66");
 
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers "
@@ -228,8 +227,8 @@ public final class CratesSettings extends ModuleConfig {
             + "slow down onto slot 13. The reward is decided and saved before it starts; click to skip.")
     public boolean spinnerEnabled = true;
 
-    @Setting(path = "spinner.duration-ticks", desc = "Length of the spin (20 ticks = 1 s; plan: ~3 s).", min = 10, max = 200)
-    public int spinnerTicks = 60;
+    @Setting(path = "spinner.duration-ticks", desc = "Length of the spin (20 ticks = 1 s; plan: ~2 s).", min = 10, max = 200)
+    public int spinnerTicks = 40;
 
     @Setting(path = "spinner.frames", desc = "Steps of the spin on Java (each step moves the row by one slot).", min = 5,
             max = 60)
@@ -301,6 +300,23 @@ public final class CratesSettings extends ModuleConfig {
     @Override
     public String fileName() {
         return "crates-settings.yml";
+    }
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /**
+     * v2 (batch 9, 7 Nov 2026): the spin takes about 2 s, Key Fragments are off (their Depths drop is gone) and the pouch
+     * tier follows the four area skills. A value the owner changed is kept.
+     */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "spinner.duration-ticks", ValueChange.of(60, 40),
+                "fragments.enabled", ValueChange.of(true, false),
+                "tier.stage-skills", ValueChange.of(List.of("mining", "foraging", "combat"), List.of("farming", "mining", "fishing", "combat"))));
     }
 
     /** I7 phase 0 (pack v1 removed): the crate models, their lid swing and the pack chime are gone. */

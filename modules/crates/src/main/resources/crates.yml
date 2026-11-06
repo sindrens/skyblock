@@ -18,14 +18,15 @@
 #   booster / global-booster (M10.2): booster (sell | skill_xp | tool_xp | crystals), percent, minutes, amount. Personal
 #           boosters are always bound to the opener; global ones are bound when opened with a bound key (and by default
 #           always: boosters.yml -> global.always-bound). Without the boosters module they pay their crystal value.
-#   coming-soon: a reward whose system is not built yet (tomes, skins, sell wands, collectors, pet eggs);
-#                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
+#   coming-soon: a reward whose system is not built yet; it pays its crystal value until then. icon: optional item shown
+#                in the preview. Since catalog-version 3 (7 Nov 2026) no crate has one: items that are not made yet stay
+#                out of the tables until they exist (their chance went to crystals, which is what they paid).
 #   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
 #   band (tiered crates only, e.g. Eclipse): common | mid | rare | jackpot; the crate's draw: says how many of each band
 #           one open gives. A tiered crate has no pity.
 
 # ECON-SHARDS: shards are only found in shard blocks (no 'shards' rewards); premium spawners are sold by the Black Market.
-catalog-version: 2
+catalog-version: 3
 
 crates:
   ember:
@@ -44,8 +45,7 @@ crates:
       - {id: tag, type: tag, chance: 5, ids: [spark, ash]}
       - {id: cinder_key, type: key, chance: 3, crate: cinder, amount: 1, top: true, rarity: uncommon}
       - {id: uncommon_book, type: enchant-book, chance: 3, pool: uncommon, level: 1, top: true, rarity: uncommon}
-      - {id: tool_skin, type: coming-soon, chance: 1.5, top: true, icon: netherite_upgrade_smithing_template, fallback: 60}
-      - {id: tome, type: coming-soon, chance: 0.5, top: true, icon: book, rarity: rare, fallback: 120}
+      - {id: crystal_jackpot, type: crystals, chance: 2, base: 75, top: true, rarity: rare}
   cinder:
     rarity: uncommon
     icon: chest
@@ -54,18 +54,16 @@ crates:
     fallback-crystals: 40
     rewards:
       - {id: money, type: money, chance: 20, minutes: 8}
-      - {id: crystals, type: crystals, chance: 18, base: 40}
+      - {id: crystals, type: crystals, chance: 22, base: 40}
       - {id: book, type: enchant-book, chance: 14, pool: uncommon, level: 1}
       - {id: fuel, type: fuel, chance: 10, minutes: 180}
       - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 10, icon: gold_ingot}
       - {id: scroll, type: scroll, chance: 6, amount: 1}
       - {id: xp_booster, type: booster, chance: 6, booster: skill_xp, percent: 50, minutes: 15, icon: experience_bottle}
       - {id: tag, type: tag, chance: 5, ids: [ashes]}
-      - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
       - {id: blaze_key, type: key, chance: 3, crate: blaze, amount: 1, top: true, rarity: rare}
       - {id: spawner_t3, type: spawner, chance: 3, tier: 3, amount: 1, top: true, rarity: rare}
-      - {id: tool_skin, type: coming-soon, chance: 2, top: true, icon: netherite_upgrade_smithing_template, fallback: 120}
-      - {id: tome, type: coming-soon, chance: 1, top: true, icon: book, rarity: rare, fallback: 160}
+      - {id: crystal_jackpot, type: crystals, chance: 3, base: 130, top: true, rarity: rare}
   blaze:
     rarity: rare
     icon: copper_chest
@@ -74,21 +72,17 @@ crates:
     fallback-crystals: 100
     rewards:
       - {id: money, type: money, chance: 17.5, minutes: 15}
-      - {id: crystals, type: crystals, chance: 16, base: 100}
+      - {id: crystals, type: crystals, chance: 26, base: 100}
       - {id: book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 30, icon: gold_ingot}
       - {id: xp_booster, type: booster, chance: 6, booster: skill_xp, percent: 50, minutes: 30, icon: experience_bottle}
       - {id: scroll, type: scroll, chance: 6, amount: 1}
-      - {id: sell_wand, type: coming-soon, chance: 5, icon: blaze_rod}
-      - {id: autosell_chest, type: coming-soon, chance: 5, icon: chest}
       - {id: tag, type: tag, chance: 5, ids: [ember]}
       - {id: spawner_t3, type: spawner, chance: 5, tier: 3, amount: 2}
       - {id: spawner_t4, type: spawner, chance: 3, tier: 4, amount: 1, top: true, rarity: epic}
-      - {id: tool_skin, type: coming-soon, chance: 3, top: true, icon: netherite_upgrade_smithing_template, fallback: 250}
+      - {id: crystal_jackpot, type: crystals, chance: 5, base: 260, top: true, rarity: epic}
       - {id: inferno_key, type: key, chance: 2, crate: inferno, amount: 1, top: true, rarity: epic}
-      - {id: tome, type: coming-soon, chance: 1.5, top: true, icon: book, fallback: 250}
       - {id: lorekeeper_token, type: set-token, chance: 1, sets: [lorekeeper], amount: 1, top: true, rarity: epic}
-      - {id: blueprint, type: coming-soon, chance: 0.5, top: true, icon: paper, rarity: epic, fallback: 400}
       - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 0.5, amount: 1}
   inferno:
     rarity: epic
@@ -98,23 +92,17 @@ crates:
     fallback-crystals: 250
     rewards:
       - {id: money, type: money, chance: 16, minutes: 30}
-      - {id: crystals, type: crystals, chance: 14, base: 250}
+      - {id: crystals, type: crystals, chance: 33, base: 250}
       - {id: book, type: enchant-book, chance: 14, pool: epic, level: 1}
       - {id: sell_booster, type: booster, chance: 7, booster: sell, percent: 100, minutes: 30, icon: gold_ingot}
       - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 2}
       - {id: tag, type: tag, chance: 6, ids: [skyborn]}
       - {id: xp_booster, type: booster, chance: 5, booster: skill_xp, percent: 100, minutes: 30, icon: experience_bottle}
-      - {id: collector, type: coming-soon, chance: 5, icon: hopper}
-      - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
-      - {id: sell_wand, type: coming-soon, chance: 4, icon: blaze_rod}
-      - {id: tool_skin, type: coming-soon, chance: 4, icon: netherite_upgrade_smithing_template}
-      - {id: hologram, type: coming-soon, chance: 2, icon: glow_item_frame}
-      - {id: greater_tome, type: coming-soon, chance: 3, top: true, icon: enchanted_book, rarity: legendary, fallback: 600}
+      - {id: crystal_jackpot, type: crystals, chance: 4.5, base: 600, top: true, rarity: legendary}
       - {id: set_token_a, type: set-token, chance: 3, sets: [deepforge, cropwarden, dreadguard], amount: 1, top: true, rarity: legendary}
       - {id: set_token_b, type: set-token, chance: 3, sets: [thornward, stormkeel], amount: 1, top: true, rarity: legendary}
       - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 1, amount: 1, top: true, rarity: rare}
       - {id: phoenix_key, type: key, chance: 1.5, crate: phoenix, amount: 1, top: true, rarity: legendary}
-      - {id: blueprint, type: coming-soon, chance: 1.5, top: true, icon: paper, rarity: legendary, fallback: 600}
   phoenix:
     rarity: legendary
     icon: vault
@@ -124,16 +112,11 @@ crates:
     rewards:
       - {id: book, type: enchant-book, chance: 18, pool: legendary, level: 1}
       - {id: money, type: money, chance: 12, minutes: 60}
-      - {id: crystals, type: crystals, chance: 12, base: 600}
+      - {id: crystals, type: crystals, chance: 36, base: 600}
       - {id: sell_booster, type: booster, chance: 6, booster: sell, percent: 100, minutes: 60, icon: gold_ingot}
       - {id: spawner_t4, type: spawner, chance: 6, tier: 4, amount: 4}
       - {id: tag, type: tag, chance: 6, ids: [phoenix]}
-      - {id: tool_skin, type: coming-soon, chance: 6, icon: netherite_upgrade_smithing_template}
-      - {id: collector, type: coming-soon, chance: 5, icon: hopper}
-      - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
       - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 30, icon: beacon}
-      - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
-      - {id: blueprint, type: coming-soon, chance: 4, icon: paper}
       - {id: phoenix_key, type: key, chance: 2, crate: phoenix, amount: 1}
       - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: elytra, type: item, chance: 3, material: elytra, amount: 1, top: true}
@@ -200,10 +183,9 @@ crates:
       - {id: combat_rare_book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: scroll, type: scroll, chance: 10, amount: 1}
       - {id: banneret_token, type: set-token, chance: 10, sets: [banneret], amount: 1}
-      - {id: kill_effect, type: coming-soon, chance: 8, icon: wither_rose}
       - {id: tag, type: tag, chance: 6, ids: []}
       - {id: spawner_t4, type: spawner, chance: 5, tier: 4, amount: 1}
-      - {id: pillar_xp, type: coming-soon, chance: 4, icon: experience_bottle}
       - {id: combat_epic_book, type: enchant-book, chance: 6, pool: epic, level: 1, top: true, rarity: epic}
       - {id: aegis_token, type: set-token, chance: 4, sets: [conqueror], amount: 1, top: true, rarity: legendary}
       - {id: combat_legendary_book, type: enchant-book, chance: 2, pool: legendary, level: 1, top: true, rarity: legendary}
+      - {id: crystals, type: crystals, chance: 12, base: 250}

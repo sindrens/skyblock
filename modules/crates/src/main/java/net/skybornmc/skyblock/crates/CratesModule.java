@@ -249,6 +249,18 @@ public final class CratesModule implements SkyblockModule, Listener {
                         core.plugin().getLogger().info("crates.yml → " + eclipse.log());
                     }
                 }
+                if (ComingSoonMigration.needed(yaml)) { // batch 9: no placeholder rewards any more
+                    java.nio.file.Path backup = file.toPath().resolveSibling(CrateCatalog.FILE + ".before-v3");
+                    if (!java.nio.file.Files.exists(backup)) {
+                        java.nio.file.Files.copy(file.toPath(), backup);
+                    }
+                    ComingSoonMigration.Result v3 = ComingSoonMigration.migrate(yaml);
+                    yaml.save(file);
+                    v3.log().forEach(line -> core.plugin().getLogger().info("crates.yml v3 → " + line));
+                    core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "migrate",
+                            net.skybornmc.skyblock.common.audit.Actor.system("crates-v3"), CrateCatalog.FILE, null, (long) v3.log().size(),
+                            null, java.util.Map.of("upgrade", "catalog-version 3 (coming-soon rows out)", "steps", v3.log()));
+                }
                 boolean added = CatalogMerge.addMissing(yaml, bundled);
                 boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
                 if (upgraded) {

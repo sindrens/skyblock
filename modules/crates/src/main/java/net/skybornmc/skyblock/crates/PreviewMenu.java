@@ -106,6 +106,7 @@ final class PreviewMenu extends Menu {
         set(SLOT_STATUS, service.item(m.icon(crate), m.mini(viewer, m.crateMini(crate)), service.lines(viewer, CratesModule.ID,
                 statusKey, Msg.number("keys", keys.total()), Msg.number("tradeable", keys.tradeable()), Msg.number("pity", counter),
                 Msg.number("max", crate.pity()), Msg.p("top", CrateMath.percent(crate.topPercent())),
+                Msg.mm("bar", CrateMath.pityBar(counter, crate.pity())), Msg.number("left", CrateMath.opensLeft(counter, crate.pity())),
                 Msg.number("per_open", crate.perOpen() - crate.draw("jackpot")), Msg.number("jackpots", crate.draw("jackpot")))));
         long all = Math.min(keys.total(), m.settings.maxPerClick);
         boolean has = keys.total() > 0;

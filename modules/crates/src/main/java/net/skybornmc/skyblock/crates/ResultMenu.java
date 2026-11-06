@@ -58,7 +58,8 @@ final class ResultMenu extends Menu {
         set(SLOT_SUMMARY, service.item(m.icon(plan.crate()), m.mini(viewer, m.crateMini(plan.crate())),
                 service.lines(viewer, CratesModule.ID, "result.summary", Msg.number("count", plan.grants().size()),
                         Msg.number("top", plan.topCount()), Msg.number("pity", plan.pityAfter()),
-                        Msg.number("max", plan.crate().pity()))));
+                        Msg.number("max", plan.crate().pity()), Msg.mm("bar", CrateMath.pityBar(plan.pityAfter(), plan.crate().pity())),
+                        Msg.number("left", CrateMath.opensLeft(plan.pityAfter(), plan.crate().pity())))));
         List<CrateOpener.Line> lines = CrateOpener.lines(plan);
         for (int i = 0; i < lines.size() && i < SLOTS.length; i++) {
             CrateOpener.Line line = lines.get(i);

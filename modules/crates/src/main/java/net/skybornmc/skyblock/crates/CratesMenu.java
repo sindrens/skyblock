@@ -125,6 +125,7 @@ final class CratesMenu extends Menu {
         String key = crate.pity() > 0 && crate.hasTop() ? "menu.crate.lore" : "menu.crate.lore-no-pity";
         List<Component> lore = new ArrayList<>(service.lines(viewer, CratesModule.ID, key, Msg.number("keys", k.total()),
                 Msg.number("tradeable", k.tradeable()), Msg.number("pity", counter), Msg.number("max", crate.pity()),
+                Msg.mm("bar", CrateMath.pityBar(counter, crate.pity())), Msg.number("left", CrateMath.opensLeft(counter, crate.pity())),
                 Msg.p("top", CrateMath.percent(crate.topPercent()))));
         lore.addAll(service.lines(viewer, CratesModule.ID, m.bedrock(viewer) ? "menu.crate.actions-bedrock" : "menu.crate.actions",
                 Msg.number("bulk", m.settings.bulkAmount)));
