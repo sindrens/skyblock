@@ -13,15 +13,15 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 | Batch | What | Status |
 |---|---|---|
 | 1 | Fixes and cleanup | **released** (update121, 02:14) |
-| 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
+| 2 | Economy: playtime pay limits, island-only shards, spawner payback (update121), events and contracts (update122), money x100 (update139), dynamic prices v2 (update141) | built |
 | 3 | Tools v4 core: enchants, personal prestige + rebirths (update125), storage (update126), old tools module removed (update128) | in progress |
 | 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
 | 5 | Spawners v2: levels per mob type, limit 4 x level, prestige, 10 s to 5 s speed, no efficiency curve (update129) | built |
 | 6 | Quest line v2: two new quest book chapters (Bramble's Farmhand, Flint's Apprentice), /mailbox, /menu → You gets Quest Book, Mailbox, Friends, Milestones (update130) | built |
 | 7 | /fish: pond, 6 waters, island rod, Fishing Shards, rod enchants, storage, anti-AFK (update131) | built |
-| 8 | /pve v1: arena with 10 rings, tier unlocks, money and Combat XP per kill, safe deaths (update132); bosses, sword, Combat Shards next | in progress |
-| 9 | Polish (crates, collection, AH, shop) | |
-| 10 | Pack v2, ranks v2 | |
+| 8 | /pve: arena with 10 rings (update132), Island Sword and Combat Shards (update133), bosses and the last masteries (update134), Warden Hale (update135) | built |
+| 9 | Polish: crates, collection, AH, shop (update136), GUI pass (update140), small fixes (update142-143) | built |
+| 10 | Ranks v2 leftovers and Black Market items (update138) built; pack v2 waits for your art direction | in progress |
 
 ## Tools v4 (batch 3): what you get in update125 (released 03:22)
 - **Your own enchants:** right-click the island pickaxe or hoe, then **Your enchants** (middle of the menu). 17 per tool, levels 1-1000, paid with your own shards, working only at /mine (pickaxe) and /farm (hoe). Rows: area (Blast, Lightning Strike, Meteor, Nuke / Explode, Row Reaper, Tornado, Meteor Shower), shards (Shard Burst, Shard Echo, Compound Interest, Shard Jackpot), loot (Rich Vein/Bountiful, Cash Vein/Cash Crop, Quick Study, Motherlode/Golden Crop, Geode/Harvest Basket), boosts (Scholar, Combo, Lucky Streak, Keyfinder).
@@ -93,9 +93,10 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. Dynamic prices v2 (per-island daily sell curve and weekly drift; needs your Q-70 answer). Money x100 is done (update139, see above).
-2. Batch 10: pack v2, ranks v2.
-3. Small fixes: FX-05 (Sell Wand / Auto-Sell sale order, check on the test server).
+1. ~~Dynamic prices v2~~ **built** (update141, defaults in Q-77). ~~Money x100~~ **built** (update139).
+2. Pack v2: waits for your art direction (what you like / don't like about the current look); tool skins wait for Q-74.
+3. Small fix FX-05 (Sell Wand / Auto-Sell: a server crash in the half second of a sale could lose or double it): needs a test on the live server, so it waits for SSH.
+4. 5-row menus (help topics, guide tasks) and the pane bars in the sell chest / trash / trade (Q-76): your call.
 
 ## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
 - **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
