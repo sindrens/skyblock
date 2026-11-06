@@ -93,7 +93,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
+1. Money x100 and dynamic prices v2 (**not started on purpose tonight**: it changes every balance in the database and about 30 live config files in one step, and with SSH down I can't check it on the test server. A half-done or untested scale is worse than none. It is ready to build as soon as we can test it together; plan in `docs/plans/ECONOMY_SCALE.md`) (needs your answer to Q-70 first: custom grind items or new prices).
 2. Batch 10: pack v2, ranks v2.
 3. Small fixes: FX-05 (Sell Wand and Auto-Sell: waits until those items are made), FX-21 (Tinker and Sage at spawn still need a spot, see below).
 
@@ -109,7 +109,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Boss kills are now in the audit log (`economy / pve_boss`, with ring and key), so staff can see them.
 - Still open (FX-21): **Tinker and Sage** have no spot at spawn. I can't see the spawn build from here, so I didn't guess; stand where you want them and tell me the coordinates (or add a line to `npcs.extra-spots`).
 
-## Batch 9: crates, collection, shop, auction house (update136, plan: `docs/plans/BATCH9_POLISH.md`)
+## Batch 9: crates, collection, shop, auction house (update136, includes FX-17 and FX-19, plan: `docs/plans/BATCH9_POLISH.md`)
 - **Crates**: the spin takes 2 s (was 3 s, still skippable). The crate tile and preview show a **luck bar** and "Top reward in N opens" (pity numbers unchanged: 3-4x more top rewards would flood the server). Every **"coming soon" row is gone**: Sell Wand, Auto-Sell Chest, Chunk Collector, Tool Skin, Tome, Blueprint and the rest don't exist yet (your Q-71 point). They already paid crystals, so their chance went to crystals: plain rows into the Crystal Pouch, star rows into a new star **Crystal Jackpot**. Players get the same value, and pity keeps its odds. A live `crates.yml` is changed once (backup `crates.yml.before-v3`). Key Fragments are off (their Depths drop is gone). Money pouches now grow with your best area skill (Farming, Mining, Fishing, Combat).
 - **Collection**: the Depths pages (which warned on every start and could never fill) are replaced by **Farm** (5 crops), **Ores** (7), **Fish** (9) and **Mobs** (10 ring mobs + their 10 bosses), plus Crates. Every entry now counts **how many** you found ("Found: 3,412"). Every 25% of a page also gives **5 crystals** (on top of the island point; a full page is still a title and a Blaze key).
 - **Shop** (your Q-42 "the 49 back"): the 34 items that were still missing are back: 12 planks, 15 bricks/polished stones, coarse dirt, packed and blue ice, moss carpet, baked potato, chiseled bookshelf, white banner, at their old prices. New rows: Planks, Bricks and polished stone, Ice, Brewing. Mob Drops adds arrows, wither skeleton skull, ink and glow ink sacs, nautilus shell, magma cream, phantom membrane and ghast tear (335 items, every price still passes the "can't buy and sell for profit" check). A live `shop.yml` is fixed once: worth-only items move back into their tab.
