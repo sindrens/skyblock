@@ -1,4 +1,4 @@
--- 6 Nov 2026: servers that ran the old join tutorial (73d18644) recorded V001 with its old tables, so the quest-book
+-- 6 Nov 2026 (V004: the old join tutorial used V001-V003): servers that ran the old join tutorial (73d18644) recorded V001 with its old tables, so the quest-book
 -- tables below never got created there. Same statements as V001, all IF NOT EXISTS: a no-op on new servers.
 
 
