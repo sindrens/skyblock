@@ -115,16 +115,16 @@ public final class StackingConfig extends ModuleConfig {
     public List<String> legacy = List.of("squid:2", "magma_cube:3", "glow_squid:4", "piglin:4", "shulker:5", "ravager:5", "breeze:5");
 
     @Setting(path = "spawners.unlock.tier-2.kills", desc = "Kills of tier 1 mobs on an island before its shop sells tier 2 spawners (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
-    public long unlockTier2Kills = 1000;
+    public long unlockTier2Kills = 10_000; // owner 7 Nov 2026
 
     @Setting(path = "spawners.unlock.tier-3.kills", desc = "Kills of tier 2 mobs before tier 3 spawners are sold (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
-    public long unlockTier3Kills = 5000;
+    public long unlockTier3Kills = 25_000;
 
     @Setting(path = "spawners.unlock.tier-4.kills", desc = "Kills of tier 3 mobs before tier 4 spawners are sold (0 = open).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
-    public long unlockTier4Kills = 20000;
+    public long unlockTier4Kills = 50_000;
 
     @Setting(path = "spawners.unlock.tier-5.kills", desc = "Kills of tier 4 mobs before tier 5 spawners are sold (premium: 0 = no gate).", min = 0, max = 100_000_000, level = Setting.Level.OWNER)
-    public long unlockTier5Kills = 0;
+    public long unlockTier5Kills = 100_000; // owner 7 Nov 2026: premium after 100k tier 4 kills
 
     @Setting(path = "spawners.unlock.tier-2.mobs", desc = "Only these tier 1 mobs count for the tier 2 unlock (empty = every tier 1 mob).")
     public List<String> unlockTier2Mobs = List.of();
@@ -311,7 +311,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -328,6 +328,11 @@ public final class StackingConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         StackingConfig d = new StackingConfig();
         return java.util.Map.of(
+                // v6 (owner 7 Nov 2026, spawner page answer): unlocks 10k / 25k / 50k kills, premium tier 5 after 100k
+                6, java.util.Map.of("spawners.unlock.tier-2.kills", ValueChange.of(1_000L, d.unlockTier2Kills),
+                        "spawners.unlock.tier-3.kills", ValueChange.of(5_000L, d.unlockTier3Kills),
+                        "spawners.unlock.tier-4.kills", ValueChange.of(20_000L, d.unlockTier4Kills),
+                        "spawners.unlock.tier-5.kills", ValueChange.of(0L, d.unlockTier5Kills)),
                 // v5 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): 1 of each drop, hoglin to tier 1, zombified piglin to tier 2
                 5, java.util.Map.of("spawners.drops", ValueChange.of(SPAWNER_DROPS_V3, d.spawnerDrops),
                         "spawners.vanilla-loot", ValueChange.of(true, false),

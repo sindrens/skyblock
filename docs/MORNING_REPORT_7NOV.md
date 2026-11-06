@@ -202,6 +202,7 @@ Your message after testing ("prestige 6 in 5 minutes", "so few shards", "each le
   - Tier 4 $75M (blaze, enderman, guardian)
   - A tier's best spawners earn about 2.5x the tier below, so climbing is worth it.
 - Spawner loot (`mob-loot`) never gets the 3,000-a-day price drop.
+- Your page answers (update146): tier unlocks need **10,000 / 25,000 / 50,000** kills of the tier below, and premium tier 5 needs **100,000** tier 4 kills.
 - Live files are updated once (sell.yml catalog-version 3, shop.yml catalog-version 8; a price you changed yourself stays). Every change is in the server log.
 
 ## Released tonight
