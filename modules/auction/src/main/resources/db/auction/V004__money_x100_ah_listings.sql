@@ -1,0 +1,2 @@
+-- Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): one table per file, so each runs exactly once.
+UPDATE ah_listings SET price = CASE WHEN price > 92233720368547758 THEN 9223372036854775807 ELSE price * 100 END, fee = CASE WHEN fee > 92233720368547758 THEN 9223372036854775807 ELSE fee * 100 END, tax = CASE WHEN tax > 92233720368547758 THEN 9223372036854775807 ELSE tax * 100 END WHERE currency = 'money';
