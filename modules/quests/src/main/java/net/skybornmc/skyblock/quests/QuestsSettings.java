@@ -118,13 +118,20 @@ public final class QuestsSettings extends ModuleConfig {
     /** v2 (FX-12, 6 Nov 2026): the Depths mine, chop and kill quests and forge leave the pools; /mine ores and /farm crops come in. */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ModuleConfig.ValueChange>> valueChanges() {
         QuestsSettings d = new QuestsSettings();
-        return java.util.Map.of(4, java.util.Map.of( // owner 7 Nov 2026 (FINISH_PLAN batch D): /fish and /pve contracts
+        return java.util.Map.of(
+                // v5 (owner 7 Nov 2026): the test server still had the first pools (Depths mine/chop/kill, never offered since
+                // the Depths are gone, so only sell/levels/visit/like came): the current pools replace them
+                5, java.util.Map.of(
+                "daily.pool", ModuleConfig.ValueChange.of(List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1"), d.dailyPool),
+                "weekly.pool", ModuleConfig.ValueChange.of(List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3"), d.weeklyPool),
+                "island.pool", ModuleConfig.ValueChange.of(List.of("mine", "chop", "kill", "sell"), d.islandPool)),
+                4, java.util.Map.of( // owner 7 Nov 2026 (FINISH_PLAN batch D): /fish and /pve contracts
                 "daily.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 300", "ore 300", "tool_levels 1", "visit 3", "like 1"), d.dailyPool),
                 "weekly.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 2000", "ore 2000", "tool_levels 3", "enchant 1", "visit 10", "like 3"), d.weeklyPool),
                 "island.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 3000", "ore 3000"), d.islandPool)),

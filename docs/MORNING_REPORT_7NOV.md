@@ -219,6 +219,7 @@ Your "simple, nothing unnecessary" answer:
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
 ## /fish and /pve contracts (update154)
+- **Fix (update155):** the test server's contracts still used the very first pools (Depths mine/chop/kill, which are never offered since the Depths are gone), so you only got sell, tool levels, visit and like. They now use the current pools: harvest, ore, fish, fight, sell, tool levels, enchant, visit, like.
 - New contract types: "Catch 25 fish at /fish" and "Kill 100 mobs at /pve" (daily), 150 / 700 (weekly), 250 / 1,000 (island missions). The weekly island missions pick 3 of the 5 kinds.
 
 ## Quests and leftovers (update153)
