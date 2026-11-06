@@ -110,6 +110,9 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "grind.pve-mobs-per-ring", desc = "Owner 6 Nov 2026: mobs kept alive in each of the ten /pve rings while a player is in the arena (0 = none).", min = 0, max = 40)
     public int pveMobsPerRing = 6;
 
+    @Setting(path = "grind.pve-sigil-every", desc = "Owner 7 Nov 2026: a Boss Sigil of a ring every this many kills there (/pve boss summons that ring's boss).", min = 1, max = 100_000)
+    public int pveSigilEvery = 200;
+
     @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
     public int grindDungeonMobs = 12;
 

@@ -35,4 +35,20 @@ class PveArenaTest {
         }
         assertTrue(PveArena.X - PveArena.HALF > -3000, "inside the world border");
     }
+
+    @Test
+    void bossesFollowThePlan() {
+        assertTrue(PveBosses.sigilAt(200, 200) && PveBosses.sigilAt(400, 200));
+        assertTrue(!PveBosses.sigilAt(199, 200) && !PveBosses.sigilAt(0, 200));
+        assertTrue(PveBosses.key(9, 0.99), "every 10th boss without a key gives one");
+        assertTrue(!PveBosses.key(0, 0.5) && PveBosses.key(0, 0.05));
+        assertEquals("ember", PveBosses.crate(5));
+        assertEquals("cinder", PveBosses.crate(6));
+        assertEquals(10, PveBosses.NAMES.size());
+        // Balance (BATCH8_BOSSES.md): a boss pays about 30% on top of the 200 kills that earned its Sigil.
+        for (PveArena.Tier t : PveArena.TIER_LIST) {
+            double share = (double) (t.pay() * PveBosses.PAY) / (t.pay() * 200);
+            assertEquals(0.3, share, 0.001);
+        }
+    }
 }

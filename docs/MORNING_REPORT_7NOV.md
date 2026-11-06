@@ -93,11 +93,16 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. /pve bosses (Boss Sigils, personal boss per ring, boss bar, 3 minutes, loot + pity), Warden Hale and Marla NPCs with their quest chains, Fish and Combat Mastery.
+1. Warden Hale and Marla NPCs with their quest chains.
 2. Batch 9: crates (one menu, preview with chances, 2 s animation, pity bar), collection pages per area (farm, ores, fish, mobs, crates), auction house (categories, search, sort), shop (all items, Mob Drops tab).
 3. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
 4. Batch 10: pack v2, ranks v2.
 5. Small fixes: FX-05, FX-17, FX-19, FX-21.
+
+## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
+- **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
+- A boss pays 60x the ring's kill money (about 30% on top of the 200 kills that earned the Sigil, so bosses are a bonus, not the main income), five mobs' worth of loot, 25 kills of Combat XP and sword progress, and a crate key 10% of the time (Ember for rings 1-5, Cinder for 6-10; every 10th boss without a key gives one for sure).
+- **Fish Mastery and Combat Mastery**: the last two Area Masteries (+100 rod / sword enchant levels a rank), same prices and island tasks as Farm and Mine Mastery.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

@@ -297,6 +297,48 @@ grind:
   pve:
     unlocked: "<prefix><c:success><sym:star></c:success> <c:text>Ring <c:value><tier></c:value> <c:text>is open: <c:value><mob></c:value><c:text>. Stronger mobs, more money."
     locked: "<c:warning>Ring <tier> is locked.</c:warning> <c:text>Ring <open>: <c:value><need></c:value> <c:text>kills to open the next."
+    # Owner 7 Nov 2026: personal bosses (docs/plans/BATCH8_BOSSES.md). <boss> <tier> <have> <every> <seconds> <money> <crate>
+    boss:
+      name: "<c:error><bold><boss>"
+      bar: "<c:error><bold><boss></bold></c:error> <c:muted>· <seconds> s"
+      sigil: "<prefix><c:flame><sym:star></c:flame> <c:text>Boss Sigil of ring <c:value><tier></c:value><c:text>! You have <c:value><have></c:value><c:text>. Summon <c:value><boss></c:value> <c:text>with</c:text> <click:run_command:'/pve boss'><c:action>/pve boss</c:action></click><c:text>."
+      summoned: "<prefix><c:error><sym:star></c:error> <c:value><boss></c:value> <c:text>is here! Only you can see and hit it. <c:value><seconds></c:value> <c:text>seconds."
+      escaped: "<prefix><c:warning><sym:cross></c:warning> <c:value><boss></c:value> <c:text>got away. The Sigil is used up."
+      defeated: "<prefix><c:success><sym:check></c:success> <c:text>You beat <c:value><boss></c:value><c:text>: <cur:money><money></cur:money> <c:text>and its loot."
+      defeated-key: "<prefix><c:success><sym:check></c:success> <c:text>You beat <c:value><boss></c:value><c:text>: <cur:money><money></cur:money><c:text>, its loot and a <c:value><crate> Key</c:value><c:text>!"
+      defeated-title:
+        title: "<grad:flame><bold>BOSS DEFEATED"
+        subtitle: "<c:text><boss>"
+        fade-in: 5
+        stay: 40
+        fade-out: 15
+      not-here: "<prefix><c:error><sym:cross></c:error> <c:text>Bosses can only be summoned in the arena: <click:run_command:'/pve'><c:action>/pve</c:action></click><c:text>."
+      locked: "<prefix><c:error><sym:cross></c:error> <c:text>Ring <c:value><tier></c:value> <c:text>isn't open for you yet."
+      no-sigil: "<prefix><c:error><sym:cross></c:error> <c:text>You need a Boss Sigil of ring <c:value><tier></c:value><c:text>: one every <c:value><every></c:value> <c:text>kills there."
+      one-at-a-time: "<prefix><c:error><sym:cross></c:error> <c:text>Beat your boss first: one at a time."
+      busy: "<prefix><c:error><sym:cross></c:error> <c:text>The arena is full of bosses right now. Try again in a minute."
+      menu:
+        title: "Bosses"
+        ready:
+          name: "<c:error><bold><boss></bold></c:error> <c:muted>Ring <tier>"
+          lore:
+            - "<c:text>Sigils: <c:value><have>"
+            - "<c:bar>| </c:bar><c:text>Reward: <cur:money><money></cur:money> <c:text>+ loot"
+            - "<c:bar>| </c:bar><c:text>Sometimes a <c:value><crate> Key"
+            - "<c:muted>3 minutes, only you can see it."
+            - ""
+            - "<bold><c:action>» CLICK</c:action></bold> <c:text>to summon"
+        empty:
+          name: "<c:muted><bold><boss></bold> Ring <tier>"
+          lore:
+            - "<c:text>No Sigil yet: one every"
+            - "<c:value><every></c:value> <c:text>kills in ring <tier>."
+            - "<c:bar>| </c:bar><c:text>Reward: <cur:money><money></cur:money> <c:text>+ loot"
+        locked:
+          name: "<c:muted><bold>Ring <tier>"
+          lore:
+            - "<c:error><sym:cross> Locked"
+            - "<c:text>Open the ring first."
   # Owner 6 Nov 2026: /fish. <water> = a water's name below.
   fish:
     water:

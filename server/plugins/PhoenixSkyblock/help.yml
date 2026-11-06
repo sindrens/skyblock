@@ -348,6 +348,12 @@ topics:
           - "<c:text>ring 10 (the middle) ravagers."
           - "<c:text>Kills in a ring open the next."
           - "<c:text>Every kill pays and trains Combat."
+      - title: "<c:value>Bosses"
+        lines:
+          - "<c:text>Every 200 kills in a ring give"
+          - "<c:text>a Boss Sigil. /pve boss summons"
+          - "<c:text>your own boss: 3 minutes, big"
+          - "<c:text>money, sometimes a crate key."
       - title: "<c:value>Safe"
         lines:
           - "<c:text>No PvP. Dying in the arena"

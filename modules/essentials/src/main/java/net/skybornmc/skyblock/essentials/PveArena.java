@@ -60,11 +60,14 @@ final class PveArena implements Listener {
             new Tier(EntityType.WITHER_SKELETON, 6.8, 2.7, 270, 40_000), new Tier(EntityType.RAVAGER, 8.0, 3.0, 350, 0));
 
     private final GrindAreas areas;
+    /** Owner 7 Nov 2026: the personal bosses. */
+    final PveBosses bosses;
     private final Map<UUID, Integer> mobs = new ConcurrentHashMap<>(); // entity → tier
     private final Map<UUID, Long> lastWarn = new ConcurrentHashMap<>();
 
     PveArena(GrindAreas areas) {
         this.areas = areas;
+        this.bosses = new PveBosses(this, areas);
     }
 
     // ------------------------------------------------------------------ pure rules
@@ -156,6 +159,7 @@ final class PveArena implements Listener {
 
     /** Every second: tops up each ring to its number of mobs and pulls strays back into their ring. */
     void tick(World world, int base, int perRing) {
+        bosses.tick(world, base);
         if (world.getPlayers().stream().noneMatch(p -> inArena(p.getLocation()))) {
             return; // nobody here: nothing spawns (the ones there stay)
         }
@@ -181,7 +185,7 @@ final class PveArena implements Listener {
         }
     }
 
-    private Location spot(World world, int base, int tier) {
+    Location spot(World world, int base, int tier) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int outer = (TIERS - tier + 1) * RING - 1;
         int inner = (TIERS - tier) * RING + 1;
@@ -203,12 +207,20 @@ final class PveArena implements Listener {
             if (!(e instanceof LivingEntity le)) {
                 return;
             }
+            prepare(le, tier, t.health(), t.damage());
+            mobs.put(le.getUniqueId(), tier);
+        });
+    }
+
+    /** An arena mob of a ring: tagged, never saved, scaled health and damage, adult, no burning, no pick-ups. */
+    void prepare(LivingEntity le, int tier, double health, double damage) {
+        {
             le.getPersistentDataContainer().set(TIER, PersistentDataType.INTEGER, tier);
             le.setPersistent(false);
             le.setRemoveWhenFarAway(false);
             le.setCanPickupItems(false);
-            scale(le, Attribute.MAX_HEALTH, t.health());
-            scale(le, Attribute.ATTACK_DAMAGE, t.damage());
+            scale(le, Attribute.MAX_HEALTH, health);
+            scale(le, Attribute.ATTACK_DAMAGE, damage);
             AttributeInstance hp = le.getAttribute(Attribute.MAX_HEALTH);
             if (hp != null) {
                 le.setHealth(hp.getValue());
@@ -223,8 +235,7 @@ final class PveArena implements Listener {
                 le.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET)); // no burning in the sun, also via EntityCombustEvent
                 le.getEquipment().setHelmetDropChance(0);
             }
-            mobs.put(le.getUniqueId(), tier);
-        });
+        }
     }
 
     private static void scale(LivingEntity le, Attribute attribute, double factor) {
@@ -236,6 +247,7 @@ final class PveArena implements Listener {
 
     /** Server stop or reload: the arena mobs go (they are never saved). */
     void clear() {
+        bosses.clear();
         for (UUID id : List.copyOf(mobs.keySet())) {
             org.bukkit.entity.Entity e = Bukkit.getEntity(id);
             if (e != null) {
@@ -263,6 +275,9 @@ final class PveArena implements Listener {
             return;
         }
         mobs.remove(event.getEntity().getUniqueId());
+        if (bosses.onDeath(event)) {
+            return; // a personal boss (its own reward)
+        }
         Player killer = event.getEntity().getKiller();
         if (killer == null || !inArena(killer.getLocation())) {
             event.getDrops().clear();
@@ -273,6 +288,7 @@ final class PveArena implements Listener {
         int before = unlocked(k, TIER_LIST);
         k[tier - 1]++;
         killer.getPersistentDataContainer().set(KILLS, PersistentDataType.LONG_ARRAY, k);
+        bosses.onKill(killer, tier, k[tier - 1]); // every 200 kills a Boss Sigil
         Tier t = TIER_LIST.get(tier - 1);
         areas.pay(killer, t.pay());
         // The drops go straight to the bag (never left on the floor of a shared arena), what doesn't fit is lost.

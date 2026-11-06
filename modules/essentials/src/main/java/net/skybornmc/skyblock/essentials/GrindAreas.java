@@ -145,7 +145,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         core.commands().register(CommandSpec.command("fish").description("Teleport to the fishing pond").category("Teleport")
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "fish")));
         core.commands().register(CommandSpec.command("pve").description("Teleport to the PvE arena").category("Teleport")
-                .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "pve")));
+                .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "pve"))
+                .sub(CommandSpec.sub("boss").description("Summon a ring's boss with a Boss Sigil (in the arena)").playerOnly()
+                        .example("pve boss").executes(ctx -> pve.bosses.open(ctx.player()))));
         reloadFish();
         // Owner 3 Nov 2026 23:05: no dungeon (the arena stays built but has no command and no monsters).
         // Owner 4 Nov 2026 (plan A item 8): the /farm and /mine scoreboard shows the tier, the progress and this visit's bonus.
@@ -248,6 +250,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
                 core.plugin().getLogger().info("Essentials: built the /pve arena in " + world.getName());
             }
             Bukkit.getPluginManager().registerEvents(pve, core.plugin());
+            Bukkit.getPluginManager().registerEvents(pve.bosses, core.plugin());
             core.scheduler().repeat("essentials:pve", 40L, 20L, () -> pve.tick(world, base, Math.max(0, config.pveMobsPerRing)));
             wetFarm(); // owner 5 Nov 2026: every farmland at /farm is wet, as if it had water
             fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
@@ -822,9 +825,14 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount);
     }
 
+    int pveSigilEvery() {
+        return Math.max(1, config.pveSigilEvery);
+    }
+
     /** Module stop: the arena mobs go. */
     void stopPve() {
         org.bukkit.event.HandlerList.unregisterAll(pve);
+        org.bukkit.event.HandlerList.unregisterAll(pve.bosses);
         pve.clear();
     }
 
