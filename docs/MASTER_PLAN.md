@@ -40,9 +40,9 @@ Severity order. Paths are on `q/release-v4`.
 | FX-14 | "Tutorial stats" has no tile in the staff hub | `menu.yml:114-126`, `navigation.yml:531` | Add tile. |
 | FX-15 | Profile switching is blocked in "depths" (no such world) but allowed in the grind world | `profiles/ProfilesConfig.java:24` | Block in the `/farm`/`/mine` world. |
 | FX-16 | `/is gho` prints the full sub-command list | `common/command/CommandService.java:287`, `messages/commands.yml:9` | "Did you mean /is go?" + short usage. |
-| FX-17 | Placed-block memory is RAM only (200k per world): place and break ore after a restart = free XP and shards | `common/PlacedBlocks.java`, `islandtools/ToolListener.java:76` | Store the "placed" mark in chunk data (persistent, no cap). |
+| FX-17 | Placed-block memory is RAM only (200k per world): place and break ore after a restart = free XP and shards | `common/PlacedBlocks.java`, `islandtools/ToolListener.java:76` | Store the "placed" mark in chunk data (persistent, no cap). **Done 7 Nov** (`ChunkMarks`, pistons and explosions handled). |
 | FX-18 | `/help` is wrong: Black Market "pay with shards" (now crystals), "Depths drops", sell topic misses Sell Wand / Auto-Sell Chest / Chunk Collector; Auto-Sell lore hardcodes "every 30 s" | `help.yml:555,1198,1359-1366`, `economy.yml:1230` | Rewrite those topics; placeholder for the interval. |
-| FX-19 | `/quest` opens the tutorial but `/help quest` shows Contracts | `TutorialCommands.java:46`, `help.yml:1548` | Help topic named Contracts; alias follows Q-12. |
+| FX-19 | `/quest` opens the tutorial but `/help quest` shows Contracts | `TutorialCommands.java:46`, `help.yml:1548` | Help topic named Contracts; alias follows Q-12. **Done 7 Nov** (`/help quest` = Getting started). |
 | FX-20 | Collection log Mine/Forest/Combat pages built from removed `depths_*` items (warnings on every start) | `collection/CollectionSettings.java:25-40` | New pages from farm/mine items (with C-01). |
 | FX-21 | NPCs `farm_merchant`, `mine_merchant`, `tinker`, `sage` have no placement in `server/builds` | builds | Check the live world; add placements. **Partly done 7 Nov:** the four area NPCs via `npcs.extra-spots`; Tinker and Sage wait for a spawn spot. |
 

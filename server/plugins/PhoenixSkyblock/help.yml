@@ -1363,7 +1363,7 @@ topics:
 
   start:
     icon: written_book
-    aliases: [tutorial, rowan, starter-chest, new]
+    aliases: [tutorial, quest, quest-book, rowan, starter-chest, new]
     name: "<c:flame>Getting started"
     summary: ["<c:text>Your island is made when you join.", "<c:text>Rowan at spawn shows you the rest."]
     take-me-there: "start"
@@ -1581,8 +1581,8 @@ topics:
 
   quests:
     icon: writable_book
-    aliases: [quest, daily-quests, weekly-quests, missions, island-missions, quest-master]
-    name: "<c:flame>Quests"
+    aliases: [contracts, daily-quests, weekly-quests, missions, island-missions, quest-master]
+    name: "<c:flame>Contracts"
     summary: ["<c:text>Daily, weekly and island", "<c:text>goals that pay by themselves."]
     take-me-there: "contracts"
     commands: [Rewards]

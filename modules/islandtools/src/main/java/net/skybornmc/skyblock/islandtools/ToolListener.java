@@ -167,8 +167,10 @@ final class ToolListener implements Listener {
         boolean nested = expanding.contains(p.getUniqueId());
         boolean burst = crop && !nested && ThreadLocalRandom.current().nextDouble(100) < m.farming().burstPercent(island);
         Location key = block.getLocation();
-        boolean natural = !placed.isPlaced(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ(), System.currentTimeMillis());
+        boolean natural = !placed.isPlaced(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ(), System.currentTimeMillis())
+                && !net.skybornmc.skyblock.common.world.ChunkMarks.marked(block); // FX-17: survives restarts
         placed.forget(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
+        net.skybornmc.skyblock.common.world.ChunkMarks.unmark(block);
         // Owner 6 Nov 2026: a Blast/Explode block is drops only (no tool XP, shards, enchants or /farm /mine progress).
         boolean area = net.skybornmc.skyblock.common.grind.GrindProgress.dropsOnly(p);
         pending.put(key, new Pending(p, kind, island, crop, burst, natural, nested, area));
@@ -200,6 +202,7 @@ final class ToolListener implements Listener {
         Material type = origin.getType();
         int r = m.config().sweepRadius;
         List<Block> found = new ArrayList<>();
+        java.util.function.Predicate<Block> marks = net.skybornmc.skyblock.common.world.ChunkMarks.reader();
         for (int d = 1; d <= r && found.size() < count; d++) {
             for (int dx = -d; dx <= d && found.size() < count; dx++) {
                 for (int dz = -d; dz <= d && found.size() < count; dz++) {
@@ -209,7 +212,8 @@ final class ToolListener implements Listener {
                         }
                         Block b = origin.getRelative(dx, dy, dz);
                         boolean ok = kind == Kind.HOE ? ripe(b)
-                                : b.getType() == type && !placed.isPlaced(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), System.currentTimeMillis());
+                                : b.getType() == type && !placed.isPlaced(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), System.currentTimeMillis())
+                                && !marks.test(b);
                         if (ok) {
                             found.add(b);
                         }
@@ -249,6 +253,7 @@ final class ToolListener implements Listener {
         int r = Math.max(2, m.config().sweepRadius);
         long now = System.currentTimeMillis();
         List<Block> found = new ArrayList<>();
+        java.util.function.Predicate<Block> marks = net.skybornmc.skyblock.common.world.ChunkMarks.reader();
         for (int d = 1; d <= r && found.size() < count; d++) {
             for (int dx = -d; dx <= d && found.size() < count; dx++) {
                 for (int dz = -d; dz <= d && found.size() < count; dz++) {
@@ -259,7 +264,7 @@ final class ToolListener implements Listener {
                         Block b = origin.getRelative(dx, dy, dz);
                         boolean ok = kind == Kind.HOE ? ripe(b) : !b.getType().isAir() && b.getType() != Material.BEDROCK
                                 && relevant(kind, b.getType().getKey().getKey())
-                                && !placed.isPlaced(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), now);
+                                && !placed.isPlaced(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), now) && !marks.test(b);
                         if (ok) {
                             found.add(b);
                         }
@@ -393,8 +398,58 @@ final class ToolListener implements Listener {
         }
         long now = System.currentTimeMillis();
         placed.placed(b.getWorld().getUID(), b.getX(), b.getY(), b.getZ(), now);
+        String id = b.getType().getKey().getKey();
+        if (relevant(Kind.PICKAXE, id) || relevant(Kind.HOE, id)) {
+            net.skybornmc.skyblock.common.world.ChunkMarks.mark(b); // FX-17: only blocks a tool pays for, kept in the chunk
+        }
         if (++placeCount % 2000 == 0) {
             placed.prune(now);
+        }
+    }
+
+    /** FX-17: a placed ore pushed by a piston stays placed (no fresh "natural" block one block further). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPistonExtend(org.bukkit.event.block.BlockPistonExtendEvent event) {
+        moveMarks(event.getBlocks(), event.getDirection());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPistonRetract(org.bukkit.event.block.BlockPistonRetractEvent event) {
+        moveMarks(event.getBlocks(), event.getDirection());
+    }
+
+    private void moveMarks(List<Block> blocks, org.bukkit.block.BlockFace direction) {
+        List<Block> marked = new ArrayList<>();
+        for (Block b : blocks) {
+            if (net.skybornmc.skyblock.common.world.ChunkMarks.marked(b)) {
+                marked.add(b);
+            }
+        }
+        for (Block b : marked) {
+            net.skybornmc.skyblock.common.world.ChunkMarks.unmark(b);
+        }
+        for (Block b : marked) {
+            net.skybornmc.skyblock.common.world.ChunkMarks.mark(b.getRelative(direction));
+        }
+    }
+
+    /** FX-17: a block that formed (cobblestone generator) is natural even where a placed block once was. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onForm(org.bukkit.event.block.BlockFormEvent event) {
+        net.skybornmc.skyblock.common.world.ChunkMarks.unmark(event.getBlock());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onExplode(org.bukkit.event.entity.EntityExplodeEvent event) {
+        for (Block b : event.blockList()) {
+            net.skybornmc.skyblock.common.world.ChunkMarks.unmark(b);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockExplode(org.bukkit.event.block.BlockExplodeEvent event) {
+        for (Block b : event.blockList()) {
+            net.skybornmc.skyblock.common.world.ChunkMarks.unmark(b);
         }
     }
 

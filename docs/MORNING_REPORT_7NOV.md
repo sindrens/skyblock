@@ -95,7 +95,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 ## Still to do (in this order)
 1. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
 2. Batch 10: pack v2, ranks v2.
-3. Small fixes: FX-05, FX-17, FX-19, FX-21 (Tinker and Sage at spawn still need a spot, see below).
+3. Small fixes: FX-05 (Sell Wand and Auto-Sell: waits until those items are made), FX-21 (Tinker and Sage at spawn still need a spot, see below).
 
 ## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
 - **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
@@ -114,6 +114,10 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - **Collection**: the Depths pages (which warned on every start and could never fill) are replaced by **Farm** (5 crops), **Ores** (7), **Fish** (9) and **Mobs** (10 ring mobs + their 10 bosses), plus Crates. Every entry now counts **how many** you found ("Found: 3,412"). Every 25% of a page also gives **5 crystals** (on top of the island point; a full page is still a title and a Blaze key).
 - **Shop** (your Q-42 "the 49 back"): the 34 items that were still missing are back: 12 planks, 15 bricks/polished stones, coarse dirt, packed and blue ice, moss carpet, baked potato, chiseled bookshelf, white banner, at their old prices. New rows: Planks, Bricks and polished stone, Ice, Brewing. Mob Drops adds arrows, wither skeleton skull, ink and glow ink sacs, nautilus shell, magma cream, phantom membrane and ghast tear (335 items, every price still passes the "can't buy and sell for profit" check). A live `shop.yml` is fixed once: worth-only items move back into their tab.
 - **Auction house**: a **"Similar to your hand"** button shows only listings of the exact item you hold. On a new server (too few sales for a typical price) the sell page shows **"Cheapest now"** from other players' listings.
+
+### Two fixes in the same update
+- **FX-17 (exploit):** a block you place is now remembered in the chunk itself, so placing ores and breaking them after a restart no longer gives tool XP and shards. Pistons carry the mark along; explosions and cobblestone generators clear it.
+- **FX-19:** `/help quest` now shows the quest line (the same as `/quest`); the daily and weekly topic is called Contracts.
 
 ### Shop question (Q-73, default in place)
 The full plan says "one click buy, shift for 64", but your GUI-1 answer was "a click opens the buy page". I kept your GUI-1 answer: a click opens the buy page and shift-click buys a stack. Do you want a plain click to buy 1 instead?
