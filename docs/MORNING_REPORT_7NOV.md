@@ -170,6 +170,15 @@ Your message before bed: "&a colour on hoe and pickaxe, change names, ALL GUIs".
 - **Boss names** now live in the messages file (`grind.pve.boss.names`).
 - **Tinker and Sage at spawn (FX-21, done)**: the two Forge Quarter NPCs both opened /tool. The quartermaster is now **Tinker** (tools) and the blacksmith is **Sage** (skills), so the quest line can send players to them.
 
+## Dynamic prices v2 (update141, plan: `docs/plans/DYNAMIC_PRICES_V2.md`, your P-03)
+The old model (one price per item for the whole server that fell with every sale) is switched off. Instead:
+- **Per island, per item, per day:** the first **3,000** items pay 100%, then every 100 more pay 1% less, down to **60%**. Island members share the count; a player's own count follows them too, so hopping islands doesn't reset it.
+- **04:00 reset (Oslo):** half of what was sold over 3,000 carries into the next day, so a heavy seller starts a bit lower and is back to full price after a normal day.
+- **Weekly change:** every Monday 00:00 each item gets -10% to +10% (2% steps) for the week, the same for everyone. The shop shows it as "Price: +6% today".
+- Hot Item (+25%) and sell bonuses are unchanged. The shop's "never cheaper than it sells for" rule is now 5.5x (was 7.5x), so it only got looser.
+- The sell chest says "Price today: 85%" (green/yellow/red) when part of a sale is past the 3,000; `/eco sell price <item>` shows what all islands sold of it today.
+- All numbers are in `economy.yml → sell.daily.*` and `sell.weekly.*`. Defaults I picked are in **Q-77**.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

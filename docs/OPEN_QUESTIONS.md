@@ -1,6 +1,7 @@
 # Open Questions
 
 ## Waiting for owner (answer in one sitting)
+- **Q-77 (7 Nov 2026, dynamic prices v2):** defaults in place: the week's change is part of "price today"; half the excess over 3,000 carries past 04:00 and eats into the next day's 3,000; the count is the higher of the island's and the player's own (no reset by hopping islands); colours green 95%+, yellow 75%+, red below. Change any of them? (`economy.yml sell.daily.*`, `sell.weekly.*`)
 - **Q-76 (7 Nov 2026, GUI pass):** the sell chest, trash bin and trade window keep their pane bar/slots (they take real items; the panes mark where items can't go). Remove those too? Tool names are green "Island Hoe/Pickaxe/Rod/Sword" now: other names wanted? (default: as built)
 - **Q-74 (7 Nov 2026, batch 10):** Tool Skins: which skins (the pack has Frostbite, Phoenix Flame, Royal Gold icons) and for which tools? They need held-item models (pack v2). And the Hologram item: what should it do? (default: neither sold yet)
 - **Q-75 (7 Nov 2026):** Wardrobe Tome: set XP (built: +2,500 / Greater +10,000) or +1 wardrobe slot (4 Nov note)? (default: XP)
