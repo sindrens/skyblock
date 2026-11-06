@@ -179,12 +179,12 @@ The old model (one price per item for the whole server that fell with every sale
 - The sell chest says "Price today: 85%" (green/yellow/red) when part of a sale is past the 3,000; `/eco sell price <item>` shows what all islands sold of it today.
 - All numbers are in `economy.yml → sell.daily.*` and `sell.weekly.*`. Defaults I picked are in **Q-77**.
 
-## Small fixes (update142)
+## Small fixes (update142-143)
 - **/titles**: titles nobody can earn any more (Deep Diver, Tycoon, Reborn: their achievements are off) are hidden unless you already have them (`cosmetics.yml titles.hidden-unless-owned`).
 - **Spawn portal**: the old "The Depths" sign over the portal that leads to the farm and mine world now says **Farm & Mine · /farm /mine** (the hologram updates on the next build apply or restart).
 - **FX-15**: profile switching is blocked in the /farm and /mine world (it was blocked in the Depths world, which no longer exists).
 - **/skills** no longer promises "Next unlock: Mine Tier II · Copper" and the like (those were Depths tiers, which are gone; /farm and /mine unlock by amount). Each skill now says its levels raise the island level. An owner-edited unlock list stays as it is.
-- Contract text "Kill N Depths mobs" is now "Kill N mobs".
+- Contract text "Kill N Depths mobs" is now "Kill N mobs". The /help Skills topic lists all five skills and where to train them.
 - Two lore lines that were too wide for Bedrock were split (island missions without an island, the sell chest price note).
 
 ## Released tonight

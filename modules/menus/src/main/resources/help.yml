@@ -498,29 +498,30 @@ topics:
 
   skills:
     icon: experience_bottle
-    aliases: [skill, mining, foraging, combat]
+    aliases: [skill, mining, foraging, combat, farming, fishing]
     name: "<c:flame>Skills"
-    summary: ["<c:text>Level up Mining, Foraging and", "<c:text>Combat to open new tiers."]
+    summary: ["<c:text>Farm, mine, fish, chop and", "<c:text>fight to level your skills."]
     take-me-there: "skills"
     commands: [Progression]
     pages:
       - title: "<c:value>What skills are"
         lines:
-          - "<c:text>Your skills are <pillar:mining>Mining</pillar:mining><c:text>,"
-          - "<pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat><c:text>."
+          - "<c:text>Your skills: <pillar:farming>Farming</pillar:farming><c:text>, <pillar:mining>Mining</pillar:mining><c:text>,"
+          - "<pillar:fishing>Fishing</pillar:fishing><c:text>, <pillar:foraging>Foraging</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat><c:text>."
           - "<c:text>Each skill grows as you play."
           - "<c:text>Skills are yours alone and reset each season."
       - title: "<c:value>Earning XP"
         lines:
-          - "<c:text>Farm at /farm, mine at /mine and"
-          - "<c:text>work on your own island."
-          - "<c:text>Higher tiers give much more XP."
+          - "<c:text>Farm at /farm, mine at /mine, fish"
+          - "<c:text>at /fish, fight at /pve and work"
+          - "<c:text>on your own island. Better crops"
+          - "<c:text>and ores give more XP."
           - "<c:text>Gains show above your hotbar."
-      - title: "<c:value>Levels and unlocks"
+      - title: "<c:value>What levels do"
         lines:
           - "<c:text>Each level needs a bit more XP."
-          - "<c:text>Levels give lasting bonuses: see"
-          - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
+          - "<c:text>Your levels raise your island's"
+          - "<c:text>level (members' average counts)."
       - title: "<c:value>Tips"
         lines:
           - "<c:text>Look at a friend's skills:"
