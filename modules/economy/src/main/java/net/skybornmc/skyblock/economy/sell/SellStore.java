@@ -83,6 +83,52 @@ public final class SellStore {
         }
     }
 
+    // ------------------------------------------------------------------ dynamic prices v2: day counts (V023)
+
+    /** Saved day counts (rows older than {@code minDay} are left out: they rolled over to nothing). */
+    public CompletableFuture<List<DayCounts.Row>> loadDays(long minDay) {
+        return db.async(c -> Sql.query(c, "SELECT scope, item_key, sales_day, sold FROM sell_island_daily WHERE sales_day >= ?",
+                rs -> new DayCounts.Row(rs.getString("scope"), rs.getString("item_key"), rs.getLong("sales_day"), rs.getLong("sold")),
+                minDay));
+    }
+
+    /** Saves changed day counts (update, or insert when new) in one transaction, off the main thread. */
+    public CompletableFuture<Void> saveDays(List<DayCounts.Row> rows) {
+        if (rows.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return db.transaction(c -> {
+            saveDays(c, rows);
+            return null;
+        });
+    }
+
+    /** Shutdown save: blocks. */
+    public void saveDaysBlocking(List<DayCounts.Row> rows) {
+        if (!rows.isEmpty()) {
+            db.blockingTransaction(c -> {
+                saveDays(c, rows);
+                return null;
+            });
+        }
+    }
+
+    void saveDays(Connection c, List<DayCounts.Row> rows) throws SQLException {
+        for (DayCounts.Row r : rows) {
+            int updated = Sql.update(c, "UPDATE sell_island_daily SET sales_day = ?, sold = ? WHERE scope = ? AND item_key = ?",
+                    r.day(), r.sold(), r.scope(), r.item());
+            if (updated == 0) {
+                Sql.update(c, "INSERT INTO sell_island_daily (scope, item_key, sales_day, sold) VALUES (?, ?, ?, ?)",
+                        r.scope(), r.item(), r.day(), r.sold());
+            }
+        }
+    }
+
+    /** Deletes rows older than {@code beforeDay} (they are 0 after the rollovers). */
+    public CompletableFuture<Integer> pruneDays(long beforeDay) {
+        return db.async(c -> Sql.update(c, "DELETE FROM sell_island_daily WHERE sales_day < ?", beforeDay));
+    }
+
     // ------------------------------------------------------------------ sales
 
     /** One sale as stored in {@code sell_sales}. */

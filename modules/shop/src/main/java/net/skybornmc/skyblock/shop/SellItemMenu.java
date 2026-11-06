@@ -138,7 +138,7 @@ final class SellItemMenu extends Menu {
             stack.setAmount(size);
             stacks.add(stack);
         }
-        return sell.get().quote(stacks, bonus);
+        return sell.get().quote(stacks, bonus, module.profiles().profileKey(viewer));
     }
 
     private static long total(SellQuote q) {

@@ -1229,7 +1229,7 @@ topics:
     icon: gold_nugget
     aliases: [selling, sell-hand, sell-all, prices, hot-item, sell-bonus]
     name: "<c:flame>Selling"
-    summary: ["<c:text>Sell your loot to the server", "<c:text>at live prices."]
+    summary: ["<c:text>Sell your loot to the server", "<c:text>at today's prices."]
     take-me-there: "sell"
     commands: [Economy]
     pages:
@@ -1247,9 +1247,10 @@ topics:
           - "<c:text>your offhand are never touched."
       - title: "<c:value>Prices change"
         lines:
-          - "<c:text>Every sale lowers a price a little and"
-          - "<c:text>it climbs back over time. Items nobody"
-          - "<c:text>sells go above base. One <c:value>Hot item</c:value>"
+          - "<c:text>Your island gets full price for the"
+          - "<c:text>first 3,000 of each item a day, then a"
+          - "<c:text>little less (back at 04:00). Every Monday"
+          - "<c:text>prices move up to 10%. One <c:value>Hot item</c:value>"
           - "<c:text>a day sells for more. Sell a mix!"
       - title: "<c:value>Sell bonus"
         lines:

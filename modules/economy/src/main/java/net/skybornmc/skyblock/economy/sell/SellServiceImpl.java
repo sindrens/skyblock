@@ -138,6 +138,54 @@ public final class SellServiceImpl implements SellService {
         return config.get().dynamicSettings();
     }
 
+    // ------------------------------------------------------------------ dynamic prices v2
+
+    /** Today's count per island / profile and item (dynamic prices v2). */
+    private final DayCounts days = new DayCounts(this::dayPrice);
+    /** The scopes of a seller (set by {@link SellFeature}: the profile, plus its island when it has one). */
+    private volatile java.util.function.Function<UUID, List<String>> scopes = p -> List.of("p:" + p);
+
+    void dayScopes(java.util.function.Function<UUID, List<String>> scopes) {
+        this.scopes = scopes;
+    }
+
+    DayCounts days() {
+        return days;
+    }
+
+    DayPrice dayPrice() {
+        return config.get().dayPrice();
+    }
+
+    /** The sales day now (resets at sell.daily.reset-hour, server zone). */
+    long today() {
+        return dayPrice().day(clock.getAsLong(), zone.get());
+    }
+
+    /** The seller's scopes; never throws (an island lookup that fails leaves only the profile). */
+    List<String> scopesOf(UUID profileKey) {
+        if (profileKey == null) {
+            return List.of();
+        }
+        try {
+            List<String> out = scopes.apply(profileKey);
+            return out == null || out.isEmpty() ? List.of("p:" + profileKey) : out;
+        } catch (RuntimeException e) {
+            return List.of("p:" + profileKey);
+        }
+    }
+
+    /** How many of this item the seller's island (or the seller, whichever is higher) sold today. */
+    public long soldToday(UUID profileKey, String itemKey) {
+        List<String> sc = scopesOf(profileKey);
+        return sc.isEmpty() || !dayPrice().enabled() ? 0 : days.count(sc, itemKey, today());
+    }
+
+    /** This week's drift factor of an item (1.0 when the weekly drift is off). */
+    double weekFactor(String itemKey) {
+        return config.get().weeklyDrift().factor(WeeklyDrift.week(clock.getAsLong(), zone.get()), itemKey);
+    }
+
     // ------------------------------------------------------------------ lookups
 
     SellRules.ItemFacts facts(ItemStack stack) {
@@ -175,7 +223,34 @@ public final class SellServiceImpl implements SellService {
     @Override
     public Optional<SellPrice> price(String itemKey) {
         return catalog.get().get(itemKey).filter(SellCatalog.Entry::sellable)
-                .map(e -> SaleCalculator.price(e, book.get(e.key()), hotKey(), settings()));
+                .map(e -> SaleCalculator.price(e, book.get(e.key()), hotKey(), settings(), weekFactor(e.key())));
+    }
+
+    @Override
+    public Optional<SellPrice> price(String itemKey, UUID profileKey) {
+        Optional<SellPrice> p = price(itemKey);
+        if (p.isEmpty() || profileKey == null || settings().enabled()) {
+            return p;
+        }
+        return Optional.of(SaleCalculator.forSeller(p.get(), dayPrice(), soldToday(profileKey, itemKey)));
+    }
+
+    @Override
+    public java.util.OptionalLong soldTodayCount(UUID profileKey, String itemKey) {
+        return profileKey == null || itemKey == null ? java.util.OptionalLong.empty() : java.util.OptionalLong.of(soldToday(profileKey, itemKey));
+    }
+
+    @Override
+    public java.util.OptionalLong fullPriceLeft(UUID profileKey, String itemKey) {
+        if (profileKey == null || itemKey == null || settings().enabled() || !dayPrice().enabled()) {
+            return java.util.OptionalLong.empty();
+        }
+        return java.util.OptionalLong.of(dayPrice().fullLeft(soldToday(profileKey, itemKey)));
+    }
+
+    @Override
+    public double weekPercent(String itemKey) {
+        return settings().enabled() ? 0 : config.get().weeklyDrift().percent(WeeklyDrift.week(clock.getAsLong(), zone.get()), itemKey);
     }
 
     @Override
@@ -186,7 +261,8 @@ public final class SellServiceImpl implements SellService {
     @Override
     public java.util.OptionalDouble maxUnitPrice(String itemKey) {
         return catalog.get().get(itemKey).filter(SellCatalog.Entry::sellable)
-                .map(e -> java.util.OptionalDouble.of(SaleCalculator.maxUnit(e.base(), settings(), bonusCapPercent())))
+                .map(e -> java.util.OptionalDouble.of(SaleCalculator.maxUnit(e.base(), settings(), config.get().weeklyDrift(),
+                        bonusCapPercent())))
                 .orElse(java.util.OptionalDouble.empty());
     }
 
@@ -220,13 +296,23 @@ public final class SellServiceImpl implements SellService {
 
     @Override
     public SellQuote quote(List<ItemStack> stacks, double bonusPercent) {
+        return quote(stacks, bonusPercent, null);
+    }
+
+    /** Dynamic prices v2: the quote of this seller ({@code profileKey}; null = as if nothing was sold today). */
+    @Override
+    public SellQuote quote(List<ItemStack> stacks, double bonusPercent, UUID profileKey) {
         List<String> keys = new ArrayList<>(stacks.size());
         List<Long> amounts = new ArrayList<>(stacks.size());
         for (ItemStack stack : stacks) {
             keys.add(stack == null ? null : keyOf(stack));
             amounts.add(stack == null ? 0L : (long) stack.getAmount());
         }
-        return SaleCalculator.quote(keys, amounts, this::price, key -> book.get(key).impact(), settings(), bonusPercent,
+        List<String> sc = scopesOf(profileKey);
+        DayPrice day = dayPrice();
+        long today = today();
+        java.util.function.ToLongFunction<String> count = sc.isEmpty() || !day.enabled() ? key -> 0L : key -> days.count(sc, key, today);
+        return SaleCalculator.quote(keys, amounts, this::price, key -> book.get(key).impact(), count, day, settings(), bonusPercent,
                 bonusCapPercent());
     }
 
@@ -242,7 +328,7 @@ public final class SellServiceImpl implements SellService {
         List<ItemStack> stacks = request.items();
         SellQuote quote;
         try {
-            quote = quote(stacks, request.bonusPercent());
+            quote = quote(stacks, request.bonusPercent(), request.profileKey());
         } catch (RuntimeException e) {
             log.log(Level.SEVERE, "Sell: could not price a sale of " + request.playerName(), e);
             return CompletableFuture.completedFuture(new SellResult(SellResult.Status.ERROR, null, stacks, null, null));
@@ -259,7 +345,11 @@ public final class SellServiceImpl implements SellService {
         }
         long now = clock.getAsLong();
         // Reserve the price drop now, so a second sale in the same moment can't get the old price; undone on failure.
-        PriceBook.Reservation reservation = book.reserve(SaleCalculator.amounts(quote), now);
+        Map<String, Long> soldAmounts = SaleCalculator.amounts(quote);
+        PriceBook.Reservation reservation = settings().enabled() ? book.reserve(soldAmounts, now) : null;
+        // Dynamic prices v2: the island's day count goes up now too (the next sale starts where this one ended).
+        DayCounts.Reservation dayReservation = dayPrice().enabled() && !settings().enabled()
+                ? days.reserve(scopesOf(request.profileKey()), soldAmounts, today()) : DayCounts.Reservation.NONE;
         UUID saleId = UUID.randomUUID();
         Transaction tx = Transaction.deposit(AccountRef.player(request.profileKey()), Currency.MONEY, quote.total(), TxReason.SELL)
                 .actor(request.actor())
@@ -286,7 +376,7 @@ public final class SellServiceImpl implements SellService {
         return future.handle((result, error) -> {
             if (error != null || result == null) {
                 log.log(Level.SEVERE, "Sell: sale " + saleId + " of " + request.playerName() + " failed; items are handed back", error);
-                book.undo(reservation);
+                undo(reservation, dayReservation);
                 return new SellResult(SellResult.Status.ERROR, q, stacks, null, null);
             }
             if (result.ok()) {
@@ -300,7 +390,7 @@ public final class SellServiceImpl implements SellService {
                 }
                 return new SellResult(SellResult.Status.SOLD, q, unsold, saleId, result.toBalance());
             }
-            book.undo(reservation);
+            undo(reservation, dayReservation);
             SellResult.Status status = switch (result.status()) {
                 case OVERFLOW -> SellResult.Status.OVERFLOW;
                 case DUPLICATE -> SellResult.Status.DUPLICATE;
@@ -308,6 +398,13 @@ public final class SellServiceImpl implements SellService {
             };
             return new SellResult(status, q, stacks, null, null);
         });
+    }
+
+    private void undo(PriceBook.Reservation reservation, DayCounts.Reservation dayReservation) {
+        if (reservation != null) {
+            book.undo(reservation);
+        }
+        days.undo(dayReservation);
     }
 
     /** {item: amount} for the audit row (one row per sale, every item in it). */

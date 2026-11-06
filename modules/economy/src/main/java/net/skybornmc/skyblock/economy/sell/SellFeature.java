@@ -14,6 +14,7 @@ import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchEvent;
 import net.skybornmc.skyblock.common.profile.ProfileSwitchedEvent;
 import net.skybornmc.skyblock.common.sell.SellPrice;
+import net.skybornmc.skyblock.common.sell.SellQuote;
 import net.skybornmc.skyblock.common.sell.SellRequest;
 import net.skybornmc.skyblock.common.sell.SellResult;
 import net.skybornmc.skyblock.common.sell.SellService;
@@ -156,6 +157,21 @@ public final class SellFeature implements Listener {
         // GUI-P3: the shop sells one item kind from the inventory through the same escrow and payment as /sell.
         service.itemSeller(this::sellItem);
         service.carriedCounter(this::carried);
+        // Dynamic prices v2: a sale counts for the seller's profile and their island; the price follows the higher one.
+        service.dayScopes(this::dayScopes);
+        long today = service.today();
+        store.loadDays(today - 64).whenComplete((rows, error) -> {
+            if (error != null) {
+                core.plugin().getLogger().log(Level.SEVERE, "Sell: could not load today's sale counts; selling stays off until a restart", error);
+                daysLoaded = false;
+                return;
+            }
+            int kept = service.days().load(rows, service.today());
+            daysLoaded = true;
+            openWhenLoaded();
+            core.plugin().getLogger().info("Sell: " + kept + " day count(s) loaded (dynamic prices v2).");
+        });
+        store.pruneDays(today - 64).exceptionally(e -> null);
         // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
         // set XP (WARDROBE §3.1) only if that profile is still the active one.
         // PERF3: the islands module is enabled before economy, so its stats service is normally here already and the
@@ -187,18 +203,27 @@ public final class SellFeature implements Listener {
             }
             book.load(loaded.states(), loaded.updatedAt(), System.currentTimeMillis());
             book.ensure(catalog.sellableKeys());
-            ready = true;
-            core.plugin().getLogger().info("Sell: " + catalog.size() + " price(s), " + book.size() + " price state(s) loaded.");
+            pricesLoaded = true;
+            openWhenLoaded();
         });
         long interval = config.sellIntervalMinutes * 1_200L;
+        // The old global model only moves while it is switched on (sell.dynamic.enabled, off since v2).
         tasks.add(core.scheduler().asyncRepeat(interval, interval, () -> {
-            if (ready) {
+            if (ready && config.sellDynamicEnabled) {
                 book.step(System.currentTimeMillis());
             }
         }));
         tasks.add(core.scheduler().asyncRepeat(72_000L, 72_000L, () -> {
-            if (ready) {
+            if (ready && config.sellDynamicEnabled) {
                 book.recompute(System.currentTimeMillis());
+            }
+        }));
+        long daySave = config.sellDailySaveSeconds * 20L;
+        tasks.add(core.scheduler().asyncRepeat(daySave, daySave, this::saveDays));
+        // once an hour: rows that are back to nothing leave memory
+        tasks.add(core.scheduler().asyncRepeat(72_000L, 72_000L, () -> {
+            if (ready) {
+                service.days().prune(service.today());
             }
         }));
         long save = config.sellSaveSeconds * 20L;
@@ -244,8 +269,15 @@ public final class SellFeature implements Listener {
             } catch (RuntimeException e) {
                 core.plugin().getLogger().log(Level.WARNING, "Sell: could not save prices on shutdown", e);
             }
+            try {
+                store.saveDaysBlocking(service.days().takeDirty());
+            } catch (RuntimeException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Sell: could not save today's sale counts on shutdown", e);
+            }
         }
         ready = false;
+        pricesLoaded = false;
+        daysLoaded = false;
     }
 
     private void save() {
@@ -263,6 +295,39 @@ public final class SellFeature implements Listener {
     /** Prices are loaded and selling works. */
     boolean ready() {
         return ready;
+    }
+
+    /** Both loads (price states and day counts) finish in any order; selling opens when both are in. */
+    private volatile boolean pricesLoaded;
+    private volatile Boolean daysLoaded;
+
+    private synchronized void openWhenLoaded() {
+        if (pricesLoaded && Boolean.TRUE.equals(daysLoaded) && !ready) {
+            ready = true;
+            core.plugin().getLogger().info("Sell: " + catalog.size() + " price(s), " + book.size() + " price state(s) loaded.");
+        }
+    }
+
+    private void saveDays() {
+        if (!ready) {
+            return;
+        }
+        List<DayCounts.Row> dirty = service.days().takeDirty();
+        store.saveDays(dirty).exceptionally(e -> {
+            service.days().markDirty(dirty);
+            core.plugin().getLogger().log(Level.WARNING, "Sell: could not save today's sale counts (retried later)", e);
+            return null;
+        });
+    }
+
+    /** The scopes of a seller: {@code p:<profile>}, and {@code i:<island>} when the profile has an island. */
+    private List<String> dayScopes(UUID profileKey) {
+        List<String> out = new ArrayList<>(2);
+        out.add("p:" + profileKey);
+        core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                .flatMap(islands -> islands.islandOfProfile(profileKey))
+                .ifPresent(island -> out.add("i:" + island.id()));
+        return out;
     }
 
     private volatile List<net.skybornmc.skyblock.common.sell.SellPrice> tipsCache = List.of();
@@ -562,7 +627,18 @@ public final class SellFeature implements Listener {
                 Msg.p("percent", percentText((multiplier - 1.0) * 100.0)),
                 Msg.p("trend", p == null ? "-" : p.trend().name().toLowerCase(Locale.ROOT)),
                 Msg.p("state", !e.sellable() ? "off" : key.equals(service.hotKey()) ? "hot" : "on"),
-                Msg.number("sold", book.get(key).soldTotal()));
+                Msg.number("sold", config.sellDynamicEnabled ? book.get(key).soldTotal() : soldTodayByIslands(key)));
+    }
+
+    /** Dynamic prices v2: items of this key every island (and islandless player) sold today, for /eco sell price. */
+    private long soldTodayByIslands(String key) {
+        long total = 0;
+        for (Map.Entry<String, Long> e : service.days().scopesOf(key, service.today()).entrySet()) {
+            if (e.getKey().startsWith("i:")) {
+                total += e.getValue();
+            }
+        }
+        return total;
     }
 
     private void ecoReset(org.bukkit.command.CommandSender sender, String which, String reason) {
@@ -1232,6 +1308,30 @@ public final class SellFeature implements Listener {
         double r = Math.round(value * 10) / 10.0;
         String body = r == Math.rint(r) ? String.valueOf((long) Math.abs(r)) : String.format(Locale.ROOT, "%.1f", Math.abs(r));
         return (r < 0 ? "-" : "+") + body;
+    }
+
+    /**
+     * Dynamic prices v2: the lowest day price (percent) of the last item of each line of this quote for this viewer;
+     * 100 when nothing in it is past the free amount.
+     */
+    int lowestDayPercent(Player viewer, SellQuote quote) {
+        DayPrice day = service.dayPrice();
+        if (!day.enabled() || config.sellDynamicEnabled || quote == null) {
+            return 100;
+        }
+        UUID profile = profiles().profileKey(viewer);
+        int lowest = 100;
+        for (SellQuote.Line line : quote.lines()) {
+            long start = service.soldToday(profile, line.price().itemKey());
+            lowest = Math.min(lowest, day.percent(start + Math.max(0, line.amount() - 1)));
+        }
+        return lowest;
+    }
+
+    /** "85%" in green (95 and up), yellow (75 and up) or red. */
+    Component dayPercent(Player viewer, int percent) {
+        String key = percent >= 95 ? "sell.day.high" : percent >= 75 ? "sell.day.mid" : "sell.day.low";
+        return msg.component(viewer, key, Msg.number("value", percent));
     }
 
     /** "% from base" in green (above), red (below) or gray (at base). */

@@ -70,7 +70,7 @@ eco:
   sell:
     unknown: "<prefix><c:error><sym:cross></c:error> <c:value><item></c:value> <c:text>is not in the sell table. Custom items are typed as <c:value>custom.<id></c:value><c:text>; press Tab for the list."
     reason: "<prefix><c:error><sym:cross></c:error> <c:text>Add a reason, for example <c:value>/eco sell reset wheat Price stuck</c:value>."
-    price: "<prefix><c:value><item></c:value> <c:muted>(<category>, <state>)</c:muted> <c:text>base </c:text><base> <c:text>now </c:text><unit> <c:muted>(<percent>%, <trend>)</c:muted> <c:text>sold </c:text><c:value><sold>"
+    price: "<prefix><c:value><item></c:value> <c:muted>(<category>, <state>)</c:muted> <c:text>base </c:text><base> <c:text>now </c:text><unit> <c:muted>(<percent>%, <trend>)</c:muted> <c:text>islands sold today </c:text><c:value><sold>"
     reset: "<prefix><c:success><sym:check></c:success> <c:text>Live price of <c:value><item></c:value> <c:text>back to base: <c:value><count></c:value> <c:text>item(s) changed. <c:muted>(<reason>)"
     dumped: "<prefix><c:success><sym:check></c:success> <c:text>Wrote <c:value><count></c:value> <c:text>recipes to <c:value>plugins/PhoenixSkyblock/<file></c:value><c:text>."
   # Card C1 (C1-R1-18): only the owner creates or sets bought credits by hand. <action> = give/set/reset.
@@ -392,6 +392,11 @@ sell:
     rising: "<c:success>Rising"
     falling: "<c:error>Falling"
     steady: "<c:muted>Steady"
+  # Dynamic prices v2: today's price for your island (green 95%+, yellow 75%+, red below).
+  day:
+    high: "<c:success><value>%"
+    mid: "<c:warning><value>%"
+    low: "<c:error><value>%"
   percent:
     up: "<c:success><value>%"
     down: "<c:error><value>%"
@@ -475,7 +480,12 @@ sell:
         - "<c:bar>| </c:bar><c:text>Bonus: </c:text><c:value><bonus>%"
         - "<c:bar>| </c:bar><c:text>You get: </c:text><total>"
         - ""
-        - "<c:muted>Prices change live."
+        - "<c:muted>Full price for the first <free> of each item a day."
+      # Dynamic prices v2: shown when part of this sale is past the island's full-price amount today. <price> = "85%".
+      day:
+        - ""
+        - "<c:text>Price today: <price> <c:muted>(your island sold a lot)"
+        - "<c:muted>Back to full price after 04:00."
       hot:
         - ""
         - "<c:flame><sym:star> Hot item today:</c:flame> <c:value><item></c:value> <c:success><percent>%"

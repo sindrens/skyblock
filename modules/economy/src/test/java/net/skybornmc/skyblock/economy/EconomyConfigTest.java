@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(7, config.version()); // v7: send-gate.required 10k -> 0 (owner 6 Nov 2026, the pay limit replaces it)
+        assertEquals(8, config.version()); // v8: sell.dynamic.enabled true -> false (dynamic prices v2 replace the old model)
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());

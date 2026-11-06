@@ -294,9 +294,10 @@ public final class EconomyConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ /sell (M3.4). Prices: sell.yml (owner approves them)
 
-    @Setting(path = "sell.dynamic.enabled", desc = "Dynamic prices on: every sale lowers the price a little, it recovers "
-            + "over time, unsold items drift above base. Off = always the base price.", level = Setting.Level.OWNER)
-    public boolean sellDynamicEnabled = true;
+    @Setting(path = "sell.dynamic.enabled", desc = "The OLD global model (one price per item for the whole server that falls "
+            + "with every sale). Replaced by sell.daily.* and sell.weekly.* (dynamic prices v2, 7 Nov 2026); keep it off.",
+            level = Setting.Level.OWNER)
+    public boolean sellDynamicEnabled = false;
 
     @Setting(path = "sell.dynamic.floor-percent", desc = "Lowest price in percent of base (PHASE-3: 40).", min = 1, max = 100,
             level = Setting.Level.OWNER)
@@ -356,6 +357,52 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "sell.dynamic.save-seconds", desc = "How often changed prices are saved to the database (seconds).", min = 30,
             max = 3_600, restart = true)
     public int sellSaveSeconds = 300;
+
+    // ------------------------------------------------------------------ dynamic prices v2 (docs/plans/DYNAMIC_PRICES_V2.md)
+
+    @Setting(path = "sell.daily.enabled", desc = "Per island and per item: the first items of the day pay 100%, then the price "
+            + "falls a little, down to the floor. Recovers at the daily reset. Off = always 100%.", level = Setting.Level.OWNER)
+    public boolean sellDailyEnabled = true;
+
+    @Setting(path = "sell.daily.free-items", desc = "Items of one item an island sells per day at the full price.", min = 0,
+            max = 10_000_000, level = Setting.Level.OWNER)
+    public long sellDailyFree = 3_000;
+
+    @Setting(path = "sell.daily.step-items", desc = "After the free items: every this many items pay step-percent less.", min = 1,
+            max = 1_000_000, level = Setting.Level.OWNER)
+    public long sellDailyStep = 100;
+
+    @Setting(path = "sell.daily.step-percent", desc = "Percent lost per step.", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double sellDailyStepPercent = 1;
+
+    @Setting(path = "sell.daily.floor-percent", desc = "The lowest price in percent (60 = reached 4,000 items after the free ones).",
+            min = 1, max = 100, level = Setting.Level.OWNER)
+    public double sellDailyFloorPercent = 60;
+
+    @Setting(path = "sell.daily.carry-percent", desc = "At the reset, this share of the items over free-items carries into the "
+            + "next day (a heavy seller starts a bit lower). 0 = a full reset.", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double sellDailyCarryPercent = 50;
+
+    @Setting(path = "sell.daily.reset-hour", desc = "Hour of the daily reset (server time zone, Oslo).", min = 0, max = 23)
+    public int sellDailyResetHour = 4;
+
+    @Setting(path = "sell.daily.save-seconds", desc = "How often changed day counts are saved to the database (seconds).", min = 10,
+            max = 3_600, restart = true)
+    public int sellDailySaveSeconds = 30;
+
+    @Setting(path = "sell.weekly.enabled", desc = "Every Monday 00:00 each item gets a price change for the week, the same for "
+            + "everyone (\"Wheat +6% this week\").", level = Setting.Level.OWNER)
+    public boolean sellWeeklyEnabled = true;
+
+    @Setting(path = "sell.weekly.max-percent", desc = "The largest weekly change, up or down (percent).", min = 0, max = 50,
+            level = Setting.Level.OWNER)
+    public double sellWeeklyMaxPercent = 10;
+
+    @Setting(path = "sell.weekly.step-percent", desc = "Weekly changes are a multiple of this (percent).", min = 0.1, max = 50)
+    public double sellWeeklyStepPercent = 2;
+
+    @Setting(path = "sell.weekly.salt", desc = "Any number; changes which items go up or down in which week.")
+    public long sellWeeklySalt = 104_729;
 
     // ------------------------------------------------------------------ ECON-SELL-SHOP-AH part A (A7)
 
@@ -499,7 +546,7 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 7;
+        return 8;
     }
 
     @Override
@@ -507,7 +554,9 @@ public final class EconomyConfig extends ModuleConfig {
         return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
                 6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)),
                 // owner 6 Nov 2026: the $10k earned rule is replaced by the playtime pay limit
-                7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)));
+                7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)),
+                // dynamic prices v2 (7 Nov 2026): the old global model is retired; sell.daily.* and sell.weekly.* replace it
+                8, java.util.Map.of("sell.dynamic.enabled", ValueChange.of(true, false)));
     }
 
     @Override
@@ -577,6 +626,18 @@ public final class EconomyConfig extends ModuleConfig {
                 sellCeilingPercent / 100.0, sellRecoveryPercent / 100.0, sellIntervalMinutes, sellTargetPercent / 100.0,
                 sellDefaultImpactPpm / 1e6, sellMinImpactPpm / 1e6, sellMaxImpactPpm / 1e6, sellMinVolume, sellQuietMinutes,
                 sellDriftPercentPerDay, sellTrendThresholdPercent, sellCatchUpMaxHours, sellHotEnabled, sellHotPercent);
+    }
+
+    /** Dynamic prices v2: the per-island day price (sell package). */
+    public net.skybornmc.skyblock.economy.sell.DayPrice dayPrice() {
+        return new net.skybornmc.skyblock.economy.sell.DayPrice(sellDailyEnabled, sellDailyFree, sellDailyStep,
+                sellDailyStepPercent, sellDailyFloorPercent, sellDailyCarryPercent, sellDailyResetHour);
+    }
+
+    /** Dynamic prices v2: the weekly drift (sell package). */
+    public net.skybornmc.skyblock.economy.sell.WeeklyDrift weeklyDrift() {
+        return new net.skybornmc.skyblock.economy.sell.WeeklyDrift(sellWeeklyEnabled, sellWeeklyMaxPercent, sellWeeklyStepPercent,
+                sellWeeklySalt);
     }
 
     long start(Currency currency) {

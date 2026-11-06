@@ -154,7 +154,7 @@ final class SellMenu extends Menu {
         }
         List<ItemStack> stacks = contents();
         double bonus = feature.service().bonusPercent(viewer);
-        SellQuote quote = feature.service().quote(stacks, bonus);
+        SellQuote quote = feature.service().quote(stacks, bonus, feature.profiles().profileKey(viewer));
         int unsellable = quote.unsellable().size();
 
         set(SLOT_SELL_INVENTORY, service.item(Material.HOPPER, viewer, EconomyModule.ID, "sell.chest.sell-inventory"),
@@ -176,7 +176,13 @@ final class SellMenu extends Menu {
                 Msg.number("items", quote.items()),
                 Msg.c("value", feature.money(viewer, quote.subtotal())),
                 Msg.p("bonus", SellFeature.percentText(quote.cappedBonusPercent())),
-                Msg.c("total", feature.money(viewer, quote.total()))));
+                Msg.c("total", feature.money(viewer, quote.total())),
+                Msg.number("free", feature.config().sellDailyFree)));
+        // Dynamic prices v2: the lowest day price in this sale (an island that sold a lot of one item today gets less).
+        int lowest = feature.lowestDayPercent(viewer, quote);
+        if (lowest < 100) {
+            lore.addAll(service.lines(viewer, EconomyModule.ID, "sell.chest.total.day", Msg.c("price", feature.dayPercent(viewer, lowest))));
+        }
         String hot = feature.service().hotKey();
         if (hot != null) {
             lore.addAll(service.lines(viewer, EconomyModule.ID, "sell.chest.total.hot", Msg.c("item", SellFeature.keyName(hot)),

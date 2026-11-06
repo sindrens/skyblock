@@ -134,6 +134,19 @@ class SellStoreTest {
     }
 
     @Test
+    void dayCountsSurviveARestart() {
+        var rows = List.of(new net.skybornmc.skyblock.economy.sell.DayCounts.Row("i:" + profile, "wheat", 20_000, 3_500),
+                new net.skybornmc.skyblock.economy.sell.DayCounts.Row("p:" + profile, "wheat", 20_000, 2_000),
+                new net.skybornmc.skyblock.economy.sell.DayCounts.Row("p:" + profile, "coal", 19_000, 9_000));
+        store.saveDays(rows).join();
+        store.saveDays(List.of(new net.skybornmc.skyblock.economy.sell.DayCounts.Row("i:" + profile, "wheat", 20_000, 3_600))).join();
+        var back = store.loadDays(19_990).join();
+        assertEquals(2, back.size(), "old rows are not loaded");
+        assertEquals(3_600, back.stream().filter(r -> r.scope().startsWith("i:")).findFirst().orElseThrow().sold());
+        assertEquals(1, store.pruneDays(19_990).join());
+    }
+
+    @Test
     void aRefundIsHandedOutOnce() {
         UUID owner = UUID.randomUUID();
         byte[] item = {1, 2, 3};

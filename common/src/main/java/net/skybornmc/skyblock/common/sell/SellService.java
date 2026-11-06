@@ -40,6 +40,29 @@ public interface SellService {
     /** Today's price by price table key ({@code coal}, {@code custom:depths_coal}), or empty. Any thread. */
     Optional<SellPrice> price(String itemKey);
 
+    /**
+     * Dynamic prices v2: the price of the <b>next</b> item for this seller, with what their island already sold today
+     * (falls after the first 3,000 of an item per day). Main thread. Default: {@link #price(String)}.
+     */
+    default Optional<SellPrice> price(String itemKey, java.util.UUID profileKey) {
+        return price(itemKey);
+    }
+
+    /** Dynamic prices v2: items of this kind the seller's island sold today (empty when not tracked). Main thread. */
+    default java.util.OptionalLong soldTodayCount(java.util.UUID profileKey, String itemKey) {
+        return java.util.OptionalLong.empty();
+    }
+
+    /** Dynamic prices v2: items left at the full price today (empty when the day price is off). Main thread. */
+    default java.util.OptionalLong fullPriceLeft(java.util.UUID profileKey, String itemKey) {
+        return java.util.OptionalLong.empty();
+    }
+
+    /** Dynamic prices v2: this week's price change of an item in percent ({@code -10 .. +10}). Any thread. */
+    default double weekPercent(String itemKey) {
+        return 0;
+    }
+
     /** Every sellable price table key, in file order. Any thread. */
     List<String> itemKeys();
 
@@ -60,6 +83,14 @@ public interface SellService {
 
     /** What these stacks would pay with this bonus, without selling anything. Main thread. */
     SellQuote quote(List<ItemStack> stacks, double bonusPercent);
+
+    /**
+     * Dynamic prices v2: what these stacks would pay <b>this seller</b> (the island's day count lowers big sales).
+     * {@code profileKey} null = as if nothing was sold today. Main thread.
+     */
+    default SellQuote quote(List<ItemStack> stacks, double bonusPercent, java.util.UUID profileKey) {
+        return quote(stacks, bonusPercent);
+    }
 
     /**
      * Sells stacks the caller already removed (see the class comment). Call on the main thread; the future completes

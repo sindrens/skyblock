@@ -26,7 +26,7 @@
 #
 # THE ONE RULE (checked by a build test and again live, against the current /sell prices):
 #   price > the most the item (and everything in "contains") can ever sell for with /sell
-#         = sell.yml base x dynamic ceiling (150%) x Hot Item (+25%) x (1 + sell bonus cap 300%) = base x 7.5 by default.
+#         = sell.yml base x weekly price top (110%) x Hot Item (+25%) x (1 + sell bonus cap 300%) = base x 5.5 by default.
 #   Otherwise buying here and selling with /sell would print money. An item that breaks this rule is NOT sold (the
 #   console and staff get a warning) until its price is raised.
 #   That is why carrots, sugar cane, cactus, cocoa, sweet berries and redstone cost more than you might expect, and why
@@ -225,7 +225,7 @@ categories:
       moss_carpet: 400
       packed_ice: 1200
       blue_ice: 3000
-  # Seeds, crops and saplings. Crops that are their own seed sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more.
+  # Seeds, crops and saplings. Crops that are their own seed sell with /sell, so they cost more than 5.5x their sell price; buy one and grow more.
   farming:
     icon: wheat_seeds
     groups:
@@ -419,7 +419,7 @@ categories:
       white_bed: 3000
       bread: 1500
       baked_potato: 1500
-  # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
+  # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 5.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone
     groups:

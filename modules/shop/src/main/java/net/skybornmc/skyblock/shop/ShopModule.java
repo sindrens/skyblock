@@ -1522,7 +1522,8 @@ public final class ShopModule implements SkyblockModule, Listener {
             return SellInfo.NONE;
         }
         long carried = withCarried && player != null ? sell.get().carried(player, template.get()) : 0;
-        return new SellInfo(true, sell.get().price(item.id()), carried);
+        // Dynamic prices v2: the price this player's island gets for the next one today.
+        return new SellInfo(true, player == null ? sell.get().price(item.id()) : sell.get().price(item.id(), profiles().profileKey(player)), carried);
     }
 
     /** Middle click / Shift + Right-click on a tile: sells every one of that item the player carries. Main thread. */
