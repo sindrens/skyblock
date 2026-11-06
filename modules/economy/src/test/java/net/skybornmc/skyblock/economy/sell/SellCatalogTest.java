@@ -34,7 +34,7 @@ class SellCatalogTest {
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertTrue(catalog.size() > 50);
         // ECONOMY_BALANCE §4.1 / §3.1 values.
-        assertEquals(10, catalog.get("wheat").orElseThrow().base());
+        assertEquals(12, catalog.get("wheat").orElseThrow().base()); // owner 3 Nov 2026 crop rebalance
         assertEquals(10, catalog.get("coal").orElseThrow().base());
         assertEquals(870, catalog.get("pitcher_plant").orElseThrow().base());
         assertEquals(20, catalog.get("custom:depths_coal").orElseThrow().base());

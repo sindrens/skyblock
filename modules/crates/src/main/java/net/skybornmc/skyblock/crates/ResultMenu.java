@@ -54,7 +54,7 @@ final class ResultMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_SUMMARY, service.item(m.icon(plan.crate()), m.mini(viewer, m.crateMini(plan.crate())),
                 service.lines(viewer, CratesModule.ID, "result.summary", Msg.number("count", plan.grants().size()),
                         Msg.number("top", plan.topCount()), Msg.number("pity", plan.pityAfter()),

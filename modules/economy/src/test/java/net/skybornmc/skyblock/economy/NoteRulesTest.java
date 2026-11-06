@@ -19,9 +19,9 @@ class NoteRulesTest {
         EconomyConfig config = new EconomyConfig();
         assertTrue(NoteRules.allowed(config, Currency.MONEY));
         assertTrue(NoteRules.allowed(config, Currency.SHARDS), "R3-5b: shard notes on");
-        assertFalse(NoteRules.allowed(config, Currency.GEMS));
+        assertFalse(NoteRules.allowed(config, Currency.CREDITS_EARNED));
         assertFalse(NoteRules.allowed(config, Currency.CRYSTALS));
-        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.GEMS, false));
+        assertEquals(Optional.of(NoteRules.Problem.NOT_ALLOWED), NoteRules.withdraw(config, 500, Currency.CREDITS_EARNED, false));
     }
 
     @Test

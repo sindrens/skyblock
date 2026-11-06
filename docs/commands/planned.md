@@ -11,7 +11,6 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/help [topic]` | Help GUI | `skyblock.help` | ⬜ |
 | `/spawn` | Teleport to spawn | `skyblock.spawn` | ⬜ |
 | `/tpa`, `/tpahere`, `/tpaccept`, `/tpdeny`, `/back` | Teleports | `skyblock.tpa`, `skyblock.back` | ⬜ |
-| `/warp`, `/warps` | Server + island warps | `skyblock.warp` | ⬜ |
 | `/is` | Island GUI / home | `skyblock.island` | ⬜ |
 | `/is visit <player>`, `/is invite`, `/is kick`, `/is lock` | Island management | `skyblock.island.*` | ⬜ |
 | `/is upgrade` (= `/is masteries`) | Upgrades + tasks | `skyblock.island.upgrade` | ⬜ |
@@ -35,8 +34,7 @@ Status: ⬜ planned · 🟡 in progress · ✅ done.
 | `/msg`, `/r`, `/ignore`, `/mail` | Messaging | `skyblock.msg` … | ⬜ |
 | `/settings` | Personal toggles | `skyblock.settings` | ⬜ |
 | `/stats [player]`, `/titles`, `/cosmetics` | Profile, titles, cosmetics | `skyblock.stats` … | ⬜ |
-| `/satchel` | Depths satchel + sell all | `skyblock.depths.satchel` | ⬜ |
-| `/fly` | Fly on own island (perk) | `skyblock.fly` | ⬜ |
+| `/fly` | Fly on own island (perk) | `skyblock.fly` | ✅ (built 4 Nov 2026, see essentials.md) |
 | `/trash`, `/afk`, `/rules`, `/discord`, `/store`, `/halloffame` | Utility | … | ⬜ |
 | `/tags` | Choose an owned cosmetic tag shown in chat/tab | `skyblock.tags` | ⬜ |
 | `/is fuel` | Island Fuel status: replaced by the fuel gauge in the island menu (M7.1) and the planned `/is production` (PD34, see `production.md`) | `skyblock.production.menu` | ⏸ |

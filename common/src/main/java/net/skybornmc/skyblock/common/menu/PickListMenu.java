@@ -94,6 +94,17 @@ public final class PickListMenu<T> extends Menu {
         return infoKey;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.pick";
+    }
+
+    @Override
+    public String plaqueModule() {
+        return MenuService.MODULE;
+    }
+
     @Override
     public Component title() {
         Pagination pages = new Pagination(options.size(), Math.max(1, PickListLayout.perPage(options.size())));
@@ -106,7 +117,7 @@ public final class PickListMenu<T> extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (options.isEmpty()) {
             setEmpty();
             return;
@@ -116,16 +127,14 @@ public final class PickListMenu<T> extends Menu {
         int from = pages.from(page);
         int shown = pages.to(page) - from;
         for (int i = 0; i < shown; i++) {
-            set(PickListLayout.slot(i, shown), button(options.get(from + i)));
+            set(PickListLayout.slot(i, shown, rows()), button(options.get(from + i)));
         }
         if (rows() == 6) {
             if (pages.hasPrevious(page)) {
-                set(SLOT_PREVIOUS, MenuIcons.tag(service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                        Msg.p("page", page), Msg.p("pages", pages.pages())), MenuIcons.PREVIOUS), click -> turn(-1));
+                set(SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages.pages()), click -> turn(-1));
             }
             if (pages.hasNext(page)) {
-                set(SLOT_NEXT, MenuIcons.tag(service.navItem("next", Material.ARROW, viewer, "frame.next",
-                        Msg.p("page", page + 2), Msg.p("pages", pages.pages())), MenuIcons.NEXT), click -> turn(1));
+                set(SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages.pages()), click -> turn(1));
             }
         }
     }

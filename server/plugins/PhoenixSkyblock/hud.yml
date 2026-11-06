@@ -12,6 +12,15 @@ scoreboard:
   # Maximum lines (Bedrock shows at most 15).
   # Allowed: 1 to 15
   max-lines: 15
+  # Most rows under each bold '| Header' section (G7: 3). Later rows of a full section are dropped, first in the layout win.
+  # Allowed: 1 to 8
+  section-rows: 5
+  # The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).
+  # Allowed: 0 to 15
+  blank-under-title-max-lines: 8
+  # Dots in the progress line (<progress:key>).
+  # Allowed: 5 to 20
+  progress-length: 10
   # Worlds without a sidebar.
   disabled-worlds: []
 values:
@@ -19,8 +28,8 @@ values:
   money: balance_formatted
   # Placeholder key for the formatted island crystals balance.
   crystals: crystals_formatted
-  # Placeholder key for the formatted gem balance.
-  gems: gems_formatted
+  # Placeholder key for the formatted credits (bought + earned, always exact; C1).
+  credits: credits_formatted
   # Placeholder key for the island level.
   island-level: island_level
   # Placeholder key for the island's leaderboard position.
@@ -39,16 +48,15 @@ places:
   depths:
     # Worlds of The Depths.
     worlds:
-    - depths
+    - grind
     # Layout in The Depths when no variant below matches.
-    layout: depths
+    layout: grind
     # Placeholder whose plain text picks a Depths variant (depths_tier is 'Mine · Tier 3' in a zone, 'The Gate' at the hub).
-    variant-placeholder: depths_tier
+    variant-placeholder: grind_area
     # Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.
     variants:
-    - The Gate=depths-gate
-    - Forest=depths-forest
-    - Combat=depths-combat
+    - Farm=grind-farm
+    - Mine=grind-mine
   spawn:
     # Spawn worlds.
     worlds:
@@ -61,4 +69,4 @@ places:
     - warzone
     # Layout in the warzone.
     layout: warzone
-config-version: 2
+config-version: 4

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_booster_skill_xp",
+     "type": "minecraft:model"
+    },
+    "when": "item/booster_skill_xp"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/lapis_lazuli",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

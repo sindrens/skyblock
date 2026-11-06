@@ -1,5 +1,7 @@
 package net.skybornmc.skyblock.boosters;
 
+import net.skybornmc.skyblock.common.booster.BoosterType;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -34,6 +36,27 @@ final class BoosterRules {
         boolean running() {
             return remaining > 0 && percent > 0;
         }
+    }
+
+    /** A running booster offered to the scoreboard timer row (G7-R1-01): personal or global. */
+    record Candidate(BoosterType type, int percent, long remainingMillis) {
+    }
+
+    /** Pure: {@code next} if it ends sooner than {@code best} (ties keep {@code best}); a candidate without time left never wins. */
+    static Candidate sooner(Candidate best, Candidate next) {
+        if (next == null || next.remainingMillis() <= 0 || next.percent() <= 0) {
+            return best;
+        }
+        return best == null || next.remainingMillis() < best.remainingMillis() ? next : best;
+    }
+
+    /** Pure: the soonest-ending running candidate (ties keep the first), or null. */
+    static Candidate soonestTimer(List<Candidate> candidates) {
+        Candidate best = null;
+        for (int i = 0; i < candidates.size(); i++) {
+            best = sooner(best, candidates.get(i));
+        }
+        return best;
     }
 
     /** Result of {@link #activate}: the outcome and the time left afterwards. */

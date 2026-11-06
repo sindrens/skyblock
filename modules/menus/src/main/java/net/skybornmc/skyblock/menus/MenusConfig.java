@@ -8,6 +8,14 @@ import java.util.List;
 /** Settings of /menu, /help, /settings and the menu item ({@code navigation.yml}). Layout: menu.yml, help: help.yml. */
 public final class MenusConfig extends ModuleConfig {
 
+    @Setting(path = "help.hidden-commands", desc = "Commands /help never lists for players (owner 3 Nov 2026: /appeal is reached from the ban screen, not the help). First word of the command, without /.")
+    public List<String> helpHidden = List.of("appeal", "appeals");
+
+    @Setting(path = "warp.aliases", desc = "/warp names for the Travel places of menu.yml ('name:place id'). /warp also takes the "
+            + "place id itself (crate-yard) and without dashes (crateyard). Owner 2 Nov 2026: /warp crates.")
+    public List<String> warpAliases = List.of("crates:crate-yard", "crate:crate-yard", "market:market", "forge:forge-quarter",
+            "depths:depths-gate", "dungeon:depths-gate", "island:my-island", "visit:visit-islands", "spawn:spawn");
+
     @Setting(path = "menu-item.enabled", desc = "Give everyone the menu item (players can still turn it off in /settings).")
     public boolean menuItemEnabled = true;
 
@@ -16,6 +24,10 @@ public final class MenusConfig extends ModuleConfig {
 
     @Setting(path = "menu-item.material", desc = "Item used for the menu item.")
     public String menuItemMaterial = "nether_star";
+
+    @Setting(path = "menu-item.glint", desc = "Force the enchant glint on the menu item. The vanilla Nether Star glints by "
+            + "itself; set true only if it does not on your client version.")
+    public boolean menuItemGlint = false;
 
     @Setting(path = "menu-item.check-seconds", desc = "Seconds between checks that put a missing menu item back "
             + "(it is also restored on join, respawn, world/game mode change and after closing an inventory). 0 = off.",

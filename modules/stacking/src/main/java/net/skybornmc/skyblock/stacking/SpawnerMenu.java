@@ -71,7 +71,8 @@ final class SpawnerMenu extends Menu {
      * fixed buttons and six items with 11 placeholders each) every second and after every click. Now only the info item
      * (next spawn, status) is redrawn each second; the buttons only when one of these values changed.
      */
-    record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier, long tierCount) {
+    record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier, long tierCount,
+                 String seconds, String mobs, String loot, int cap) {
     }
 
     private Shown shown;
@@ -80,7 +81,9 @@ final class SpawnerMenu extends Menu {
         SpawnerManager manager = module.spawners();
         return new Shown(spawner.amount, manager.limit(spawner), SpawnerManager.countInInventory(viewer.getInventory(), spawner.type),
                 module.tiers().tier(spawner.type).orElse(0), SpawnerManager.number(manager.mobsPerMinute(spawner)),
-                SpawnerManager.number(manager.masteryMultiplier(spawner)), manager.islandCount(spawner));
+                SpawnerManager.number(manager.masteryMultiplier(spawner)), manager.islandCount(spawner),
+                SpawnerManager.number(manager.seconds(spawner)), SpawnerManager.number(manager.mobsPerSpawn(spawner)),
+                SpawnerManager.number(manager.loot(spawner)), module.spawnerCapFor(spawner.island));
     }
 
     /** Redraws what changed: everything when the buttons changed, else only the info item. */
@@ -114,6 +117,13 @@ final class SpawnerMenu extends Menu {
                 Msg.p("tier-count", Format.number(s.tierCount())),
                 Msg.p("effective", SpawnerManager.number(module.efficiency().effective(s.tierCount()))),
                 Msg.p("next-percent", percent(module.efficiency().nextPercent(s.tierCount()))),
+                // ECON-SPAWNERS step 10: island steps and the cap of this tier (0 = no cap).
+                Msg.p("seconds", s.seconds()),
+                Msg.p("mobs", s.mobs()),
+                Msg.p("loot", s.loot()),
+                Msg.p("owned", Format.number(s.tierCount())),
+                Msg.c("cap", s.cap() > 0 ? net.kyori.adventure.text.Component.text(Format.number(s.cap()))
+                        : service.text(viewer, StackingModule.ID, "menu.no-cap")),
                 Msg.c("status", service.text(viewer, StackingModule.ID, spawner.busy ? "menu.status.busy"
                         : manager.isActive(spawner) ? "menu.status.active" : "menu.status.paused"))
         };
@@ -130,7 +140,7 @@ final class SpawnerMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         SpawnerManager manager = module.spawners();
         shown = current();
         TagResolver[] p = placeholders(shown);

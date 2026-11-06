@@ -33,7 +33,7 @@ class RewardTablesTest {
     void parsesEveryRewardType() {
         assertEquals(new RewardSpec(RewardSpec.Kind.MONEY, "", 3, 0, -1), spec("money 3"));
         assertEquals(new RewardSpec(RewardSpec.Kind.CRYSTALS, "", 20, 0, -1), spec("crystals 20"));
-        assertEquals(new RewardSpec(RewardSpec.Kind.GEMS, "", 5, 0, -1), spec("gems 5"));
+        assertEquals(new RewardSpec(RewardSpec.Kind.CREDITS, "", 5, 0, -1), spec("gems 5"));
         assertEquals(new RewardSpec(RewardSpec.Kind.KEY, "ember", 1, 0, -1), spec("key ember"));
         assertEquals(new RewardSpec(RewardSpec.Kind.KEY, "cinder", 2, 0, -1), spec("Key Cinder 2"));
         assertEquals(new RewardSpec(RewardSpec.Kind.FUEL, "", 120, 0, 20), spec("fuel 120 fallback 20"));
@@ -134,10 +134,10 @@ class RewardTablesTest {
                 .add(spec("crystals 20"), ctx(2, true, List.of()))
                 .add(spec("key ember 2"), ctx(2, true, List.of()))
                 .add(spec("booster sell 25 15"), ctx(2, true, List.of()))
-                .gems(10);
+                .credits(10);
         assertEquals(600, p.total(Currency.MONEY));
         assertEquals(26, p.total(Currency.CRYSTALS));
-        assertEquals(10, p.total(Currency.GEMS));
+        assertEquals(10, p.total(Currency.CREDITS_EARNED));
         assertEquals(List.of(new Payout.Grant(Payout.KEY, "ember", 2), new Payout.Grant(Payout.BOOSTER, "sell:25:15", 1)), p.grants());
         assertEquals(5, p.lines().size());
     }

@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_sell_all",
+     "type": "minecraft:model"
+    },
+    "when": "shop/sell_all"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/hopper",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

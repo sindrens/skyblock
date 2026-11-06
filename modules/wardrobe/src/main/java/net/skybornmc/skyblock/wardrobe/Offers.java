@@ -23,11 +23,11 @@ final class Offers {
         ARRIVES,
         /** The gate is not met (shows the requirement and progress). */
         LOCKED,
-        /** Gem set whose Sigil the account owns: free claim (once per profile per season). */
+        /** Credit set whose Sigil the account owns: free claim (once per profile per season). */
         CLAIM,
-        /** Gem set already claimed on this profile this season (and not owned: it was merged or removed). */
+        /** Credit set already claimed on this profile this season (and not owned: it was merged or removed). */
         CLAIMED,
-        /** Buy with money, crystals or gems. */
+        /** Buy with money, crystals or credits. */
         BUY,
         /** Crate-only set: comes as a Set Token. */
         CRATE_ONLY
@@ -127,7 +127,7 @@ final class Offers {
     // ------------------------------------------------------------------ offers
 
     /**
-     * What the set's button does for this profile. Order: owned → disabled → feature missing → gem claim (a Sigil skips
+     * What the set's button does for this profile. Order: owned → disabled → feature missing → credit claim (a Sigil skips
      * the gate: it was met when bought) → crate only → gate → buy.
      */
     static Offer offer(SetDef def, State state, GateStatus gate, boolean featureAvailable) {
@@ -140,7 +140,7 @@ final class Offers {
         if (!featureAvailable) {
             return new Offer(Kind.ARRIVES, null, 0, gate);
         }
-        if (def.source().type() == SetDef.SourceType.GEMS && state.sigil()) {
+        if (def.source().type() == SetDef.SourceType.CREDITS && state.sigil()) {
             return new Offer(state.claimedThisSeason() ? Kind.CLAIMED : Kind.CLAIM, null, 0, gate);
         }
         if (!def.source().buyable()) {

@@ -7,8 +7,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.config.ConfigManager;
-import net.skybornmc.skyblock.common.pack.PackIds;
-import net.skybornmc.skyblock.common.pack.PackService;
 import net.skybornmc.skyblock.common.text.Messages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.Sounds;
@@ -39,7 +37,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,7 +50,8 @@ import java.util.logging.Level;
  *   <li>every click/drag/move touching a menu is cancelled, so nothing can leave or enter it (shift, number keys,
  *       offhand swap, double-click collect, drop, creative middle-click, hoppers);</li>
  *   <li>only plain left/right (and shift) clicks on a button run its action, at most one per {@code click-debounce-ms};
- *       both mouse buttons run the plain action unless the button marks a Java-only shortcut ({@link ClickRoute});</li>
+ *       both mouse buttons run the plain action unless the button marks a Java-only shortcut ({@link ClickRoute}:
+ *       right, shift, middle or Shift + Right-click); every other click is ignored and the client resynced;</li>
  *   <li>all menu items carry a marker; a marked item found outside a menu is deleted (defence in depth);</li>
  *   <li>live updates for menus with a tick interval; chat prompts for text/number input (Bedrock-friendly);</li>
  *   <li>navigation (GUI_DESIGN §0.3): Back returns to the menu that opened this one ({@link Navigation}); re-opening the
@@ -88,11 +86,15 @@ public final class MenuService implements Listener {
     private final java.util.Set<String> slotWarnings = ConcurrentHashMap.newKeySet();
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder()
             .character(LegacyComponentSerializer.SECTION_CHAR).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
-    private final MenuHeads heads;
     private final Offers offers;
+    /** The pack service lookup (set by the plugin once the service registry exists); returns null without a pack. */
+    private volatile Supplier<net.skybornmc.skyblock.common.pack.PackService> packs = () -> null;
+    private final net.skybornmc.skyblock.common.icon.Icons icons;
+    /** The frame layer gate (GUI-FONT): panel titles and the logo for Java viewers with the pack. */
+    private final net.skybornmc.skyblock.common.frame.Glyphs glyphs;
+    /** Menu classes already warned about a plaque text that does not fit (logged once per class). */
+    private final java.util.Set<String> plaqueWarnings = ConcurrentHashMap.newKeySet();
     private BukkitTask ticker;
-    /** The pack service (pack module), looked up per call; null result = nobody has the pack. */
-    private volatile Supplier<PackService> packs = () -> null;
 
     private record Prompt(Consumer<String> onInput, Runnable onCancel, int maxLength, BukkitTask timeout) {
     }
@@ -107,7 +109,13 @@ public final class MenuService implements Listener {
         this.sounds = sounds;
         this.menuItemKey = new NamespacedKey(plugin, BUTTON_KEY);
         this.debounce = new Debounce(config.clickDebounceMs);
-        this.heads = new MenuHeads(plugin.getLogger());
+        this.icons = new net.skybornmc.skyblock.common.icon.Icons(
+                () -> net.skybornmc.skyblock.common.icon.IconCatalog.bundled(MenuService.class.getClassLoader(),
+                        problem -> plugin.getLogger().warning("icons/icons.json: " + problem)),
+                () -> packs.get(), plugin.getLogger());
+        this.glyphs = new net.skybornmc.skyblock.common.frame.Glyphs(() -> packs.get(), messages::isBedrock,
+                config::fontSwitches, net.skybornmc.skyblock.common.frame.FrameMetrics.bundled(MenuService.class.getClassLoader(),
+                problem -> plugin.getLogger().warning("frame: " + problem)).orElse(null));
         reload();
         this.offers = new Offers(this);
     }
@@ -141,10 +149,12 @@ public final class MenuService implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getPluginManager().registerEvents(offers, plugin);
         ticker = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 1L);
+        net.skybornmc.skyblock.common.frame.Glyphs.install(glyphs);
     }
 
     /** Closes every open menu and cancels prompts. Call on plugin disable (before modules save). */
     public void disable() {
+        net.skybornmc.skyblock.common.frame.Glyphs.install(null);
         if (ticker != null) {
             ticker.cancel();
         }
@@ -168,47 +178,23 @@ public final class MenuService implements Listener {
         configs.load(config);
         messages.load(MODULE);
         debounce.interval(config.clickDebounceMs);
-        framePanes = null;
-        framePanesPack = null;
-        heads.load("back", config.headBack);
-        heads.load("previous", config.headPrevious);
-        heads.load("next", config.headNext);
+        if (icons != null) {
+            icons.reload();
+        }
         if (offers != null) {
             offers.reload();
         }
-    }
-
-    /** Where to find the pack service (set once by the plugin; the pack module may be absent). */
-    public void packs(Supplier<PackService> packs) {
-        this.packs = packs == null ? () -> null : packs;
-    }
-
-    /** True when {@code viewer} should get pack content (backgrounds, icon models). */
-    public boolean hasPack(Player viewer) {
-        PackService service = packs.get();
-        return service != null && service.hasPack(viewer);
-    }
-
-    /**
-     * The per-viewer render step: for pack viewers an item tagged with {@link MenuIcons#tag} becomes its pack form
-     * (PAPER + custom model data, or a blank pane); everyone else gets the item unchanged.
-     */
-    public ItemStack render(Player viewer, ItemStack item) {
-        if (item == null || !hasPack(viewer)) {
-            return item;
+        if (glyphs != null) {
+            glyphs.reload();
+            plaqueWarnings.clear();
+            // gui.font.* changed: re-title every open menu at once (framed <-> plain).
+            for (Menu menu : List.copyOf(open.values())) {
+                Player viewer = menu.viewer();
+                if (viewer != null && viewer.isOnline() && menu.isOpen()) {
+                    syncTitle(viewer, menu, true);
+                }
+            }
         }
-        return MenuIcons.render(item);
-    }
-
-    /** The chest title as {@code viewer} sees it: pack viewers get the background glyph prefix and parchment text. */
-    Component viewTitle(Player viewer, Menu menu, Component title) {
-        PackService service = packs.get();
-        if (service == null || !service.hasPack(viewer)) {
-            return title;
-        }
-        PackIds ids = service.ids();
-        int rows = Math.max(1, Math.min(6, menu.rows()));
-        return PackTitles.background(ids, menu.getClass(), rows).map(bg -> PackTitles.build(ids, bg, title)).orElse(title);
     }
 
     public JavaPlugin plugin() {
@@ -217,6 +203,37 @@ public final class MenuService implements Listener {
 
     public MenuConfig config() {
         return config;
+    }
+
+    /** Menu icons (I7 pack v2): base item for everyone, our own picture for viewers with the pack loaded. */
+    public net.skybornmc.skyblock.common.icon.Icons icons() {
+        return icons;
+    }
+
+    /**
+     * Where the pack service comes from ({@code services.optional(PackService.class).orElse(null)}); called once by the
+     * plugin after the service registry exists. Without it nobody gets pack models.
+     */
+    public void packs(Supplier<net.skybornmc.skyblock.common.pack.PackService> packs) {
+        this.packs = packs == null ? () -> null : packs;
+    }
+
+    /** The frame layer (GUI-FONT): the per-viewer gate, framed titles and the logo helper for the HUD. */
+    public net.skybornmc.skyblock.common.frame.Glyphs glyphs() {
+        return glyphs;
+    }
+
+    /** "Plain menus" (menus module setting): players for whom this is true always get the plain chest. */
+    public void plainMenus(java.util.function.Predicate<Player> plainMenus) {
+        glyphs.plainMenus(plainMenus);
+    }
+
+    /** Re-titles the open menu of {@code player} (framed <-> plain) after a setting or pack change; no sound. */
+    public void retitle(Player player) {
+        Menu menu = open.get(player.getUniqueId());
+        if (menu != null && menu.isOpen()) {
+            syncTitle(player, menu, true);
+        }
     }
 
     // ------------------------------------------------------------------ opening
@@ -244,16 +261,19 @@ public final class MenuService implements Listener {
         if (previous != null && previous != menu) {
             previous.detach(); // re-opening the same menu (e.g. after a prompt) is not a close
         }
-        int rows = Math.max(1, Math.min(6, menu.rows()));
-        // The holder must exist before the inventory; the title needs the viewer for Bedrock colors.
+        // The holder must exist before the inventory; the title needs the viewer for Bedrock colors, and rows() may
+        // depend on what this viewer sees (the You menu grows to 4 rows with 9+ entries).
         menu.viewer = player;
         menu.service = this;
-        Component title = viewTitle(player, menu, menu.title());
+        int rows = Math.max(1, Math.min(6, menu.rows()));
+        Component title = menu.title();
         Inventory inventory = Bukkit.createInventory(menu, rows * 9, title);
         menu.attach(this, player, inventory);
         menu.shownTitle = title;
+        menu.plainTitle = title;
         try {
             menu.build();
+            applyHint(menu);
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
             menu.detach();
@@ -261,6 +281,20 @@ public final class MenuService implements Listener {
             sounds.playUi(player, "error");
             return;
         }
+        // GUI-FONT 6.4: two-phase open. The framed title needs the filled slots, so it is built after build(); the
+        // first inventory was never shown, so a swap here cannot flicker.
+        Component framed = frameTitle(player, menu, title);
+        if (framed != null) {
+            Inventory next = Bukkit.createInventory(menu, rows * 9, framed);
+            next.setContents(inventory.getContents());
+            menu.replaceInventory(next);
+            inventory = next;
+            menu.shownTitle = framed;
+            menu.framed = true;
+            menu.titleSentAt = System.currentTimeMillis();
+        }
+        menu.shownMask = menu.filled();
+        menu.tilesDirty = false;
         open.put(player.getUniqueId(), menu);
         player.openInventory(inventory);
         sounds.playUi(player, previous == null ? "menu-open" : "page");
@@ -286,10 +320,27 @@ public final class MenuService implements Listener {
                 || top.getSize() != Math.max(1, Math.min(6, menu.rows())) * 9) {
             return false;
         }
-        Component title = viewTitle(player, menu, menu.title());
+        Component title = menu.title();
+        if (menu.framed || frameGlyphs(player, menu).isPresent()) {
+            // GUI-FONT 6.4: frame viewers. A font title cannot go through setTitle, so syncTitle swaps the inventory
+            // (same holder, same contents) when the tiles, the plaque or the plain title changed.
+            try {
+                menu.refresh();
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " failed to build", e);
+                player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                messages.send(player, MODULE, "error");
+                sounds.playUi(player, "error");
+                return true;
+            }
+            menu.plainTitle = title;
+            syncTitle(player, menu, false);
+            sounds.playUi(player, "page");
+            return true;
+        }
+        menu.plainTitle = title;
         boolean retitle = !title.equals(menu.shownTitle);
-        // The legacy in-place title setter cannot carry fonts, so pack viewers reopen when the title text changes.
-        if (retitle && (!config.titleUpdateInPlace || hasPack(player))) {
+        if (retitle && !config.titleUpdateInPlace) {
             return false;
         }
         try {
@@ -301,6 +352,8 @@ public final class MenuService implements Listener {
             sounds.playUi(player, "error");
             return true;
         }
+        menu.shownMask = menu.filled();
+        menu.tilesDirty = false;
         if (retitle) {
             try {
                 setTitle(view, title);
@@ -312,6 +365,96 @@ public final class MenuService implements Listener {
         }
         sounds.playUi(player, "page");
         return true;
+    }
+
+    // ------------------------------------------------------------------ frame layer (GUI-FONT 6.4 - 6.6)
+
+    /** The glyphs {@code menu} may use for {@code player}: none without a panel type, the gate decides the rest. */
+    private java.util.Optional<net.skybornmc.skyblock.common.frame.FrameGlyphs> frameGlyphs(Player player, Menu menu) {
+        if (menu.panelType().isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        return menu.frameForced() ? glyphs.forViewerIgnoringSwitches(player) : glyphs.forViewer(player);
+    }
+
+    /** The framed title of {@code menu} for {@code player}, or {@code null} when the plain title is shown. */
+    private Component frameTitle(Player player, Menu menu, Component plain) {
+        java.util.Optional<net.skybornmc.skyblock.common.frame.FrameGlyphs> g = frameGlyphs(player, menu);
+        if (g.isEmpty()) {
+            return null;
+        }
+        String key = menu.plaqueKey();
+        String raw = key == null ? null : messages.raw(menu.plaqueModule(), key);
+        if (raw != null && !raw.isBlank() && !g.get().plaqueFits(raw)
+                && plaqueWarnings.add(menu.getClass().getName())) {
+            plugin.getLogger().warning("Menu " + menu.getClass().getSimpleName() + ": plaque text '" + raw + "' (" + menu.plaqueModule()
+                    + ".yml " + key + ") is not one short noun of A-Z, 0-9 and & ' - ! ? ( ) / . , : that fits the plaque; "
+                    + "the plain title is shown instead.");
+        }
+        Component framed = g.get().menuTitle(menu.panelType().get(), menu.filled(), raw, plain);
+        return framed == plain ? null : framed;
+    }
+
+    /**
+     * Brings the open window's title in line with the menu (GUI-FONT 6.6): framed titles are sent by swapping the
+     * inventory (one open-screen packet, same holder and contents, no close; the old inventory's close event is
+     * ignored by {@link #onClose}); plain titles use the in-place legacy title. At most one swap per
+     * {@code gui.font.title-resend-min-ms} unless {@code force}; a throttled swap is retried by the ticker.
+     */
+    private void syncTitle(Player player, Menu menu, boolean force) {
+        Component plain = menu.plainTitle != null ? menu.plainTitle : menu.title();
+        Component framed = frameTitle(player, menu, plain);
+        Component target = framed != null ? framed : plain;
+        if (target.equals(menu.shownTitle)) {
+            menu.shownMask = menu.filled();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (framed != null || menu.framed) {
+            if (!force && !net.skybornmc.skyblock.common.frame.TitleThrottle.allow(now, menu.titleSentAt, config.fontTitleResendMinMs)) {
+                menu.tilesDirty = true;
+                return;
+            }
+            swapInventory(player, menu, target);
+            menu.framed = framed != null;
+        } else {
+            try {
+                setTitle(player.getOpenInventory(), plain);
+            } catch (RuntimeException e) {
+                swapInventory(player, menu, plain);
+            }
+        }
+        menu.shownTitle = target;
+        menu.shownMask = menu.filled();
+        menu.titleSentAt = now;
+    }
+
+    /** Re-opens the same menu in a new inventory with {@code title} (no close sound, no MenuOpenedEvent). */
+    private void swapInventory(Player player, Menu menu, Component title) {
+        Inventory old = menu.getInventory();
+        Inventory next = Bukkit.createInventory(menu, old.getSize(), title);
+        next.setContents(old.getContents());
+        menu.replaceInventory(next);
+        player.openInventory(next);
+    }
+
+    /** Ticker: a framed menu whose filled slots changed (or whose swap was throttled) gets its title re-sent. */
+    private void syncFrame(Menu menu) {
+        menu.tilesDirty = false;
+        Player viewer = menu.viewer();
+        if (!menu.framed || viewer == null || !menu.isOpen()) {
+            return;
+        }
+        syncTitle(viewer, menu, false);
+    }
+
+    /** I7: the pack loaded or went away while a menu is open: plain -> framed or framed -> plain at once. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPack(net.skybornmc.skyblock.common.pack.PackStatusEvent event) {
+        Player player = event.player();
+        if (player.isOnline()) {
+            retitle(player);
+        }
     }
 
     /**
@@ -349,17 +492,6 @@ public final class MenuService implements Listener {
     public void close(Player player) {
         origins.remove(player.getUniqueId());
         player.closeInventory();
-    }
-
-    /** Opens the main menu (/menu) as a new navigation stack: the Main menu button. */
-    public void openMainMenu(Player player) {
-        origins.remove(player.getUniqueId());
-        String command = config.mainMenuCommand == null ? "" : config.mainMenuCommand.strip();
-        Menu before = open.get(player.getUniqueId());
-        player.performCommand(command.startsWith("/") ? command.substring(1) : command);
-        if (before != null && open.get(player.getUniqueId()) == before) {
-            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        }
     }
 
     // ------------------------------------------------------------------ items and text
@@ -415,12 +547,77 @@ public final class MenuService implements Listener {
         return item;
     }
 
+    /** The icon {@code key} for {@code viewer} (base item; plus our model when the viewer has the pack loaded). */
+    public ItemStack icon(Player viewer, String key) {
+        return icons.item(viewer, key);
+    }
+
+    /** The icon {@code key} named and described like {@link #item(Material, Component, List)} (no italics, flags hidden). */
+    public ItemStack icon(Player viewer, String key, Component name, List<Component> lore) {
+        return item(icons.item(viewer, key), name, lore);
+    }
+
+    /** Back (arrow, our {@code nav/back} icon): "Back to the last menu." */
+    public ItemStack backItem(Player viewer) {
+        return icon(viewer, "nav/back", text(viewer, "frame.back.name"), lines(viewer, "frame.back.lore"));
+    }
+
     /**
-     * A navigation button: textured head ({@code heads.<headKey>} in menus.yml) with {@code fallback} until it is loaded,
-     * named {@code <key>.name} / {@code <key>.lore}.
+     * The wallet tile (FORMAT 4, owner V3-Q8 a): display only, on slot 4 of a screen that spends. {@code currencyKey}
+     * = {@code money}, {@code crystals}, {@code shards}, {@code credits} or {@code bank} (the island bank); name
+     * {@code wallet.<key>.name} ("Your Money"), lore {@code wallet.<key>.amount} with {@code <amount>} = the FULL amount
+     * text the caller formats ({@code $1,250,000}; credits always exact), then the optional muted {@code noteKey} line
+     * (framework texts, {@code messages/menus.yml}).
      */
-    public ItemStack navItem(String headKey, Material fallback, Player viewer, String key, TagResolver... placeholders) {
-        return item(heads.item(headKey, fallback), text(viewer, key + ".name", placeholders), lines(viewer, key + ".lore", placeholders));
+    public MenuButton wallet(Player viewer, String currencyKey, String amountText, String noteKey) {
+        String key = currencyKey == null ? "money" : currencyKey;
+        String icon = "bank".equals(key) ? "feature/bank" : "currency/" + key;
+        List<Component> lore = new ArrayList<>(lines(viewer, "wallet." + key + ".amount", Msg.p("amount", amountText == null ? "-" : amountText)));
+        if (noteKey != null) {
+            lore.addAll(lines(viewer, noteKey));
+        }
+        return MenuButton.display(icon(viewer, icon, text(viewer, "wallet." + key + ".name"), lore));
+    }
+
+    /** Help (a plain vanilla book, no pack picture; plan 4 Nov C §3): {@code frame.help.*} texts. */
+    public ItemStack helpItem(Player viewer) {
+        return item(Material.BOOK, text(viewer, "frame.help.name"), lines(viewer, "frame.help.lore"));
+    }
+
+    /** Close (barrier, {@code nav/close}); never red, red is danger only (I9 section 5). */
+    public ItemStack closeItem(Player viewer) {
+        return icon(viewer, "nav/close", text(viewer, "frame.close.name"), lines(viewer, "frame.close.lore"));
+    }
+
+    /**
+     * Previous or Next page (paper, {@code nav/prev} / {@code nav/next}); the stack count is the target page (Bedrock
+     * reads it too). {@code targetPage} and {@code pages} are 1-based.
+     */
+    public ItemStack pageItem(Player viewer, boolean next, int targetPage, int pages) {
+        String key = next ? "frame.next" : "frame.previous";
+        TagResolver[] tags = {Msg.p("page", targetPage), Msg.p("pages", pages)};
+        ItemStack item = icon(viewer, next ? "nav/next" : "nav/prev", text(viewer, key + ".name", tags), lines(viewer, key + ".lore", tags));
+        item.setAmount(Math.max(1, Math.min(64, targetPage)));
+        return item;
+    }
+
+    /**
+     * The red danger tile (TNT, {@code nav/danger}; I9 section 5): {@code <key>.name} / {@code <key>.lore} from
+     * {@code module}. Put it in {@link MenuLayout#danger} and send the click to a {@link ConfirmMenu}.
+     */
+    public ItemStack dangerItem(Player viewer, String module, String key, TagResolver... tags) {
+        return icon(viewer, "nav/danger", text(viewer, module, key + ".name", tags), lines(viewer, module, key + ".lore", tags));
+    }
+
+    /**
+     * Lore lines only Java players see (I9 section 6 "Java-only hint": {@code Right-click: sell}); Bedrock players have
+     * no right or middle click, so they get an empty list.
+     */
+    public List<Component> javaLines(Player viewer, String module, String key, TagResolver... tags) {
+        if (viewer != null && messages.isBedrock(viewer)) {
+            return new ArrayList<>();
+        }
+        return lines(viewer, module, key, tags);
     }
 
     /**
@@ -470,7 +667,7 @@ public final class MenuService implements Listener {
     public ItemStack filler(Material material) {
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> meta.setHideTooltip(true));
-        return MenuIcons.isPane(material) ? MenuIcons.tag(item, MenuIcons.BLANK) : item;
+        return item;
     }
 
     /**
@@ -499,17 +696,17 @@ public final class MenuService implements Listener {
 
     // ------------------------------------------------------------------ states (GUI_DESIGN §3: one look each, everywhere)
 
-    /** "⌛ Loading..." (clock), display only. */
+    /** "⌛ Loading..." (clock, {@code state/loading}), display only. */
     public MenuButton loadingItem(Player viewer) {
-        return MenuButton.display(MenuIcons.tag(item(Material.CLOCK, viewer, "loading"), MenuIcons.LOADING));
+        return MenuButton.display(icon(viewer, "state/loading", text(viewer, "loading.name"), lines(viewer, "loading.lore")));
     }
 
     /** "✘ Couldn't load this" (red glass). With {@code retry} a click tries again; {@code null} = display only. */
     public MenuButton errorItem(Player viewer, Runnable retry) {
         if (retry == null) {
-            return MenuButton.display(MenuIcons.tag(item(Material.RED_STAINED_GLASS, viewer, "error-item"), MenuIcons.ERROR));
+            return MenuButton.display(item(Material.RED_STAINED_GLASS, viewer, "error-item"));
         }
-        return MenuButton.of(MenuIcons.tag(item(Material.RED_STAINED_GLASS, viewer, "error-retry"), MenuIcons.ERROR), click -> retry.run());
+        return MenuButton.of(item(Material.RED_STAINED_GLASS, viewer, "error-retry"), click -> retry.run());
     }
 
     /** "Nothing here yet" (cobweb) with the framework texts. Put it in {@link MenuLayout#empty}. */
@@ -517,9 +714,12 @@ public final class MenuService implements Listener {
         return emptyItem(viewer, MODULE, "empty");
     }
 
-    /** "Nothing here yet" (cobweb) with a menu's own texts: {@code <key>.name} (the key fact) and {@code <key>.lore} (one hint). */
+    /**
+     * "Nothing here yet" (cobweb, {@code state/empty}) with a menu's own texts: {@code <key>.name} (the key fact) and
+     * {@code <key>.lore} (one hint).
+     */
     public MenuButton emptyItem(Player viewer, String module, String key) {
-        return MenuButton.display(MenuIcons.tag(item(Material.COBWEB, viewer, module, key), MenuIcons.EMPTY));
+        return MenuButton.display(icon(viewer, "state/empty", text(viewer, module, key + ".name"), lines(viewer, module, key + ".lore")));
     }
 
     /**
@@ -530,7 +730,7 @@ public final class MenuService implements Listener {
         List<Component> lore = new ArrayList<>();
         lore.add(howToUnlock);
         lore.addAll(lines(viewer, "state.locked.lore"));
-        ItemStack item = MenuIcons.tag(item(Material.GRAY_DYE, text(viewer, "state.locked.name", Msg.c("name", name)), lore), MenuIcons.LOCKED);
+        ItemStack item = icon(viewer, "state/locked", text(viewer, "state.locked.name", Msg.c("name", name)), lore);
         return MenuButton.of(item, click -> {
             messages.actionBar(click.player(), MODULE, "state.locked.actionbar", Msg.c("hint", howToUnlock));
             sounds.playUi(click.player(), "error");
@@ -555,108 +755,65 @@ public final class MenuService implements Listener {
         });
     }
 
-    /** Filler for empty slots inside small menus (confirm, number picker). */
-    ItemStack innerFiller() {
-        return filler(material(config.frameInner, Material.GRAY_STAINED_GLASS_PANE));
-    }
-
-    /** Material from a config id, or {@code fallback} (logged) if unknown. */
-    Material material(String id, Material fallback) {
-        Material m = Material.matchMaterial(id == null ? "" : id.trim());
-        if (m == null || !m.isItem()) {
-            plugin.getLogger().warning("menus.yml: '" + id + "' is not an item id, using " + fallback.name().toLowerCase(Locale.ROOT));
-            return fallback;
-        }
-        return m;
-    }
-
-    /** The marked frame panes (border, accent, glow, inner), built once per reload instead of on every redraw. */
-    private volatile ItemStack[] framePanes;
-    /** The same panes in their pack form (blank model, hidden tooltip), built once per reload. */
-    private volatile ItemStack[] framePanesPack;
-
-    private ItemStack[] framePanes(Player viewer) {
-        if (hasPack(viewer)) {
-            ItemStack[] packed = framePanesPack;
-            if (packed == null) {
-                ItemStack[] plain = framePanes(null);
-                packed = new ItemStack[plain.length];
-                for (int i = 0; i < plain.length; i++) {
-                    packed[i] = mark(MenuIcons.render(plain[i]));
-                }
-                framePanesPack = packed;
-            }
-            return packed;
-        }
-        ItemStack[] panes = framePanes;
-        if (panes == null) {
-            panes = new ItemStack[]{
-                    mark(filler(material(config.frameBorder, Material.BLACK_STAINED_GLASS_PANE))),
-                    mark(filler(material(config.frameAccent, Material.RED_STAINED_GLASS_PANE))),
-                    mark(filler(material(config.frameAccentGlow, Material.ORANGE_STAINED_GLASS_PANE))),
-                    mark(innerFiller())};
-            framePanes = panes;
-        }
-        return panes;
-    }
+    /**
+     * See {@link Menu#navBar()}: Back (when the menu has a parent and is not the main menu) and Close. PERF2: the two
+     * items are built once per opening and reused by every live refresh.
+     */
+    private volatile java.util.function.Function<Player, ItemStack> hints;
 
     /**
-     * See {@link Menu#frame()}. PERF2 (P-22, "stacking-menu-refresh"): the panes are cached per reload and the fixed
-     * buttons per menu opening, so a live refresh no longer clones, tags and re-parses ~50 items every time.
+     * Owner 3 Nov 2026 ("tutorial text in chat is hard to see when a GUI is open, add the text inside the GUI"): a
+     * provider of one display-only item (the tutorial's current step) that every menu shows in a free bottom-row slot.
+     * {@code null} (or a provider returning null) shows nothing. One provider; the tutorial module sets it.
      */
-    void applyFrame(Menu menu) {
+    public void hints(java.util.function.Function<Player, ItemStack> provider) {
+        this.hints = provider;
+    }
+
+    /** Puts the hint item into the first empty bottom-row slot (never over a button). Called after every build. */
+    void applyHint(Menu menu) {
+        java.util.function.Function<Player, ItemStack> provider = hints;
+        int rows = menu.rows();
+        if (provider == null || rows < 3 || rows > 6) {
+            return;
+        }
+        ItemStack item;
+        try {
+            item = provider.apply(menu.viewer());
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "The menu hint provider failed", e);
+            return;
+        }
+        if (item == null || item.isEmpty()) {
+            return;
+        }
+        int bar = (rows - 1) * 9;
+        int[] order = rows == 3 ? new int[]{23, 24, 21} : new int[]{bar + 3, bar + 5, bar + 6, bar + 2, bar + 1};
+        for (int slot : order) {
+            if (menu.emptyAt(slot)) {
+                menu.setHint(slot, item);
+                return;
+            }
+        }
+    }
+
+    void applyNavBar(Menu menu) {
         int rows = menu.rows();
         Player viewer = menu.viewer();
-        ItemStack[] panes = framePanes(viewer);
-        for (int slot = 0; slot < rows * 9; slot++) {
-            switch (frameRole(slot, rows)) {
-                case ACCENT -> menu.setMarked(slot, panes[1], null);
-                case GLOW -> menu.setMarked(slot, panes[2], null);
-                case BORDER -> menu.setMarked(slot, panes[0], null);
-                case INNER -> {
-                    if (rows <= 3) {
-                        menu.setMarked(slot, panes[3], null);
-                    }
-                }
-            }
-        }
-        ItemStack[] fixed = menu.frameButtons();
+        ItemStack[] cached = menu.navItems();
         int back = MenuLayout.back(rows);
-        if (back != MenuLayout.NONE && menu.parent() != null) {
-            if (fixed[0] == null) {
-                fixed[0] = mark(render(viewer, MenuIcons.tag(navItem("back", Material.ARROW, viewer, "frame.back"), MenuIcons.BACK)));
+        if (back != MenuLayout.NONE && menu.parent() != null && !menu.isMainMenu()) {
+            if (cached[0] == null) {
+                cached[0] = mark(backItem(viewer));
             }
-            menu.setMarked(back, fixed[0], click -> click.menu().back());
-        }
-        int info = MenuLayout.info(rows);
-        if (info != MenuLayout.NONE && menu.infoKey() != null) {
-            if (fixed[1] == null) {
-                List<Component> lore = new ArrayList<>(lines(viewer, menu.messageModule(), menu.infoKey()));
-                lore.addAll(lines(viewer, "frame.info.footer"));
-                fixed[1] = mark(render(viewer, MenuIcons.tag(item(Material.BOOK, text(viewer, "frame.info.name"), lore), MenuIcons.INFO)));
-            }
-            menu.setMarked(info, fixed[1], click -> runHelp(click.player(), click.menu(), menu.helpTopic()));
+            menu.setMarked(back, cached[0], click -> click.menu().back());
         }
         int close = MenuLayout.close(rows);
         if (close != MenuLayout.NONE) {
-            if (fixed[2] == null) {
-                fixed[2] = mark(render(viewer, MenuIcons.tag(item(Material.BARRIER, viewer, "frame.close"), MenuIcons.CLOSE)));
+            if (cached[1] == null) {
+                cached[1] = mark(closeItem(viewer));
             }
-            menu.setMarked(close, fixed[2], click -> close(click.player()));
-        }
-        int main = MenuLayout.mainMenu(rows);
-        if (main != MenuLayout.NONE) {
-            if (menu.isMainMenu()) {
-                if (fixed[3] == null) {
-                    fixed[3] = mark(render(viewer, MenuIcons.tag(item(Material.KNOWLEDGE_BOOK, viewer, "frame.help"), MenuIcons.HELP)));
-                }
-                menu.setMarked(main, fixed[3], click -> runHelp(click.player(), click.menu(), null));
-            } else {
-                if (fixed[3] == null) {
-                    fixed[3] = mark(render(viewer, MenuIcons.tag(item(Material.NETHER_STAR, viewer, "frame.main-menu"), MenuIcons.MAIN_MENU)));
-                }
-                menu.setMarked(main, fixed[3], click -> openMainMenu(click.player()));
-            }
+            menu.setMarked(close, cached[1], click -> close(click.player()));
         }
     }
 
@@ -667,33 +824,8 @@ public final class MenuService implements Listener {
     void warnStandardSlot(Menu menu, int slot) {
         if (slotWarnings.add(menu.getClass().getName() + "#" + slot)) {
             plugin.getLogger().warning("Menu " + menu.getClass().getSimpleName() + " uses slot " + slot
-                    + ", a standard bottom-bar slot (GUI_DESIGN §1.1); move its button to 46, 47 or 51.");
+                    + ", a standard bottom-row slot (I9 section 4); move its button to 46, 47 or another free slot.");
         }
-    }
-
-    /** What a slot of the standard frame shows (docs/UI_STYLE.md §5.1). */
-    enum FrameRole { ACCENT, GLOW, BORDER, INNER }
-
-    /** Corners = red accent, the slot next to each corner on the top/bottom row = ember glow, rest of the edge = border. */
-    static FrameRole frameRole(int slot, int rows) {
-        int row = slot / 9;
-        int col = slot % 9;
-        boolean edgeRow = row == 0 || row == rows - 1;
-        if (edgeRow && (col == 0 || col == 8)) {
-            return FrameRole.ACCENT;
-        }
-        if (edgeRow && (col == 1 || col == 7)) {
-            return FrameRole.GLOW;
-        }
-        if (edgeRow || col == 0 || col == 8) {
-            return FrameRole.BORDER;
-        }
-        return FrameRole.INNER;
-    }
-
-    /** Opens a help topic (or the help home) with {@code from} as its Back target. */
-    private void runHelp(Player player, Menu from, String topic) {
-        navigate(player, from, () -> player.performCommand(topic == null ? "help" : "help " + topic));
     }
 
     /**
@@ -706,8 +838,8 @@ public final class MenuService implements Listener {
         lore.addAll(lines(viewer, "toggle.action"));
         // GUI-4c: the state is in the name too ("Chat colors ✔ On"), not only in the dye colour and the lore.
         Component name = text(viewer, state ? "toggle.name-on" : "toggle.name-off", Msg.c("name", text(viewer, module, key + ".name")));
-        ItemStack item = MenuIcons.tag(item(state ? Material.LIME_DYE : Material.RED_DYE, name, lore),
-                state ? MenuIcons.TOGGLE_ON : MenuIcons.TOGGLE_OFF);
+        // On = lime dye, Off = gray dye (I9 7.8; red is reserved for danger).
+        ItemStack item = icon(viewer, state ? "state/on" : "state/off", name, lore);
         return MenuButton.of(item, click -> {
             change.accept(!state);
             click.menu().refresh();
@@ -919,7 +1051,7 @@ public final class MenuService implements Listener {
             return;
         }
         event.setCancelled(true);
-        String text = net.skybornmc.skyblock.common.pack.PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message())).trim();
+        String text = net.skybornmc.skyblock.common.text.PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message())).trim();
         Bukkit.getScheduler().runTask(plugin, () -> {
             Prompt p = prompts.get(player.getUniqueId());
             if (p == null) {
@@ -960,27 +1092,42 @@ public final class MenuService implements Listener {
         }
         ClickType type = event.getClick();
         boolean plain = type == ClickType.LEFT || type == ClickType.RIGHT
-                || type == ClickType.SHIFT_LEFT || type == ClickType.SHIFT_RIGHT;
+                || type == ClickType.SHIFT_LEFT || type == ClickType.SHIFT_RIGHT || type == ClickType.MIDDLE;
         if (!plain) {
-            // Number keys, offhand swap, double-click, drop, middle/creative: blocked; resync the client (Bedrock).
+            // Number keys, offhand swap, double-click, drop, creative drop: blocked; resync the client (Bedrock).
             Bukkit.getScheduler().runTask(plugin, player::updateInventory);
             return;
         }
         if (event.getClickedInventory() != top) {
+            if (type == ClickType.MIDDLE) {
+                Bukkit.getScheduler().runTask(plugin, player::updateInventory);
+            }
             return;
         }
         int slot = event.getRawSlot();
         MenuButton button = menu.button(slot);
         if (button == null || !button.clickable() || open.get(player.getUniqueId()) != menu) {
+            if (type == ClickType.MIDDLE) {
+                Bukkit.getScheduler().runTask(plugin, player::updateInventory); // creative middle click: no cloned cursor item
+            }
+            return;
+        }
+        ClickRoute route = ClickRoute.of(type, messages.isBedrock(player), button.onRight() != null, button.onShift() != null,
+                button.onMiddle() != null);
+        if (route == ClickRoute.IGNORED) {
+            // A creative middle click would otherwise leave a cloned cursor item; ignored clicks keep the debounce free.
+            Bukkit.getScheduler().runTask(plugin, player::updateInventory);
             return;
         }
         if (!debounce.tryClick(player.getUniqueId(), System.currentTimeMillis())) {
             return;
         }
-        ClickRoute route = ClickRoute.of(type, messages.isBedrock(player), button.onRight() != null, button.onShift() != null);
         Consumer<MenuClick> handler = button.handler(route);
         if (handler == null) {
             return;
+        }
+        if (route == ClickRoute.MIDDLE) {
+            Bukkit.getScheduler().runTask(plugin, player::updateInventory);
         }
         sounds.playUi(player, "click");
         try {
@@ -1078,6 +1225,9 @@ public final class MenuService implements Listener {
                     menu.tickInternal();
                 } else {
                     timer.time(TICK_NAMES.get(menu.getClass()), menu::tickInternal);
+                }
+                if (menu.tilesDirty) {
+                    syncFrame(menu);
                 }
             } catch (RuntimeException e) {
                 plugin.getLogger().log(Level.SEVERE, "Menu " + menu.getClass().getSimpleName() + " tick failed", e);

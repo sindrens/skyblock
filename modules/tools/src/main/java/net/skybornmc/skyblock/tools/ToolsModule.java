@@ -65,9 +65,9 @@ public final class ToolsModule implements SkyblockModule {
     private ToolItems items;
     private ToolTracker tracker;
     private Forge forge;
+    private WorldTools worldTools;
     private BlueprintDrops drops;
     private ToolsListener listener;
-    private DepthsHooks depthsHooks;
     private Harvester harvester;
     private Scheduler.Task saveTask;
 
@@ -98,7 +98,8 @@ public final class ToolsModule implements SkyblockModule {
         harvester = new Harvester(this);
         harvester.apply();
         Bukkit.getPluginManager().registerEvents(harvester, core.plugin());
-        registerDepthsHooks();
+        worldTools = new WorldTools(this);
+        worldTools.start();
         registerCommands();
         scheduleSave();
     }
@@ -124,13 +125,13 @@ public final class ToolsModule implements SkyblockModule {
         if (listener != null) {
             HandlerList.unregisterAll(listener);
         }
+        if (worldTools != null) {
+            worldTools.stop();
+            worldTools = null;
+        }
         if (harvester != null) {
             HandlerList.unregisterAll(harvester);
             harvester = null;
-        }
-        if (depthsHooks != null) {
-            HandlerList.unregisterAll(depthsHooks);
-            depthsHooks = null;
         }
         if (tracker != null) {
             Bukkit.getOnlinePlayers().forEach(tracker::renderAll);
@@ -209,11 +210,6 @@ public final class ToolsModule implements SkyblockModule {
         return catalog.kinds().stream().filter(this::forgeOpen).toList();
     }
 
-    /** The Depths bridge, or null when the depths module is not in this build. */
-    ToolsListener.Depths depths() {
-        return depthsHooks;
-    }
-
     // ------------------------------------------------------------------ setup
 
     private ToolCurve buildCurve() {
@@ -222,17 +218,6 @@ public final class ToolsModule implements SkyblockModule {
         } catch (IllegalArgumentException e) {
             core.plugin().getLogger().warning("tools.yml curve: " + e.getMessage() + "; using 400 / 1.21 / 50");
             return new ToolCurve(400, 1.21, 50);
-        }
-    }
-
-    /** Depths XP and blueprint drops only if the depths classes are in the jar (see {@link DepthsHooks}). */
-    private void registerDepthsHooks() {
-        try {
-            depthsHooks = new DepthsHooks(this);
-            Bukkit.getPluginManager().registerEvents(depthsHooks, core.plugin());
-        } catch (NoClassDefFoundError e) {
-            depthsHooks = null;
-            core.plugin().getLogger().info("Tools: the depths module is not in this build; Depths tool XP and blueprint drops are off.");
         }
     }
 
@@ -246,6 +231,8 @@ public final class ToolsModule implements SkyblockModule {
 
     /** Reads the catalog sections of tools.yml; missing sections are copied from tools-defaults.yml first. */
     private ToolCatalog loadCatalog() {
+        ToolCatalog.moneyPercent = config.forgeMoneyPercent;
+        ToolCatalog.materialPercent = config.forgeMaterialsPercent;
         File file = new File(core.plugin().getDataFolder(), config.fileName());
         YamlConfiguration yaml = new YamlConfiguration();
         try {
@@ -414,8 +401,18 @@ public final class ToolsModule implements SkyblockModule {
         core.commands().register(CommandSpec.command("forge")
                 .description("The Forge: upgrade your tools, craft blueprints, claim the starter kit").category("Tools")
                 .permission(PERM_FORGE).playerOnly().optional(forgeType).example("forge pickaxe")
-                .executes(ctx -> core.menus().open(ctx.player(), new ForgeMenu(this,
-                        forgeKind(ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(ctx.player()))))));
+                .executes(ctx -> {
+                    Player p = ctx.player();
+                    // Owner 3 Nov 2026: Depths tools are only carried in the Depths, so the Forge works there.
+                    if (config.worldToolsEnabled && !p.hasPermission("skyblock.tools.world-bypass")
+                            && !WorldTools.depthsWorld(config.worldToolsDepthsWorlds, p.getWorld().getName())) {
+                        msg.send(p, "world-tools.forge-in-depths");
+                        core.sounds().play(p, "error");
+                        return;
+                    }
+                    core.menus().open(p, new ForgeMenu(this,
+                            forgeKind(ctx.has(forgeType) ? ToolKind.byId(ctx.get(forgeType)).orElse(ToolKind.PICKAXE) : heldKind(p))));
+                }));
 
         Arg<Player> givePlayer = Args.onlinePlayer("player");
         Arg<String> giveTool = Args.oneOf("tool", this::kindIds);
@@ -427,6 +424,11 @@ public final class ToolsModule implements SkyblockModule {
                     Player player = ctx.player();
                     Optional<ToolData> held = ToolItems.read(player.getInventory().getItemInMainHand());
                     if (held.isEmpty()) {
+                        // Feedback 4 Nov 2026 (B7): an island tool in hand opens its menu (island tools module).
+                        if (core.services().optional(net.skybornmc.skyblock.common.item.HeldToolMenu.class)
+                                .map(h -> h.openHeld(player)).orElse(false)) {
+                            return;
+                        }
                         throw new CommandFailure(ID, "tool.hold-a-tool");
                     }
                     openToolMenu(player, held.get().id());

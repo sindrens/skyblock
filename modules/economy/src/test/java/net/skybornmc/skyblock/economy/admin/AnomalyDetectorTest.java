@@ -223,7 +223,7 @@ class AnomalyDetectorTest {
         Map<Aggregation.AccountKey, Aggregation.AccountSum> totals = Map.of(
                 new Aggregation.AccountKey(1000, A, Currency.MONEY), new Aggregation.AccountSum(30_001, 0, 4),
                 new Aggregation.AccountKey(1000, B, Currency.MONEY), new Aggregation.AccountSum(29_000, 0, 9),
-                new Aggregation.AccountKey(1000, C, Currency.GEMS), new Aggregation.AccountSum(999_999, 0, 1));
+                new Aggregation.AccountKey(1000, C, Currency.CREDITS_EARNED), new Aggregation.AccountSum(999_999, 0, 1));
         List<LedgerRow> evidence = List.of(created(7, T0, A, 20_000, "sell"), created(8, T0, A, 1, "sell"),
                 created(9, T0, B, 5, "sell"));
         List<AlertDraft> out = detector.accountTotals(totals, evidence, base);

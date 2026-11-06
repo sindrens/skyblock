@@ -91,7 +91,7 @@ final class TradeMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TradeConfig cfg = module.config;
         TradeSession.Side me = session.side(viewer.getUniqueId());
         TradeSession.Side them = session.other(viewer.getUniqueId());

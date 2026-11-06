@@ -1,0 +1,1132 @@
+{
+ "version": 2,
+ "icons": [
+  {
+   "key": "currency/money",
+   "base": "gold_ingot",
+   "name": "Money",
+   "meaning": "currency-money",
+   "file": "currency_money",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "economy menus, prices"
+  },
+  {
+   "key": "currency/shards",
+   "base": "prismarine_shard",
+   "name": "Shards",
+   "meaning": "currency-shards",
+   "file": "currency_shards",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "economy menus"
+  },
+  {
+   "key": "currency/crystals",
+   "base": "amethyst_shard",
+   "name": "Crystals",
+   "meaning": "currency-crystals",
+   "file": "currency_crystals",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "economy menus, Depths"
+  },
+  {
+   "key": "currency/credits",
+   "base": "diamond",
+   "name": "Credits",
+   "meaning": "currency-credits",
+   "file": "currency_credits",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "You menu, credit shop, Store tile"
+  },
+  {
+   "key": "nav/back",
+   "base": "arrow",
+   "name": "Back",
+   "meaning": "move",
+   "file": "nav_back",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "all menus (Back)"
+  },
+  {
+   "key": "nav/prev",
+   "base": "paper",
+   "name": "Previous page",
+   "meaning": "move",
+   "file": "nav_prev",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "all paged menus"
+  },
+  {
+   "key": "nav/next",
+   "base": "paper",
+   "name": "Next page",
+   "meaning": "move",
+   "file": "nav_next",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "all paged menus"
+  },
+  {
+   "key": "nav/close",
+   "base": "barrier",
+   "name": "Close",
+   "meaning": "neutral",
+   "file": "nav_close",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "all menus (Close)"
+  },
+  {
+   "key": "nav/danger",
+   "base": "tnt",
+   "name": "Danger",
+   "meaning": "danger",
+   "file": "nav_danger",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "danger tile (disband, leave, delete)"
+  },
+  {
+   "key": "nav/help",
+   "base": "book",
+   "name": "Help",
+   "meaning": "neutral",
+   "file": "nav_help",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "hub Help (slot 50)"
+  },
+  {
+   "key": "nav/search",
+   "base": "ender_eye",
+   "name": "Search (auction house only)",
+   "meaning": "depths",
+   "file": "nav_search",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "auction house search (C6)"
+  },
+  {
+   "key": "ui/info",
+   "base": "oak_sign",
+   "name": "Info",
+   "meaning": "depths",
+   "file": "ui_info",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "generic info tile"
+  },
+  {
+   "key": "ui/type",
+   "base": "name_tag",
+   "name": "Type an amount",
+   "meaning": "neutral",
+   "file": "ui_type",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "number picker: Type an amount"
+  },
+  {
+   "key": "state/confirm",
+   "base": "lime_concrete",
+   "name": "Confirm",
+   "meaning": "money",
+   "file": "state_confirm",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "confirm screens, number picker, buy button"
+  },
+  {
+   "key": "state/cancel",
+   "base": "red_concrete",
+   "name": "Cancel",
+   "meaning": "danger",
+   "file": "state_cancel",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "confirm screens"
+  },
+  {
+   "key": "state/on",
+   "base": "lime_dye",
+   "name": "On",
+   "meaning": "home",
+   "file": "state_on",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "settings toggles"
+  },
+  {
+   "key": "state/off",
+   "base": "gray_dye",
+   "name": "Off",
+   "meaning": "locked",
+   "file": "state_off",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "settings toggles"
+  },
+  {
+   "key": "state/locked",
+   "base": "iron_bars",
+   "name": "Locked",
+   "meaning": "locked",
+   "file": "state_locked",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "locked entries"
+  },
+  {
+   "key": "state/undo",
+   "base": "clock",
+   "name": "Undo",
+   "meaning": "move",
+   "file": "state_undo",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "shop undo (P3)"
+  },
+  {
+   "key": "shop/buy",
+   "base": "emerald",
+   "name": "Buy",
+   "meaning": "money",
+   "file": "shop_buy",
+   "slice": 3,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "shop buy button (P3)"
+  },
+  {
+   "key": "shop/sell",
+   "base": "gold_nugget",
+   "name": "Sell",
+   "meaning": "money",
+   "file": "shop_sell",
+   "slice": 3,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "shop sell button (P3), hub Sell"
+  },
+  {
+   "key": "shop/sell_all",
+   "base": "hopper",
+   "name": "Sell all",
+   "meaning": "money",
+   "file": "shop_sell_all",
+   "slice": 3,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "shop Sell all (P3)"
+  },
+  {
+   "key": "shop/fill",
+   "base": "chest_minecart",
+   "name": "Fill inventory",
+   "meaning": "money",
+   "file": "shop_fill",
+   "slice": 3,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "shop Fill inventory (P3)"
+  },
+  {
+   "key": "feature/bank",
+   "base": "gold_block",
+   "name": "Bank",
+   "meaning": "money",
+   "file": "feature_bank",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "hub Bank"
+  },
+  {
+   "key": "feature/top",
+   "base": "golden_helmet",
+   "name": "Top",
+   "meaning": "reward",
+   "file": "feature_top",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "hub Top (leaderboards)"
+  },
+  {
+   "key": "feature/depths_lit",
+   "base": "iron_pickaxe",
+   "name": "The Depths (lit)",
+   "meaning": "depths",
+   "file": "feature_depths_lit",
+   "slice": 3,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "tutorial: hub Depths tile and Travel Depths gate while the step is depths"
+  },
+  {
+   "key": "feature/auction",
+   "base": "bell",
+   "name": "Auction House",
+   "meaning": "money",
+   "file": "feature_auction",
+   "slice": 2,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "hub Auction House"
+  },
+  {
+   "key": "state/loading",
+   "base": "clock",
+   "name": "Loading",
+   "meaning": "neutral",
+   "file": "state_loading",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "state/empty",
+   "base": "cobweb",
+   "name": "Empty",
+   "meaning": "neutral",
+   "file": "state_empty",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/home",
+   "base": "oak_door",
+   "name": "Home",
+   "meaning": "home",
+   "file": "feature_home",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/island",
+   "base": "oak_sapling",
+   "name": "Island",
+   "meaning": "home",
+   "file": "feature_island",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/depths",
+   "base": "iron_pickaxe",
+   "name": "Depths",
+   "meaning": "depths",
+   "file": "feature_depths",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/travel",
+   "base": "ender_eye",
+   "name": "Travel",
+   "meaning": "move",
+   "file": "feature_travel",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/sell",
+   "base": "gold_nugget",
+   "name": "Sell",
+   "meaning": "money",
+   "file": "feature_sell",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/shop",
+   "base": "emerald",
+   "name": "Shop",
+   "meaning": "money",
+   "file": "feature_shop",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/forge",
+   "base": "smithing_table",
+   "name": "Forge",
+   "meaning": "skills",
+   "file": "feature_forge",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/skills",
+   "base": "experience_bottle",
+   "name": "Skills",
+   "meaning": "skills",
+   "file": "feature_skills",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/enchanter",
+   "base": "enchanting_table",
+   "name": "Enchanter",
+   "meaning": "skills",
+   "file": "feature_enchanter",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/wardrobe",
+   "base": "iron_chestplate",
+   "name": "Wardrobe",
+   "meaning": "skills",
+   "file": "feature_wardrobe",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/rewards",
+   "base": "chest_minecart",
+   "name": "Rewards",
+   "meaning": "reward",
+   "file": "feature_rewards",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/staff",
+   "base": "iron_sword",
+   "name": "Staff",
+   "meaning": "neutral",
+   "file": "feature_staff",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/profiles",
+   "base": "armor_stand",
+   "name": "Profiles",
+   "meaning": "neutral",
+   "file": "feature_profiles",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/titles",
+   "base": "name_tag",
+   "name": "Titles",
+   "meaning": "neutral",
+   "file": "feature_titles",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/achievements",
+   "base": "totem_of_undying",
+   "name": "Achievements",
+   "meaning": "reward",
+   "file": "feature_achievements",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/settings",
+   "base": "comparator",
+   "name": "Settings",
+   "meaning": "neutral",
+   "file": "feature_settings",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/store",
+   "base": "diamond",
+   "name": "Store",
+   "meaning": "money",
+   "file": "feature_store",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/rules",
+   "base": "paper",
+   "name": "Rules",
+   "meaning": "neutral",
+   "file": "feature_rules",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/quests",
+   "base": "writable_book",
+   "name": "Quests",
+   "meaning": "reward",
+   "file": "feature_quests",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "feature/collection",
+   "base": "bookshelf",
+   "name": "Collection",
+   "meaning": "skills",
+   "file": "feature_collection",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "travel/spawn",
+   "base": "campfire",
+   "name": "Spawn",
+   "meaning": "move",
+   "file": "travel_spawn",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "travel/crate_yard",
+   "base": "tripwire_hook",
+   "name": "Crate Yard",
+   "meaning": "reward",
+   "file": "travel_crate_yard",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "travel/market",
+   "base": "emerald",
+   "name": "Market",
+   "meaning": "money",
+   "file": "travel_market",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "travel/visit",
+   "base": "map",
+   "name": "Visit",
+   "meaning": "people",
+   "file": "travel_visit",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/permissions",
+   "base": "iron_door",
+   "name": "Permissions",
+   "meaning": "people",
+   "file": "island_permissions",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/warps",
+   "base": "ender_pearl",
+   "name": "Warps",
+   "meaning": "move",
+   "file": "island_warps",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/settings",
+   "base": "repeater",
+   "name": "Settings",
+   "meaning": "neutral",
+   "file": "island_settings",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/invites",
+   "base": "paper",
+   "name": "Invites",
+   "meaning": "people",
+   "file": "island_invites",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/notes",
+   "base": "writable_book",
+   "name": "Notes",
+   "meaning": "neutral",
+   "file": "island_notes",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/chat_on",
+   "base": "oak_sign",
+   "name": "Chat On",
+   "meaning": "people",
+   "file": "island_chat_on",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/chat_off",
+   "base": "gray_dye",
+   "name": "Chat Off",
+   "meaning": "locked",
+   "file": "island_chat_off",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/chat_colors",
+   "base": "orange_dye",
+   "name": "Chat Colors",
+   "meaning": "people",
+   "file": "island_chat_colors",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/visit",
+   "base": "map",
+   "name": "Visit",
+   "meaning": "people",
+   "file": "island_visit",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/stats",
+   "base": "knowledge_book",
+   "name": "Stats",
+   "meaning": "neutral",
+   "file": "island_stats",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/bank",
+   "base": "gold_block",
+   "name": "Bank",
+   "meaning": "money",
+   "file": "island_bank",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/upgrades",
+   "base": "anvil",
+   "name": "Upgrades",
+   "meaning": "skills",
+   "file": "island_upgrades",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/visitors_open",
+   "base": "oak_fence_gate",
+   "name": "Visitors Open",
+   "meaning": "home",
+   "file": "island_visitors_open",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "island/visitors_locked",
+   "base": "iron_bars",
+   "name": "Visitors Locked",
+   "meaning": "locked",
+   "file": "island_visitors_locked",
+   "slice": 1,
+   "motif": "cartoon v4 (tools/cartoon/render.py)",
+   "used": "menus"
+  },
+  {
+   "key": "item/crate_key_ember",
+   "base": "tripwire_hook",
+   "name": "Crate Key Ember",
+   "meaning": "neutral",
+   "file": "item_crate_key_ember",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_cinder",
+   "base": "tripwire_hook",
+   "name": "Crate Key Cinder",
+   "meaning": "neutral",
+   "file": "item_crate_key_cinder",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_blaze",
+   "base": "tripwire_hook",
+   "name": "Crate Key Blaze",
+   "meaning": "neutral",
+   "file": "item_crate_key_blaze",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_inferno",
+   "base": "tripwire_hook",
+   "name": "Crate Key Inferno",
+   "meaning": "neutral",
+   "file": "item_crate_key_inferno",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_phoenix",
+   "base": "tripwire_hook",
+   "name": "Crate Key Phoenix",
+   "meaning": "neutral",
+   "file": "item_crate_key_phoenix",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_eclipse",
+   "base": "tripwire_hook",
+   "name": "Crate Key Eclipse",
+   "meaning": "neutral",
+   "file": "item_crate_key_eclipse",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/crate_key_conqueror",
+   "base": "tripwire_hook",
+   "name": "Crate Key Conqueror",
+   "meaning": "neutral",
+   "file": "item_crate_key_conqueror",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/shard_block",
+   "base": "infested_stone",
+   "name": "Shard Block",
+   "meaning": "neutral",
+   "file": "item_shard_block",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/fuel_cell",
+   "base": "magma_cream",
+   "name": "Fuel Cell",
+   "meaning": "neutral",
+   "file": "item_fuel_cell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/money_note",
+   "base": "paper",
+   "name": "Money Note",
+   "meaning": "neutral",
+   "file": "item_money_note",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/disenchant_scroll",
+   "base": "paper",
+   "name": "Disenchant Scroll",
+   "meaning": "neutral",
+   "file": "item_disenchant_scroll",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/tag_item",
+   "base": "name_tag",
+   "name": "Tag Item",
+   "meaning": "neutral",
+   "file": "item_tag_item",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_sell",
+   "base": "gold_ingot",
+   "name": "Booster Sell",
+   "meaning": "neutral",
+   "file": "item_booster_sell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_sell",
+   "base": "nether_star",
+   "name": "Global Booster Sell",
+   "meaning": "neutral",
+   "file": "item_global_booster_sell",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_skill_xp",
+   "base": "lapis_lazuli",
+   "name": "Booster Skill Xp",
+   "meaning": "neutral",
+   "file": "item_booster_skill_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_skill_xp",
+   "base": "nether_star",
+   "name": "Global Booster Skill Xp",
+   "meaning": "neutral",
+   "file": "item_global_booster_skill_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_tool_xp",
+   "base": "echo_shard",
+   "name": "Booster Tool Xp",
+   "meaning": "neutral",
+   "file": "item_booster_tool_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_tool_xp",
+   "base": "nether_star",
+   "name": "Global Booster Tool Xp",
+   "meaning": "neutral",
+   "file": "item_global_booster_tool_xp",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/booster_crystals",
+   "base": "prismarine_crystals",
+   "name": "Booster Crystals",
+   "meaning": "neutral",
+   "file": "item_booster_crystals",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/global_booster_crystals",
+   "base": "nether_star",
+   "name": "Global Booster Crystals",
+   "meaning": "neutral",
+   "file": "item_global_booster_crystals",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item"
+  },
+  {
+   "key": "item/skin_frostbite_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Frostbite Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_axe",
+   "base": "wooden_axe",
+   "name": "Skin Frostbite Axe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_sword",
+   "base": "stone_sword",
+   "name": "Skin Frostbite Sword",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Frostbite Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Phoenix Flame Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_axe",
+   "base": "wooden_axe",
+   "name": "Skin Phoenix Flame Axe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_sword",
+   "base": "stone_sword",
+   "name": "Skin Phoenix Flame Sword",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_phoenix_flame_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Phoenix Flame Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_pickaxe",
+   "base": "stone_pickaxe",
+   "name": "Skin Royal Gold Pickaxe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_pickaxe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_pickaxe",
+    "iron_pickaxe",
+    "golden_pickaxe",
+    "diamond_pickaxe",
+    "netherite_pickaxe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_axe",
+   "base": "wooden_axe",
+   "name": "Skin Royal Gold Axe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_axe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "stone_axe",
+    "copper_axe",
+    "iron_axe",
+    "diamond_axe",
+    "netherite_axe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_sword",
+   "base": "stone_sword",
+   "name": "Skin Royal Gold Sword",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_sword",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_sword",
+    "iron_sword",
+    "diamond_sword",
+    "netherite_sword"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_royal_gold_hoe",
+   "base": "stone_hoe",
+   "name": "Skin Royal Gold Hoe",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_hoe",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "bases": [
+    "copper_hoe",
+    "iron_hoe",
+    "golden_hoe",
+    "diamond_hoe",
+    "netherite_hoe"
+   ],
+   "parent": "minecraft:item/handheld"
+  },
+  {
+   "key": "item/skin_frostbite_rod",
+   "base": "fishing_rod",
+   "name": "Skin Frostbite Rod",
+   "meaning": "neutral",
+   "file": "item_skin_frostbite_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/skin_phoenix_flame_rod",
+   "base": "fishing_rod",
+   "name": "Skin Phoenix Flame Rod",
+   "meaning": "neutral",
+   "file": "item_skin_phoenix_flame_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  },
+  {
+   "key": "item/skin_royal_gold_rod",
+   "base": "fishing_rod",
+   "name": "Skin Royal Gold Rod",
+   "meaning": "neutral",
+   "file": "item_skin_royal_gold_rod",
+   "slice": 1,
+   "motif": "cartoon v4 item texture (tools/cartoon/render.py)",
+   "used": "custom item",
+   "parent": "minecraft:item/handheld_rod"
+  }
+ ],
+ "vanilla": {
+  "shop/essentials": "crafting_table",
+  "shop/farming": "wheat_seeds",
+  "shop/wood": "oak_log",
+  "shop/stone_earth": "stone_bricks",
+  "shop/special": "quartz_block",
+  "shop/colors": "light_blue_stained_glass",
+  "shop/decoration": "lantern",
+  "shop/redstone": "redstone",
+  "shop/spawners": "spawner"
+ }
+}

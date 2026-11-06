@@ -34,7 +34,7 @@ final class AckMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(13, service.item(Material.LIME_CONCRETE, viewer, PunishMenus.MODULE, "ack.menu.button"), click -> {
             if (used) {
                 return;

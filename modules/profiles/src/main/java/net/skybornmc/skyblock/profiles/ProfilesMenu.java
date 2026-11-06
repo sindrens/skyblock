@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * {@code /profiles}: one big button per slot (11, 13, 15) so it works with taps on Bedrock. A profile opens its own
- * screen (switch, rename, icon, delete); an empty unlocked slot creates a profile; a locked slot can be bought with gems.
+ * screen (switch, rename, icon, delete); an empty unlocked slot creates a profile; a locked slot can be bought with credits.
  */
 final class ProfilesMenu extends Menu {
 
@@ -57,7 +57,7 @@ final class ProfilesMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         ProfileServiceImpl profiles = module.service();
         Optional<ProfileServiceImpl.Session> session = profiles.session(viewer.getUniqueId());
         if (session.isEmpty()) {
@@ -117,8 +117,8 @@ final class ProfilesMenu extends Menu {
         tags.add(Msg.p("level", level));
         tags.add(Msg.p("created", DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(p.createdAt()))));
         tags.add(Msg.p("playtime", Format.duration(Duration.ofMillis(profiles.playtime(viewer.getUniqueId(), p)))));
-        tags.add(Msg.c("status", module.msg.component(viewer, active ? "menu.status-active"
-                : profiles.slotUnlocked(viewer, p.slot()) ? "menu.status-switch" : "menu.status-locked")));
+        // Feedback 4 Nov 2026 (A6): an existing profile can always be switched to, also in a slot the rank no longer gives.
+        tags.add(Msg.c("status", module.msg.component(viewer, active ? "menu.status-active" : "menu.status-switch")));
         ItemStack item = module.core.menus().item(module.icon(p), viewer, ProfilesModule.ID, key, tags.toArray(TagResolver[]::new));
         if (active) {
             item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));

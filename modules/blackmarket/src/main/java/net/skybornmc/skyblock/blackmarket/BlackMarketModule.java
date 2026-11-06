@@ -50,7 +50,7 @@ import java.util.concurrent.Executor;
  * <ul>
  *   <li><b>Rotation</b> (P10-35): 1 headline, 3 rare, 4 common offers picked by weight at the restock times (00:00 and
  *       12:00 Europe/Oslo), stored once per rotation; a chat line announces the headline.</li>
- *   <li><b>Fixed row</b>: the Island Charter (next size above 9x9, shards or gems: P10-38, REVIEW3 F6) and the Disenchant
+ *   <li><b>Fixed row</b>: the Island Charter (next size above 9x9, shards or credits: P10-38, REVIEW3 F6) and the Disenchant
  *       Scroll.</li>
  *   <li><b>Limits</b> (P10-37): per account per rotation (Phoenix Regalia per season, Eclipse key per month); the headline
  *       has a server-wide stock of 25.</li>
@@ -59,6 +59,12 @@ import java.util.concurrent.Executor;
  * </ul>
  */
 public final class BlackMarketModule implements SkyblockModule, Listener {
+
+    /**
+     * The currency Black Market prices are in. Feedback 5 Nov 2026: shards are easy to get and are only for the island
+     * tools now, so the Black Market sells for crystals (same numbers; the credit prices are unchanged).
+     */
+    public static final net.skybornmc.skyblock.common.economy.Currency CURRENCY = net.skybornmc.skyblock.common.economy.Currency.CRYSTALS;
 
     static final String ID = "blackmarket";
     static final String PERM_USE = "skyblock.blackmarket.use";
@@ -81,6 +87,10 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
 
     public BlackMarketModule(Core core) {
         this.core = core;
+        // ECON-SHARDS: shards come only from shard blocks; the old "bosses, events, deep Depths" texts are upgraded unless edited.
+        core.messages().retire(ID, java.util.Map.of(
+                "buy.no-shards", "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:shards><price></cur:shards><c:text>. Shards come from bosses, events and deep Depths tiers.",
+                "menu.wallet.lore", "<c:text>Credits: <cur:credits><credits>\n<c:text>Shards come from bosses, events\n<c:text>and deep Depths tiers."));
         this.msg = core.messages(ID);
         this.market = new Market(this);
         this.purchases = new Purchases(this);
@@ -188,6 +198,8 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
             case SPAWNER -> !spawnerTypes(o).isEmpty();
             case ITEM -> material(o.ref()) != null;
             case TAG -> cosmetics().map(c -> c.ids(Cosmetics.Kind.TAG).contains(o.ref())).orElse(false);
+            case SELL_WAND, AUTOSELL_CHEST -> core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
+            case CHUNK_COLLECTOR -> core.services().has(StackingService.class);
             case COMING_SOON -> false;
         };
     }
@@ -208,9 +220,26 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
     }
 
     List<String> spawnerTypes(OfferCatalog.Offer o) {
+        return spawnerTypes(o.ref(), tier -> core.services().optional(StackingService.class).map(s -> s.spawnerTypes(tier)).orElse(List.of()));
+    }
+
+    /**
+     * ECON-SPAWNERS step 15 (pure): the mobs a spawner offer can hand out. {@code <tier>} = every mob of the tier;
+     * {@code <tier>:<mob>} = that mob only, and nothing (offer not shown) when the mob is not in that tier's list.
+     */
+    static List<String> spawnerTypes(String ref, java.util.function.IntFunction<List<String>> tierMobs) {
+        if (ref == null) {
+            return List.of();
+        }
+        int sep = ref.indexOf(':');
         try {
-            int tier = Integer.parseInt(o.ref());
-            return core.services().optional(StackingService.class).map(s -> s.spawnerTypes(tier)).orElse(List.of());
+            int tier = Integer.parseInt(sep < 0 ? ref : ref.substring(0, sep));
+            List<String> mobs = tierMobs.apply(tier);
+            if (sep < 0) {
+                return mobs;
+            }
+            String mob = ref.substring(sep + 1);
+            return mobs.contains(mob) ? List.of(mob) : List.of();
         } catch (NumberFormatException e) {
             return List.of();
         }
@@ -378,12 +407,15 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
             case SPAWNER -> Material.SPAWNER;
             case ITEM -> Optional.ofNullable(material(o.ref())).orElse(Material.CHEST);
             case TAG -> Material.NAME_TAG;
+            case SELL_WAND -> Material.BLAZE_ROD;
+            case AUTOSELL_CHEST -> Material.CHEST;
+            case CHUNK_COLLECTOR -> Material.HOPPER;
             case COMING_SOON -> Material.GRAY_DYE;
         };
     }
 
     String shards(long amount) {
-        return economy().map(e -> e.format(Currency.SHARDS, amount)).orElse(Format.number(amount));
+        return economy().map(e -> e.format(BlackMarketModule.CURRENCY, amount)).orElse(Format.number(amount));
     }
 
     String price(Currency currency, long amount) {

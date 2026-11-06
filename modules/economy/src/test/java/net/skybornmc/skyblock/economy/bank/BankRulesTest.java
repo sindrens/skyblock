@@ -113,14 +113,9 @@ class BankRulesTest {
     }
 
     @Test
-    void menuLayoutUsesEverySlotOnceInsideTheFrame() {
+    void menuLayoutIsOneCentredRowUnderTheBalance() {
         assertEquals(BankMenu.CONTENT.size(), BankMenu.CONTENT.stream().distinct().count());
-        for (int slot : BankMenu.CONTENT) {
-            int col = slot % 9;
-            assertTrue(slot > 8 && slot < 45 && col != 0 && col != 8, "slot " + slot);
-            for (int divider : BankMenu.DIVIDER) {
-                assertTrue(slot != divider, "slot " + slot + " is the divider");
-            }
-        }
-    }
-}
+        assertEquals(java.util.List.of(4, 20, 21, 22, 23, 24), BankMenu.CONTENT, "owner 3 Nov 2026: balance on top, five centred buttons");
+        assertEquals(11, BankMenu.SLOT_O_PERSONAL, "chest (personal) left");
+        assertEquals(15, BankMenu.SLOT_O_ISLAND, "ender chest (island) right");
+    }}

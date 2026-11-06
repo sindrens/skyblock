@@ -18,6 +18,7 @@ unlock:
     stay: 60
     fade-out: 15
   chat: "<prefix><c:success><sym:star></c:success> <c:text>Achievement: <name><c:value><tier></c:value> <c:muted>(+<points> pts)"
+  hover-goal: "<c:muted>Goal: <c:value><goal></c:value>"
   chat-done: "<prefix><c:success><sym:star></c:success> <c:text>Achievement done: <name><c:value><tier></c:value><c:text>! <c:muted>(+<points> pts)"
   more: "<prefix><c:text>And <c:value><count></c:value> more. See them in <click:run_command:'/achievements'><hover:show_text:'<c:text>Open /achievements'><c:action>[Achievements]</c:action></hover></click>"
   # Island achievements (AC3): shown to every online member of the island.

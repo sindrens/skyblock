@@ -125,6 +125,8 @@ final class Deliveries {
             case ENCHANT_BOOK, SCROLL -> m.core.services().has(EnchantService.class);
             case KEY -> m.core.services().has(CrateKeys.class);
             case SPAWNER -> m.core.services().has(StackingService.class);
+            case SELL_WAND, AUTOSELL_CHEST -> m.core.services().has(net.skybornmc.skyblock.common.sell.SellService.class);
+            case CHUNK_COLLECTOR -> m.core.services().has(StackingService.class);
             case TAG -> m.cosmetics().isPresent();
             default -> true;
         };
@@ -190,9 +192,11 @@ final class Deliveries {
         if (row.price() <= 0 || currency.isEmpty() || economy == null) {
             return;
         }
-        economy.execute(Transaction.deposit(AccountRef.player(row.profile()), currency.get(), row.price(), TxReason.BLACK_MARKET_REFUND)
-                .actor(Actor.system(BlackMarketModule.ID)).reference("bm:" + row.offerId()).idempotencyKey("bm_refund:" + row.id())
-                .detail("buy", row.id().toString())).whenCompleteAsync((result, error) -> {
+        // Credits come back as the halves the payment took (ledger key bm:<buy id>); never as more bought credits (C1).
+        net.skybornmc.skyblock.common.economy.CreditSpend.refund(economy,
+                Transaction.deposit(AccountRef.player(row.profile()), currency.get(), row.price(), TxReason.BLACK_MARKET_REFUND)
+                        .actor(Actor.system(BlackMarketModule.ID)).reference("bm:" + row.offerId()).idempotencyKey("bm_refund:" + row.id())
+                        .detail("buy", row.id().toString()), "bm:" + row.id()).whenCompleteAsync((result, error) -> {
             if (error != null || result == null || !(result.ok() || result.status() == net.skybornmc.skyblock.common.economy.TxResult.Status.DUPLICATE)) {
                 m.core.plugin().getLogger().warning("Black Market: the refund of buy " + row.id() + " failed; it stays 'failed' for staff");
                 return;
@@ -297,6 +301,33 @@ final class Deliveries {
             case SPAWNER -> {
                 StackingService s = m.core.services().optional(StackingService.class).orElseThrow();
                 return CompletableFuture.completedFuture(s.createSpawner(row.ref(), amount, origin).map(List::of).orElse(List.of()));
+            }
+            case SELL_WAND -> {
+                int uses;
+                try {
+                    uses = Math.max(1, Math.min(10_000, Integer.parseInt(row.ref())));
+                } catch (NumberFormatException e) {
+                    return CompletableFuture.completedFuture(List.of());
+                }
+                List<ItemStack> wands = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    wands.add(net.skybornmc.skyblock.common.sell.SellWand.create(m.core, uses));
+                }
+                return CompletableFuture.completedFuture(wands);
+            }
+            case CHUNK_COLLECTOR -> {
+                List<ItemStack> hoppers = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    hoppers.add(net.skybornmc.skyblock.common.stacking.ChunkCollectorItem.create(m.core));
+                }
+                return CompletableFuture.completedFuture(hoppers);
+            }
+            case AUTOSELL_CHEST -> {
+                List<ItemStack> chests = new ArrayList<>();
+                for (int i = 0; i < amount; i++) {
+                    chests.add(net.skybornmc.skyblock.common.sell.AutoSellChestItem.create(m.core));
+                }
+                return CompletableFuture.completedFuture(chests);
             }
             case ITEM -> {
                 Material mat = BlackMarketModule.material(row.ref());

@@ -33,7 +33,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 
 /**
- * The menu item (owner decision): a Nether Star with a red glint in hotbar slot 9, "Menu · Click".
+ * The menu item (owner decision): a plain vanilla Nether Star in hotbar slot 9, "Menu · Click".
  * Right- or left-click (also a tap on Bedrock) opens {@code /menu}. It always stays in the inventory (FIXES1): it can't
  * be dropped, moved, put in containers, crafted with or lost on death, and it is put back on join, respawn, world
  * change, game mode change, after closing any inventory and by a light check every {@code menu-item.check-seconds}.
@@ -84,17 +84,30 @@ final class MenuItem implements Listener {
         }
     }
 
+    /**
+     * The hotbar item (GUI-ICONS-FINAL, owner V3-Q7 a): the plain vanilla item of {@code menu-item.material} (default
+     * Nether Star) for everyone; no icon key and no custom model, so it never changes with the pack.
+     */
     ItemStack create(Player player) {
         Material material = Material.matchMaterial(config.menuItemMaterial);
-        ItemStack item = new ItemStack(material == null || !material.isItem() ? Material.NETHER_STAR : material);
+        Material base = material == null || !material.isItem() ? Material.NETHER_STAR : material;
+        ItemStack item = new ItemStack(base);
+        boolean glint = glint(config.menuItemGlint);
         item.editMeta(meta -> {
             meta.displayName(nav.text(player, "menu-item.name").decoration(TextDecoration.ITALIC, false));
             meta.lore(nav.lines(player, "menu-item.lore"));
-            meta.setEnchantmentGlintOverride(true);
+            if (glint) {
+                meta.setEnchantmentGlintOverride(true);
+            }
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
             meta.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
         });
         return item;
+    }
+
+    /** Whether the glint is forced (pure): only when {@code menu-item.glint} is configured true. */
+    static boolean glint(boolean configured) {
+        return configured;
     }
 
     /**
@@ -269,6 +282,12 @@ final class MenuItem implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldChange(PlayerChangedWorldEvent event) {
+        ensureLater(event.getPlayer());
+    }
+
+    /** The Depths has its own inventory (tools world-tools): the star goes into the new set too. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventorySwap(net.skybornmc.skyblock.common.player.InventorySwappedEvent event) {
         ensureLater(event.getPlayer());
     }
 

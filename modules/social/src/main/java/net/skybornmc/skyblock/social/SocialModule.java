@@ -101,6 +101,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     /** R3-32: who each account still in the tutorial messaged first (they may answer). */
     private final NewPlayerDms newPlayerDms = new NewPlayerDms();
     private SocialStore store;
+    private Friends friends;
     private Executor main;
     private Scheduler.Task afkTask;
     private volatile PlayerSettings settings;
@@ -133,6 +134,10 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerPlaceholders();
         registerCommands();
+        friends = new Friends(core, config, msg, main); // owner 4 Nov 2026: /friends
+        core.plugin().getServer().getPluginManager().registerEvents(friends, core.plugin());
+        friends.register();
+        friends.loadOnline();
         // ANS3 (owner answers 316/317): one ignore list for tpa, trades, island invites and chat.
         core.services().register(ID, IgnoreService.class, this);
         long now = System.currentTimeMillis();
@@ -154,10 +159,17 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         }
         service.register(new SettingToggle(ID, SETTING_PMS, SettingCategory.CHAT, Material.WRITABLE_BOOK, true, null,
                 "navigation", "settings.toggles." + SETTING_PMS, false));
-        service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
-                "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        if (config.afkBroadcast) { // off (owner 3 Nov 2026): no announcements, so no switch that does nothing
+            service.register(new SettingToggle(ID, SETTING_AFK_BROADCAST, SettingCategory.SOCIAL, Material.RED_BED, true, null,
+                    "navigation", "settings.toggles." + SETTING_AFK_BROADCAST, false));
+        }
         service.register(new SettingToggle(ID, SETTING_HIDE_IGNORED, SettingCategory.CHAT, Material.GRAY_DYE,
                 config.hideIgnoredChatDefault, null, ID, "settings." + SETTING_HIDE_IGNORED, false));
+        service.register(new SettingToggle(ID, Friends.SETTING_NOTICES, SettingCategory.SOCIAL, Material.PLAYER_HEAD, true, null,
+                ID, "settings." + Friends.SETTING_NOTICES, false));
+        if (friends != null) {
+            friends.settings(service);
+        }
         settings = service;
     }
 
@@ -184,6 +196,9 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
             afkTask.cancel();
         }
         HandlerList.unregisterAll(this);
+        if (friends != null) {
+            HandlerList.unregisterAll(friends);
+        }
     }
 
     // ================================================================== commands
@@ -415,7 +430,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     // ================================================================== private messages
 
     private void sendDm(CommandSender sender, CommandSender target, String typed) {
-        String text = net.skybornmc.skyblock.common.pack.PrivateUse.strip(typed); // must-have 5: no pack glyphs from players
+        String text = net.skybornmc.skyblock.common.text.PrivateUse.strip(typed); // must-have 5: no pack glyphs from players
         if (target.equals(sender)) {
             throw fail("dm.self");
         }
@@ -522,13 +537,11 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
     }
 
     /**
-     * R3-32: true while the account has not finished the tutorial (common TutorialService). Unknown (no tutorial module,
-     * state not loaded) counts as finished, so old players are never cut off.
+     * R3-32: true while the account had not finished the join tutorial. The tutorial was replaced by the start guide
+     * (owner 3 Nov 2026), so nobody counts as "in the tutorial" any more and the new-player DM protection is inert.
      */
     private boolean inTutorial(Player player) {
-        return core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                .flatMap(t -> t.state(player.getUniqueId()))
-                .map(state -> !state.complete()).orElse(false);
+        return false;
     }
 
     private void reply(CommandSender sender, String text) {
@@ -785,10 +798,12 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
         record Entry(Player player, String group, String display, int weight, net.kyori.adventure.text.format.TextColor color) {
         }
         List<Entry> visible = new ArrayList<>();
+        var badges = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class);
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!hiddenFrom(p, sender)) {
+                // Ranks V2: names in the name colour (white), the group heading keeps the rank word.
                 visible.add(new Entry(p, core.ranks().primaryGroup(p), core.ranks().groupDisplayName(p), core.ranks().weight(p),
-                        core.ranks().rankColor(p)));
+                        badges.flatMap(b -> b.nameColor(p)).orElse(core.ranks().rankColor(p))));
             }
         }
         msg.send(sender, "list.header", Msg.number("online", visible.size()), Msg.number("max", Bukkit.getMaxPlayers()));
@@ -808,8 +823,7 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                         + e.player().getName() + "'><" + color + ">" + e.player().getName() + "</" + color + "></hover></click>"
                         + afkTag);
             }
-            var badge = core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
-                    .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled);
+            var badge = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class);
             msg.send(sender, "list.group", badge.isPresent() ? Msg.c("rank", badge.get().badge(first.player(), sender))
                             : Msg.mm("rank", "<" + color + ">" + escape(first.display()) + "</" + color + ">"),
                     Msg.number("count", entries.size()), Msg.mm("players", String.join("<c:muted>, </c:muted>", names)));

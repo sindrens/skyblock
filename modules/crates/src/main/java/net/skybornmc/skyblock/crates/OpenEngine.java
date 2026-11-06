@@ -45,7 +45,7 @@ final class OpenEngine {
     /** The ledger deposits of a batch: one per currency with an amount above 0. */
     static List<Transaction> transactions(OpenPlan.Plan plan, UUID profile, Actor actor) {
         List<Transaction> out = new ArrayList<>();
-        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS, Currency.SHARDS)) {
+        for (Currency currency : List.of(Currency.MONEY, Currency.CRYSTALS)) { // ECON-SHARDS: no shard rewards
             long total = plan.total(currency);
             if (total <= 0) {
                 continue;

@@ -17,13 +17,13 @@ class PlaceRulesTest {
     private static final PlaceRules.Settings S = PlaceRules.Settings.of(new HudConfig(), p -> {
         throw new AssertionError(p);
     });
-    private static final Set<String> ALL = Set.of("default", "island", "island-visit", "depths", "depths-gate",
-            "depths-forest", "depths-combat", "spawn", "warzone");
+    private static final Set<String> ALL = Set.of("default", "island", "island-visit", "grind", "grind-farm", "grind-mine", "spawn", "warzone");
+
 
     @Test
     void placeFollowsTheWorld() {
         assertEquals(Place.SPAWN, PlaceRules.place(S, "spawn", false, IslandHere.NONE));
-        assertEquals(Place.DEPTHS, PlaceRules.place(S, "depths", false, IslandHere.NONE));
+        assertEquals(Place.DEPTHS, PlaceRules.place(S, "grind", false, IslandHere.NONE));
         assertEquals(Place.WARZONE, PlaceRules.place(S, "warzone", false, IslandHere.NONE));
         assertEquals(Place.OTHER, PlaceRules.place(S, "outposts", false, IslandHere.NONE));
         assertEquals(Place.OTHER, PlaceRules.place(S, null, false, IslandHere.NONE));
@@ -51,21 +51,20 @@ class PlaceRulesTest {
     }
 
     @Test
-    void depthsVariantsByZone() {
+    void grindVariantsByArea() {
+        // Owner 4 Nov 2026: the Depths place became /farm and /mine (world grind) with a board per area.
         Predicate<String> all = ALL::contains;
-        assertEquals("depths-gate", PlaceRules.layout(S, Place.DEPTHS, "depths", "The Gate", all));
-        assertEquals("depths-forest", PlaceRules.layout(S, Place.DEPTHS, "depths", "✦ Forest · Tier 2", all));
-        assertEquals("depths-combat", PlaceRules.layout(S, Place.DEPTHS, "depths", "combat · tier 1", all));
-        assertEquals("depths", PlaceRules.layout(S, Place.DEPTHS, "depths", "Mine · Tier 3", all));
-        assertEquals("depths", PlaceRules.layout(S, Place.DEPTHS, "depths", "-", all), "causeways: base layout");
-        assertEquals("depths", PlaceRules.layout(S, Place.DEPTHS, "depths", null, all));
+        assertEquals("grind-farm", PlaceRules.layout(S, Place.DEPTHS, "grind", "Farm", all));
+        assertEquals("grind-mine", PlaceRules.layout(S, Place.DEPTHS, "grind", "Mine", all));
+        assertEquals("grind", PlaceRules.layout(S, Place.DEPTHS, "grind", "", all), "between the areas: base layout");
+        assertEquals("grind", PlaceRules.layout(S, Place.DEPTHS, "grind", null, all));
     }
 
     @Test
     void missingLayoutsFallBack() {
-        Predicate<String> few = Set.of("default", "island", "depths")::contains;
+        Predicate<String> few = Set.of("default", "island", "grind")::contains;
         assertEquals("island", PlaceRules.layout(S, Place.ISLAND_VISIT, "islands", null, few), "visit falls back to own island");
-        assertEquals("depths", PlaceRules.layout(S, Place.DEPTHS, "depths", "The Gate", few), "variant falls back to depths");
+        assertEquals("grind", PlaceRules.layout(S, Place.DEPTHS, "grind", "Farm", few), "variant falls back to the place layout");
         assertEquals("default", PlaceRules.layout(S, Place.SPAWN, "spawn", null, few));
         assertEquals("default", PlaceRules.layout(S, Place.WARZONE, "warzone", null, Set.of("default")::contains));
         // UX1 world-named layout still works for places without their own layout.

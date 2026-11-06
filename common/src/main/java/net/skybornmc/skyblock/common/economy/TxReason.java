@@ -32,7 +32,17 @@ public final class TxReason {
     /** Staff made a money note out of nothing ({@code /eco note}); audit action only, the money moves on redeem. */
     public static final String ADMIN_NOTE = "admin_note";
     public static final String START_BALANCE = "start_balance";
+    /** Staff created currency ({@code /eco give}); for credits only earned credits (C1-R2-02). */
     public static final String ADMIN_GIVE = "admin_give";
+    /**
+     * The owner created <b>bought</b> credits by hand ({@code /eco give|set credits}, node
+     * {@code skyblock.economy.credits.grant}, C1-R1-18 / C1-R2-02).
+     */
+    public static final String ADMIN_BUY = "admin_buy";
+    /** Bought credits from a Tebex store purchase (console-only {@code /credit grant}, C1-R1-17, CREDIT-SHOP 5.2). */
+    public static final String STORE_GRANT = "store_grant";
+    /** Bought credits taken back after a Tebex chargeback or refund ({@code /credit chargeback}, CREDIT-SHOP 5.3). */
+    public static final String STORE_CHARGEBACK = "store_chargeback";
     public static final String ADMIN_TAKE = "admin_take";
     public static final String ADMIN_SET = "admin_set";
     public static final String ADMIN_RESET = "admin_reset";
@@ -49,11 +59,30 @@ public final class TxReason {
     /** Money, crystals and shards from crate opens (PHASE-10 M10.1); a source on the economy dashboard (M10.13). */
     public static final String CRATE_REWARD = "crate_reward";
 
-    /** The gem a player's thanks gives the starter of a global booster (PHASE-10 M10.2, RW2); new gems. */
+    /** Crystals paid for an island tool tier-up or upgrade (Complete Developer Spec T7); a sink. */
+    public static final String ISLAND_TOOL_UPGRADE = "island_tool_upgrade";
+
+    /** Owner 3 Nov 2026: shards found while grinding with an island tool (and its Shard Finder upgrade); batched. */
+    public static final String ISLAND_TOOL_SHARD = "island_tool_shard";
+
+    /**
+     * Owner 4 Nov 2026: an island tool was prestiged, so every member's shards of that tool's type are taken (Farming Shards
+     * for the hoe, Mining Shards for the pickaxe); a sink, in the same transaction as the prestige.
+     */
+    public static final String ISLAND_TOOL_PRESTIGE = "island_tool_prestige";
+
+    /** Credits paid for an Eclipse key (owner F6/V5: the Eclipse credits purchase); a sink. */
+    public static final String CRATE_KEY_PURCHASE = "crate_key_purchase";
+
+    /** The credit a player's thanks gives the starter of a global booster (PHASE-10 M10.2, RW2); new earned credits. */
     public static final String BOOSTER_THANKS = "booster_thanks";
 
-    /** Money, crystals and gems from the daily calendar and its streak (PHASE-10 M10.6); new currency. */
+    /** Money, crystals and earned credits from the daily calendar and its streak (PHASE-10 M10.6); new currency. */
     public static final String DAILY_REWARD = "daily_reward";
+    /** Weekly Reward claim (Reward Core, Complete Developer Spec §6). */
+    public static final String WEEKLY_REWARD = "weekly_reward";
+    /** Monthly Reward claim (Reward Core, Complete Developer Spec §6). */
+    public static final String MONTHLY_REWARD = "monthly_reward";
 
     /** Crystals from active playtime (PHASE-10 M10.6, R6); new currency. */
     public static final String PLAYTIME_REWARD = "playtime_reward";
@@ -63,11 +92,21 @@ public final class TxReason {
 
     /** Money and crystals from battle pass tiers (PHASE-10 M10.8); new currency. */
     public static final String PASS_REWARD = "pass_reward";
-    /** Shards (or gems for an Island Charter) paid at the Black Market (PHASE-10 M10.11); a sink. */
+    /** Shards (or credits for an Island Charter) paid at the Black Market (PHASE-10 M10.11); a sink. */
     public static final String BLACK_MARKET = "black_market";
 
     /** A Black Market price given back because the bought item could not be handed out (PHASE-10 M10.11). */
     public static final String BLACK_MARKET_REFUND = "black_market_refund";
+
+    /**
+     * ECON-SHARDS: a shard paid for breaking a shard block. Owner 3 Nov 2026: island tools also find shards
+     * ({@link #ISLAND_TOOL_SHARD}); before that this was the ONLY shard income (owner 1 Nov 2026:
+     * "shards only from blocks, no other rewards"); every other shard deposit is staff ({@code admin_*}) or a refund.
+     */
+    public static final String SHARD_BLOCK = "shard_block";
+
+    /** ECON-SHARDS: crystals or shards paid for a shard block upgrade (a sink). */
+    public static final String SHARD_BLOCK_UPGRADE = "shardblk_upgrade";
 
     private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
 

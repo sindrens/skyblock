@@ -16,9 +16,15 @@ import java.util.UUID;
 
 /**
  * Tool menu → Skins: every skin that fits this tool type. Owned skins apply with a click (cosmetic only: name, and the
- * resource-pack model on Java); others show where they come from. The collection is kept across seasons.
+ * item model on Java when the skin sets one); others show where they come from. The collection is kept across seasons.
  */
 final class SkinsMenu extends PagedMenu<ToolCatalog.SkinDef> {
+
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
 
     static final int SLOT_REMOVE = 4;
 

@@ -45,7 +45,7 @@ final class BoosterStore {
     record GlobalStart(BoosterRules.Outcome outcome, GlobalRow row, int queuedBefore) {
     }
 
-    /** A thanks whose gem is not paid yet. */
+    /** A thanks whose credit (column gem_state, kept from before the rename) is not paid yet. */
     record UnpaidThanks(long globalId, UUID thanker, UUID starterProfile) {
     }
 
@@ -286,7 +286,7 @@ final class BoosterStore {
      * Stores a thanks. Returns the gem state ({@link #GEM_PENDING} = pay the gem now, {@link #GEM_NONE} = no gem), or -1
      * when this player already thanked this booster.
      *
-     * @param maxGems most gems one booster pays its starter (0 = no limit)
+     * @param maxGems most credits one booster pays its starter (0 = no limit)
      */
     static int thank(Connection c, long globalId, UUID thanker, boolean gem, int maxGems, long now) throws SQLException {
         if (Sql.queryOne(c, "SELECT gem_state FROM booster_thanks WHERE global_id = ? AND thanker_uuid = ?", rs -> rs.getInt(1),
@@ -317,7 +317,7 @@ final class BoosterStore {
         Sql.update(c, "UPDATE booster_thanks SET gem_state = ? WHERE global_id = ? AND thanker_uuid = ?", GEM_PAID, globalId, thanker);
     }
 
-    /** Thanks whose gem was not paid (a crash or an economy error); paid again at start-up with the same idempotency key. */
+    /** Thanks whose credit was not paid (a crash or an economy error); paid again at start-up with the same idempotency key. */
     static List<UnpaidThanks> unpaid(Connection c, int limit) throws SQLException {
         return Sql.query(c, "SELECT t.global_id, t.thanker_uuid, g.starter_profile FROM booster_thanks t JOIN booster_global g "
                         + "ON g.global_id = t.global_id WHERE t.gem_state = ? ORDER BY t.thanked_at LIMIT " + Math.max(1, limit),

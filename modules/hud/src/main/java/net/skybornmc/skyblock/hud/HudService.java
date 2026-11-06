@@ -3,6 +3,7 @@ package net.skybornmc.skyblock.hud;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
+import net.skybornmc.skyblock.common.hud.BoardTimers;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -50,6 +51,8 @@ import java.util.function.Supplier;
 public final class HudService implements Listener {
 
     static final String MODULE = "hud";
+    /** The built-in {@code <objective>} tag and {@code if:objective} condition: the shared next step (plan 4 Nov C §2). */
+    static final String OBJECTIVE = "objective";
     /** The {@code /settings} toggle (F1): off hides the sidebar, right away. Stored as {@code setting.scoreboard}. */
     public static final String SETTING = "scoreboard";
     /** Profile key of the value from before F1 ({@code "off"} hid the sidebar); moved to the toggle on join. */
@@ -61,6 +64,7 @@ public final class HudService implements Listener {
 
     private final Core core;
     private final HudConfig config;
+    private final BoardTimers timers;
     private final Map<UUID, Sidebar> sidebars = new ConcurrentHashMap<>();
     private final List<LayoutRule> rules = new CopyOnWriteArrayList<>();
     /** Players whose board switches on the next tick (teleport, respawn). */
@@ -72,9 +76,10 @@ public final class HudService implements Listener {
     private BukkitTask task;
     private long tick;
 
-    HudService(Core core, HudConfig config) {
+    HudService(Core core, HudConfig config, BoardTimers timers) {
         this.core = core;
         this.config = config;
+        this.timers = timers;
         reloaded();
     }
 
@@ -283,11 +288,16 @@ public final class HudService implements Listener {
     private void render(Player player, Sidebar sidebar) {
         Choice choice = choose(player);
         String layout = choice.layout();
-        TagResolver values = values(player, choice);
+        LayoutLines parsed = lines(layout);
+        // The timer is resolved once per refresh, and only on layouts that show it (BoardTimers contract).
+        Optional<BoardTimers.Timer> timer = parsed.usesTimer() ? timers.soonest(player) : Optional.empty();
+        TagResolver values = values(player, choice, timer);
         String title = core.messages().raw(MODULE, "scoreboard." + layout + ".title");
         sidebar.title(title == null ? Component.empty() : core.messages().parse(player, title, values));
-        List<LayoutLines.Line> visible = lines(layout).visible(
-                key -> LayoutLines.present(core.placeholders().text(player, key).orElse(null)), config.maxLines);
+        LayoutLines.Rules boardRules = new LayoutLines.Rules(config.maxLines, config.sectionRows, config.blankUnderTitleMaxLines, config.sectionGaps);
+        List<LayoutLines.Line> visible = parsed.visible(key -> LayoutLines.TIMER_KEY.equals(key) ? timer.isPresent()
+                : objectiveCondition(key) ? nextStep(player).isPresent()
+                : LayoutLines.present(core.placeholders().text(player, key).orElse(null)), boardRules);
         List<Component> lines = new ArrayList<>(visible.size());
         for (LayoutLines.Line line : visible) {
             lines.add(line.blank() ? Component.empty() : core.messages().parse(player, line.text(), values));
@@ -296,31 +306,71 @@ public final class HudService implements Listener {
     }
 
     /**
-     * Built-in values: name, rank, money, crystals, gems, island, island_here, objective, online. "-" when a feature
+     * Built-in values: name, rank, money, crystals, credits, island, island_here, objective, online. "-" when a feature
      * isn't there yet. Values are computed only when the layout uses them (online counts every player, so it is only
-     * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}.
+     * worked out on boards that show it). {@code <tokens>} is a deprecated alias of {@code <crystals>}, {@code <gems>} of
+     * {@code <credits>} (C1-R1-03).
+     *
+     * <p>G7-R1-01 built-ins: {@code <progress:key>} (the placeholder as a percent, as dots), {@code <plain:key>} (the
+     * placeholder's plain text, never parsed, so it takes the colour around it) and {@code <timer>} (the soonest
+     * {@link BoardTimers} timer). All lazy.</p>
      */
-    private TagResolver values(Player player, Choice choice) {
+    private TagResolver values(Player player, Choice choice, Optional<BoardTimers.Timer> timer) {
         var ranks = core.ranks();
         var color = ranks.rankColor(player);
+        var nameColor = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
+                .flatMap(b -> b.nameColor(player)).orElse(color);
         return TagResolver.resolver(
-                Msg.c("name", Component.text(player.getName(), color)),
+                Msg.c("name", Component.text(player.getName(), nameColor)),
                 Msg.c("rank", rankComponent(player, color)),
                 lazy("money", () -> value(player, config.moneyKey, "values.money")),
                 lazy("crystals", () -> value(player, config.crystalsKey, "values.crystals")),
                 lazy("tokens", () -> value(player, config.crystalsKey, "values.crystals")),
-                lazy("gems", () -> value(player, config.gemsKey, "values.gems")),
+                lazy("credits", () -> value(player, config.creditsKey, "values.credits")),
+                lazy("gems", () -> value(player, config.creditsKey, "values.credits")),
                 lazy("island", () -> island(player)),
                 lazy("island_here", () -> choice.islandHere() == null || choice.islandHere().isBlank() ? dash(player)
                         : core.messages().component(player, MODULE, "values.island-here", Msg.p("value", choice.islandHere()))),
                 lazy("objective", () -> objective(player)),
-                lazy("online", () -> Component.text(online(player))));
+                lazy("online", () -> Component.text(online(player))),
+                TagResolver.resolver("progress", (args, ctx) -> Tag.selfClosingInserting(progress(player, args.popOr("progress needs a placeholder key").value()))),
+                TagResolver.resolver("plain", (args, ctx) -> Tag.selfClosingInserting(plainValue(text(player, args.popOr("plain needs a placeholder key").value()).orElse(null)))),
+                lazy("timer", () -> timer.map(t -> core.messages().component(player, MODULE, "values.timer",
+                        Msg.c("label", t.label()), Msg.p("time", TimerText.format(t.remainingMillis())))).orElse(Component.empty())));
     }
 
-    /** The rank badge for this player's own sidebar (pack font, simple or Bedrock text), or the plain colored rank name. */
+    /** The dots of a progress line: filled part, empty part and the percent. */
+    record ProgressParts(String filled, String empty, int percent) {
+    }
+
+    /** Pure: a placeholder value as progress dots, or empty when it is not a number ({@link ProgressBar}). */
+    static Optional<ProgressParts> progressParts(String value, int length, String filledDot, String emptyDot) {
+        java.util.OptionalInt percent = ProgressBar.percent(value);
+        if (percent.isEmpty()) {
+            return Optional.empty();
+        }
+        int filled = ProgressBar.filled(percent.getAsInt(), length);
+        return Optional.of(new ProgressParts(ProgressBar.repeat(filledDot, filled), ProgressBar.repeat(emptyDot, length - filled), percent.getAsInt()));
+    }
+
+    /** Pure: a placeholder's plain text as a text component (never parsed as MiniMessage); empty for no value. */
+    static Component plainValue(String value) {
+        return value == null || value.isBlank() ? Component.empty() : Component.text(value);
+    }
+
+    private Component progress(Player player, String key) {
+        String filledDot = core.messages().raw(MODULE, "values.progress-filled");
+        String emptyDot = core.messages().raw(MODULE, "values.progress-empty");
+        return progressParts(text(player, key).orElse(null), config.progressLength,
+                filledDot == null ? "●" : filledDot, emptyDot == null ? "●" : emptyDot)
+                .map(parts -> core.messages().component(player, MODULE, "values.progress", Msg.p("filled", parts.filled()),
+                        Msg.p("empty", parts.empty()), Msg.p("percent", String.valueOf(parts.percent()))))
+                .orElseGet(() -> dash(player));
+    }
+
+    /** The rank badge for this player's own sidebar ([Name] text, Java or Bedrock form), or the plain colored rank name. */
     private Component rankComponent(Player player, net.kyori.adventure.text.format.TextColor color) {
-        return core.services().optional(net.skybornmc.skyblock.common.pack.BadgeService.class)
-                .filter(net.skybornmc.skyblock.common.pack.BadgeService::enabled)
+        return core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
                 .map(b -> b.badge(player, player))
                 .orElseGet(() -> Component.text(core.ranks().groupDisplayName(player), color));
     }
@@ -358,8 +408,23 @@ public final class HudService implements Listener {
                 : core.messages().component(player, MODULE, "values.island-no-rank", Msg.p("level", level.get()));
     }
 
+    /** {@code if:objective} (and the configured objective key) follow the shared next step (plan 4 Nov C §2). */
+    private boolean objectiveCondition(String key) {
+        return OBJECTIVE.equals(key) || key.equals(config.objectiveKey);
+    }
+
+    /**
+     * The {@code Next:} text: the shared next step ({@link net.skybornmc.skyblock.common.nextstep.NextStepService}, the
+     * same as Kindle and /help), else the objective placeholder ({@code hud.yml → values.objective}).
+     */
+    private Optional<String> nextStep(Player player) {
+        Optional<String> step = net.skybornmc.skyblock.common.nextstep.NextStepService.of(core.services()).current(player)
+                .map(net.skybornmc.skyblock.common.nextstep.NextStep::text);
+        return step.isPresent() ? step : text(player, config.objectiveKey);
+    }
+
     private Component objective(Player player) {
-        return text(player, config.objectiveKey)
+        return nextStep(player)
                 .map(v -> core.messages().component(player, MODULE, "values.objective", Msg.p("value", v)))
                 .orElseGet(() -> core.messages().fixed(player, MODULE, "values.objective-default"));
     }

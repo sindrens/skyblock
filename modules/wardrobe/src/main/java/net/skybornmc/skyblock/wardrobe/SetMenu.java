@@ -105,7 +105,7 @@ final class SetMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Session s = session();
         WardrobeMenus m = module.menus();
         Optional<WardrobeStore.Entry> entry = entry();

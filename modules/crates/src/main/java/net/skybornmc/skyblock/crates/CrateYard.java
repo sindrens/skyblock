@@ -30,11 +30,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
-import org.bukkit.block.data.Directional;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -78,8 +74,7 @@ final class CrateYard implements Listener {
     private Map<String, Map<Long, List<Pedestals.Pedestal>>> byChunk = Map.of();
     private Map<String, Map<Long, Pedestals.Pedestal>> byBlock = Map.of();
     private final Map<String, TextDisplay> holograms = new HashMap<>();
-    /** Custom crate models for pack viewers (lid animation) and the ambience task (dust, approach chime). */
-    private final CrateDisplays displays;
+    /** The ambience task (dust, approach chime). */
     private final CrateYardFx fx;
     private final Map<String, Show> shows = new HashMap<>();
     private final Set<String> warned = new HashSet<>();
@@ -122,15 +117,13 @@ final class CrateYard implements Listener {
             if (hologram != null && hologram.isValid()) {
                 hologram.setVisibleByDefault(true);
             }
-            displays.close(pedestal.crateId());
         }
     }
 
     CrateYard(CratesModule module) {
         this.m = module;
         this.crateKey = new NamespacedKey(module.core.plugin(), "crate_yard");
-        this.displays = new CrateDisplays(module, this::tag);
-        this.fx = new CrateYardFx(module, () -> pedestals, this::color, displays);
+        this.fx = new CrateYardFx(module, () -> pedestals, this::color);
         this.loader = new LatestLoad<>(r -> module.core.scheduler().async(r),
                 r -> module.core.scheduler().main("crates:yard-apply", r));
     }
@@ -221,7 +214,6 @@ final class CrateYard implements Listener {
         shows.clear();
         holograms.values().forEach(Entity::remove);
         holograms.clear();
-        displays.removeAll();
         plan = YardPlan.empty();
         byChunk = Map.of();
         byBlock = Map.of();
@@ -296,7 +288,6 @@ final class CrateYard implements Listener {
         }
         placeBlock(w, p);
         placeHologram(w, p);
-        placeDisplays(w, p);
         return true;
     }
 
@@ -381,28 +372,6 @@ final class CrateYard implements Listener {
         }
     }
 
-    /** The custom model of a crate for pack viewers, facing the walkway (see {@link #facing}). */
-    private void placeDisplays(World w, Pedestals.Pedestal p) {
-        if (!m.settings.displaysEnabled) {
-            displays.remove(p.crateId());
-            return;
-        }
-        YardPlan.Look look = look(p.crateId());
-        displays.place(w, p, facing(p.crateId(), look == null ? null : look.data()));
-    }
-
-    /** Yaw the crate model faces: its displays.facings line, else the facing of its block, else displays.default-facing. */
-    private float facing(String crateId, BlockData data) {
-        Float yaw = CrateHinge.yaw(PhysicalCrates.mapping(m.settings.displayFacings).get(crateId));
-        if (yaw == null && data instanceof Directional d) {
-            yaw = CrateHinge.yaw(d.getFacing().name());
-        }
-        if (yaw == null) {
-            yaw = CrateHinge.yaw(m.settings.displayDefaultFacing);
-        }
-        return yaw == null ? 0f : yaw;
-    }
-
     void tag(Entity e, Pedestals.Pedestal p) {
         e.setPersistent(false);
         e.addScoreboardTag(TAG);
@@ -411,7 +380,7 @@ final class CrateYard implements Listener {
 
     /** True for one of the entities this run placed. */
     private boolean owned(Entity e) {
-        if (holograms.containsValue(e) || displays.owns(e)) {
+        if (holograms.containsValue(e)) {
             return true;
         }
         for (Show s : shows.values()) {
@@ -472,42 +441,12 @@ final class CrateYard implements Listener {
             if (hologram != null) {
                 hologram.remove();
             }
-            displays.remove(p.crateId());
         }
-    }
-
-    // ================================================================== pack viewers
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPackStatus(PlayerResourcePackStatusEvent event) {
-        Player player = event.getPlayer();
-        // The pack module records the status in its own listener: look one tick later.
-        m.core.scheduler().later("crates:yard-pack", 2, () -> {
-            if (player.isOnline()) {
-                displays.sync(player);
-            }
-        });
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        m.core.scheduler().later("crates:yard-join", 20, () -> {
-            if (player.isOnline()) {
-                displays.sync(player);
-            }
-        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
-        displays.quit(event.getPlayer());
         fx.quit(event.getPlayer());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onChunkSent(PlayerChunkLoadEvent event) {
-        displays.chunkSent(event.getPlayer(), event.getChunk().getX(), event.getChunk().getZ());
     }
 
     private List<Pedestals.Pedestal> here(World world, Chunk chunk) {
@@ -603,7 +542,6 @@ final class CrateYard implements Listener {
         }
         Show show = new Show(pedestal);
         shows.put(pedestal.crateId(), show);
-        displays.open(pedestal.crateId(), !fast && m.settings.buildTicks > 0);
         Location center = new Location(w, pedestal.x() + 0.5, pedestal.y() + 1.0, pedestal.z() + 0.5);
         String name = player.getName();
         int build = fast ? 0 : m.settings.buildTicks;

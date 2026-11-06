@@ -23,14 +23,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * {@code /achievements} (owner 356, RTA-37): one 6-row menu with three tabs in the top row (taps only, Bedrock-safe).
+ * {@code /achievements} (owner 356, RTA-37): one menu with three tabs in the top row (taps only, Bedrock-safe). 5 rows
+ * (menu layout pass, owner 2 Nov 2026 "smaller GUIs, no empty slots"); 6 only when achievements.yml puts a category on
+ * the 6-row slots 37-43.
  * <pre>
- *  R O B [P][I][H] B O R      tabs: Personal, Island, History (the open one glows)
- *  B . . . S . . . B          S = summary (13)
- *  B . C C C C C . B          C = personal categories (slots from achievements.yml) / island boosts + achievements
- *  B . . . C . . . B
- *  B . . . . . . . B
- *  ← O B ? ✘ H B O →
+ *  . . . [P][I][H] . . .      tabs: Personal, Island, History (the open one glows)
+ *  . . . . S . . . .          S = summary (13)
+ *  . . C C C C C . .          C = personal categories (slots from achievements.yml) / island boosts + achievements
+ *  . . . . C . . . .
+ *  ← . . . ✘ . . . .
  * </pre>
  * Personal: one item per category with "points x / boost y% of cap z%". Island: island points, the four island boosts,
  * the island achievements list and the members' top 5. History: one item per finished season. Refreshes every 2 s.
@@ -45,7 +46,7 @@ final class AchievementsMenu extends Menu {
     static final int SLOT_ISLAND_LIST = 22;
     static final int SLOT_TOP = 31;
     static final int[] BOOST_SLOTS = {20, 21, 23, 24};
-    /** History seasons: the three lower content rows. */
+    /** History seasons: the content rows below the summary (the last row only on 6-row menus). */
     static final int[] HISTORY_SLOTS = {19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43};
 
     private final AchievementsModule module;
@@ -61,7 +62,12 @@ final class AchievementsMenu extends Menu {
 
     @Override
     public int rows() {
-        return 6;
+        return rowsFor(module.registry().categories().stream().mapToInt(Category::slot).max().orElse(0));
+    }
+
+    /** 5 rows, or 6 when a category sits on the 6-row slots (37-43). Pure. */
+    static int rowsFor(int highestCategorySlot) {
+        return highestCategorySlot >= 36 ? 6 : 5;
     }
 
     @Override
@@ -101,7 +107,7 @@ final class AchievementsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         tabs();
         switch (tab) {
             case PERSONAL -> personal();
@@ -316,7 +322,8 @@ final class AchievementsMenu extends Menu {
             return;
         }
         Map<UUID, String> names = profileNames();
-        for (int i = 0; i < history.size() && i < HISTORY_SLOTS.length; i++) {
+        int limit = (rows() - 1) * 9;
+        for (int i = 0; i < history.size() && i < HISTORY_SLOTS.length && HISTORY_SLOTS[i] < limit; i++) {
             set(HISTORY_SLOTS[i], seasonItem(history.get(i), names));
         }
     }

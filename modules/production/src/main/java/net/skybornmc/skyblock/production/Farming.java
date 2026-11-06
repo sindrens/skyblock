@@ -316,7 +316,8 @@ final class Farming implements FarmingService {
             m.core.services().optional(SkillService.class).ifPresent(sk -> sk.addXp(player, SkillType.FARMING, xp, SOURCE));
         }
         if (FarmingRules.countsForQuests(h)) {
-            Bukkit.getPluginManager().callEvent(new GameActionEvent(player, GameActionEvent.HARVEST_CROP, count));
+            // Target = the crop block (WHEAT, CARROTS ...): milestone chains count per crop (Complete Developer Spec §7.6).
+            Bukkit.getPluginManager().callEvent(new GameActionEvent(player, GameActionEvent.HARVEST_CROP, count, block.getType().name()));
         }
     }
 

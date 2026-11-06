@@ -52,8 +52,16 @@ final class SellMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
-        set(SLOT_ITEM, ItemCodec.display(expected));
+        navBar();
+        ItemStack itemTile = ItemCodec.display(expected);
+        java.util.OptionalDouble typical = module.typicalPrice(expected);
+        if (typical.isPresent()) {
+            List<Component> lore = new java.util.ArrayList<>(itemTile.lore() == null ? List.of() : itemTile.lore());
+            lore.add(Component.empty());
+            lore.add(service.text(viewer, AuctionModule.ID, "sell.typical", module.typicalTag(viewer, typical.getAsDouble())));
+            itemTile.lore(lore);
+        }
+        set(SLOT_ITEM, itemTile);
         List<String> durations = Pricing.durations(module.config);
         int shown = Math.min(durations.size(), SLOT_CANCEL - FIRST_DURATION);
         TagResolver[] money = {module.moneyTag("price", viewer, price), module.moneyTag("fee", viewer, Pricing.fee(module.config, price)),
@@ -73,9 +81,12 @@ final class SellMenu extends Menu {
                 if (used) {
                     return;
                 }
+                if (!module.farPriceOk(viewer, expected, price)) {
+                    return; // C5: far from the typical price; the next click lists it
+                }
                 used = true;
                 viewer.closeInventory();
-                module.startListing(viewer, slot, expected, price, key);
+                module.startListing(viewer, slot, expected, price, key, true);
             });
         }
         set(SLOT_CANCEL, service.item(Material.RED_CONCRETE, viewer, "confirm.no"), click -> {

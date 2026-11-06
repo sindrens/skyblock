@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_booster_crystals",
+     "type": "minecraft:model"
+    },
+    "when": "item/booster_crystals"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/prismarine_crystals",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

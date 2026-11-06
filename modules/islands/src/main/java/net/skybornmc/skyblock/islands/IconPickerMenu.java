@@ -12,6 +12,12 @@ import java.util.List;
 /** Picks a warp icon from {@code warps.icons} (M2.4). One click sets it and goes back to the warp. */
 final class IconPickerMenu extends PagedMenu<Material> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final IslandsModule module;
     private final IslandManager islands;
     private final WarpManager warps;

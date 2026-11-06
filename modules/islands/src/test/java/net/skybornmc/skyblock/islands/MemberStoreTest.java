@@ -95,11 +95,18 @@ class MemberStoreTest {
     void refusedInviteDoesNotConvert() {
         UUID leader = UUID.randomUUID();
         UUID id = island(leader);
-        UUID other = UUID.randomUUID();
-        island(other);
-        assertInstanceOf(MemberStore.InviteResult.HasIsland.class, invite(id, leader, other));
         assertInstanceOf(MemberStore.InviteResult.AlreadyMember.class, invite(id, leader, leader));
         assertEquals("solo", type(id), "nothing was sent, the island stays solo");
+    }
+
+    @Test
+    void aPlayerAloneOnTheirIslandCanStillBeInvited() {
+        UUID leader = UUID.randomUUID();
+        UUID id = island(leader);
+        UUID other = UUID.randomUUID();
+        island(other);
+        assertFalse(invite(id, leader, other) instanceof MemberStore.InviteResult.HasIsland,
+                "feedback 3 Nov 2026: accepting asks them to replace their solo island");
     }
 
     @Test

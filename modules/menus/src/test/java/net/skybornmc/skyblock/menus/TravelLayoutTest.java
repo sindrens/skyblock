@@ -52,23 +52,21 @@ class TravelLayoutTest {
     @Test
     void reasonsMapToTeleportReasons() {
         assertEquals("spawn", TravelMenu.reason("spawn").id());
-        assertEquals("dungeon", TravelMenu.reason("dungeon").id());
+        assertEquals("island-home", TravelMenu.reason("island-home").id());
         assertEquals("spawn", TravelMenu.reason("nonsense").id(), "fallback: the /spawn warmup");
     }
 
-    /** Every bundled place has a valid target, a slot of the 3-row menu and its texts (GUI_DESIGN §7.3: 7 places). */
+    /** Every bundled place has a valid target, no slot (centred in file order) and its texts (G9: 7 places). */
     @Test
     void bundledPlacesAreComplete() throws Exception {
         YamlConfiguration menu = resource("menu.yml");
         YamlConfiguration texts = resource("messages/navigation.yml");
         ConfigurationSection travel = menu.getConfigurationSection("travel");
         assertNotNull(travel);
-        Set<Integer> slots = new HashSet<>();
         for (String id : travel.getKeys(false)) {
             ConfigurationSection e = travel.getConfigurationSection(id);
             assertNotNull(e, id);
-            int slot = e.getInt("slot", -1);
-            assertTrue(ButtonLayout.SMALL_SLOTS.contains(slot) && slots.add(slot), id + " slot " + slot);
+            assertFalse(e.contains("slot"), id + ": Travel places are centred by Centered, no slot");
             assertNotNull(WarpLayout.target(e.getString("target")), id + " target");
             assertTrue(WarpLayout.REASONS.contains(e.getString("reason", WarpLayout.DEFAULT_REASON)), id + " reason");
             assertTrue(texts.isString("travel.places." + id + ".name"), id + " name");
@@ -84,21 +82,5 @@ class TravelLayoutTest {
         for (String key : new String[]{"travel.title", "travel.action", "travel.fallback-name", "travel.gone", "travel.empty.name"}) {
             assertTrue(texts.contains(key), key);
         }
-    }
-
-    @Test
-    void placesOutsideTheMiddleRowAreSkipped() {
-        YamlConfiguration yaml = new YamlConfiguration();
-        yaml.set("travel.a.slot", 20); // a 6-row slot: not in a 3-row menu
-        yaml.set("travel.a.target", "command spawn");
-        yaml.set("travel.b.slot", 10);
-        yaml.set("travel.b.target", "command spawn");
-        yaml.set("travel.c.slot", 10);
-        yaml.set("travel.c.target", "command spawn");
-        java.util.List<String> problems = new java.util.ArrayList<>();
-        WarpLayout layout = WarpLayout.parse(yaml, HubButtonsTest.ITEMS, problems::add);
-        assertEquals(1, layout.warps().size());
-        assertEquals("b", layout.warps().getFirst().id());
-        assertEquals(2, problems.size(), "outside the row + slot used twice");
     }
 }

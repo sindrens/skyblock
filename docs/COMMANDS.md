@@ -29,25 +29,28 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [collection](commands/collection.md) | Collection (`modules/collection`) |
 | [cosmetics](commands/cosmetics.md) | Cosmetics module (`modules/cosmetics`): M1.11 |
 | [crates](commands/crates.md) | Crates (`modules/crates`) |
-| [depths](commands/depths.md) | Depths commands |
 | [economy](commands/economy.md) | Economy (`modules/economy`) |
 | [enchants](commands/enchants.md) | Enchants module (`modules/enchants`): E1 |
 | [essentials](commands/essentials.md) | Essentials (module `essentials`) |
+| [guide](commands/guide.md) | Guide module (`modules/guide`): the island guide Kindle (docs/planning/ISLAND_GUIDE.md) |
 | [hud](commands/hud.md) | Scoreboard (M1.4, module `hud`) |
 | [islands](commands/islands.md) | Islands module (`modules/islands`): M2.1, M2.2, M2.3, M2.4, M2.5, M2.6, M2.7, ISL2, NOTES |
+| [islandtools](commands/islandtools.md) | Island tools module (`modules/islandtools`): the island's harvester hoe and pickaxe (owner 4 Nov 2026 rework) |
 | [logs](commands/logs.md) | Logs (`modules/logs`, M1.10) |
 | [menus](commands/menus.md) | Menus module (`modules/menus`): M1.6 + M1.7 + staff hub and `/admin` (M1.12) |
+| [milestones](commands/milestones.md) | Milestones commands |
 | [moderation](commands/moderation.md) | Punishments (`modules/moderation`, M1.8; replace vanilla `/ban /kick /pardon`) |
 | [motd](commands/motd.md) | MOTD (`modules/motd`) |
 | [npcs](commands/npcs.md) | NPCs and holograms (`modules/npcs`) |
-| [pack](commands/pack.md) | Resource pack (`modules/pack`) |
+| [pack](commands/pack.md) | Icon pack (`modules/pack`): I7 v3, pack v2 phase 1 |
 | [pass](commands/pass.md) | Battle pass (`modules/pass`) |
 | [perks](commands/perks.md) | Perks module (`modules/perks`) |
 | [production](commands/production.md) | Production (`modules/production`) |
 | [profiles](commands/profiles.md) | Profiles module (`modules/profiles`): PROF |
 | [progression](commands/progression.md) | Progression module (`modules/progression`): M5.1 pillars, M5.2 island level, M5.3 task engine, M5.4 upgrades, M5.5 masteries, M5.7 leaderboards |
-| [quests](commands/quests.md) | Quests (`modules/quests`) |
+| [quests](commands/quests.md) | Quests (`modules/contracts`) |
 | [rewards](commands/rewards.md) | Rewards (`modules/rewards`) |
+| [shardblock](commands/shardblock.md) | Shard blocks (`modules/shardblock`) |
 | [shop](commands/shop.md) | Builder shop (`modules/shop`) |
 | [skills](commands/skills.md) | Skills module (`modules/skills`): M4.5 |
 | [social](commands/social.md) | Social (`modules/social`) |
@@ -55,7 +58,7 @@ The table below is generated: run `./gradlew commandsIndex` after adding a file 
 | [staff](commands/staff.md) | Staff tools (M1.9, module `staff`) |
 | [tools](commands/tools.md) | Tools module (`modules/tools`): M4.2 |
 | [trade](commands/trade.md) | Secure trade (`modules/trade`) |
-| [tutorial](commands/tutorial.md) | Join tutorial (`modules/tutorial`) |
+| [tutorial](commands/tutorial.md) | Tutorial module (`modules/tutorial`): the guided tour /tutorial (docs/planning/PLAN_TUTORIAL_CHAT.md) |
 | [wardrobe](commands/wardrobe.md) | Wardrobe module (`modules/wardrobe`): W1 + W2 + W3 |
 | [worlds](commands/worlds.md) | Worlds (`modules/worlds`): worlds and finished builds |
 | [planned](commands/planned.md) | Planned commands |

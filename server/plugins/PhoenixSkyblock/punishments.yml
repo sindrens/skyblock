@@ -342,7 +342,7 @@ extras:
     # What each sanction blocks. Uses: pay, note, bank, shop, auction-list, auction-buy, trade
     freeze-blocks: [pay, note, bank, shop, auction-list, auction-buy, trade]
     trade-blocks: [pay, note, auction-list, auction-buy, trade]
-    freeze-currencies: [money]           # a frozen balance can't spend these (crystals/gems/shards stay usable)
+    freeze-currencies: [money]           # a frozen balance can't spend these (crystals/credits/shards stay usable)
     freeze-exempt-reasons: [admin_take, admin_set, admin_reset, sanction_remove]   # staff may still take money
     freeze-receive-reasons: [bank_withdraw]   # a frozen player can't take money out of an island bank either
     trade-reasons: [pay, trade, ah_buy, note_withdraw]   # refused when either side is trade-blocked (economy safety net)

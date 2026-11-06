@@ -3,8 +3,93 @@ package net.skybornmc.skyblock.essentials;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
+import java.util.List;
+
 /** Typed settings of {@code essentials.yml}. */
 public final class EssentialsConfig extends ModuleConfig {
+
+    @Setting(path = "hunger.disabled", desc = "Owner 3 Nov 2026: no hunger anywhere (the food bar stays full).")
+    public boolean hungerDisabled = true;
+
+    @Setting(path = "grind.enabled", desc = "Temporary /farm, /mine and /dungeon areas in one world (owner 3 Nov 2026), until the grind areas redesign.")
+    public boolean grindEnabled = true;
+
+    @Setting(path = "grind.world", desc = "World of the temporary areas (must be in worlds.yml).")
+    public String grindWorld = "grind";
+
+    @Setting(path = "grind.y", desc = "Ground height of the areas in that world.", min = -60, max = 300)
+    public int grindY = 99;
+
+    @Setting(path = "grind.farm-regrow-seconds", desc = "A broken wheat crop at /farm is ripe again after this many seconds.", min = 1, max = 600)
+    public int grindFarmRegrowSeconds = 2;
+
+    @Setting(path = "grind.mine-regen-seconds", desc = "A mined block at /mine comes back after this many seconds.", min = 1, max = 600)
+    public int grindMineRegenSeconds = 3;
+
+    @Setting(path = "grind.removed-world", desc = "Owner 3 Nov 2026: the Depths world is gone for players; anyone logging in there "
+            + "is sent to spawn. Empty = off.")
+    public String removedWorld = "depths";
+
+    @Setting(path = "grind.bonus-percent", desc = "Money bonus per /farm harvest and /mine ore, in percent of the built-in amounts "
+            + "(grind.farm-bonus and grind.mine-bonus). 0 = no bonus.", min = 0, max = 1000)
+    public int grindBonusPercent = 100;
+
+    @Setting(path = "grind.bonus-chance-percent", desc = "Owner 4 Nov 2026: the money bonus comes only now and then: percent chance per /farm "
+            + "harvest and /mine ore (was every block).", min = 0, max = 100)
+    public double grindBonusChance = 4;
+
+    @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot): small at the start, bigger later.")
+    public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200);
+
+    @Setting(path = "grind.mine-bonus", desc = "Money of one /mine bonus per ore tier (coal, iron, gold, redstone, lapis, diamond, emerald).")
+    public List<Integer> grindMineBonus = List.of(30, 60, 120, 160, 240, 450, 800);
+
+    @Setting(path = "grind.mine-unlocks", desc = "Owner 4 Nov 2026: blocks mined in total that turn the whole /mine into the next ore for you "
+            + "(coal, iron, gold, redstone, lapis, diamond, emerald; the first is always 0).")
+    public List<Integer> grindMineUnlocks = List.of(0, 400, 1_500, 4_000, 8_000, 15_000, 25_000);
+
+    @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
+    public int grindDungeonMobs = 12;
+
+    // ------------------------------------------------------------------ start flow (owner 3 Nov 2026, replaces the tutorial)
+
+    @Setting(path = "start.enabled", desc = "Start guide on: a boss bar 'Go to spawn and talk to <guide>' until the player talked "
+            + "to the guide NPC at spawn (or used /start); the scoreboard 'Next:' line shows the same.")
+    public boolean startEnabled = true;
+
+    @Setting(path = "start.island-on-first-join", desc = "Brand-new players get their island created right after joining "
+            + "(no portal walk). If the island can't be made, they stay at spawn and can use /is.")
+    public boolean startIslandOnFirstJoin = true;
+
+    @Setting(path = "start.island-for-islandless", desc = "Also players who already played but have no island (on the active "
+            + "profile) get one created when they join.")
+    public boolean startIslandForIslandless = true;
+
+    @Setting(path = "start.island-delay-ticks", desc = "Ticks after joining (and after the icon pack answer) before the island "
+            + "is created, so the profile and the welcome are ready (20 = 1 second).", min = 1, max = 400)
+    public int startIslandDelayTicks = 40;
+
+    @Setting(path = "start.guide-role", desc = "NPC role of the guide at spawn (npcs.yml): clicking it counts as talking to the "
+            + "guide. Its name is messages/npcs.yml roles.<role>.name.")
+    public String startGuideRole = "guide";
+
+    @Setting(path = "start.bossbar-color", desc = "Boss bar colour: PINK, BLUE, RED, GREEN, YELLOW, PURPLE or WHITE.")
+    public String startBarColor = "YELLOW";
+
+    @Setting(path = "start.bossbar-overlay", desc = "Boss bar style: PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12 or NOTCHED_20.")
+    public String startBarOverlay = "PROGRESS";
+
+    @Setting(path = "start.island-command", desc = "Command (without /) of the Island button in /start.")
+    public String startIslandCommand = "is home";
+
+    @Setting(path = "start.farm-command", desc = "Command (without /) of the Farm button in /start.")
+    public String startFarmCommand = "farm";
+
+    @Setting(path = "start.mine-command", desc = "Command (without /) of the Mine button in /start.")
+    public String startMineCommand = "mine";
+
+    @Setting(path = "hunger.pvp-worlds", desc = "Worlds where hunger still works (owner 3 Nov 2026: only PvP; off in dungeons too).")
+    public java.util.List<String> hungerWorlds = java.util.List.of("warzone");
 
     @Setting(path = "spawn.world", desc = "World that /spawn teleports to (its spawn point is set by worlds.yml).")
     public String spawnWorld = "spawn";
@@ -32,8 +117,14 @@ public final class EssentialsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ M1.1 join flow
 
-    @Setting(path = "join.teleport-to-spawn", desc = "Teleport every player to spawn when they join (until islands exist).")
-    public boolean joinTeleportToSpawn = true;
+    @Setting(path = "join.location", desc = "Where a returning player appears when they join (owner 4 Nov 2026): island = "
+            + "their island home (safe spot; spawn when they have no island), last = where they logged out, spawn = spawn. "
+            + "New players always start at spawn (the start flow then brings them to their new island).")
+    public String joinLocation = JoinRules.ISLAND;
+
+    @Setting(path = "join.island-delay-ticks", desc = "Ticks after joining before the island teleport (join.location: island), "
+            + "so the profile and island data are loaded (20 = 1 second).", min = 1, max = 200)
+    public int joinIslandDelayTicks = 10;
 
     @Setting(path = "join.privacy-delay-seconds", desc = "Seconds after the first join before the privacy line (chat and commands "
             + "are logged) is sent, so it is not on the first screen next to the welcome.", min = 1, max = 600)
@@ -122,7 +213,8 @@ public final class EssentialsConfig extends ModuleConfig {
     /** Dead-key rule (REVIEW3 §6): the menu item moved to menus.yml (menu-item.*); the old essentials keys are deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now");
+        return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now",
+                "join.teleport-to-spawn", "replaced by join.location (island, last or spawn; owner 4 Nov 2026)");
     }
 
     @Override

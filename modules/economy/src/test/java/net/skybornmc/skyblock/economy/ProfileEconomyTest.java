@@ -85,18 +85,18 @@ class ProfileEconomyTest {
     void moneyIsPerProfileAndGemsArePerPlayer() {
         economy.loadPlayer(steve, "Steve").join();
         assertEquals(1_000, bal(steve, Currency.MONEY), "profile 1 has the start balance");
-        economy.deposit(steve, Currency.GEMS, 50, "test", Actor.SYSTEM).join();
+        economy.deposit(steve, Currency.CREDITS_EARNED, 50, "test", Actor.SYSTEM).join();
 
         profiles.switchTo(steve, steve2);
         economy.switchedProfile(steve, steve2).join();
         assertEquals(1_000, bal(steve2, Currency.MONEY), "owner answer 121: every profile gets the start money");
         assertEquals(1_000, economy.cached(steve, Currency.MONEY).getAsLong());
         // gems paid to the profile key land on the player and are the same on every profile
-        economy.deposit(steve2, Currency.GEMS, 25, "test", Actor.SYSTEM).join();
-        assertEquals(75, bal(steve, Currency.GEMS));
-        assertEquals(75, bal(steve2, Currency.GEMS));
-        assertEquals(75, economy.cached(steve, Currency.GEMS).getAsLong());
-        assertEquals(75, economy.balances(AccountRef.player(steve2)).join().get(Currency.GEMS));
+        economy.deposit(steve2, Currency.CREDITS_EARNED, 25, "test", Actor.SYSTEM).join();
+        assertEquals(75, bal(steve, Currency.CREDITS_EARNED));
+        assertEquals(75, bal(steve2, Currency.CREDITS_EARNED));
+        assertEquals(75, economy.cached(steve, Currency.CREDITS_EARNED).getAsLong());
+        assertEquals(75, economy.balances(AccountRef.player(steve2)).join().get(Currency.CREDITS_EARNED));
         // money earned on profile 2 stays there
         economy.deposit(steve2, Currency.MONEY, 300, "test", Actor.SYSTEM).join();
         economy.deposit(steve2, Currency.CRYSTALS, 7, "test", Actor.SYSTEM).join();
@@ -104,7 +104,7 @@ class ProfileEconomyTest {
         assertEquals(1_000, bal(steve, Currency.MONEY));
         assertEquals(0, bal(steve, Currency.CRYSTALS));
         assertEquals(7, bal(steve2, Currency.CRYSTALS));
-        long rowsOnKey2Gems = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_accounts WHERE owner_id = ? AND currency = 'gems'",
+        long rowsOnKey2Gems = db.blocking(c -> Sql.queryOne(c, "SELECT COUNT(*) FROM eco_accounts WHERE owner_id = ? AND currency = 'credits_earned'",
                 rs -> rs.getLong(1), steve2)).orElse(0L);
         assertEquals(0, rowsOnKey2Gems, "no gem account ever exists on a profile key");
 
@@ -112,7 +112,7 @@ class ProfileEconomyTest {
         assertEquals(1_300, bal(steve2, Currency.MONEY), "rejoining never gives a second start balance");
         economy.switchedProfile(steve, steve2).join();
         assertEquals(1_300, bal(steve2, Currency.MONEY), "switching back never gives a second start balance");
-        assertEquals(steve, EconomyServiceImpl.startOwner(Currency.GEMS, steve, steve2), "gems: one start per player");
+        assertEquals(steve, EconomyServiceImpl.startOwner(Currency.CREDITS_EARNED, steve, steve2), "gems: one start per player");
         assertEquals(steve2, EconomyServiceImpl.startOwner(Currency.MONEY, steve, steve2));
     }
 
@@ -159,11 +159,11 @@ class ProfileEconomyTest {
     void profileLedgerShowsItsOwnMoneyAndThePlayersGems() {
         economy.deposit(steve, Currency.MONEY, 100, "test", Actor.SYSTEM).join();
         economy.deposit(steve2, Currency.MONEY, 200, "test", Actor.SYSTEM).join();
-        economy.deposit(steve2, Currency.GEMS, 5, "test", Actor.SYSTEM).join();
+        economy.deposit(steve2, Currency.CREDITS_EARNED, 5, "test", Actor.SYSTEM).join();
         economy.execute(Transaction.transfer(AccountRef.player(steve2), AccountRef.player(alex), Currency.MONEY, 50, TxReason.PAY)).join();
         EconomyStore.LedgerPage page = store.history(AccountRef.player(steve2), AccountRef.player(steve), LedgerFilter.ALL, 0, 50).join();
         assertEquals(3, page.total(), "profile 2: its deposit, its payment and the player's gems; not profile 1's money");
-        assertTrue(page.rows().stream().anyMatch(e -> e.currency() == Currency.GEMS));
+        assertTrue(page.rows().stream().anyMatch(e -> e.currency() == Currency.CREDITS_EARNED));
         // names of profile accounts are their player's name
         LedgerEntry pay = page.rows().stream().filter(e -> e.reason().equals(TxReason.PAY)).findFirst().orElseThrow();
         assertEquals("Steve", pay.fromName());
@@ -172,11 +172,11 @@ class ProfileEconomyTest {
 
     @Test
     void zeroingADeletedProfileKeepsGems() {
-        economy.deposit(steve, Currency.GEMS, 40, "test", Actor.SYSTEM).join();
+        economy.deposit(steve, Currency.CREDITS_EARNED, 40, "test", Actor.SYSTEM).join();
         economy.deposit(steve, Currency.MONEY, 70, "test", Actor.SYSTEM).join();
         // what the module does on ProfileDeletedEvent for profile 1 (key = player UUID): non-gem currencies only
         economy.set(AccountRef.player(steve), Currency.MONEY, 0, "profile_delete", Actor.system("profiles"), Map.of()).join();
         assertEquals(0, bal(steve, Currency.MONEY));
-        assertEquals(40, bal(steve2, Currency.GEMS));
+        assertEquals(40, bal(steve2, Currency.CREDITS_EARNED));
     }
 }

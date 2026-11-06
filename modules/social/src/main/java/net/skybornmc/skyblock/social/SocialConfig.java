@@ -6,6 +6,9 @@ import net.skybornmc.skyblock.common.config.Setting;
 /** Typed settings of {@code social.yml}. */
 public final class SocialConfig extends ModuleConfig {
 
+    @Setting(path = "friends.max", desc = "Owner 4 Nov 2026: most friends per player (/friends).", min = 1, max = 500)
+    public int friendsMax = 50;
+
     @Setting(path = "dm.max-length", desc = "Longest private message (characters).", min = 16, max = 1024)
     public int dmMaxLength = 256;
 
@@ -34,8 +37,8 @@ public final class SocialConfig extends ModuleConfig {
     @Setting(path = "afk.auto-minutes", desc = "Minutes without activity before a player is marked AFK. 0 = never.", min = 0, max = 240)
     public int afkAutoMinutes = 5;
 
-    @Setting(path = "afk.broadcast", desc = "Tell everyone when a player goes AFK or comes back.")
-    public boolean afkBroadcast = true;
+    @Setting(path = "afk.broadcast", desc = "Tell everyone when a player goes AFK or comes back (owner 3 Nov 2026: off, the tab list shows AFK).")
+    public boolean afkBroadcast = false;
 
     @Setting(path = "broadcast.title", desc = "Also show /broadcast messages as a title on screen.")
     public boolean broadcastTitle = true;
@@ -52,6 +55,17 @@ public final class SocialConfig extends ModuleConfig {
     @Override
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of("links.vote", "M10.5: /vote is the vote menu of the rewards module (votes.yml -> votes.page-url)");
+    }
+
+    /** Version 2 (feedback 31 Oct 2026, "remove chat message [name] is AFK"): announcements off (untouched value only). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("afk.broadcast", ValueChange.of(true, false)));
     }
 
     @Override

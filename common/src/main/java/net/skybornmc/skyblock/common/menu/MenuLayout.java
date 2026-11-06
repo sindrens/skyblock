@@ -1,15 +1,18 @@
 package net.skybornmc.skyblock.common.menu;
 
 /**
- * Where the standard buttons sit, by menu size (docs/design/GUI_DESIGN.md §1). Pure, unit-tested.
+ * Where the standard buttons sit, by menu size (I9 section 4: a minimal fixed bottom row). Pure, unit-tested.
  * <pre>
- *  6 rows: 45 Back · 46/47 actions · 48 ? · 49 Close · 50 Main menu · 51 action · 52 Previous · 53 Next
- *  5 rows: the same on row 4 (36 … 44)
- *  4 rows: the same on row 3 (27 Back, 30 ?, 31 Close, 32 Main menu, 34/35 pages)
- *  3 rows: 18 Back · 22 Close (no ?, no Main menu, no pages)
- *  1-2 rows: no standard buttons
+ *  Rows | Back | Action A | Action B | Close | Search | Previous | Next | Danger corner
+ *   6   |  45  |    46    |    47    |  49   |   51   |    52    |  53  |   8
+ *   4   |  27  |    28    |    29    |  31   |   -    |    34    |  35  |   8
+ *   3   |  18  |    19    |    20    |  22   |   -    |    25    |  26  |   8
+ *   5   |  36  |    37    |    38    |  40   |   -    |    43    |  44  |   8   (legacy, until migrated)
+ *  1-2  |  no standard buttons
  * </pre>
- * Back is never replaced by Previous page, so Back works on every page.
+ * Back is never replaced by Previous page, so Back works on every page. Search (51) is the auction house's only.
+ * Slot 48 is free (the old {@code ?} button is gone); 50 (bar + 5) is Help where a menu has one ({@link #help});
+ * 46, 47 and 51 are screen actions.
  */
 public final class MenuLayout {
 
@@ -19,35 +22,55 @@ public final class MenuLayout {
     private MenuLayout() {
     }
 
-    /** First slot of the bottom bar for menus with 4+ rows. */
+    /** First slot of the bottom row for menus with 4+ rows. */
     static int bar(int rows) {
         return (rows - 1) * 9;
     }
 
     public static int back(int rows) {
-        return rows >= 4 ? bar(rows) : rows == 3 ? 18 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) : rows == 3 ? 18 : NONE;
     }
 
-    /** The "?" (what is this) button. */
-    public static int info(int rows) {
-        return rows >= 4 ? bar(rows) + 3 : NONE;
+    /** First free screen action slot of the bottom row (shop: Sell). */
+    public static int actionA(int rows) {
+        return rows >= 4 && rows <= 6 ? bar(rows) + 1 : rows == 3 ? 19 : NONE;
+    }
+
+    /** Second free screen action slot of the bottom row (shop: Undo). */
+    public static int actionB(int rows) {
+        return rows >= 4 && rows <= 6 ? bar(rows) + 2 : rows == 3 ? 20 : NONE;
     }
 
     public static int close(int rows) {
-        return rows >= 4 ? bar(rows) + 4 : rows == 3 ? 22 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) + 4 : rows == 3 ? 22 : NONE;
     }
 
-    /** Main menu (on the main menu itself: Help & guides). */
-    public static int mainMenu(int rows) {
-        return rows >= 4 ? bar(rows) + 5 : NONE;
+    /**
+     * Help (a plain book, plan 4 Nov C §3: the same slot on every menu that has one): the slot right of Close, 50 on 6
+     * rows (the /menu hub's Help), 32 on 4, 23 on 3.
+     */
+    public static int help(int rows) {
+        return rows >= 4 && rows <= 6 ? bar(rows) + 5 : rows == 3 ? 23 : NONE;
     }
 
+    /** The auction house's Search button (6 rows only, I9 section 11). */
+    public static int search(int rows) {
+        return rows == 6 ? 51 : NONE;
+    }
+
+    /** Previous page; 3-row menus have it on 25 (FORMAT 3.1, MENUS-V3). */
     public static int previous(int rows) {
-        return rows >= 4 ? bar(rows) + 7 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) + 7 : rows == 3 ? 25 : NONE;
     }
 
+    /** Next page; 3-row menus have it on 26 (FORMAT 3.1, MENUS-V3). */
     public static int next(int rows) {
-        return rows >= 4 ? bar(rows) + 8 : NONE;
+        return rows >= 4 && rows <= 6 ? bar(rows) + 8 : rows == 3 ? 26 : NONE;
+    }
+
+    /** The red danger tile corner (top right, far from Back, pages and the main action; I9 section 5). */
+    public static int danger(int rows) {
+        return rows >= 3 && rows <= 6 ? 8 : NONE;
     }
 
     /** Where the one "nothing here yet" item goes. */
@@ -55,12 +78,11 @@ public final class MenuLayout {
         return rows >= 5 ? 22 : rows >= 3 ? 13 : NONE;
     }
 
-    /** True if {@code slot} holds a standard button at this size (the free action slots 46, 47 and 51 are not). */
+    /** True if {@code slot} holds a standard button at this size: Back, Close, Previous or Next. */
     public static boolean standard(int rows, int slot) {
         if (slot < 0) {
             return false;
         }
-        return slot == back(rows) || slot == info(rows) || slot == close(rows) || slot == mainMenu(rows)
-                || slot == previous(rows) || slot == next(rows);
+        return slot == back(rows) || slot == close(rows) || slot == previous(rows) || slot == next(rows);
     }
 }

@@ -8,7 +8,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.skybornmc.skyblock.common.pack.PrivateUse;
+import net.skybornmc.skyblock.common.text.PrivateUse;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
@@ -19,9 +19,10 @@ import net.skybornmc.skyblock.common.command.Args;
 import net.skybornmc.skyblock.common.command.CommandService;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
-import net.skybornmc.skyblock.common.pack.BadgeService;
-import net.skybornmc.skyblock.common.pack.BadgeSettings;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
+import net.skybornmc.skyblock.common.rank.BadgeService;
+import net.skybornmc.skyblock.common.rank.BadgeSettings;
+import net.skybornmc.skyblock.common.rank.Badges;
 import net.skybornmc.skyblock.common.placeholder.Placeholder;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.settings.SettingCategory;
@@ -82,6 +83,8 @@ public final class ChatModule implements SkyblockModule, Listener {
     static final String SETTING_MENTIONS = "mentions-sound";
     static final String SETTING_COLORS = "chat-colors";
     static final String SETTING_TIMESTAMPS = "chat-timestamps";
+    /** Broadcast cards on/off (plan chat look; takes over the menus module's "Tips" placeholder). */
+    static final String SETTING_TIPS = "tips";
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     private static final Pattern ITEM_TOKEN = Pattern.compile("(?i)\\[(?:item|i)]");
@@ -95,6 +98,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     private final RankBadges badges;
     private final Display display;
     private final TabService tab;
+    private final Broadcasts broadcasts;
 
     private final Map<UUID, ArrayBlockingQueue<Long>> recent = new ConcurrentHashMap<>();
     private final Map<UUID, String> lastKey = new ConcurrentHashMap<>();
@@ -113,6 +117,7 @@ public final class ChatModule implements SkyblockModule, Listener {
         this.badges = new RankBadges(core, () -> config);
         this.display = new Display(core, () -> config, badges);
         this.tab = new TabService(core, display, () -> config, msg, badges);
+        this.broadcasts = new Broadcasts(core, () -> config, display, id -> setting(id, SETTING_TIPS, true));
     }
 
     @Override
@@ -123,8 +128,11 @@ public final class ChatModule implements SkyblockModule, Listener {
     @Override
     public void enable() {
         loadConfig();
+        // Owner 2 Nov 2026: the hover card shows the title, the tab got a personal "you" line; unedited texts upgrade.
+        core.messages().retire(ID, RetiredChatTexts.all());
+        core.messages().load(ID);
         badges.reload();
-        // Rank badges (pack module present): one service, and one source for the rank color on every surface.
+        // Rank badges (chat.yml ranks.looks): one service, and one source for the rank color on every surface.
         core.services().register(ID, BadgeService.class, badges);
         core.ranks().colorSource(badges::colorOrNull);
         var pm = core.plugin().getServer().getPluginManager();
@@ -143,6 +151,8 @@ public final class ChatModule implements SkyblockModule, Listener {
         // M2.5: one-shot messages to a channel (island chat) with the same checks as chat.
         core.services().register(ID, ChatChannels.class, this::sendToChannel);
         tab.start();
+        pm.registerEvents(broadcasts, core.plugin());
+        broadcasts.start();
         // The menus module (which publishes PlayerSettings) enables after us; register our toggles one tick later.
         core.scheduler().later("chat:settings", 1L, this::registerSettings);
     }
@@ -158,7 +168,9 @@ public final class ChatModule implements SkyblockModule, Listener {
                 "navigation", "settings.toggles." + SETTING_COLORS, false));
         service.register(new SettingToggle(ID, SETTING_TIMESTAMPS, SettingCategory.CHAT, Material.CLOCK, false, null,
                 "navigation", "settings.toggles." + SETTING_TIMESTAMPS, false));
-        // Rank badges (DISPLAY): reduced motion, simple badges, bigger text, and the Immortal colour picker.
+        service.register(new SettingToggle(ID, SETTING_TIPS, SettingCategory.DISPLAY, Material.LANTERN, true, null,
+                "navigation", "settings.toggles." + SETTING_TIPS, false));
+        // Rank badges (DISPLAY): the Immortal colour picker.
         BadgeSettings.toggles(ID, badges.gradientIds()).forEach(service::register);
         settings = service;
     }
@@ -178,6 +190,7 @@ public final class ChatModule implements SkyblockModule, Listener {
         }
         core.messages().load(ID);
         tab.reloaded();
+        broadcasts.reloaded();
     }
 
     /** Loads chat.yml and moves formats that still have an old default to the new one (owner edits are kept). */
@@ -206,8 +219,10 @@ public final class ChatModule implements SkyblockModule, Listener {
             settings = null;
         }
         tab.stop();
+        broadcasts.stop();
         HandlerList.unregisterAll(this);
         HandlerList.unregisterAll(tab);
+        HandlerList.unregisterAll(broadcasts);
         if (surfaces != null) {
             HandlerList.unregisterAll(surfaces);
         }
@@ -232,45 +247,22 @@ public final class ChatModule implements SkyblockModule, Listener {
 
     // ================================================================== commands
 
-    /** Group ids for {@code /rank preview}: the pack's badge styles plus every group LuckPerms has loaded. */
+    /** Group ids for {@code /rank preview}: every group in chat.yml {@code ranks.looks} plus every LuckPerms group. */
     private List<String> previewGroups() {
-        java.util.Set<String> ids = new java.util.TreeSet<>();
-        net.skybornmc.skyblock.common.pack.PackIds pack = badges.ids();
-        if (pack != null) {
-            ids.addAll(pack.badges().keySet());
-        }
+        java.util.Set<String> ids = new java.util.TreeSet<>(badges.looks().groups());
         ids.addAll(core.ranks().groupIds());
         return List.copyOf(ids);
     }
 
-    /**
-     * {@code /rank preview <group> [name]}: the badge as players see it, in every form, then the Bedrock line. The pack
-     * forms only go to a sender who has the pack (Java without it, and Bedrock, would see boxes or controller icons).
-     */
+    /** {@code /rank preview <group> [name]}: the badge as players see it: simple (with gradient), Java and Bedrock. */
     private void rankPreview(CommandSender sender, String group, String name) {
-        net.skybornmc.skyblock.common.pack.PackIds pack = badges.ids();
-        if (pack == null) {
-            msg.send(sender, "rank-preview.unavailable");
-            return;
-        }
         String shown = name == null || name.isBlank() ? core.ranks().groupDisplayName(group) : name;
-        boolean hasPack = badges.options(sender).pack();
+        List<net.kyori.adventure.text.format.TextColor> gradient = Badges.CHOICE_GROUP.equals(group) && !badges.gradientIds().isEmpty()
+                ? badges.gradientById(badges.gradientIds().getFirst()) : List.of();
         msg.send(sender, "rank-preview.header", Msg.p("group", group), Msg.p("name", shown));
-        if (hasPack) {
-            var base = new BadgeOptions(true, false, false, false, false, java.util.List.of());
-            msg.send(sender, "rank-preview.shine", Msg.c("badge", badges.badge(group, shown, base)));
-            msg.send(sender, "rank-preview.still", Msg.c("badge", badges.badge(group, shown,
-                    new BadgeOptions(true, false, true, false, false, java.util.List.of()))));
-            msg.send(sender, "rank-preview.large", Msg.c("badge", badges.badge(group, shown,
-                    new BadgeOptions(true, false, false, false, true, java.util.List.of()))));
-        } else {
-            msg.send(sender, "rank-preview.no-pack");
-        }
-        msg.send(sender, "rank-preview.simple", Msg.c("badge", badges.badge(group, shown,
-                new BadgeOptions(true, false, false, true, false, java.util.List.of()))));
+        msg.send(sender, "rank-preview.simple", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN.withGradient(gradient))));
         msg.send(sender, "rank-preview.java", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN)));
-        msg.send(sender, "rank-preview.bedrock", Msg.c("badge", badges.badge(group, shown,
-                new BadgeOptions(false, true, false, false, false, java.util.List.of()))));
+        msg.send(sender, "rank-preview.bedrock", Msg.c("badge", badges.badge(group, shown, BadgeOptions.BEDROCK)));
     }
 
     private void registerCommands() {
@@ -281,13 +273,14 @@ public final class ChatModule implements SkyblockModule, Listener {
                 .category("Staff")
                 .permission(PERM_RANK_PREVIEW)
                 .sub(CommandSpec.sub("preview")
-                        .description("Preview a rank badge exactly as players see it (pack, still, simple, Bedrock)")
+                        .description("Preview a rank badge exactly as players see it (simple, Java, Bedrock)")
                         .arg(previewGroup)
                         .optional(previewName)
                         .example("rank preview immortal Phoenix King")
                         .executes(ctx -> rankPreview(ctx.sender(), ctx.get(previewGroup),
                                 ctx.has(previewName) ? ctx.get(previewName) : null))));
         Arg<Integer> seconds = Args.integer("seconds", 0, 300, "0", "3", "5", "10", "30");
+        Arg<String> card = Args.oneOf("card", broadcasts::cardIds);
         commands.register(CommandSpec.command("chat")
                 .description("Chat moderation: clear, lock, slow mode")
                 .category("Staff")
@@ -295,7 +288,10 @@ public final class ChatModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("clear").description("Clear the chat for everyone").executes(ctx -> clear(ctx.sender())))
                 .sub(CommandSpec.sub("lock").description("Lock or unlock the chat").executes(ctx -> toggleLock(ctx.sender())))
                 .sub(CommandSpec.sub("slow").description("Slow mode: seconds between messages (0 = off)").arg(seconds)
-                        .example("chat slow 5").executes(ctx -> slow(ctx.sender(), ctx.get(seconds)))));
+                        .example("chat slow 5").executes(ctx -> slow(ctx.sender(), ctx.get(seconds))))
+                .sub(CommandSpec.sub("card").description("Preview a broadcast card (messages/broadcasts.yml) in your own chat")
+                        .playerOnly().arg(card).example("chat card shop")
+                        .executes(ctx -> previewCard(ctx.player(), ctx.get(card)))));
         commands.register(CommandSpec.command("clearchat")
                 .description("Clear the chat for everyone")
                 .category("Staff")
@@ -329,6 +325,18 @@ public final class ChatModule implements SkyblockModule, Listener {
                         msg.send(p, on ? "staffchat.toggle-on" : "staffchat.toggle-off");
                     }
                 }));
+    }
+
+    /** {@code /chat card <id>}: the card exactly as this player would get it (rules and the Tips switch ignored). */
+    private void previewCard(Player player, String card) {
+        if (!broadcasts.exists(card)) {
+            msg.send(player, "broadcasts.missing", Msg.p("card", card));
+            return;
+        }
+        player.sendMessage(broadcasts.render(player, card));
+        if (!broadcasts.available(config).contains(card)) {
+            msg.send(player, "broadcasts.not-in-rotation", Msg.p("card", card));
+        }
     }
 
     private void clear(CommandSender sender) {
@@ -391,7 +399,7 @@ public final class ChatModule implements SkyblockModule, Listener {
     public void onChatCheck(AsyncChatEvent event) {
         Player player = event.getPlayer();
         UUID id = player.getUniqueId();
-        // Must-have 5: private-use characters are the pack's glyphs (badges, icons); players can't type them.
+        // Must-have 5: players can't type private-use characters (they could fake icons; Bedrock shows controller glyphs).
         String raw = PrivateUse.strip(PlainTextComponentSerializer.plainText().serialize(event.message()));
 
         if (staffChatToggled.contains(id) && player.hasPermission(PERM_STAFF_CHAT)) {
@@ -635,9 +643,8 @@ public final class ChatModule implements SkyblockModule, Listener {
         }
         Map<String, Shared> shared = new java.util.concurrent.ConcurrentHashMap<>(4);
         event.renderer((player, sourceDisplayName, message, viewer) -> {
-            // One variant per kind of viewer (Java/Bedrock, pack, badge settings), see BadgeService#options.
-            String variant = badges.enabled() ? badges.options(viewer).key()
-                    : String.valueOf(viewer instanceof Player v && core.bedrock().isBedrock(v.getUniqueId()));
+            // One variant per kind of viewer (Java/Bedrock), see BadgeService#options.
+            String variant = badges.options(viewer).key();
             Shared parts = shared.computeIfAbsent(variant, b -> new Shared(display.name(player)
                     .hoverEvent(HoverEvent.showText(hover(viewer, player)))
                     .clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " ")), display.rank(viewer, player)));
@@ -731,11 +738,22 @@ public final class ChatModule implements SkyblockModule, Listener {
                 Msg.mm("nick_line", display.hasNick(player) ? msg.has("hover-nick")
                         ? core.messages().raw(ID, "hover-nick").replace("<real_name>", player.getName()) : "" : ""),
                 Msg.p("island", island.isBlank() ? "-" : island),
+                Msg.c("title_line", titleLine(viewer, player)),
                 Msg.p("playtime", data == null ? "-" : Format.duration(Duration.ofMillis(data.playtimeMillis()))),
                 Msg.p("first", data == null ? "-" : DATE.withZone(Format.zone()).format(Instant.ofEpochMilli(data.firstSeen()))),
                 Msg.mm("discord", data != null && data.discordId() != null ? "<c:success><sym:check></c:success>"
                         : "<c:error><sym:cross></c:error>"),
                 Msg.number("ping", player.getPing()));
+    }
+
+    /** The hover line for the player's equipped title ({@code hover-title}), or empty when they wear none. */
+    private Component titleLine(Audience viewer, Player player) {
+        Component title = display.hook(player, "title");
+        if (net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(title).isBlank()
+                || !msg.has("hover-title")) {
+            return Component.empty();
+        }
+        return msg.component(viewer, "hover-title", Msg.c("title", title));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

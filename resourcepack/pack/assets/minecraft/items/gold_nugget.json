@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_sell",
+     "type": "minecraft:model"
+    },
+    "when": "feature/sell"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_sell",
+     "type": "minecraft:model"
+    },
+    "when": "shop/sell"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/gold_nugget",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

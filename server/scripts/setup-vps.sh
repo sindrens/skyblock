@@ -72,6 +72,7 @@ echo "== Firewall"
 ufw allow OpenSSH
 ufw allow 25565/tcp   # Java
 ufw allow 19132/udp   # Bedrock (Geyser)
+ufw allow 25580/tcp   # Phoenix icon pack web server (modules/pack, host.port)
 ufw --force enable
 systemctl enable --now fail2ban
 

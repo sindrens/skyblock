@@ -29,7 +29,12 @@ final class PreviewMenu extends Menu {
     static final int SLOT_WITHDRAW_ONE = 37;
     /** M10.4: withdraw a chosen amount (number picker, Bedrock-safe). */
     static final int SLOT_WITHDRAW_AMOUNT = 43;
+    /** Eclipse (owner F6/V5): buy a key with credits. */
+    static final int SLOT_BUY = 41;
     static final int[] REWARD_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+    /** Tiered crates (Eclipse): one full row per band (common 9-17, mid 18-26, rare 27-35), the jackpots in the top row. */
+    static final int[] BAND_ROW_START = {9, 18, 27};
+    static final int[] JACKPOT_SLOTS = {2, 3, 5, 6, 1, 7, 0, 8};
 
     private final CratesModule m;
     private final String crateId;
@@ -69,16 +74,20 @@ final class PreviewMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         CrateCatalog.Crate crate = m.catalog().crate(crateId).orElse(null);
         if (crate == null || crate.hidden()) {
             set(22, service.item(Material.COBWEB, viewer, CratesModule.ID, "preview.gone"));
             return;
         }
         int tier = m.tier(viewer);
-        List<CrateCatalog.Reward> rewards = crate.rewards();
-        for (int i = 0; i < rewards.size() && i < REWARD_SLOTS.length; i++) {
-            set(REWARD_SLOTS[i], rewardItem(crate, rewards.get(i), tier));
+        if (crate.tiered()) {
+            tieredRewards(crate, tier);
+        } else {
+            List<CrateCatalog.Reward> rewards = crate.rewards();
+            for (int i = 0; i < rewards.size() && i < REWARD_SLOTS.length; i++) {
+                set(REWARD_SLOTS[i], rewardItem(crate, rewards.get(i), tier));
+            }
         }
         UUID profile = m.profiles().profileKey(viewer);
         CratesModule.ProfileView view = m.view(profile);
@@ -92,10 +101,12 @@ final class PreviewMenu extends Menu {
         }
         CrateStore.Keys keys = view.keys(crateId);
         int counter = view.counter(crateId, m.season());
-        String statusKey = crate.pity() > 0 && crate.hasTop() ? "preview.status" : "preview.status-no-pity";
+        String statusKey = crate.tiered() ? "preview.status-tiered"
+                : crate.pity() > 0 && crate.hasTop() ? "preview.status" : "preview.status-no-pity";
         set(SLOT_STATUS, service.item(m.icon(crate), m.mini(viewer, m.crateMini(crate)), service.lines(viewer, CratesModule.ID,
                 statusKey, Msg.number("keys", keys.total()), Msg.number("tradeable", keys.tradeable()), Msg.number("pity", counter),
-                Msg.number("max", crate.pity()), Msg.p("top", CrateMath.percent(crate.topPercent())))));
+                Msg.number("max", crate.pity()), Msg.p("top", CrateMath.percent(crate.topPercent())),
+                Msg.number("per_open", crate.perOpen() - crate.draw("jackpot")), Msg.number("jackpots", crate.draw("jackpot")))));
         long all = Math.min(keys.total(), m.settings.maxPerClick);
         boolean has = keys.total() > 0;
         Material button = has ? Material.LIME_DYE : Material.GRAY_DYE;
@@ -109,6 +120,36 @@ final class PreviewMenu extends Menu {
                 click -> open(click.player(), m.settings.maxPerClick));
         if (m.keyItems().enabled()) {
             withdrawButtons(crate, keys);
+        }
+        if (m.eclipse().buyable(crateId)) {
+            int price = m.settings.eclipseBuyPrice;
+            set(SLOT_BUY, service.item(Material.DIAMOND, viewer, CratesModule.ID, "eclipse.buy", Msg.number("price", price),
+                    Msg.mm("key", m.keyMini(crateId))), click -> openChild(new net.skybornmc.skyblock.common.menu.ConfirmMenu(
+                    v -> service.text(v, CratesModule.ID, "eclipse.buy-crumb"),
+                    service.item(Material.DIAMOND, viewer, CratesModule.ID, "eclipse.buy", Msg.number("price", price), Msg.mm("key", m.keyMini(crateId))),
+                    v -> service.lines(v, CratesModule.ID, "eclipse.buy-details", Msg.number("price", price)),
+                    p -> m.eclipse().buy(p, () -> reopen(p)), p -> { })));
+        }
+        if (crate.id().equals(m.settings.eclipseCrate) && EclipseFeature.teaser(java.time.LocalDate.now(CrateCatalog.clock),
+                m.settings.eclipseTeaserDay)) {
+            set(39, service.item(Material.ENDER_EYE, viewer, CratesModule.ID, "eclipse.teaser-item"));
+        }
+    }
+
+    /** Tiered layout: each band on its own row (in file order), the jackpots centred in the top row around the status. */
+    private void tieredRewards(CrateCatalog.Crate crate, int tier) {
+        for (int b = 0; b < BAND_ROW_START.length; b++) {
+            List<CrateCatalog.Reward> band = crate.inBand(CrateCatalog.Crate.BAND_ORDER.get(b));
+            for (int i = 0; i < band.size() && i < 9; i++) {
+                set(BAND_ROW_START[b] + i, rewardItem(crate, band.get(i), tier));
+            }
+        }
+        List<CrateCatalog.Reward> jackpots = crate.inBand("jackpot");
+        int n = Math.min(jackpots.size(), JACKPOT_SLOTS.length);
+        int[] slots = java.util.Arrays.copyOf(JACKPOT_SLOTS, n);
+        java.util.Arrays.sort(slots);
+        for (int i = 0; i < n; i++) {
+            set(slots[i], rewardItem(crate, jackpots.get(i), tier));
         }
     }
 

@@ -55,7 +55,24 @@ class BankConfigTest {
         BankConfig fresh = new BankConfig();
         assertEquals(3, BankConfig.OLD_DEFAULTS.get("interest.period-hours"));
         assertTrue(fresh.periodHours != 3 && fresh.catchUpPeriods != 8);
-        assertEquals(3, fresh.version());
+        assertEquals(4, fresh.version());
+    }
+
+    /** Feedback 4 Nov 2026 (E20): no withdrawal fee; an untouched 2% file becomes 0, an owner-chosen fee stays. */
+    @Test
+    void version4RemovesTheUntouchedWithdrawalFee() {
+        BankConfig fresh = new BankConfig();
+        assertEquals(0, fresh.withdrawFeePercent);
+        assertEquals(0, WithdrawFee.of(fresh).percent(0));
+        assertEquals(0, WithdrawFee.of(fresh).percent(3));
+        var changes = fresh.valueChanges().get(4);
+        assertTrue(changes.get("withdraw.fee-percent").matches(2.0));
+        assertTrue(changes.get("withdraw.fee-percent").matches(2), "an int 2 in the file is the old default too");
+        assertTrue(!changes.get("withdraw.fee-percent").matches(1.5), "an owner-chosen fee is kept");
+        assertEquals(0.0, changes.get("withdraw.fee-percent").to());
+        assertTrue(changes.get("withdraw.mastery-fee-percent").matches(List.of("1.5", "1.0", "0.5")));
+        assertTrue(changes.get("withdraw.mastery-fee-percent").matches(List.of(1.5, 1.0, 0.5)), "numbers in the file");
+        assertTrue(!changes.get("withdraw.mastery-fee-percent").matches(List.of("1.0", "0.5")));
     }
 
     @Test

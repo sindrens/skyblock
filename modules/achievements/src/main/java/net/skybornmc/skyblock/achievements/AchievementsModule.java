@@ -315,6 +315,28 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
                 }
             }
         }
+        // Feedback 5 Nov 2026 ("only real achievements"): duplicates, Depths/Forge leftovers and random ones are switched
+        // off in a live file too, unless staff set "enabled" themselves.
+        for (String id : AchievementRegistry.RETIRED_5NOV) {
+            String path = AchievementRegistry.ACHIEVEMENTS + "." + id;
+            if (yaml.isConfigurationSection(path) && !yaml.contains(path + ".enabled")) {
+                yaml.set(path + ".enabled", false);
+                changed = true;
+            }
+        }
+        // Farming is the core of the game now (/farm, the harvester hoe): Harvester is on, unless staff wrote something else.
+        String harvester = AchievementRegistry.ACHIEVEMENTS + ".harvester.enabled";
+        if (yaml.isBoolean(harvester) && !yaml.getBoolean(harvester)) {
+            yaml.set(harvester, null);
+            changed = true;
+        }
+        for (String[] fix : AchievementRegistry.DESCRIPTION_FIXES_5NOV) {
+            String path = AchievementRegistry.ACHIEVEMENTS + "." + fix[0] + ".description";
+            if (java.util.List.of(fix[1]).equals(yaml.getStringList(path))) {
+                yaml.set(path, java.util.List.of(fix[2]));
+                changed = true;
+            }
+        }
         if (changed) {
             try {
                 yaml.save(file);

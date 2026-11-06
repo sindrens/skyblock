@@ -50,7 +50,7 @@ final class HelpMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Component name = service.text(viewer, NpcsModule.ID, "help.header", Msg.mm("name", nameRaw));
         List<Component> lore = service.lines(viewer, NpcsModule.ID, linesKey);
         set(SLOT_TEXT, service.item(Material.BOOK, name, lore));

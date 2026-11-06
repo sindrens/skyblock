@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.economy;
 
-import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.command.Durations;
@@ -41,8 +40,8 @@ final class TransactionsMenu extends Menu {
 
     private final EconomyModule module;
     private final AccountRef account;
-    /** The player account (gems live there, owner PR2); equal to {@link #account} for profile 1. */
-    private final AccountRef gemsAccount;
+    /** The player account (credits live there, owner PR2 / C1-R1-01); equal to {@link #account} for profile 1. */
+    private final AccountRef creditsAccount;
     private LedgerFilter filter = LedgerFilter.ALL;
     private int rangeIndex;
     private int page;
@@ -52,15 +51,15 @@ final class TransactionsMenu extends Menu {
     private int loading = -1;
     private int generation;
 
-    TransactionsMenu(EconomyModule module, AccountRef account, AccountRef gemsAccount) {
+    TransactionsMenu(EconomyModule module, AccountRef account, AccountRef creditsAccount) {
         this.module = module;
         this.account = account;
-        this.gemsAccount = gemsAccount == null ? account : gemsAccount;
+        this.creditsAccount = creditsAccount == null ? account : creditsAccount;
     }
 
-    /** The account a row is seen from: the player for gem rows, the profile for everything else. */
+    /** The account a row is seen from: the player for credit rows (both halves), the profile for everything else. */
     private AccountRef view(LedgerEntry e) {
-        return e.currency() == net.skybornmc.skyblock.common.economy.Currency.GEMS ? gemsAccount : account;
+        return e.currency().accountWide() ? creditsAccount : account;
     }
 
     @Override
@@ -100,7 +99,7 @@ final class TransactionsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_SUMMARY, summary());
         set(SLOT_CURRENCY, filterItem(Material.SUNFLOWER, "menu.filter-currency", currencyLabel()), click -> pickCurrency());
         set(SLOT_REASON, filterItem(Material.NAME_TAG, "menu.filter-reason", reasonLabel()), click -> pickReason());
@@ -122,12 +121,10 @@ final class TransactionsMenu extends Menu {
             set(PagedMenu.CONTENT_SLOTS[i], entry(rows.get(i), now));
         }
         if (page > 0) {
-            set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", page), Msg.p("pages", pages())), click -> turn(-1));
+            set(Menu.SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages()), click -> turn(-1));
         }
         if (page + 1 < pages()) {
-            set(Menu.SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", page + 2), Msg.p("pages", pages())), click -> turn(1));
+            set(Menu.SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages()), click -> turn(1));
         }
     }
 
@@ -136,8 +133,8 @@ final class TransactionsMenu extends Menu {
     private org.bukkit.inventory.ItemStack summary() {
         List<Component> lore = new ArrayList<>(service.lines(viewer, EconomyModule.ID, "menu.summary.lore",
                 Msg.p("total", total < 0 ? "..." : Format.number(total))));
-        for (Currency currency : Currency.values()) {
-            var cached = module.service().cached(viewer.getUniqueId(), currency);
+        for (Currency currency : Currency.listedValues()) {
+            var cached = net.skybornmc.skyblock.common.economy.CreditView.cachedShown(module.service(), viewer.getUniqueId(), currency);
             lore.add(service.text(viewer, EconomyModule.ID, "menu.summary.line", Msg.c("currency", module.currencyName(viewer, currency)),
                     cached.isPresent() ? module.amountTag("amount", viewer, currency, cached.getAsLong())
                             : Msg.p("amount", module.core.messages().raw(EconomyModule.ID, "placeholder.loading"))));
@@ -182,8 +179,8 @@ final class TransactionsMenu extends Menu {
             lore.addAll(service.lines(viewer, EconomyModule.ID, "menu.entry.reference", p));
         }
         lore.addAll(service.lines(viewer, EconomyModule.ID, "menu.entry.footer", p));
-        return MenuIcons.tag(service.item(module.config.icon(e.currency(), Material.GOLD_NUGGET), service.text(viewer, EconomyModule.ID, key + ".name", p),
-                lore), MenuIcons.currencyOf(e.currency().key()));
+        return service.item(module.config.iconItem(service, viewer, e.currency(), Material.GOLD_NUGGET), service.text(viewer, EconomyModule.ID, key + ".name", p),
+                lore);
     }
 
     /** {@code reasons.<key>} from the messages file; unknown reasons show with spaces instead of underscores. */
@@ -216,8 +213,8 @@ final class TransactionsMenu extends Menu {
         List<PickListMenu.Option<Currency>> options = new ArrayList<>();
         options.add(new PickListMenu.Option<>(null, new ItemStack(Material.SUNFLOWER), service.text(viewer, EconomyModule.ID, "menu.any"),
                 List.of(), filter.currency() == null));
-        for (Currency c : Currency.values()) {
-            options.add(new PickListMenu.Option<>(c, MenuIcons.tag(new ItemStack(module.config.icon(c, Material.GOLD_NUGGET)), MenuIcons.currencyOf(c.key())), module.currencyName(viewer, c),
+        for (Currency c : Currency.listedValues()) { // "Credits" filters both halves (EconomyStore#historyNow)
+            options.add(new PickListMenu.Option<>(c, module.config.iconItem(service, viewer, c, Material.GOLD_NUGGET), module.currencyName(viewer, c),
                     List.of(), c == filter.currency()));
         }
         pick("menu.filter-currency.crumb", options, c -> filter = filter.withCurrency(c));
@@ -303,7 +300,7 @@ final class TransactionsMenu extends Menu {
         }
         loading = requested;
         int size = pageSize();
-        module.service().store().history(account, gemsAccount, filter, page * size, size).whenComplete((result, error) ->
+        module.service().store().history(account, creditsAccount, filter, page * size, size).whenComplete((result, error) ->
                 Bukkit.getScheduler().runTask(module.core.plugin(), () -> {
                     if (loading == requested) {
                         loading = -1;

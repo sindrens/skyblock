@@ -20,6 +20,12 @@ import java.util.List;
  */
 final class ArmorEntriesMenu extends PagedMenu<SetEntryView> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final EnchantsModule module;
 
     ArmorEntriesMenu(EnchantsModule module) {

@@ -66,7 +66,7 @@ final class LoadoutEditMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Session s = module.equipment().sessionOrNull(viewer.getUniqueId());
         Optional<Loadout> found = preset();
         if (s == null || found.isEmpty()) {

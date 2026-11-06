@@ -85,7 +85,7 @@ final class NoteRules {
                 space = sb.length() > 0;
                 continue;
             }
-            if (net.skybornmc.skyblock.common.pack.PrivateUse.isPrivateUse(c)) {
+            if (net.skybornmc.skyblock.common.text.PrivateUse.isPrivateUse(c)) {
                 continue; // pack glyphs (badges, icons) can't be typed
             }
             if (space) {

@@ -67,6 +67,8 @@ public final class PerksModule implements SkyblockModule {
     private NickService nicks;
     private TrashMenu trash;
     private FreeRankService freeRank;
+    private AshbornAuto ashborn;
+    private RankRewards rankRewards;
     private volatile boolean active;
     private boolean rankHookRegistered;
     private final Map<UUID, Long> lastNickChange = new java.util.concurrent.ConcurrentHashMap<>();
@@ -110,6 +112,10 @@ public final class PerksModule implements SkyblockModule {
         registerCommands();
         freeRank = new FreeRankService(core, config, msg);
         freeRank.register();
+        ashborn = new AshbornAuto(core, config, freeRank);
+        ashborn.start();
+        rankRewards = new RankRewards(core, config, msg);
+        rankRewards.register();
     }
 
     @Override
@@ -160,6 +166,13 @@ public final class PerksModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        if (ashborn != null) {
+            ashborn.stop();
+            org.bukkit.event.HandlerList.unregisterAll(ashborn);
+        }
+        if (rankRewards != null) {
+            org.bukkit.event.HandlerList.unregisterAll(rankRewards);
+        }
         active = false;
         if (trash != null) {
             trash.closeAll();
@@ -326,7 +339,7 @@ public final class PerksModule implements SkyblockModule {
     }
 
     private void nick(CommandSender sender, Player target, String typed) {
-        String input = net.skybornmc.skyblock.common.pack.PrivateUse.strip(typed); // must-have 5: no pack glyphs in names
+        String input = net.skybornmc.skyblock.common.text.PrivateUse.strip(typed); // must-have 5: no pack glyphs in names
         boolean self = sender == target;
         if (self && config.nickCooldownSeconds > 0 && !sender.hasPermission(PERM_COOLDOWN_BYPASS)) {
             Long last = lastNickChange.get(target.getUniqueId());

@@ -28,9 +28,9 @@ final class SkillsMenu extends Menu {
     static final int[] SLOTS = {20, 21, 22, 23, 24};
     static final Map<SkillType, Material> ICONS = Map.of(
             SkillType.MINING, Material.IRON_PICKAXE,
-            SkillType.FORAGING, Material.OAK_LOG,
+            SkillType.FORAGING, Material.IRON_AXE,
             SkillType.COMBAT, Material.IRON_SWORD,
-            SkillType.FARMING, Material.WHEAT,
+            SkillType.FARMING, Material.IRON_HOE,
             SkillType.FISHING, Material.FISHING_ROD);
 
     private final SkillsModule module;
@@ -98,7 +98,7 @@ final class SkillsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         SkillManager manager = module.manager();
         SkillCurve curve = manager.curve();
         int totalLevels = 0;

@@ -2,18 +2,24 @@
 # Amount placeholders (<amount>, <balance>, <min>) are already colored with their currency (see format.*).
 # Reload: /skyblock reload economy
 
-# How amounts look. <value> = 12,500 below 100k, 1.2M above; <exact> = every digit.
+# How amounts look. <value> = 12,500 below economy.yml display.exact-below (100k), 1.2M above; credits always every digit.
+# <exact> = every digit. Credits: "credits" is the total or the bought part, "credits_earned" the earned part (card C1).
 format:
   money: "<hover:show_text:'<c:text><exact>'><cur:money><sym:money><value></cur:money></hover>"
   crystals: "<hover:show_text:'<c:text><exact>'><cur:crystals><sym:crystals> <value></cur:crystals></hover>"
-  gems: "<hover:show_text:'<c:text><exact>'><cur:gems><sym:gems> <value></cur:gems></hover>"
+  credits: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
+  credits_earned: "<hover:show_text:'<c:text><exact>'><cur:credits><sym:credits> <value></cur:credits></hover>"
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
+  mining_shards: "<hover:show_text:'<c:text><exact>'><cur:mining_shards><sym:mining_shards> <value></cur:mining_shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
   crystals: "<cur:crystals>Crystals</cur:crystals>"
-  gems: "<cur:gems>Gems</cur:gems>"
-  shards: "<cur:shards>Shards</cur:shards>"
+  credits: "<cur:credits>Credits</cur:credits>"
+  credits_earned: "<cur:credits>Earned credits</cur:credits>"
+  # Owner 4 Nov 2026: two shard types. "shards" is Farming Shards (the old single balance).
+  shards: "<cur:shards>Farming Shards</cur:shards>"
+  mining_shards: "<cur:mining_shards>Mining Shards</cur:mining_shards>"
 
 # Shown by the balance placeholders (scoreboard) for a moment after joining.
 placeholder:
@@ -49,11 +55,23 @@ pay:
   own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay your own profiles."
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
+  # Card C1: credits never move with /pay.
+  use-credit-pay: "<prefix><c:error><sym:cross></c:error> <c:text>Credits aren't sent with /pay. Bought credits will be sent with <c:value>/credit pay</c:value> <c:muted>(coming soon)</c:muted><c:text>. See yours: <c:value>/credit bal</c:value>."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
   # Owner F1: <required> to earn first, <earned> so far, <missing> still to earn (income only, not money from players).
   send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
 
 eco:
+  # A6: /eco sell price|reset|dump-recipes (staff).
+  sell:
+    unknown: "<prefix><c:error><sym:cross></c:error> <c:value><item></c:value> <c:text>is not in the sell table. Custom items are typed as <c:value>custom.<id></c:value><c:text>; press Tab for the list."
+    reason: "<prefix><c:error><sym:cross></c:error> <c:text>Add a reason, for example <c:value>/eco sell reset wheat Price stuck</c:value>."
+    price: "<prefix><c:value><item></c:value> <c:muted>(<category>, <state>)</c:muted> <c:text>base </c:text><base> <c:text>now </c:text><unit> <c:muted>(<percent>%, <trend>)</c:muted> <c:text>sold </c:text><c:value><sold>"
+    reset: "<prefix><c:success><sym:check></c:success> <c:text>Live price of <c:value><item></c:value> <c:text>back to base: <c:value><count></c:value> <c:text>item(s) changed. <c:muted>(<reason>)"
+    dumped: "<prefix><c:success><sym:check></c:success> <c:text>Wrote <c:value><count></c:value> <c:text>recipes to <c:value>plugins/PhoenixSkyblock/<file></c:value><c:text>."
+  # Card C1 (C1-R1-18): only the owner creates or sets bought credits by hand. <action> = give/set/reset.
+  credits-owner-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the owner can <action> bought credits. Use <c:value>credits_earned</c:value> <c:text>for event prizes and compensation."
+  credits-skipped: "<prefix><c:muted>Bought credits were left as they are (owner only)."
   done-give: "<prefix><c:success><sym:check></c:success> <c:text>Gave <amount> <c:text>to <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
   done-take: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>from <c:value><player></c:value>. <c:muted>Now </c:muted><balance> <c:muted>(<reason>)"
   done-set: "<prefix><c:success><sym:check></c:success> <c:text>Set <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance><c:text>. <c:muted>(<reason>)"
@@ -62,12 +80,18 @@ eco:
   alert-take: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>took <amount> <c:text>from <c:value><player></c:value> <c:muted>(<reason>) <sym:dot> now <balance>"
   alert-set: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>set <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
   alert-reset: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>reset <c:value><player></c:value><c:text>'s <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  # Owner 31 Oct 2026: an admin or the owner changed their OWN account (skyblock.economy.eco.self). Same placeholders.
+  alert-self-give: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>gave themselves <amount> <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-self-take: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>took <amount> <c:text>from themselves <c:muted>(<reason>) <sym:dot> now <balance>"
+  alert-self-set: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>set their <currency> <c:text>to <balance> <c:muted>(<reason>)"
+  alert-self-reset: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>changed their OWN balance:</c:warning> <c:text>reset their <currency> <c:text>to <balance> <c:muted>(<reason>)"
   insufficient: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>only has <balance><c:text>. Use <c:value>/eco set</c:value> for an exact balance."
   overflow: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>can't hold that much. Nothing changed."
   notify: "<prefix><c:text>Staff changed your <currency><c:text>. <c:muted>Now </c:muted><balance> <c:muted>(see /transactions)"
-  # Owner R3-39: staff play on a separate account, so /eco never touches your own or a same-address account.
+  # Owner R3-39: /eco never touches another account on your address. Your own only with skyblock.economy.eco.self
+  # (admin and owner, owner 31 Oct 2026) while eco.allow-self is on.
   target:
-    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change your own balance. Ask another admin."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't change your own balance. Ask an admin or the owner."
     same-ip: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>shares an address with you, so you can't change their balance. Ask another admin."
     alert-self: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change their own balance <c:muted>(refused)"
     alert-same-ip: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>tried to change <c:value><player></c:value><c:text>, who shares their address <c:muted>(refused)"
@@ -85,6 +109,10 @@ eco:
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No waiting change <c:value>#<id></c:value><c:text>. It was decided already or ran out."
     no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Only an owner or admin can decide this."
     own-request: "<prefix><c:error><sym:cross></c:error> <c:text>You asked for this one, so another owner or admin must allow it."
+    # Owner 31 Oct 2026: nobody decides a change to their own account, not even the owner.
+    own-account: "<prefix><c:error><sym:cross></c:error> <c:text>This change is for your own account, so another owner or admin must decide it."
+    # Sent right after alert / alert-info when the requester wants to change their OWN account. Same placeholders.
+    alert-self: "<c:muted>[Economy]</c:muted> <c:warning>#<id> is for <c:value><staff></c:value><c:warning>'s OWN balance.</c:warning>"
     denied: "<prefix><c:success><sym:check></c:success> <c:text>Denied <c:value>#<id></c:value><c:text>: nothing changed for <c:value><player></c:value><c:text>."
     denied-you: "<prefix><c:error><sym:cross></c:error> <c:value><by></c:value> <c:text>denied your change <c:value>#<id></c:value><c:text>. Nothing changed."
     allowed-you: "<prefix><c:success><sym:check></c:success> <c:value><by></c:value> <c:text>allowed your change <c:value>#<id></c:value><c:text>. It is done."
@@ -116,6 +144,48 @@ eco:
       - "<c:text>No: deny it, nothing changes."
 
 # Money notes (M3.2). <amount>, <balance>, <min>, <max> are colored amounts; <id> = first 8 characters of the note id.
+# Card C1: /credit bal. <total> = bought + earned, <bought> can be sent later with /credit pay, <earned> never moves.
+credit:
+  bal:
+    self:
+      - "<prefix><c:text>Your credits: <total>"
+      - " <c:muted><sym:bullet></c:muted> <c:text>Bought: <bought> <c:muted>(can be traded)"
+      - " <c:muted><sym:bullet></c:muted> <c:text>Earned: <earned> <c:muted>(votes, streaks, thanks; stay yours)"
+      - " <c:muted>Earned credits are spent first."
+    other: "<prefix><c:value><player></c:value><c:text>'s credits: <total>"
+  # Tebex store (CREDIT-SHOP 5.2/5.3). Console: <player> <credits> <package> <tx> <list> <taken> <owed> <reason>
+  grant:
+    ok: "<tag:store> <c:value><player></c:value> <c:text>+<c:value><credits></c:value> <c:text>credits (<package>, tx <tx>)"
+    duplicate: "<tag:store> <c:text>Already granted: tx <c:value><tx></c:value> <c:text>(<package>). Nothing changed."
+    unknown-package: "<tag:store> <c:error>Unknown package <c:value><package></c:value><c:error>. Known: <c:value><list>"
+    unknown-player: "<tag:store> <c:error>Unknown player <c:value><player></c:value><c:error>. Use the UUID or XUID ({id} in Tebex)."
+    bad-tx: "<tag:store> <c:error>That is not a Tebex transaction id: <c:value><tx>"
+    too-big: "<tag:store> <c:error>Package <c:value><package></c:value> <c:error>gives <credits> credits, above credit-store.max-grant (<max>). Refused."
+    console-only: "<prefix><c:error><sym:cross></c:error> <c:text>This command is for the console (Tebex)."
+    failed: "<tag:store> <c:error>Grant FAILED for <c:value><player></c:value> <c:error>(<package>, tx <tx>). Nothing was paid; resend it from Tebex."
+    thanks: "<tag:store> <c:success>Thank you!</c:success> <c:text>+<c:value><credits></c:value> <c:text>credits."
+  chargeback:
+    done: "<tag:store> <c:text>Chargeback tx <c:value><tx></c:value><c:text>: took <c:value><taken></c:value> <c:text>credits from <c:value><player></c:value><c:text>, <c:value><owed></c:value> <c:text>owed (already spent)."
+    none: "<tag:store> <c:text>Nothing to charge back for <c:value><player></c:value> <c:text>tx <c:value><tx></c:value><c:text>."
+    failed: "<tag:store> <c:error>Chargeback FAILED for <c:value><player></c:value> <c:error>tx <tx>. Try again."
+  alert:
+    failed-grant: "<prefix><c:error><sym:cross></c:error> <c:text>Store grant failed: <c:value><player></c:value><c:text>, package <package>, tx <tx> (<reason>)."
+
+# Tab completion hints (C1-R3-03). Staff can type any reason; these are only suggestions.
+tab-hints:
+  eco-reasons:
+    - "Compensation for a bug"
+    - "Event prize"
+    - "Refund"
+    - "Dupe removal"
+    - "Testing"
+  note-reasons:
+    - "Event prize"
+    - "Compensation for a bug"
+    - "Giveaway"
+    - "Refund"
+    - "Testing"
+
 note:
   # The note item (lore follows UI_STYLE §4; {placeholders} are filled by the plugin, max ~36 visible characters per line).
   item:
@@ -155,6 +225,8 @@ note:
   admin-done: "<prefix><c:success><sym:check></c:success> <c:text>Gave <c:value><player></c:value> <c:text>a note of <amount><c:text>. <c:muted>(#<id>, <reason>)"
   admin-received: "<prefix><c:success><sym:check></c:success> <c:text>Staff gave you a note of <amount><c:text>. Use it to cash it."
   admin-alert: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:text>gave <c:value><player></c:value> <c:text>a note of <amount> <c:muted>(<reason>) <sym:dot> #<id>"
+  # Owner 31 Oct 2026: an admin or the owner made a note for their OWN account. Same placeholders.
+  admin-alert-self: "<c:muted>[Economy]</c:muted> <c:value><staff></c:value> <c:warning>made a note for their OWN account:</c:warning> <c:text><amount> <c:muted>(<reason>) <sym:dot> #<id>"
   admin-inventory-full: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value><c:text>'s inventory is full. Ask them to free a slot. Nothing was made."
   admin-target-left: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>left before the note was ready. Nothing was given."
 
@@ -275,7 +347,16 @@ sell:
   # A sale (SELL2): below sell.big-sale-chat-from (economy.yml, default $100k) only the action bar line, from there one
   # chat line whose hover shows the breakdown (sell.breakdown.*).
   sold-bar: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount>"
+  sold-screen:
+    title: "<bold><c:success><amount></c:success></bold>"
+    subtitle: "<c:text>Sold <c:value><items></c:value> items"
+    fade-in: 4
+    stay: 30
+    fade-out: 10
   sold-bar-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)"
+  # One item kind (/sell hand, the shop's sell GUI and sell all): <items> count, <item> the item name.
+  sold-bar-item: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items>x <item></c:value> for <amount>"
+  sold-bar-item-bonus: "<c:success><sym:check></c:success> <c:text>Sold <c:value><items>x <item></c:value> for <amount> <c:muted>(<bonus>% bonus)"
   sold-big: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
   sold-big-bonus: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> items for <amount> <c:muted>(<bonus>% bonus)</c:muted><c:text>. <c:muted>Balance: </c:muted><balance> <c:muted>(hover for details)"
   breakdown:
@@ -290,6 +371,9 @@ sell:
   overflow: "<prefix><c:error><sym:cross></c:error> <c:text>Your balance can't hold that much. Your items are back."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale didn't go through, your items are back. Try again."
   refund-delivered: "<prefix><c:success><sym:check></c:success> <c:text>You got back <c:value><amount>x</c:value> <item> <c:text>from a sale that didn't go through."
+  hot:
+    announce: "<tag:market><bold>[Market]</bold></tag> <c:text>Today's Hot Item is <c:value><item></c:value><c:text>: <c:success><percent>%</c:success> <c:text>sell price until midnight. <c:muted>/sell</c:muted>"
+    join: "<tag:market><bold>[Market]</bold></tag> <c:text>Hot Item today: <c:value><item></c:value> <c:success><percent>%</c:success> <c:muted>(/sell)"
   # Why an item can't be sold (/sell hand, and the action bar when you put it into the sell chest).
   reason:
     empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to sell."
@@ -327,12 +411,49 @@ sell:
     boosters: "Boosters"
     events: "Event"
   # The sell chest (SELL2): /sell, the Sell button in /shop and in the satchel.
+  # A4: Market Tips (sell chest button, slot 48): the items furthest above base right now.
+  tips:
+    title: "Market Tips"
+    info:
+      - "<c:text>The items that sell furthest above"
+      - "<c:text>their base price right now."
+      - "<c:muted>Worked out again every minute."
+    hot:
+      name: "<c:flame><sym:star></c:flame> <c:value>Hot Item: <item>"
+      lore:
+        - "<c:text>Sells for <c:success><percent>%</c:success> <c:text>today."
+        - "<c:text>Price now: <unit> <c:muted>each"
+        - ""
+        - "<c:muted>A new Hot Item every day at midnight."
+    no-hot:
+      name: "<c:muted>No Hot Item today"
+      lore:
+        - "<c:text>Check back tomorrow."
+    tip:
+      name: "<c:value><item>"
+      lore:
+        - "<c:text>Price now: <unit> <c:muted>each"
+        - "<c:text>Above base: <c:success><percent>%"
+        - "<c:text>Base: <base>"
+    empty:
+      name: "<c:muted>No tips right now"
+      lore:
+        - "<c:text>No item is far above its base price."
+        - "<c:text>Prices rise when few players sell."
   chest:
     title: "Sell"
     info:
       - "<c:text>Put items into the top 4 rows"
       - "<c:text>(click, shift-click or drag), then"
       - "<c:text>press Sell. Closing gives them back."
+    tips:
+      name: "<c:value><bold>Market Tips"
+      lore:
+        - "<c:text>The best-paying items right now"
+        - "<c:text>and today's Hot Item."
+        - ""
+        - "<c:muted>Items in the chest go back to"
+        - "<c:muted>your inventory when you open it."
     sell-inventory:
       name: "<c:value><bold>Add my inventory"
       lore:
@@ -406,12 +527,12 @@ bank:
   full: "<prefix><c:error><sym:cross></c:error> <c:text>The bank can't hold that much. A higher tier or the Bank Capacity upgrade gives room."
   below-min: "<prefix><c:error><sym:cross></c:error> <c:text>Too small. The smallest deposit is <deposit><c:text>, the smallest withdrawal <withdraw><c:text>."
   deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank, no fee. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+  withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank. <c:muted>Bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
   # GUI-4 (UX review 6): short, and R3-41 (the fee is the only cost, the interest is kept). <percent> and <balance> still work.
   withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of your bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Bank: </c:muted><bank>"
   island:
     deposited: "<prefix><c:success><sym:check></c:success> <c:text>Put <amount> <c:text>in the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
-    withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank, no fee. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
+    withdrawn: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank. <c:muted>Island bank: </c:muted><bank> <c:muted><sym:dot> balance: </c:muted><balance>"
     withdrawn-fee: "<prefix><c:success><sym:check></c:success> <c:text>Took <amount> <c:text>out of the island bank <c:muted>(fee </c:muted><fee><c:muted>)</c:muted><c:text>. <c:muted>Island bank: </c:muted><bank>"
     notify-deposit: "<prefix><c:value><player></c:value> <c:text>put <amount> <c:text>in the island bank."
     notify-withdraw: "<prefix><c:value><player></c:value> <c:text>took <amount> <c:text>out of the island bank."
@@ -446,12 +567,37 @@ bank:
       - "<c:text>Take out: <amount>"
       - "<c:success>No fee right now"
       - "<c:text>You get: <net>"
+    # Feedback 4 Nov 2026 (E20): there is no withdrawal fee (withdraw.fee-percent 0), so nothing about a fee is shown.
+    no-fee:
+      - "<c:text>You get: <net>"
   menu:
     title: "Bank"
+    crumb-personal: "Personal"
+    crumb-island: "Island"
     info:
-      - "<c:text>Left: your own bank (this profile)."
-      - "<c:text>Right: your island's shared bank."
+      - "<c:text>Chest: your own bank."
+      - "<c:text>Ender chest: your island's bank."
       - "<c:text>Both earn interest every 8 hours."
+    # Owner 3 Nov 2026: the overview. <balance> <tier> <island> <money>
+    overview:
+      personal:
+        name: "<c:value><bold>Personal Bank"
+        lore:
+          - "<c:text>Balance: <balance>"
+          - "<c:muted>Only you. Safe if you leave."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      island:
+        name: "<c:value><bold>Island Bank"
+        lore:
+          - "<c:text>Balance: <balance>"
+          - "<c:muted>Shared by <island>."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      wallet:
+        name: "<c:value>Your money"
+        lore:
+          - "<c:text>In your pocket: <money>"
     personal:
       name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
       lore:
@@ -519,6 +665,20 @@ bank:
         - ""
         - "<bold><c:header>| Withdraw</c:header></bold>"
         - "<c:bar>| </c:bar><c:text>Fee: </c:text><c:value><fee>%</c:value><discount>"
+    # Feedback 4 Nov 2026 (E20): the two above while the fee is 0 (no fee line at all).
+    withdraw-no-fee:
+      name: "<c:value>Withdraw"
+      lore:
+        - "<c:text>Take money out of the bank."
+        - ""
+        - "<bold><c:header>| Withdraw</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Up to: </c:text><max>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose an amount"
+    withdraw-none-no-fee:
+      name: "<c:muted>Withdraw"
+      lore:
+        - "<c:text>The bank is empty."
     withdraw-limit:
       name: "<c:muted>Withdraw"
       lore:
@@ -713,6 +873,9 @@ watch:
     staff-transfer:
       name: "Staff transfer"
       text: "<c:value><player></c:value> <c:text>moved <amount> <c:text>to <c:value><other></c:value> <c:muted>(a staff account; alert from <expected>)"
+    shard-block:
+      name: "Shard block farming"
+      text: "<c:value><player></c:value> <c:text>got <amount> <c:text>from shard blocks in the hour from <hour> <c:muted>(alert from <expected>)"
     sink-ratio:
       name: "Inflation"
       text: "<c:text>Only <c:value><ratio>%</c:value> <c:text>of new money was removed over the last 14 days, <c:value><hits></c:value> <c:text>days below <line>% <c:muted>(see /eco admin)"
@@ -1043,3 +1206,43 @@ watch:
       lore:
         - "<c:text>This alert is about totals."
         - "<c:text>See the dashboard numbers."
+
+# The Sell Wand (owner 4 Nov 2026): right-click a chest or barrel on your island to sell what's inside. <uses> = uses left.
+sell-wand:
+  name: "<bold><area:money>Sell Wand</area:money></bold>"
+  subtitle: "<c:muted>Tool <sym:dot> Black Market"
+  about: "<c:text>Sells everything sellable in a chest."
+  uses: "<c:bar>|</c:bar> <c:text>Uses left: <c:value><uses>"
+  action: "<bold><c:action>» RIGHT-CLICK</c:action></bold> <c:text>a chest on your island"
+  sold: "<prefix><c:success><sym:check></c:success> <c:text>Sold <c:value><items></c:value> <c:text>items from the chest for <c:value><amount></c:value><c:text>. Uses left: <c:value><uses>"
+  nothing: "<prefix><c:text>Nothing in that chest can be sold."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>This Sell Wand has no uses left."
+  broke: "<prefix><c:text>Your Sell Wand used its last charge."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>The Sell Wand only works on a chest on your own island."
+  not-chest: "<c:text>Right-click a chest or barrel with the Sell Wand."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Selling is turned off right now."
+
+# The Auto-Sell Chest (owner 4 Nov 2026, Black Market): sells what is in it every few seconds.
+autosell:
+  item:
+    name: "<bold><area:money>Auto-Sell Chest</area:money></bold>"
+    subtitle: "<c:muted>Block <sym:dot> Black Market"
+    about: "<c:text>Sells what is in it every 30 s."
+    action: "<bold><c:action>» PLACE</c:action></bold> <c:text>it on your island"
+  placed: "<prefix><c:success><sym:check></c:success> <c:text>Auto-Sell Chest placed. It sells what is in it every <c:value><seconds> s</c:value><c:text>; hoppers can feed it."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest on your own island."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> <c:text>Auto-Sell Chest(s), the most allowed."
+  not-double: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest away from other chests (it can't be a double chest)."
+  sold: "<c:success>Auto-Sell Chest</c:success> <c:text>+<amount> <c:muted>(<items> items)"
+
+# Owner 6 Nov 2026: the daily pay limit by playtime (anti-boost) and island-only shards. /paylimit shows the ladder.
+pay-limit:
+  reached: "<prefix><c:error><sym:cross></c:error> <c:text>You can send <left> <c:text>more today. After <c:value><hours> h</c:value> <c:text>of playtime the limit is <next><c:text>. <c:muted>/paylimit"
+  reached-top: "<prefix><c:error><sym:cross></c:error> <c:text>You can send <left> <c:text>more today. The limit resets at midnight. <c:muted>/paylimit"
+  shards-island: "<prefix><c:error><sym:cross></c:error> <c:text>Shards can only be paid to members of your island."
+  title: "<c:value><bold>Pay limit"
+  header: "<prefix><c:text>What you may send to other players per day (/pay, trades, auction buys, notes). <c:muted>Island members never count."
+  tier-done: "<c:success><sym:check></c:success> <c:text><limit> <c:muted>a day <c:muted>· from <hours> h <c:muted>(passed)"
+  tier-here: "<c:action><sym:arrow></c:action> <c:value><limit> <c:text>a day <c:muted>· from <hours> h <c:action>· you are here <c:muted>(sent today: <sent>)"
+  tier-locked: "<c:muted><sym:dot> <limit> a day · unlocks in <time> of playtime"
+  unlimited: "no limit"

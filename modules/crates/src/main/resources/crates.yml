@@ -2,25 +2,30 @@
 # Written to plugins/PhoenixSkyblock/crates.yml on first start; crates that are new in the jar are added to an existing
 # file, rewards of an existing crate never (your tables and odds stay as you edited them). Reload: /skyblock reload crates
 #
-# Per crate (plain keys): rarity (color), icon (vanilla block now; the pack retextures it later), order in /crates,
+# Per crate (plain keys): rarity (color), icon (a vanilla block), order in /crates,
 #   pity (opens without a top-band reward before the next one is forced into it; 0 = off; ~2.5x the average gap),
 #   hidden (not shown in /crates, e.g. Conqueror until KOTH), fallback-crystals (crystal value of rewards that are not
 #   live yet, x crystal-growth^(tier-1)).
 # rewards: a catalog LIST, one map per reward. Never put plain settings inside it.
 #   id      unique per crate (names in messages/crates.yml -> rewards.<crate>.<id>)
-#   type    money | crystals | shards | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | booster |
+#   type    money | crystals | key | enchant-book | scroll | set-token | spawner | item | tag | title | fuel | booster |
 #           global-booster | coming-soon
 #   chance  percent (used as a weight; the preview shows the real share)
 #   top     true = top band (counts for pity, marked with a star)
-#   money: minutes (of reference income at your tier) · crystals: base · shards/key/scroll/set-token/spawner/item: amount
+#   money: minutes (of reference income at your tier) · crystals: base · key/scroll/set-token/spawner/item: amount
 #   key: crate · enchant-book: pool (rarity), level · set-token: sets (one picked at random) · spawner: tier (random type)
-#   item: material · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
+#   item: material (a vanilla item, or custom:<id> of a custom item such as custom:shard_block) · tag/title: ids (one you don't own; all owned = its crystal value) · fuel: minutes
 #   booster / global-booster (M10.2): booster (sell | skill_xp | tool_xp | crystals), percent, minutes, amount. Personal
 #           boosters are always bound to the opener; global ones are bound when opened with a bound key (and by default
 #           always: boosters.yml -> global.always-bound). Without the boosters module they pay their crystal value.
 #   coming-soon: a reward whose system is not built yet (tomes, skins, sell wands, collectors, pet eggs);
 #                it keeps its chance and pays its crystal value until then. icon: optional item shown in the preview.
 #   fallback: crystal base of this reward instead of the crate's fallback-crystals; rarity: color of this reward.
+#   band (tiered crates only, e.g. Eclipse): common | mid | rare | jackpot; the crate's draw: says how many of each band
+#           one open gives. A tiered crate has no pity.
+
+# ECON-SHARDS: shards are only found in shard blocks (no 'shards' rewards); premium spawners are sold by the Black Market.
+catalog-version: 2
 
 crates:
   ember:
@@ -68,7 +73,7 @@ crates:
     pity: 23
     fallback-crystals: 100
     rewards:
-      - {id: money, type: money, chance: 18, minutes: 15}
+      - {id: money, type: money, chance: 17.5, minutes: 15}
       - {id: crystals, type: crystals, chance: 16, base: 100}
       - {id: book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: sell_booster, type: booster, chance: 8, booster: sell, percent: 50, minutes: 30, icon: gold_ingot}
@@ -84,6 +89,7 @@ crates:
       - {id: tome, type: coming-soon, chance: 1.5, top: true, icon: book, fallback: 250}
       - {id: lorekeeper_token, type: set-token, chance: 1, sets: [lorekeeper], amount: 1, top: true, rarity: epic}
       - {id: blueprint, type: coming-soon, chance: 0.5, top: true, icon: paper, rarity: epic, fallback: 400}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 0.5, amount: 1}
   inferno:
     rarity: epic
     icon: ender_chest
@@ -91,7 +97,7 @@ crates:
     pity: 18
     fallback-crystals: 250
     rewards:
-      - {id: money, type: money, chance: 15, minutes: 30}
+      - {id: money, type: money, chance: 16, minutes: 30}
       - {id: crystals, type: crystals, chance: 14, base: 250}
       - {id: book, type: enchant-book, chance: 14, pool: epic, level: 1}
       - {id: sell_booster, type: booster, chance: 7, booster: sell, percent: 100, minutes: 30, icon: gold_ingot}
@@ -106,7 +112,7 @@ crates:
       - {id: greater_tome, type: coming-soon, chance: 3, top: true, icon: enchanted_book, rarity: legendary, fallback: 600}
       - {id: set_token_a, type: set-token, chance: 3, sets: [deepforge, cropwarden, dreadguard], amount: 1, top: true, rarity: legendary}
       - {id: set_token_b, type: set-token, chance: 3, sets: [thornward, stormkeel], amount: 1, top: true, rarity: legendary}
-      - {id: spawner_t5, type: spawner, chance: 2, tier: 5, amount: 1, top: true, rarity: legendary}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 1, amount: 1, top: true, rarity: rare}
       - {id: phoenix_key, type: key, chance: 1.5, crate: phoenix, amount: 1, top: true, rarity: legendary}
       - {id: blueprint, type: coming-soon, chance: 1.5, top: true, icon: paper, rarity: legendary, fallback: 600}
   phoenix:
@@ -116,7 +122,7 @@ crates:
     pity: 18
     fallback-crystals: 600
     rewards:
-      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
+      - {id: book, type: enchant-book, chance: 18, pool: legendary, level: 1}
       - {id: money, type: money, chance: 12, minutes: 60}
       - {id: crystals, type: crystals, chance: 12, base: 600}
       - {id: sell_booster, type: booster, chance: 6, booster: sell, percent: 100, minutes: 60, icon: gold_ingot}
@@ -129,34 +135,58 @@ crates:
       - {id: autosell_chest, type: coming-soon, chance: 4, icon: chest}
       - {id: blueprint, type: coming-soon, chance: 4, icon: paper}
       - {id: phoenix_key, type: key, chance: 2, crate: phoenix, amount: 1}
-      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 1, top: true}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: elytra, type: item, chance: 3, material: elytra, amount: 1, top: true}
       - {id: voidforged_token, type: set-token, chance: 2, sets: [voidforged], amount: 1, top: true}
       - {id: title, type: title, chance: 2, ids: [], top: true, fallback: 1500}
       - {id: eclipse_key, type: key, chance: 1, crate: eclipse, amount: 1, top: true, rarity: mythic}
+  # Eclipse Crate (Complete Developer Spec, owner F7a/V1-V3): a TIERED crate. One open gives 3 different rewards from
+  # each of common, mid and rare (9 of a pool of 27, drawn evenly) plus 1 of 5 jackpots (by chance). No pity: every open
+  # is fresh random. A jackpot cosmetic you already own pays its fallback crystals (no re-roll).
+  # band: common | mid | rare | jackpot · draw: rewards per band per open · chance: only used inside the jackpot band.
+  # PROPOSAL numbers (the balance run sets the value ceiling per month).
+  # Month tables (owner M1/M4): add months: {"2026-12": {rewards: [...same rows with band...]}} to give a month its own
+  # pool; a month without one uses the rows below (staff are warned eclipse.warn-days before, crates-settings.yml).
+  # Keys never expire and open the table of the month they are opened in.
   eclipse:
     rarity: mythic
     icon: vault
     order: 6
-    pity: 10
     fallback-crystals: 1000
+    draw: {common: 3, mid: 3, rare: 3, jackpot: 1}
     rewards:
-      - {id: book, type: enchant-book, chance: 14, pool: legendary, level: 1}
-      - {id: money, type: money, chance: 10, minutes: 90}
-      - {id: crystals, type: crystals, chance: 10, base: 1000}
-      - {id: month_skin, type: coming-soon, chance: 10, icon: netherite_upgrade_smithing_template}
-      - {id: month_tag, type: tag, chance: 10, ids: [inferno]}
-      - {id: month_theme, type: coming-soon, chance: 8, icon: firework_star}
-      - {id: pet_egg, type: coming-soon, chance: 8, icon: sniffer_egg}
-      - {id: spawner_t5, type: spawner, chance: 6, tier: 5, amount: 2}
-      - {id: greater_tome, type: coming-soon, chance: 5, icon: enchanted_book}
-      - {id: collector, type: coming-soon, chance: 4, icon: hopper}
-      - {id: global_booster, type: global-booster, chance: 4, booster: sell, percent: 50, minutes: 60, icon: beacon}
-      - {id: autosell_chest, type: coming-soon, chance: 3, icon: chest}
-      - {id: phoenix_key, type: key, chance: 3, crate: phoenix, amount: 1, top: true, rarity: legendary}
-      - {id: mythic_book, type: enchant-book, chance: 2, pool: mythic, level: 1, top: true}
-      - {id: regalia_token, type: set-token, chance: 2, sets: [phoenix], amount: 1, top: true}
-      - {id: month_title, type: title, chance: 1, ids: [], top: true, fallback: 3000}
+      - {id: money_s, type: money, band: common, chance: 1, minutes: 30}
+      - {id: crystals_s, type: crystals, band: common, chance: 1, base: 500}
+      - {id: rare_book, type: enchant-book, band: common, chance: 1, pool: rare, level: 1}
+      - {id: scroll, type: scroll, band: common, chance: 1, amount: 1}
+      - {id: fuel, type: fuel, band: common, chance: 1, minutes: 120}
+      - {id: blaze_key, type: key, band: common, chance: 1, crate: blaze, amount: 1}
+      - {id: sell_booster, type: booster, band: common, chance: 1, booster: sell, percent: 25, minutes: 30, icon: gold_ingot}
+      - {id: xp_booster, type: booster, band: common, chance: 1, booster: skill_xp, percent: 25, minutes: 30, icon: experience_bottle}
+      - {id: xp_bottles, type: item, band: common, chance: 1, material: experience_bottle, amount: 32}
+      - {id: money_m, type: money, band: mid, chance: 1, minutes: 60}
+      - {id: crystals_m, type: crystals, band: mid, chance: 1, base: 1000}
+      - {id: epic_book, type: enchant-book, band: mid, chance: 1, pool: epic, level: 1, rarity: epic}
+      - {id: inferno_key, type: key, band: mid, chance: 1, crate: inferno, amount: 1, rarity: epic}
+      - {id: spawner_t3, type: spawner, band: mid, chance: 1, tier: 3, amount: 1}
+      - {id: tool_booster, type: booster, band: mid, chance: 1, booster: tool_xp, percent: 50, minutes: 30, icon: iron_pickaxe}
+      - {id: crystal_booster, type: booster, band: mid, chance: 1, booster: crystals, percent: 50, minutes: 30, icon: amethyst_shard}
+      - {id: scrolls, type: scroll, band: mid, chance: 1, amount: 3}
+      - {id: fuel_l, type: fuel, band: mid, chance: 1, minutes: 360}
+      - {id: money_l, type: money, band: rare, chance: 1, minutes: 120, top: true, rarity: legendary}
+      - {id: crystals_l, type: crystals, band: rare, chance: 1, base: 2500, top: true, rarity: legendary}
+      - {id: legendary_book, type: enchant-book, band: rare, chance: 1, pool: legendary, level: 1, top: true, rarity: legendary}
+      - {id: phoenix_key, type: key, band: rare, chance: 1, crate: phoenix, amount: 1, top: true, rarity: legendary}
+      - {id: spawner_t4, type: spawner, band: rare, chance: 1, tier: 4, amount: 1, top: true, rarity: legendary}
+      - {id: shard_block, type: item, band: rare, chance: 1, material: "custom:shard_block", icon: infested_stone, amount: 1, top: true, rarity: epic}
+      - {id: elytra, type: item, band: rare, chance: 1, material: elytra, amount: 1, top: true, rarity: legendary}
+      - {id: global_booster, type: global-booster, band: rare, chance: 1, booster: sell, percent: 50, minutes: 60, icon: beacon, top: true}
+      - {id: regalia_token, type: set-token, band: rare, chance: 1, sets: [phoenix], amount: 1, top: true, rarity: legendary}
+      - {id: mythic_book, type: enchant-book, band: jackpot, chance: 30, pool: mythic, level: 1, top: true}
+      - {id: month_tag, type: tag, band: jackpot, chance: 25, ids: [eclipse], top: true, fallback: 2500}
+      - {id: month_title, type: title, band: jackpot, chance: 20, ids: [], top: true, fallback: 3000}
+      - {id: voidforged_token, type: set-token, band: jackpot, chance: 15, sets: [voidforged], amount: 1, top: true}
+      - {id: eclipse_key, type: key, band: jackpot, chance: 10, crate: eclipse, amount: 1, top: true}
   conqueror:
     rarity: special
     icon: trial_spawner
@@ -165,8 +195,8 @@ crates:
     hidden: true
     fallback-crystals: 250
     rewards:
-      - {id: money, type: money, chance: 15, minutes: 30}
-      - {id: shards, type: shards, chance: 15, amount: 5}
+      - {id: money, type: money, chance: 28, minutes: 30}
+      - {id: shard_block, type: item, material: "custom:shard_block", icon: infested_stone, chance: 2, amount: 1, top: true, rarity: rare}
       - {id: combat_rare_book, type: enchant-book, chance: 15, pool: rare, level: 1}
       - {id: scroll, type: scroll, chance: 10, amount: 1}
       - {id: banneret_token, type: set-token, chance: 10, sets: [banneret], amount: 1}

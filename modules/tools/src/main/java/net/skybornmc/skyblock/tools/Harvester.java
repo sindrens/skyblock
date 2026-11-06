@@ -425,7 +425,7 @@ final class Harvester implements Listener {
         double xp = HarvestRules.toolXp(event.xpEligible(), held.get().kind(), module.config().tierXp(event.tier()), event.crops(),
                 module.config().cropXpFactor);
         if (xp > 0) {
-            module.tracker().gain(player, xp, ToolData.STAT_CROPS, event.crops());
+            module.tracker().gain(player, xp, ToolData.STAT_CROPS, event.crops(), 0, b.getType().name());
         }
     }
 

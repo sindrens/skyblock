@@ -40,8 +40,9 @@ class PunishConfirmTest {
         assertEquals(46, PunishMenus.frameSafeSlot(46, Set.of()));
         assertEquals(52, PunishMenus.frameSafeSlot(52, Set.of()), "a single screen has no pages: 52 stays free for buttons");
         assertEquals(3, PunishMenus.frameSafeSlot(45, Set.of(4)), "an old config's sanctions on 45 (Back) moves up");
-        assertEquals(5, PunishMenus.frameSafeSlot(48, Set.of(3, 4)));
-        assertEquals(2, PunishMenus.frameSafeSlot(50, Set.of(3, 4, 5)));
+        assertEquals(48, PunishMenus.frameSafeSlot(48, Set.of(3, 4)), "48 and 50 are free since the ? and Main menu buttons went");
+        assertEquals(50, PunishMenus.frameSafeSlot(50, Set.of(3, 4, 5)));
+        assertEquals(5, PunishMenus.frameSafeSlot(49, Set.of(3, 4)), "Close (49) is the bar's: a button there moves up");
         assertEquals(-1, PunishMenus.frameSafeSlot(49, Set.of(1, 2, 3, 5, 6, 7)));
     }
 }

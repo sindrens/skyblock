@@ -17,7 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * The buttons of the /menu hub ({@code menu.yml → hub}) and the You menu ({@code menu.yml → you}), GUI_DESIGN §7.1-7.2.
+ * The buttons of the /menu hub ({@code menu.yml → hub}) and the You menu ({@code menu.yml → you}), G9 v3 / I9 v2.
+ * Hub buttons have fixed slots; You entries are placed by {@code Centered} in file order (their {@code slot} is ignored).
  * Texts: {@code messages/navigation.yml → hub.buttons.<id>} / {@code you.buttons.<id>}. Pure parsing and rules
  * (unit-tested); the menus resolve services and commands when they open.
  *
@@ -35,15 +36,22 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
     public static final String HELP = "help";
     /** The Top screen (GUI-4c, GUI_DESIGN §7.6): island, weekly, money and skill boards. */
     public static final String TOP = "top";
+    /** The Staff tile (G9): opens {@code /staff}; only players with its permission see it. */
+    public static final String STAFF = "staff";
     /** Runs {@link Button#command()} as the player. */
     public static final String COMMAND = "command";
-    static final Set<String> ACTIONS = Set.of(YOU, TRAVEL, REWARDS, SETTINGS, HELP, TOP, COMMAND);
+    static final Set<String> ACTIONS = Set.of(YOU, TRAVEL, REWARDS, SETTINGS, HELP, TOP, STAFF, COMMAND);
+    /** The area colour names of style.yml (I9 section 8); a hub group takes one of them. */
+    static final Set<String> AREAS = Set.of("money", "reward", "move", "depths", "skills", "people", "home", "danger", "neutral", "locked");
+    /** Colour of a group whose {@code color} is missing or unknown. */
+    static final String DEFAULT_AREA = "neutral";
 
     /** What a button looks like for a viewer. */
     public enum State { HIDDEN, COMING_SOON, ACTIVE }
 
     /**
-     * @param icon       item id (checked when parsed; {@link Nav#material} turns it into the item)
+     * @param slot       hub slot; -1 in the You menu (placed by {@code Centered})
+     * @param icon       an icon key of the catalogue ({@code feature/home}) or a vanilla item id (plain item for everyone)
      * @param group      hub group ({@code play}, {@code money}, {@code power}, {@code more}); null in the You menu and for the head
      * @param action     a built-in ({@link #ACTIONS}) or {@link #COMMAND}
      * @param command    the command a click runs (without /) for {@link #COMMAND}; for {@link #REWARDS} the screen it
@@ -51,11 +59,21 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
      * @param service    optional simple name of the common service the feature provides (e.g. {@code SellService}):
      *                   without it registered, the feature counts as not built
      * @param show       false hides the button everywhere (also on the test server)
-     * @param permission optional: players without it see the button locked
-     * @param model      pack icon id ({@code menu/icon/home}) pack viewers see instead of {@code icon}; null = none
+     * @param permission optional: players without it see the button locked (or not at all, see {@code showLocked})
+     * @param showLocked false: a player without the permission does not see the button at all (the Staff tile)
      */
     public record Button(String id, int slot, String group, String icon, String action, String command, String service,
-                         boolean show, String permission, String model) {
+                         boolean show, String permission, boolean showLocked) {
+
+        public Button(String id, int slot, String group, String icon, String action, String command, String service,
+                      boolean show, String permission) {
+            this(id, slot, group, icon, action, command, service, show, permission, true);
+        }
+
+        /** True when {@code player} must not see this button at all (no permission and {@code show-locked: false}). */
+        public boolean hiddenFor(Player player) {
+            return !showLocked && !allowed(player);
+        }
 
         /** First word of the command (the label that must exist), or empty. */
         public String label() {
@@ -96,13 +114,8 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
         return showUnbuilt ? State.COMING_SOON : State.HIDDEN;
     }
 
-    /** Hub slots: the 28 inner slots of the 6-row menu plus 4 (your head). */
+    /** Hub slots: the 28 inner slots of the 6-row menu, 4 (your head) and 8 (the Staff tile corner). */
     static final Set<Integer> HUB_SLOTS = hubSlots();
-    /** 3-row menus (You, Travel): the middle row, 10-16. */
-    static final Set<Integer> SMALL_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16);
-
-    /** The You menu: the middle row plus 20 and 24 on the bottom row (Back 18 / Close 22 stay free). */
-    static final Set<Integer> YOU_SLOTS = Set.of(10, 11, 12, 13, 14, 15, 16, 20, 24);
 
     /** True if {@code id} is an item (server only: needs the item registry). */
     static boolean isItem(String id) {
@@ -115,24 +128,36 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
         return hub(yaml, ButtonLayout::isItem, problem);
     }
 
-    static ButtonLayout hub(YamlConfiguration yaml, Predicate<String> items, Consumer<String> problem) {
-        Map<String, String> groups = groups(yaml, items, problem);
-        return parse(yaml, "hub", HUB_SLOTS, groups, items, problem);
+    static ButtonLayout hub(YamlConfiguration yaml, Predicate<String> icons, Consumer<String> problem) {
+        return hub(yaml, icons, AREAS, problem);
     }
 
-    /** The You menu ({@code you}). */
+    /**
+     * @param icons a valid {@code icon}: a vanilla item id or an icon catalogue key
+     * @param areas the area colour names a group may take ({@code style.yml → area})
+     */
+    static ButtonLayout hub(YamlConfiguration yaml, Predicate<String> icons, Set<String> areas, Consumer<String> problem) {
+        Map<String, String> groups = groups(yaml, areas, problem);
+        return parse(yaml, "hub", HUB_SLOTS, groups, icons, problem);
+    }
+
+    /** The You menu ({@code you}): no slots, placed by {@code Centered} in file order. */
     static ButtonLayout you(YamlConfiguration yaml, Consumer<String> problem) {
         return you(yaml, ButtonLayout::isItem, problem);
     }
 
-    static ButtonLayout you(YamlConfiguration yaml, Predicate<String> items, Consumer<String> problem) {
-        return parse(yaml, "you", YOU_SLOTS, Map.of(), items, problem);
+    static ButtonLayout you(YamlConfiguration yaml, Predicate<String> icons, Consumer<String> problem) {
+        return parse(yaml, "you", null, Map.of(), icons, problem);
     }
 
+    /**
+     * @param slots the allowed slots, or {@code null} for a menu that places its entries itself ({@code slot} ignored)
+     */
     static ButtonLayout parse(YamlConfiguration yaml, String sectionName, Set<Integer> slots, Map<String, String> groups,
                               Predicate<String> items, Consumer<String> problem) {
         List<Button> out = new ArrayList<>();
         Set<Integer> used = new HashSet<>();
+        boolean slotsIgnored = false;
         Map<String, String> actions = new HashMap<>();
         ConfigurationSection section = yaml.getConfigurationSection(sectionName);
         if (section == null) {
@@ -145,14 +170,19 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
                 problem.accept(where + ": needs slot, icon and command or action (skipped)");
                 continue;
             }
-            int slot = e.getInt("slot", -1);
-            if (!slots.contains(slot)) {
-                problem.accept(where + ".slot: " + slot + " is not a free slot of this menu (skipped)");
-                continue;
-            }
-            if (!used.add(slot)) {
-                problem.accept(where + ".slot: slot " + slot + " is already used (skipped)");
-                continue;
+            int slot = -1;
+            if (slots == null) {
+                slotsIgnored |= e.contains("slot");
+            } else {
+                slot = e.getInt("slot", -1);
+                if (!slots.contains(slot)) {
+                    problem.accept(where + ".slot: " + slot + " is not a free slot of this menu (skipped)");
+                    continue;
+                }
+                if (!used.add(slot)) {
+                    problem.accept(where + ".slot: slot " + slot + " is already used (skipped)");
+                    continue;
+                }
             }
             String action = e.getString("action", COMMAND).strip().toLowerCase(Locale.ROOT);
             String command = e.getString("command", "").strip();
@@ -171,19 +201,19 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
             }
             String icon = e.getString("icon", "book").strip().toLowerCase(Locale.ROOT);
             if (!items.test(icon)) {
-                problem.accept(where + ".icon: unknown item '" + icon + "' (using book)");
+                problem.accept(where + ".icon: '" + icon + "' is neither an item id nor an icon key (using book)");
                 icon = "book";
             }
             String group = e.getString("group");
             if (group != null) {
                 group = group.strip().toLowerCase(Locale.ROOT);
                 if (!groups.containsKey(group)) {
-                    problem.accept(where + ".group: '" + group + "' is not in hub-groups (no group mark)");
+                    problem.accept(where + ".group: '" + group + "' is not in hub-groups (no group colour)");
                     group = null;
                 }
             }
             Button button = new Button(id, slot, group, icon, action, command, e.getString("service"), e.getBoolean("show", true),
-                    e.getString("permission"), MenuModels.resolve(sectionName, id, e.getString("model")));
+                    e.getString("permission"), e.getBoolean("show-locked", true));
             String other = actions.putIfAbsent(button.actionKey(), id);
             if (other != null) {
                 problem.accept(where + ": does the same as '" + other + "' (skipped; one button per action)");
@@ -192,41 +222,48 @@ public record ButtonLayout(List<Button> buttons, Map<String, String> groups) {
             }
             out.add(button);
         }
+        if (slotsIgnored) {
+            problem.accept("menu.yml → " + sectionName + ": 'slot' is placed automatically now (centred, file order); the values are ignored");
+        }
         return new ButtonLayout(List.copyOf(out), java.util.Collections.unmodifiableMap(new LinkedHashMap<>(groups)));
     }
 
-    /** {@code hub-groups: <id>: {mark: <pane>}} in order. */
-    static Map<String, String> groups(YamlConfiguration yaml, Predicate<String> items, Consumer<String> problem) {
+    /**
+     * {@code hub-groups: <id>: {color: <area>}} in order: group id → the area colour its names take (G9). An old
+     * {@code mark:} key (the marker panes of GUI-2) is ignored with one line per file load.
+     */
+    static Map<String, String> groups(YamlConfiguration yaml, Set<String> areas, Consumer<String> problem) {
         Map<String, String> out = new LinkedHashMap<>();
         ConfigurationSection section = yaml.getConfigurationSection("hub-groups");
         if (section == null) {
             return out;
         }
+        List<String> marks = new ArrayList<>();
         for (String id : section.getKeys(false)) {
-            String mark = section.getString(id + ".mark", "gray_stained_glass_pane").strip().toLowerCase(Locale.ROOT);
-            if (!items.test(mark)) {
-                problem.accept("menu.yml → hub-groups." + id + ".mark: unknown item '" + mark + "' (using gray glass pane)");
-                mark = "gray_stained_glass_pane";
+            if (section.contains(id + ".mark")) {
+                marks.add(id);
             }
-            out.put(id.toLowerCase(Locale.ROOT), mark);
+            String color = section.getString(id + ".color", DEFAULT_AREA).strip().toLowerCase(Locale.ROOT);
+            if (!areas.contains(color)) {
+                problem.accept("menu.yml → hub-groups." + id + ".color: '" + color + "' is not an area colour of style.yml (using "
+                        + DEFAULT_AREA + ")");
+                color = DEFAULT_AREA;
+            }
+            out.put(id.toLowerCase(Locale.ROOT), color);
+        }
+        if (!marks.isEmpty()) {
+            problem.accept("menu.yml hub-groups." + String.join("/", marks) + ".mark is no longer used (I9: no marker panes)");
         }
         return out;
     }
 
-    /** Where a group's mark goes: the left edge of the row of its first button (9, 18, 27, 36), or -1. */
-    static int markSlot(List<Button> visibleOfGroup) {
-        int first = visibleOfGroup.stream().mapToInt(Button::slot).filter(s -> s >= 9 && s < 45).min().orElse(-1);
-        return first < 0 ? -1 : (first / 9) * 9;
-    }
-
     private static Set<Integer> hubSlots() {
         Set<Integer> set = new HashSet<>();
-        for (int slot = 0; slot < 54; slot++) {
-            if (!HubLayout.RESERVED.contains(slot)) {
-                set.add(slot);
-            }
+        for (int i = 0; i < net.skybornmc.skyblock.common.menu.Centered.gridSize(); i++) {
+            set.add(net.skybornmc.skyblock.common.menu.Centered.gridSlot(i));
         }
         set.add(HubMenu.SLOT_PROFILE);
+        set.add(HubMenu.SLOT_STAFF);
         return Set.copyOf(set);
     }
 }

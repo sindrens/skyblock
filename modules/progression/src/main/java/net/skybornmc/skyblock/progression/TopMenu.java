@@ -96,7 +96,7 @@ final class TopMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_LEVEL, simpleTab(IslandTop.Kind.LEVEL, Material.NETHER_STAR, "top-menu.tab.level"));
         set(SLOT_WEEKLY, weeklyTab());
         set(SLOT_VALUE, simpleTab(IslandTop.Kind.VALUE, Material.DIAMOND_BLOCK, "top-menu.tab.value"));
@@ -211,6 +211,12 @@ final class TopMenu extends Menu {
             default -> Material.GRASS_BLOCK;
         };
         List<Component> lore = new ArrayList<>(lines(entryLore(), p));
+        // Owner 2 Nov 2026: hovering an island shows its leader's title.
+        Component title = menus.core().services().optional(net.skybornmc.skyblock.common.cosmetics.Cosmetics.class)
+                .map(c -> c.titleByName(viewer, e.leader())).orElse(Component.empty());
+        if (!net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(title).isBlank()) {
+            lore.addAll(lines("top-menu.entry.title", Msg.c("title", title), Msg.p("leader", e.leader())));
+        }
         if (e.islandId().equals(ownIsland)) {
             lore.addAll(lines("top-menu.entry.yours"));
         }

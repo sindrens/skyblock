@@ -15,8 +15,11 @@ picker:
 currency:
   money: "Money"
   crystals: "Crystals"
-  gems: "Gems"
-  shards: "Shards"
+  # Card C1: only bought credits can be traded; earned credits never show up here.
+  credits: "Bought credits"
+  credits_earned: "Earned credits"
+  shards: "Farming Shards"
+  mining_shards: "Mining Shards"
 
 request:
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Trade request sent to <c:value><player></c:value><c:text>. It expires in <seconds>s."

@@ -90,13 +90,14 @@ final class MoneyNotes implements Listener {
         this.notes = notes;
     }
 
-    /** R3-40: the purge of cashed notes (async, batched; at start and then every 6 hours). */
+    /** R3-40: the purge of cashed notes (async, batched; notes.purge-start-seconds after start, then every purge-every-hours). */
     private net.skybornmc.skyblock.common.util.Scheduler.Task purgeTask;
 
     void enable() {
         registerItem();
         module.core.plugin().getServer().getPluginManager().registerEvents(this, module.core.plugin());
-        purgeTask = module.core.scheduler().asyncRepeat(20L * 120, 20L * 60 * 60 * 6, this::purgeRedeemed);
+        purgeTask = module.core.scheduler().asyncRepeat(20L * module.config.notePurgeStartSeconds,
+                20L * 60 * 60 * module.config.notePurgeEveryHours, this::purgeRedeemed);
     }
 
     /** Deletes cashed notes older than notes.purge-redeemed-days (off the main thread, in batches). */
@@ -261,11 +262,14 @@ final class MoneyNotes implements Listener {
                 .executes(ctx -> withdraw(ctx.player(), ctx.get(amount), ctx.getOr(currency, Currency.MONEY)));
     }
 
-    /** {@code /eco note <player> <amount> <reason>}: staff make a note without taking money. */
-    CommandSpec ecoNoteCommand(String[] reasons) {
+    /**
+     * {@code /eco note <player> <amount> <reason>}: staff make a note without taking money. {@code reasons}: the tab hints
+     * of the reason (messages/economy.yml, read live).
+     */
+    CommandSpec ecoNoteCommand(java.util.function.Supplier<List<String>> reasons) {
         Arg<Player> target = Args.onlinePlayer("player");
         Arg<Long> amount = Args.amount("amount");
-        Arg<String> reason = Args.text("reason", reasons);
+        Arg<String> reason = Arg.greedy("reason", (sender, raw) -> raw.strip(), Suggest.of(reasons));
         return CommandSpec.sub("note")
                 .description("Give an online player a money note (no money is taken)")
                 .arg(target).arg(amount).arg(reason)
@@ -282,9 +286,6 @@ final class MoneyNotes implements Listener {
     private void withdraw(Player player, long amount, Currency currency) {
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), player, net.skybornmc.skyblock.common.moderation.SanctionService.Use.NOTE)) {
             return; // P7: frozen balance or blocked trading
-        }
-        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(module.core.services(), player, net.skybornmc.skyblock.common.tutorial.Gates.WITHDRAW)) {
-            return; // TUTORIAL §4: /withdraw opens after the bank step
         }
         UUID uuid = player.getUniqueId();
         Optional<NoteRules.Problem> problem = NoteRules.withdraw(module.config, amount, currency, module.frozen(player));
@@ -309,7 +310,7 @@ final class MoneyNotes implements Listener {
         // The note belongs to the profile the money comes from (PROF): created_by = the active profile key.
         UUID key = module.profiles().profileKey(uuid);
         // Owner F1: a note can go to anyone, so the profile must have earned send-gate.required itself first.
-        module.sendGate().check(key, null, currency).whenCompleteAsync((check, error) -> {
+        module.sendGate().check(key, null, currency, amount).whenCompleteAsync((check, error) -> {
             if (error != null || check == null || !check.allowed()) {
                 busy.remove(uuid);
                 rate.giveBack(uuid);
@@ -377,8 +378,9 @@ final class MoneyNotes implements Listener {
         if (target.getInventory().firstEmpty() < 0) {
             throw fail("admin-inventory-full", Msg.p("player", target.getName()));
         }
-        // R3-39: never a note for your own account or one that shares an address with yours.
-        module.then(sender, module.targetProblem(sender, target.getUniqueId()), problem -> {
+        // R3-39: never a note for another account that shares an address with yours; your own only with
+        // skyblock.economy.eco.self and eco.allow-self (owner 31 Oct 2026, same rule as /eco give).
+        module.then(sender, module.targetProblem(sender, target.getUniqueId(), module.mayEcoSelf(sender)), problem -> {
             if (problem != null) {
                 module.msg.send(sender, "eco.target." + problem.key, Msg.p("player", target.getName()));
                 if (sender instanceof Player p) {
@@ -411,8 +413,17 @@ final class MoneyNotes implements Listener {
             details.put("note_id", id.toString());
             details.put("currency", Currency.MONEY.key());
             details.put("reason", reason);
+            boolean self = EconomyModule.isSelf(sender, targetId);
+            if (self) {
+                details.put("self", true);
+            }
             module.core.audit().logPlayer(AuditCategory.ECONOMY, TxReason.ADMIN_NOTE, staff, targetId, targetName, amount,
                     online.getLocation(), details);
+            if (self) {
+                module.core.audit().logPlayer(AuditCategory.ECONOMY, "eco_self", staff, targetId, targetName, amount,
+                        online.getLocation(), details);
+            }
+            String alertKey = P + (self ? "admin-alert-self" : "admin-alert");
             TagResolver[] p = {Msg.p("player", targetName), Msg.p("staff", sender.getName()), Msg.p("reason", reason),
                     Msg.p("id", MoneyNote.shortId(id)), module.exactAmountTag("amount", sender, Currency.MONEY, amount)};
             module.msg.send(sender, P + "admin-done", p);
@@ -425,11 +436,11 @@ final class MoneyNotes implements Listener {
             }
             for (Player staffMember : Bukkit.getOnlinePlayers()) {
                 if (!staffMember.equals(sender) && staffMember.hasPermission(EconomyModule.PERM_ALERTS)) {
-                    module.msg.send(staffMember, P + "admin-alert", p);
+                    module.msg.send(staffMember, alertKey, p);
                 }
             }
             if (!(sender instanceof ConsoleCommandSender)) {
-                module.msg.send(Bukkit.getConsoleSender(), P + "admin-alert", p);
+                module.msg.send(Bukkit.getConsoleSender(), alertKey, p);
             }
         });
     }

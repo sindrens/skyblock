@@ -68,7 +68,7 @@ import java.util.logging.Level;
  * <p><b>Item safety.</b> Items in the sell chest are copied into the player's own data while it is open (saved together
  * with the inventory, see {@link SellChestStore}) and handed back when it closes; a crash hands them back on the next
  * join. A sale takes the items out on the main thread (escrow), the player's data is saved, and one guarded ledger
- * transaction pays them; if it fails every stack is handed back (inventory, then ender chest, then the feet, or stored
+ * transaction pays them; if it fails every stack is handed back (inventory, then /box, or stored
  * and handed back on the next join if the player left or switched profile).</p>
  */
 public final class SellFeature implements Listener {
@@ -112,6 +112,7 @@ public final class SellFeature implements Listener {
     private SellStore store;
     private SellServiceImpl service;
     private volatile boolean ready;
+    private HotAnnouncer hotAnnouncer;
     private final List<Scheduler.Task> tasks = new ArrayList<>();
     /** Key of the sell chest's crash copy in the player's persistent data. */
     private NamespacedKey chestKey;
@@ -147,6 +148,9 @@ public final class SellFeature implements Listener {
         core.services().register(EconomyModule.ID, SellService.class, service);
         chestKey = new NamespacedKey(core.plugin(), "sell_chest");
         service.chestOpener(this::openChest);
+        // GUI-P3: the shop sells one item kind from the inventory through the same escrow and payment as /sell.
+        service.itemSeller(this::sellItem);
+        service.carriedCounter(this::carried);
         // After a sale (main thread): island stats (items sold, money earned) for the profile that sold, and wardrobe
         // set XP (WARDROBE §3.1) only if that profile is still the active one.
         // PERF3: the islands module is enabled before economy, so its stats service is normally here already and the
@@ -194,6 +198,8 @@ public final class SellFeature implements Listener {
         }));
         long save = config.sellSaveSeconds * 20L;
         tasks.add(core.scheduler().asyncRepeat(save, save, this::save));
+        hotAnnouncer = new HotAnnouncer(core, this, () -> config);
+        hotAnnouncer.start();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
         registerCommand();
         core.scheduler().later("sell-settings", 1L, this::registerSettings);
@@ -213,6 +219,9 @@ public final class SellFeature implements Listener {
     public void disable() {
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
+        if (hotAnnouncer != null) {
+            hotAnnouncer.stop();
+        }
         var s = settings;
         settings = null;
         if (s != null) {
@@ -246,6 +255,29 @@ public final class SellFeature implements Listener {
         });
     }
 
+    /** Prices are loaded and selling works. */
+    boolean ready() {
+        return ready;
+    }
+
+    private volatile List<net.skybornmc.skyblock.common.sell.SellPrice> tipsCache = List.of();
+    private volatile long tipsAt = Long.MIN_VALUE;
+
+    /** A4: the Market Tips (furthest above base), worked out again at most every {@code sell.market-tips.refresh-seconds}. */
+    List<net.skybornmc.skyblock.common.sell.SellPrice> marketTips() {
+        long now = System.currentTimeMillis();
+        if (now - tipsAt < config.marketTipsRefreshSeconds * 1_000L) {
+            return tipsCache;
+        }
+        List<net.skybornmc.skyblock.common.sell.SellPrice> prices = new ArrayList<>();
+        for (String key : service.itemKeys()) {
+            service.price(key).ifPresent(prices::add);
+        }
+        tipsCache = MarketTips.pick(prices, service.hotKey(), config.marketTipsMinBase, config.marketTipsMinPercent, config.marketTipsSize);
+        tipsAt = now;
+        return tipsCache;
+    }
+
     public SellServiceImpl service() {
         return service;
     }
@@ -273,7 +305,7 @@ public final class SellFeature implements Listener {
             }
         } catch (IOException | InvalidConfigurationException e) {
             warn.accept("sell.yml is not valid YAML, using the bundled prices. " + String.valueOf(e.getMessage()).lines().findFirst().orElse(""));
-            return SellCatalog.load(bundled, material, warn);
+            return withDerived(bundled, SellCatalog.load(bundled, material, config.sellPriceMultiplier, warn), warn);
         }
         try {
             if (!file.exists()) {
@@ -290,12 +322,57 @@ public final class SellFeature implements Listener {
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write sell.yml", e);
         }
-        return SellCatalog.load(yaml, material, warn);
+        return withDerived(yaml, SellCatalog.load(yaml, material, config.sellPriceMultiplier, warn), warn);
+    }
+
+    /**
+     * ECON-SELL-SHOP-AH A2: adds the prices derived from the server's recipes (main thread: the recipe list is read from
+     * Bukkit once per load, under 50 ms). Off with {@code sell.derive.enabled: false} or {@code derive.enabled: false}.
+     */
+    private SellCatalog withDerived(YamlConfiguration yaml, SellCatalog listed, java.util.function.Consumer<String> warn) {
+        if (!config.sellDeriveEnabled || !yaml.getBoolean("derive.enabled", true)) {
+            return listed;
+        }
+        try {
+            java.util.Map<String, Double> priced = new java.util.HashMap<>();
+            for (SellCatalog.Entry e : listed.all()) {
+                if (e.sellable() && !e.key().startsWith("custom:")) {
+                    priced.put(e.key(), e.base());
+                }
+            }
+            java.util.Map<SellDerive.Cls, Double> factors = new java.util.EnumMap<>(SellDerive.Cls.class);
+            for (SellDerive.Cls c : SellDerive.Cls.values()) {
+                factors.put(c, yaml.getDouble("derive.factor." + c.name().toLowerCase(java.util.Locale.ROOT), c == SellDerive.Cls.STORAGE
+                        || c == SellDerive.Cls.PROCESSING ? 100.0 : 90.0));
+            }
+            java.util.Map<String, Double> derived = SellDerive.derive(priced, SellRecipes.fromServer(), factors,
+                    yaml.getStringList("derive.exclude"), config.sellDeriveMaxDepth, warn);
+            core.plugin().getLogger().info("sell.yml: " + derived.size() + " prices derived from recipes");
+            return listed.withDerived(derived);
+        } catch (RuntimeException e) {
+            core.plugin().getLogger().log(Level.WARNING, "sell.yml: derived prices failed; only listed items sell", e);
+            return listed;
+        }
     }
 
     /** Adds bundled entries the file does not have yet; true if something was added. */
     static boolean addMissing(YamlConfiguration yaml, YamlConfiguration bundled) {
         boolean changed = false;
+        // A2: roots (flat id: price) are added one by one; the derive section once, as a whole, when the file has none.
+        var roots = bundled.getConfigurationSection(SellCatalog.ROOTS_ROOT);
+        if (roots != null) {
+            for (String id : roots.getKeys(false)) {
+                String path = SellCatalog.ROOTS_ROOT + "." + id;
+                if (!yaml.contains(path) && !listedElsewhere(yaml, SellCatalog.VANILLA_ROOT, id)) {
+                    yaml.set(path, roots.get(id));
+                    changed = true;
+                }
+            }
+        }
+        if (!yaml.contains("derive") && bundled.isConfigurationSection("derive")) {
+            yaml.set("derive", bundled.getConfigurationSection("derive"));
+            changed = true;
+        }
         for (String root : List.of(SellCatalog.VANILLA_ROOT, SellCatalog.CUSTOM_ROOT)) {
             var section = bundled.getConfigurationSection(root);
             if (section == null) {
@@ -354,7 +431,21 @@ public final class SellFeature implements Listener {
                 .category("Economy")
                 .permission(PERM_SELL)
                 .playerOnly()
-                .executes(ctx -> open(ctx.player()))
+                .cooldown(cooldown)
+                // Owner 4 Nov 2026 (plan A, item 10): /sell sells everything sellable at once; the menu is /sell menu.
+                .executes(ctx -> {
+                    if (config.sellMenuEnabled) {
+                        open(ctx.player());
+                    } else {
+                        sellAll(ctx.player());
+                    }
+                })
+                .sub(CommandSpec.sub("menu")
+                        .description("Open the sell menu (drop items in, see the prices)")
+                        .permission(PERM_SELL)
+                        .playerOnly()
+                        .example("sell menu")
+                        .executes(ctx -> open(ctx.player())))
                 .sub(CommandSpec.sub("hand")
                         .description("Sell the stack in your hand")
                         .permission(PERM_SELL)
@@ -369,6 +460,149 @@ public final class SellFeature implements Listener {
                         .cooldown(cooldown)
                         .example("sell all")
                         .executes(ctx -> sellAll(ctx.player()))));
+    }
+
+    // ================================================================== /eco sell (A6, staff)
+
+    public static final String PERM_SELL_VIEW = "skyblock.staff.economy.sell.view";
+    public static final String PERM_SELL_RESET = "skyblock.staff.economy.sell.reset";
+    static final String RECIPES_FILE = "sell-recipes.txt";
+
+    /** {@code /eco sell price|reset|dump-recipes}, added to /eco by the module. */
+    public CommandSpec ecoSellCommand() {
+        net.skybornmc.skyblock.common.command.Arg<String> item = itemArg(false);
+        net.skybornmc.skyblock.common.command.Arg<String> target = itemArg(true);
+        net.skybornmc.skyblock.common.command.Arg<String> reason = net.skybornmc.skyblock.common.command.Arg.greedy("reason",
+                (sender, raw) -> raw.strip(), net.skybornmc.skyblock.common.command.Suggest.of("Price stuck", "Exploit fix", "Testing"));
+        return CommandSpec.sub("sell")
+                .description("Staff: look up or reset live sell prices, or list the recipes behind derived prices")
+                .permission(PERM_SELL_VIEW)
+                .sub(CommandSpec.sub("price")
+                        .description("Show an item's base, live price, trend and category")
+                        .permission(PERM_SELL_VIEW)
+                        .arg(item)
+                        .example("eco sell price wheat")
+                        .executes(ctx -> ecoPrice(ctx.sender(), ctx.get(item))))
+                .sub(CommandSpec.sub("reset")
+                        .description("Put an item's live price (or every item's) back to base")
+                        .permission(PERM_SELL_RESET)
+                        .arg(target).arg(reason)
+                        .example("eco sell reset wheat Price stuck")
+                        .executes(ctx -> ecoReset(ctx.sender(), ctx.get(target), ctx.get(reason))))
+                .sub(CommandSpec.sub("dump-recipes")
+                        .description("Write every recipe the derived prices use to plugins/PhoenixSkyblock/" + RECIPES_FILE)
+                        .permission(PERM_SELL_VIEW)
+                        .example("eco sell dump-recipes")
+                        .executes(ctx -> ecoDumpRecipes(ctx.sender())));
+    }
+
+    /**
+     * An item key from the sell table. Brigadier words can't hold {@code :}, so custom items are typed and suggested as
+     * {@code custom.<id>}; {@code withAll} adds {@code all}.
+     */
+    private net.skybornmc.skyblock.common.command.Arg<String> itemArg(boolean withAll) {
+        java.util.function.Supplier<List<String>> typed = () -> {
+            List<String> keys = new ArrayList<>();
+            if (withAll) {
+                keys.add("all");
+            }
+            for (SellCatalog.Entry e : catalog.all()) {
+                if (!withAll || e.sellable()) {
+                    keys.add(typedKey(e.key()));
+                }
+            }
+            return keys;
+        };
+        return net.skybornmc.skyblock.common.command.Arg.word("item", (sender, raw) -> {
+            String key = keyFromTyped(raw);
+            if (withAll && key.equals("all")) {
+                return key;
+            }
+            if (catalog.get(key).isEmpty()) {
+                throw new CommandFailure(EconomyModule.ID, "eco.sell.unknown", Msg.p("item", raw));
+            }
+            return key;
+        }, net.skybornmc.skyblock.common.command.Suggest.of(typed));
+    }
+
+    /** {@code custom:depths_coal} → {@code custom.depths_coal} (what players can type). */
+    static String typedKey(String key) {
+        return key.startsWith(SellCatalog.CUSTOM_PREFIX) ? "custom." + key.substring(SellCatalog.CUSTOM_PREFIX.length()) : key;
+    }
+
+    /** {@code custom.depths_coal} / {@code minecraft:wheat} / {@code Wheat} → the sell table key. */
+    static String keyFromTyped(String raw) {
+        String k = raw.trim().toLowerCase(Locale.ROOT);
+        if (k.startsWith("custom.")) {
+            return SellCatalog.CUSTOM_PREFIX + k.substring("custom.".length());
+        }
+        return k.startsWith("minecraft:") ? k.substring("minecraft:".length()) : k;
+    }
+
+    private void ecoPrice(org.bukkit.command.CommandSender sender, String key) {
+        if (!ready) {
+            throw new CommandFailure(EconomyModule.ID, "sell.loading");
+        }
+        SellCatalog.Entry e = catalog.get(key).orElseThrow(() -> new CommandFailure(EconomyModule.ID, "eco.sell.unknown",
+                Msg.p("item", key)));
+        SellPrice p = service.price(key).orElse(null);
+        double multiplier = p == null ? book.get(key).multiplier() : p.multiplier();
+        double unit = p == null ? e.base() * multiplier : p.unit();
+        msg.send(sender, "eco.sell.price", Msg.p("item", key), Msg.p("category", e.category()),
+                Msg.c("base", unitPrice(sender, e.base())), Msg.c("unit", unitPrice(sender, unit)),
+                Msg.p("percent", percentText((multiplier - 1.0) * 100.0)),
+                Msg.p("trend", p == null ? "-" : p.trend().name().toLowerCase(Locale.ROOT)),
+                Msg.p("state", !e.sellable() ? "off" : key.equals(service.hotKey()) ? "hot" : "on"),
+                Msg.number("sold", book.get(key).soldTotal()));
+    }
+
+    private void ecoReset(org.bukkit.command.CommandSender sender, String which, String reason) {
+        if (!ready) {
+            throw new CommandFailure(EconomyModule.ID, "sell.loading");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new CommandFailure(EconomyModule.ID, "eco.sell.reason");
+        }
+        List<String> keys = which.equalsIgnoreCase("all") ? catalog.sellableKeys() : List.of(which);
+        if (keys.size() == 1 && catalog.get(keys.get(0)).isEmpty()) {
+            throw new CommandFailure(EconomyModule.ID, "eco.sell.unknown", Msg.p("item", which));
+        }
+        int changed = 0;
+        for (String key : keys) {
+            double before = book.reset(key);
+            if (!Double.isNaN(before) && Math.abs(before - 1.0) > 1e-9) {
+                changed++;
+            }
+        }
+        tipsAt = Long.MIN_VALUE; // Market Tips worked out again
+        msg.send(sender, "eco.sell.reset", Msg.p("item", which.toLowerCase(Locale.ROOT)), Msg.number("count", changed),
+                Msg.p("reason", reason));
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "sell_reset", Actor.of(sender),
+                Map.<String, Object>of("item", which.toLowerCase(Locale.ROOT), "changed", changed, "reason", reason));
+    }
+
+    private void ecoDumpRecipes(org.bukkit.command.CommandSender sender) {
+        List<SellDerive.Recipe> recipes = SellRecipes.fromServer(); // main thread: Bukkit's recipe list
+        SellCatalog cat = catalog;
+        List<String> lines = new ArrayList<>(recipes.size() + 2);
+        lines.add("# output x count | kind | class | price now | inputs (a|b = any of)");
+        for (SellDerive.Recipe r : recipes) {
+            String price = cat.get(r.output()).map(e -> String.valueOf(e.base())).orElse("-");
+            lines.add(r.output() + " x" + r.count() + " | " + r.kind().name().toLowerCase(Locale.ROOT) + " | "
+                    + SellDerive.classOf(r).name().toLowerCase(Locale.ROOT) + " | " + price + " | "
+                    + String.join(", ", r.inputs().stream().map(alts -> String.join("|", alts)).toList()));
+        }
+        File out = new File(core.plugin().getDataFolder(), RECIPES_FILE);
+        core.scheduler().async(() -> {
+            try {
+                java.nio.file.Files.write(out.toPath(), lines, StandardCharsets.UTF_8);
+                core.scheduler().main("sell-dump-done", () -> msg.send(sender, "eco.sell.dumped",
+                        Msg.number("count", recipes.size()), Msg.p("file", RECIPES_FILE)));
+            } catch (IOException e) {
+                core.plugin().getLogger().log(Level.WARNING, "Sell: could not write " + RECIPES_FILE, e);
+                core.scheduler().main("sell-dump-failed", () -> msg.send(sender, "error"));
+            }
+        });
     }
 
     void open(Player player) {
@@ -544,6 +778,84 @@ public final class SellFeature implements Listener {
         pay(player, taken, source, done);
     }
 
+    /** Sellable items like {@code template} in the storage slots 0-35 (hotbar included, never armor/offhand). Main thread. */
+    long carried(Player player, ItemStack template) {
+        if (player == null || template == null || template.isEmpty()) {
+            return 0;
+        }
+        PlayerInventory inv = player.getInventory();
+        long sum = 0;
+        for (int slot = 0; slot < STORAGE_SLOTS; slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack != null && !stack.isEmpty() && stack.isSimilar(template) && service.sellable(stack)) {
+                sum += stack.getAmount();
+            }
+        }
+        return sum;
+    }
+
+    /**
+     * GUI-P3: sells up to {@code amount} (0 = all) of one item kind from the storage slots (lowest slot first, the last
+     * stack partly), through the same escrow, payment, give-back and report as {@code /sell}. {@code done} gets null when
+     * nothing was attempted. Main thread.
+     */
+    void sellItem(Player player, ItemStack template, int amount, String source, Consumer<SellResult> done) {
+        UUID uuid = player.getUniqueId();
+        if (!ready || module.frozen(player) || profiles().isSwitching(uuid)) {
+            msg.send(player, !ready ? "sell.loading" : module.frozen(player) ? "sell.frozen" : "sell.switching");
+            sound(player, "error");
+            finish(done, null);
+            return;
+        }
+        if (template == null || template.isEmpty() || !service.sellable(template)) {
+            sound(player, "error"); // the shop tile already says Not sellable
+            finish(done, null);
+            return;
+        }
+        if (!selling.add(uuid)) {
+            msg.send(player, "sell.busy");
+            finish(done, null);
+            return;
+        }
+        PlayerInventory inv = player.getInventory();
+        List<Integer> slots = new ArrayList<>();
+        List<Integer> amounts = new ArrayList<>();
+        for (int slot = 0; slot < STORAGE_SLOTS; slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack != null && !stack.isEmpty() && stack.isSimilar(template) && service.sellable(stack)) {
+                slots.add(slot);
+                amounts.add(stack.getAmount());
+            }
+        }
+        int[] plan = net.skybornmc.skyblock.common.sell.SellTake.plan(amounts.stream().mapToInt(Integer::intValue).toArray(), amount);
+        List<ItemStack> taken = new ArrayList<>();
+        for (int i = 0; i < plan.length; i++) {
+            if (plan[i] <= 0) {
+                continue;
+            }
+            int slot = slots.get(i);
+            ItemStack stack = inv.getItem(slot);
+            ItemStack copy = stack.clone();
+            copy.setAmount(plan[i]);
+            taken.add(copy);
+            int rest = stack.getAmount() - plan[i];
+            if (rest <= 0) {
+                inv.setItem(slot, null); // escrow: from here the items only exist in this sale
+            } else {
+                ItemStack kept = stack.clone();
+                kept.setAmount(rest);
+                inv.setItem(slot, kept);
+            }
+        }
+        if (taken.isEmpty()) {
+            selling.remove(uuid);
+            sound(player, "error");
+            finish(done, null);
+            return;
+        }
+        pay(player, taken, source, done);
+    }
+
     /**
      * Sells stacks the caller already took out of the world (escrow, e.g. the sell chest). If selling is not possible
      * right now every stack is handed back at once. {@code done} runs on the main thread afterwards.
@@ -606,8 +918,18 @@ public final class SellFeature implements Listener {
                     Component line = msg.component(player, bonus ? "sell.sold-big-bonus" : "sell.sold-big", p)
                             .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(breakdown(player, q)));
                     player.sendMessage(line);
+                } else if (q.lines().size() == 1) {
+                    // One item kind (/sell hand, the shop): "Sold 16x Coal for $32".
+                    TagResolver[] one = {Msg.number("items", q.items()), Msg.c("item", keyName(q.lines().getFirst().price().itemKey())),
+                            module.amountTag("amount", player, Currency.MONEY, q.total()), Msg.p("bonus", percentText(q.cappedBonusPercent()))};
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(player, "sold", msg.component(player,
+                            bonus ? "sell.sold-bar-item-bonus" : "sell.sold-bar-item", one), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
                 } else {
-                    msg.actionBar(player, bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p);
+                    net.skybornmc.skyblock.common.hud.ActionBars.show(player, "sold", msg.component(player,
+                            bonus ? "sell.sold-bar-bonus" : "sell.sold-bar", p), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
+                }
+                if (q.lines().size() > 1 && config.sellAllTitle) {
+                    msg.title(player, "sell.sold-screen", p); // feedback 5 Nov 2026: Sell all shows big on screen
                 }
                 core.sounds().play(player, "money");
                 if (!r.giveBack().isEmpty()) {
@@ -848,6 +1170,9 @@ public final class SellFeature implements Listener {
         Player player = event.getPlayer();
         // The profile module attached the active profile at LOWEST: items a crash left in the sell chest come back now.
         recoverChest(player);
+        if (hotAnnouncer != null) {
+            hotAnnouncer.onJoin(player); // A3: today's Hot Item, once per day
+        }
         // A little later: the profile module loads the active profile on join.
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
             if (player.isOnline() && ready) {
@@ -877,7 +1202,7 @@ public final class SellFeature implements Listener {
     }
 
     /** A price per item (fractional below $100: {@code $0.85}, {@code $33.50}), in the money color. */
-    Component unitPrice(Player viewer, double unit) {
+    Component unitPrice(net.kyori.adventure.audience.Audience viewer, double unit) {
         String text;
         if (unit >= 100) {
             long whole = (long) Math.floor(unit);

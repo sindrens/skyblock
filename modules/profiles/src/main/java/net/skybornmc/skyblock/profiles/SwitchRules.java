@@ -10,7 +10,7 @@ final class SwitchRules {
 
     /** Why a switch is refused; the key is the message key ({@code switch.<key>}). */
     enum Problem {
-        NOT_LOADED("not-loaded"), BUSY("busy"), SAME("same"), GONE("gone"), LOCKED("locked"), COOLDOWN("cooldown"),
+        NOT_LOADED("not-loaded"), BUSY("busy"), SAME("same"), GONE("gone"), COOLDOWN("cooldown"),
         BLOCKED_WORLD("blocked-world"), DEAD("dead");
 
         final String key;
@@ -20,7 +20,7 @@ final class SwitchRules {
         }
     }
 
-    /** What the check needs to know about the player. */
+    /** What the check needs to know about the player ({@code targetSlotUnlocked}: shown only, never a refusal since A6). */
     record Input(boolean loaded, boolean switching, UUID active, Profile target, boolean targetSlotUnlocked, long lastSwitch,
                  long now, long cooldownMillis, boolean bypassCooldown, boolean blockedWorld, boolean dead) {
     }
@@ -41,9 +41,8 @@ final class SwitchRules {
         if (in.target().id().equals(in.active())) {
             return Optional.of(Problem.SAME);
         }
-        if (!in.targetSlotUnlocked()) {
-            return Optional.of(Problem.LOCKED);
-        }
+        // Feedback 4 Nov 2026 (A6, "Slot locked"): a profile that exists can always be switched to, even when the rank
+        // now gives fewer slots (targetSlotUnlocked is ignored here); only creating a profile needs an unlocked slot.
         if (in.dead()) {
             return Optional.of(Problem.DEAD);
         }

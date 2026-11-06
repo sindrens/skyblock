@@ -71,7 +71,7 @@ final class BoostersMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_SUMMARY, service.item(Material.NETHER_STAR, viewer, BoostersModule.ID, "menu.summary"));
         PersonalBoosters.State state = m.personal().state(viewer);
         BoosterType[] types = BoosterType.values();
@@ -154,7 +154,7 @@ final class BoostersMenu extends Menu {
         }
         boolean own = e.starter.equals(viewer.getUniqueId());
         String action = own ? "menu.global.own" : e.thanked.contains(viewer.getUniqueId()) ? "menu.global.thanked" : "menu.global.thank";
-        lore.addAll(service.lines(viewer, BoostersModule.ID, action, Msg.p("name", e.starterName), Msg.number("gems", m.settings.thanksGems)));
+        lore.addAll(service.lines(viewer, BoostersModule.ID, action, Msg.p("name", e.starterName), Msg.number("credits", m.settings.thanksCredits)));
         return service.item(m.globalMaterial(),
                 service.text(viewer, BoostersModule.ID, "menu.global.running.name", Msg.p("type", name), Msg.number("percent", e.percent)), lore);
     }

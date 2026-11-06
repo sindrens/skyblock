@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.rewards;
 
-import net.skybornmc.skyblock.common.menu.MenuIcons;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -119,7 +118,7 @@ final class DailyMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         set(SLOT_TAB_CALENDAR, service.tab(viewer, new ItemStack(Material.SUNFLOWER),
                 service.text(viewer, RewardsModule.ID, playtime ? "menu.tabs.calendar" : "menu.tabs.calendar-open"),
                 service.lines(viewer, RewardsModule.ID, "menu.tabs.calendar-lore"), !playtime, () -> {
@@ -151,7 +150,7 @@ final class DailyMenu extends Menu {
         int upTo = DailyRules.claimedUpTo(state, today, calendar.size());
         int next = DailyRules.nextDay(state, calendar.size());
         String reset = Format.duration(DailyRules.untilReset(now, m.zone()));
-        int streak = DailyRules.liveStreak(state, today);
+        int streak = DailyRules.liveStreak(state, today, m.settings.graceDays);
         Payout.Context ctx = m.context(m.tier(viewer), profile);
 
         set(SLOT_SUMMARY, service.item(Material.SUNFLOWER, service.text(viewer, RewardsModule.ID, "menu.daily.summary.name"),
@@ -223,8 +222,8 @@ final class DailyMenu extends Menu {
             hourly.addAll(service.lines(viewer, RewardsModule.ID, net.skybornmc.skyblock.common.pass.PassXp.of(m.core.services()).isPresent()
                     ? "menu.playtime.hourly.pass" : "menu.playtime.hourly.pass-soon", Msg.number("xp", m.settings.hourlyPassXp)));
         }
-        set(SLOT_HOURLY, MenuIcons.tag(service.item(Material.PRISMARINE_CRYSTALS, service.text(viewer, RewardsModule.ID, "menu.playtime.hourly.name"),
-                hourly), MenuIcons.currency("crystals")));
+        set(SLOT_HOURLY, service.item(Material.PRISMARINE_CRYSTALS, service.text(viewer, RewardsModule.ID, "menu.playtime.hourly.name"),
+                hourly));
 
         if (m.settings.keyEveryHours > 0) {
             String crate = RewardText.crateName(m, m.settings.keyCrate.trim().toLowerCase(java.util.Locale.ROOT));
@@ -257,10 +256,10 @@ final class DailyMenu extends Menu {
     private ItemStack streakItem(DailyRules.State state, int streak) {
         List<Component> lore = new ArrayList<>(service.lines(viewer, RewardsModule.ID, "menu.streak.lore", Msg.number("streak", streak),
                 Msg.number("best", state.best()), Msg.number("total", state.total())));
-        if (m.settings.gemEvery > 0 && m.settings.gems > 0) {
-            lore.addAll(service.lines(viewer, RewardsModule.ID, "menu.streak.gems", Msg.number("every", m.settings.gemEvery),
-                    Msg.p("gems", RewardText.format(m, net.skybornmc.skyblock.common.economy.Currency.GEMS, m.settings.gems)),
-                    Msg.number("left", DailyRules.untilGems(streak, m.settings.gemEvery))));
+        if (m.settings.creditsEvery > 0 && m.settings.credits > 0) {
+            lore.addAll(service.lines(viewer, RewardsModule.ID, "menu.streak.credits", Msg.number("every", m.settings.creditsEvery),
+                    Msg.p("credits", RewardText.format(m, net.skybornmc.skyblock.common.economy.Currency.CREDITS_EARNED, m.settings.credits)),
+                    Msg.number("left", DailyRules.untilCredits(streak, m.settings.creditsEvery))));
         }
         for (Map.Entry<Integer, String> t : m.streakTitles().entrySet()) {
             boolean owned = m.cosmetics().map(c -> c.owns(viewer.getUniqueId(), net.skybornmc.skyblock.common.cosmetics.Cosmetics.Kind.TITLE,
@@ -280,7 +279,7 @@ final class DailyMenu extends Menu {
         return switch (spec.kind()) {
             case MONEY -> Material.GOLD_NUGGET;
             case CRYSTALS -> Material.PRISMARINE_CRYSTALS;
-            case GEMS -> Material.EMERALD;
+            case CREDITS -> Material.EMERALD;
             case KEY -> Material.TRIPWIRE_HOOK;
             case FUEL -> Material.COAL;
             case BOOSTER -> switch (spec.ref()) {
@@ -292,6 +291,7 @@ final class DailyMenu extends Menu {
             case BOOK -> Material.ENCHANTED_BOOK;
             case SCROLL -> Material.PAPER;
             case TOME -> Material.BOOK;
+            case PASS_XP -> Material.EXPERIENCE_BOTTLE;
         };
     }
 }

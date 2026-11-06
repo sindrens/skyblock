@@ -67,11 +67,19 @@ final class DailyRules {
      * clock was turned back: never a second claim).
      */
     static Optional<Claim> claim(State s, int today, int length) {
+        return claim(s, today, length, 0);
+    }
+
+    /**
+     * Today's claim with {@code graceDays} (owner 4 Nov 2026, plan A daily reward: missing one day doesn't break the
+     * streak; two days do).
+     */
+    static Optional<Claim> claim(State s, int today, int length, int graceDays) {
         if (claimedToday(s, today) || length < 1) {
             return Optional.empty();
         }
         int day = s.calendarDay() < 1 || s.calendarDay() >= length ? 1 : s.calendarDay() + 1;
-        boolean continued = s.streak() > 0 && s.lastClaimDate() == today - 1;
+        boolean continued = s.streak() > 0 && s.lastClaimDate() >= today - 1 - Math.max(0, graceDays);
         boolean broken = !continued && s.streak() > 0;
         int streak = continued ? s.streak() + 1 : 1;
         State after = new State(day, today, streak, Math.max(s.best(), streak), broken ? s.streak() : s.lostStreak(),
@@ -97,16 +105,30 @@ final class DailyRules {
 
     /** The streak that still counts today: the stored one if the last claim was today or yesterday, else 0 (broken). */
     static int liveStreak(State s, int today) {
-        return s.lastClaimDate() >= today - 1 ? s.streak() : 0;
+        return liveStreak(s, today, 0);
     }
 
-    /** Gems for reaching {@code streak}: {@code gems} every {@code every} days (§9.2: 10 every 7). */
-    static long streakGems(int streak, int every, long gems) {
-        return every > 0 && gems > 0 && streak > 0 && streak % every == 0 ? gems : 0;
+    /** {@link #liveStreak(State, int)} with grace days. */
+    static int liveStreak(State s, int today, int graceDays) {
+        return s.lastClaimDate() >= today - 1 - Math.max(0, graceDays) ? s.streak() : 0;
     }
 
-    /** Claims until the next streak gems, counted from the live streak (1..every; 0 when gems are off). */
-    static int untilGems(int liveStreak, int every) {
+    /** Pure: minutes still to play this session before the daily can be claimed (0 = now). */
+    static long minutesToWait(long onlineSinceMillis, long now, int minOnlineMinutes) {
+        if (minOnlineMinutes <= 0 || onlineSinceMillis <= 0) {
+            return 0;
+        }
+        long left = minOnlineMinutes * 60_000L - (now - onlineSinceMillis);
+        return left <= 0 ? 0 : (left + 59_999) / 60_000;
+    }
+
+    /** Earned credits for reaching {@code streak}: {@code credits} every {@code every} days (§9.2: 10 every 7). */
+    static long streakCredits(int streak, int every, long credits) {
+        return every > 0 && credits > 0 && streak > 0 && streak % every == 0 ? credits : 0;
+    }
+
+    /** Claims until the next streak credits, counted from the live streak (1..every; 0 when they are off). */
+    static int untilCredits(int liveStreak, int every) {
         if (every <= 0) {
             return 0;
         }

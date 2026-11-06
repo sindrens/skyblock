@@ -26,6 +26,12 @@ import java.util.UUID;
  */
 final class InvitesMenu extends PagedMenu<InvitesMenu.Entry> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     /** One listed invite: {@code sent} = sent by the viewer's island. */
     record Entry(Invites.Invite invite, boolean sent) {
     }

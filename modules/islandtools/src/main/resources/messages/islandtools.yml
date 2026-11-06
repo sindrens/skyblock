@@ -1,0 +1,322 @@
+# Island tools (owner 4 Nov 2026 rework: the island's harvester hoe and pickaxe). MiniMessage + style tags.
+# Reload: /skyblock reload islandtools
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools are switched off right now."
+loading: "<prefix><c:muted>Your island's tools are loading, try again in a moment."
+
+item:
+  name:
+    hoe: "Harvester Hoe"
+    pickaxe: "Island Pickaxe"
+  # One short line (owner mockup).
+  description:
+    hoe: "Levels up as your island farms."
+    pickaxe: "Levels up as your island mines."
+  # Bold in the rarity colour (the stars after it). {tool} {stars} {rarity}
+  plain-name: "<rarity:{rarity}>{tool}"
+  star-name: "<rarity:{rarity}>{tool} <c:flame>{stars}"
+  # {stars}
+  subtitle: "<c:muted>Tool · Diamond"
+  subtitle-prestige: "<c:muted>Tool · Prestige <c:flame>{stars}"
+  loading: "<c:muted>Loading your island's tool..."
+  stat:
+    speed: "Speed"
+  perks-header: "Perks"
+  # The next perk still to unlock. {perk} {level}
+  perk-locked: "<c:locked>{perk} · Locked · Lv {level}"
+  # Feedback 4 Nov 2026 (B7): right-click in the air (no sneak); Bedrock players type /tool.
+  hint: "Right-click the air (or /tool)"
+  action-input: "CLICK"
+  action: "to open the menu"
+
+# Short words after a perk's value in the menus ("+1.2% shards").
+effect:
+  shards: "shards"
+  drops: "drops"
+  growth: "crop growth"
+  items: "items"
+  smelt: "smelt chance"
+  wisdom: "tool XP"
+  sell: "sell price"
+  lucky: "pouch chance"
+  auto-sell: "Drops are sold"
+  # {blocks}
+  sweep: "for {blocks} more"
+
+starter:
+  given: "<prefix><c:success><sym:check></c:success> <c:text>Your island's <c:value>Harvester Hoe</c:value> <c:text>and <c:value>Pickaxe</c:value> <c:text>are in your bag. Right-click the air with one (or type <click:run_command:'/tool'><c:action>/tool</c:action></click><c:text>) for its perks."
+
+tool:
+  # <tool> = axe or sword
+  removed-kind: "<prefix><c:warning><sym:cross></c:warning> <c:text>The island <c:value><tool></c:value> <c:text>is gone (only the hoe and the pickaxe are left), so it was removed from your bag."
+  other-island: "<prefix><c:warning><sym:cross></c:warning> <c:text>That tool belongs to another island, so it was removed. Your island's tools: <click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>."
+  no-drop: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools can't be dropped."
+
+hoe:
+  not-ripe: "<c:muted>Not ripe yet. The hoe only harvests fully grown crops."
+  burst: "<bold><grad:flame>GROWTH BURST!</grad></bold> <c:text>The crop is ripe again at once."
+
+# Owner 4 Nov 2026: one clear message for every reason a purchase can't happen.
+buy:
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>Island tools belong to an island. Make or join one first: <click:run_command:'/is'><c:action>/is</c:action></click>"
+  no-economy: "<prefix><c:error><sym:cross></c:error> <c:text>Shards can't be paid right now (the economy is not running). Tell staff."
+  # <perk> <level> <have>
+  locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><perk></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your island's tool is level <c:value><have></c:value><c:text>."
+  # <perk> <prestige>
+  locked-prestige: "<prefix><c:error><sym:cross></c:error> <c:value><perk></c:value> <c:text>unlocks at prestige <c:flame><prestige></c:flame><c:text>. Reach the top level and prestige the tool first."
+  # <perk>
+  maxed: "<prefix><c:success><sym:check></c:success> <c:value><perk></c:value> <c:text>is already at its highest level."
+  busy: "<c:muted>One moment, your last purchase is still going through..."
+  # <cost> <have> <shards>
+  poor: "<prefix><c:error><sym:cross></c:error> <c:text>Not enough <shards>: this costs <cost><c:text>, you have <have><c:text>. Farm or mine with this tool to find more."
+  # <tool>
+  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Someone on your island just changed the <c:value><tool></c:value><c:text>. Nothing was paid; check the new price and click again."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>The database did not answer, so nothing was paid or changed. Try again in a moment; if it keeps happening, tell staff."
+  # <perk> <level> <tool> <cost>
+  done: "<prefix><c:success><sym:check></c:success> <c:value><perk> <level></c:value> <c:text>on the <c:value><tool></c:value> <c:text>for <cost><c:text>. Everyone on your island has it now."
+  # To the other members. <player> <perk> <level> <tool>
+  island: "<prefix><c:value><player></c:value> <c:text>upgraded the island <c:value><tool></c:value><c:text>: <c:value><perk> <level></c:value><c:text>."
+
+copy:
+  # <tool>
+  have: "<prefix><c:muted>You already carry the <tool>."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>Your bag is full. Make room for one item and click again."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Here is your island's <c:value><tool></c:value><c:text>."
+
+admin:
+  reset: "<prefix><c:success><sym:check></c:success> <c:text>The island tool handles and hoe storage of <c:value><player></c:value> <c:text>are reset."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not on an island."
+  reset-island: "<prefix><c:success><sym:check></c:success> <c:text>The tools of <c:value><player></c:value><c:text>'s island are back to level 1 (no perks, no prestige)."
+  # <player> <tool> <amount> <level>
+  xp: "<prefix><c:success><sym:check></c:success> <c:text>+<amount> XP on the <c:value><tool></c:value> <c:text>of <c:value><player></c:value><c:text>'s island (now level <c:value><level></c:value><c:text>)."
+
+# Tool levels (owner 4 Nov 2026). <tool> <level>
+level:
+  up:
+    title: "<c:flame><bold>LEVEL <level>"
+    subtitle: "<c:text><tool>"
+    fade-in: 5
+    stay: 30
+    fade-out: 10
+  max:
+    title: "<grad:flame><bold>MAX LEVEL"
+    subtitle: "<c:text><tool> <c:muted>· ready to prestige"
+    fade-in: 5
+    stay: 50
+    fade-out: 15
+  island: "<c:text>Island <c:value><tool></c:value> <c:text>reached level <c:flame><level>"
+  can-prestige: "<prefix><c:success><sym:star></c:success> <c:text>The <c:value><tool></c:value> <c:text>is at the top level. The island owner or a co-owner can prestige it in its menu."
+
+# Lucky perk: a Shard Pouch. <amount> <shards>
+lucky:
+  found:
+    title: "<c:flame><bold>SHARD POUCH!"
+    subtitle: "<amount> <c:text><shards>"
+    fade-in: 5
+    stay: 30
+    fade-out: 10
+
+prestige:
+  # <tool>
+  not-owner: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island owner or a co-owner can prestige the <c:value><tool></c:value><c:text>."
+  # <tool> <level> <max>
+  not-max: "<prefix><c:error><sym:cross></c:error> <c:text>The <c:value><tool></c:value> <c:text>is level <c:value><level></c:value><c:muted>/<max></c:muted><c:text>. It can prestige at level <c:value><max></c:value><c:text>."
+  busy: "<c:muted>The prestige is already going through..."
+  changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>The tool changed while you confirmed (a purchase or new XP), so nothing happened. Open its menu and try again."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>The database did not answer, so the tool and everyone's shards are unchanged. Try again in a moment."
+  # <tool> <stars> <prestige>
+  done:
+    title: "<grad:flame><bold>PRESTIGE <stars>"
+    subtitle: "<c:text><tool>"
+    fade-in: 10
+    stay: 60
+    fade-out: 20
+  # <player> <tool> <stars> <bonus> <shards>
+  chat: "<prefix><c:value><player></c:value> <c:text>prestiged the island <c:value><tool></c:value> <c:flame><stars></c:flame><c:text>! It starts again at level 1 with +<bonus> XP and <shards> for good; everyone's <shards> went to 0."
+  confirm-crumb: "Prestige?"
+  # <tool> <shards>
+  confirm-details:
+    - "<c:text>Back to level 1, every perk gone."
+    - "<c:text><shards> of ALL members go to 0."
+    - "<c:muted>For good: more XP and shards, cheaper perks."
+
+shards:
+  name:
+    hoe: "Farming Shards"
+    pickaxe: "Mining Shards"
+  # Found while grinding (action bar). <amount>
+  found:
+    shards: "<cur:shards>+<amount> <sym:shards> Farming Shards"
+    mining_shards: "<cur:mining_shards>+<amount> <sym:mining_shards> Mining Shards"
+
+# Sweep / Vein took more blocks along. <amount>
+sweep:
+  hoe: "<c:flame><bold>SWEEP!</bold></c:flame> <c:text>+<amount> crops"
+  pickaxe: "<c:flame><bold>VEIN!</bold></c:flame> <c:text>+<amount> ores"
+
+menu:
+  crumb-island: "Island"
+  crumb: "Tools"
+  owned: "Owned"
+  info:
+    - "<c:text>Your island's hoe and pickaxe."
+    - "<c:muted>Shared: everyone levels them up."
+  tool-info:
+    - "<c:text>Level, perks and prestige."
+    - "<c:muted>Perks cost this tool's shards."
+  # <tool> <stars>
+  tool-name: "<bold><area:skills><tool> <c:flame><stars>"
+  # <level> <max> <percent> <stars> <shards>
+  tool-lore:
+    - "<c:muted>Shared by your island."
+    - ""
+    - "<bold><c:header>| Tool</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max> (<percent>%)"
+    - "<c:bar>| </c:bar><c:text>Prestige: </c:text><c:flame><stars>"
+    - ""
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # <level> <max> <xp> <need> <percent> <prestige> <stars> <bonus> <discount> <boost> <shards>
+  tool:
+    - "<c:muted>Shared by your island."
+    - ""
+    - "<bold><c:header>| Level</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
+    - "<c:bar>| </c:bar><c:text>XP: </c:text><c:value><xp></c:value><c:muted>/<need> (<percent>%)"
+    - "<bold><c:header>| Bonuses</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Prestige: </c:text><c:flame><stars></c:flame> <c:muted>+<bonus> XP, <shards>"
+    - "<c:bar>| </c:bar><c:text>Island boost: </c:text><c:value>+<boost> <c:muted>drops"
+  tool-max:
+    - "<c:muted>Shared by your island."
+    - ""
+    - "<bold><c:header>| Level</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Level: </c:text><c:success><level>/<max> <sym:check>"
+    - "<bold><c:header>| Bonuses</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Prestige: </c:text><c:flame><stars></c:flame> <c:muted>+<bonus> XP, <shards>"
+    - "<c:bar>| </c:bar><c:text>Island boost: </c:text><c:value>+<boost> <c:muted>drops"
+  # <tool>
+  handle:
+    name: "<bold><area:neutral>Get your <tool>"
+    lore:
+      - "<c:text>Lost it? Every member can take one."
+      - "<c:muted>You can carry one of each tool."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take it"
+  # <next> <stars> <bonus> <shards> <level> <max>
+  prestige-ready:
+    name: "<bold><grad:flame>Prestige <stars>"
+    lore:
+      - "<c:text>Start again for a lasting bonus."
+      - ""
+      - "<bold><c:header>| You get</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Total: </c:text><c:value>+<bonus> <c:muted>XP and shards"
+      - "<c:bar>| </c:bar><c:error>Resets level, perks, <shards>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to prestige (owner)"
+  prestige-locked:
+    name: "<bold><area:locked>Prestige"
+    lore:
+      - "<c:error><sym:cross> Locked"
+      - "<c:text>Reach level <c:value><max></c:value> <c:muted>(now <level>)"
+      - "<c:muted>Then the owner can prestige."
+  # <name>
+  perk-name: "<bold><area:skills><name>"
+  perk-name-locked: "<bold><area:locked><name>"
+  # <level> <now>
+  perk-level:
+    - "<bold><c:header>| Perk</c:header></bold>"
+    - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level>"
+    - "<c:bar>| </c:bar><c:text>Now: </c:text><c:value><now>"
+  perk-max:
+    - ""
+    - "<c:success><sym:check> Maxed"
+  # <level> <prestige>
+  perk-locked-level:
+    - ""
+    - "<c:error><sym:cross> Locked: tool level <level>"
+  perk-locked-prestige:
+    - ""
+    - "<c:error><sym:cross> Locked: prestige <prestige>"
+  # <next> <cost>
+  perk-price:
+    - "<c:bar>| </c:bar><c:text>Next: </c:text><c:value><next>"
+    - "<c:bar>| </c:bar><c:text>Price: </c:text><cost>"
+  # Java only. <cost10> <cost100>
+  perk-hint:
+    - "<c:muted>Shift-click: x10 (<cost10><c:muted>)"
+    - "<c:muted>Right-click: x100 (<cost100><c:muted>)"
+  perk-buy:
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy a level"
+  # <tool> <used> <cap> <bar>
+  storage:
+    name: "<bold><area:reward>Storage"
+    lore:
+      - "<c:muted>Loot when your bag is full."
+      - ""
+      - "<bold><c:header>| Storage</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><used></c:value><c:muted>/<cap>"
+      - "<c:bar>| </c:bar><bar>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+
+# Perks. Owner 4 Nov 2026: tiny steps on long tracks; enchant-like perks keep their vanilla levels.
+upgrade:
+  shard_finder: {name: "Shard Finder", icon: prismarine_shard, lore: ["<c:muted>More shards while you grind."]}
+  efficiency: {name: "Efficiency", icon: sugar, lore: ["<c:muted>Breaks blocks faster."]}
+  extra_drops: {name: "Extra Drops", icon: chest, lore: ["<c:muted>A few more drops per block."]}
+  fortune: {name: "Fortune", icon: lapis_lazuli, lore: ["<c:muted>More ores and crops per block."]}
+  haste: {name: "Haste", icon: golden_pickaxe, lore: ["<c:muted>Haste while you hold it."]}
+  wisdom: {name: "Wisdom", icon: experience_bottle, lore: ["<c:muted>The tool levels up faster."]}
+  growth: {name: "Growth", icon: bone_meal, lore: ["<c:muted>Crops on your island grow faster."]}
+  storage: {name: "Storage", icon: barrel, lore: ["<c:muted>More room in the tool's storage."]}
+  auto_sell: {name: "Auto-Sell", icon: hopper, lore: ["<c:muted>Sells the drops as you break them."]}
+  sell_bonus: {name: "Sell Bonus", icon: gold_ingot, lore: ["<c:muted>More money from Auto-Sell and", "<c:muted>the tool's storage."]}
+  lucky: {name: "Lucky", icon: rabbit_foot, lore: ["<c:muted>A chance to find a Shard Pouch."]}
+  sweep: {name: "Sweep", icon: wheat, lore: ["<c:muted>A chance to harvest nearby ripe", "<c:muted>crops too. Better every prestige."]}
+  smelter: {name: "Smelter", icon: furnace, lore: ["<c:muted>A chance to smelt what you mine."]}
+  vein: {name: "Vein", icon: raw_iron, lore: ["<c:muted>A chance to mine nearby ores of", "<c:muted>the same kind. Better every prestige."]}
+
+storage:
+  crumb: "Storage"
+  info:
+    - "<c:text>Loot that did not fit in your bag."
+    - "<c:muted>Take it out or sell everything."
+  # <tool> <used> <cap> <bar>
+  head:
+    name: "<bold><area:reward><tool> storage"
+    lore:
+      - "<c:muted>More room: the Storage perk."
+      - ""
+      - "<bold><c:header>| Storage</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><used></c:value><c:muted>/<cap>"
+      - "<c:bar>| </c:bar><bar>"
+  empty:
+    hoe:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Crops land here when your bag is full."
+    pickaxe:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Ores land here when your bag is full."
+  item-name: "<bold><c:value><item>"
+  item-lore:
+    - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><amount>"
+    - ""
+    - "<c:muted>Shift-click: as much as fits"
+    - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take a stack"
+  # Action bar: bag and storage are full (at /farm and /mine the rest is lost, never dropped).
+  full: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Empty it in the tool menu or /sell."
+  inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your bag is full. Make room first."
+  sell:
+    name: "<bold><area:money>Sell all"
+    lore:
+      - "<c:text>Sells everything here at /sell"
+      - "<c:muted>prices (sell bonuses count)."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
+  nothing: "<prefix><c:muted>Nothing in the storage can be sold."
+  sell-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The sale did not go through; everything is still stored."
+
+# Owner 3 Nov 2026: the small text over the crop you look at on an island. <crop> <stage> ("3/8 · 6s" or growth.ripe)
+growth:
+  label: "<c:value><crop></c:value> <c:muted>·</c:muted> <c:text><stage>"
+  ripe: "Ripe!"

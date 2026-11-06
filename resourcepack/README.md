@@ -1,41 +1,58 @@
-# resourcepack/
+# Phoenix icon pack (I7 v3, pack v2 phase 1)
 
-This folder holds the Phoenix Skyblock resource pack (RESOURCE_PACK.md §12, RP-D4: one folder in this repo).
+A small Java resource pack that only repaints **menu icons**. Every menu button stays a real vanilla item (its "base
+item"); Java players with the pack loaded see our own icon on it through a `custom_model_data` string. Bedrock,
+declined, failed or still-loading players see the plain base item. No fonts, glyphs, shaders or sounds.
 
-**Today it holds the art v3** (31 Oct 2026, after the owner's rounds 2 and 3):
-- 31 menu backgrounds;
-- 41 menu buttons;
-- 40 feature icons;
-- 9 shop tabs;
-- 4 currency icons (money, crystals, shards, credits; gems are renamed credits);
-- 5 font glyphs (currencies, phoenix logo);
-- rank badges as 3 fonts (the name comes from LuckPerms, so ranks can be renamed);
-- 7 crate chests for /warp crates (3D models) and 7 matching keys.
-
-The full guide is **[docs/plans/RESOURCE_PACK_GUI.md](../docs/plans/RESOURCE_PACK_GUI.md)**. It covers the ids, where each one shows, every menu's background, and how to wire it.
-
+## Files
 | Path | What |
 |---|---|
-| `java/assets/phoenix/textures/gui/menu/` | Menu backgrounds (font `phoenix:menu`, U+E300–U+E31E) |
-| `java/assets/phoenix/textures/item/menu/` | Buttons (`phoenix:menu/<id>`), feature icons (`menu/icon/`), shop tabs (`menu/tab/`) |
-| `java/assets/phoenix/textures/item/currency/` | Currency icons (`phoenix:currency/<id>`) |
-| `java/assets/phoenix/textures/font/icons/` | Glyphs (font `phoenix:icons`, U+E200+) |
-| `java/assets/phoenix/models/item/crate/block/` + `textures/item/crate/block/` | Crate chests (`phoenix:crate/block/<crate>`) |
-| `java/assets/phoenix/textures/item/crate/key/` | Crate keys (`phoenix:crate/key/<crate>`) |
-| `java/assets/phoenix/font/badge*.json` + `textures/font/badge/` | Rank badge fonts |
-| `src/preview/` | Contact sheets. **Start with `screens.png`.** |
-| `src/gui-art/` | The source: the art as letter maps, plus the generator. Edit there and regenerate (guide §13). |
-| `src/crate-art/` | The crate chest and key generator (models, textures, 3D preview). |
-| `src/badge-font/` | The rank badge font generator and `ranks.json` (look per LuckPerms group). |
+| `icons.json` | **The catalogue** (single source of truth). `icons` = custom icons (key, base item, name, meaning colour, file, slice, motif, where used, optional `variants` + `style`); `vanilla` = menu keys that are plain vanilla items (key -> item id). Bundled into the plugin (`icons/icons.json`) by Gradle. |
+| `vanilla-fallback.json` | The vanilla item definition of every base item (structure only, no textures), from the 1.21.5 client. Written by `fetch-vanilla`; compared with newer clients by `verify-jars`. |
+| `pack/` | The pack tree that is zipped into the plugin jar (`modules/pack`, Gradle task `packZip`). |
+| `pack/assets/phoenix/textures/item/icon/<file>.png` | **The live art.** One PNG per live custom icon. |
+| `variants/<file>/<style>.png` | Every variant of an icon with several looks (A/B/C, `ember`). Not in the pack. |
+| `preview/contact-sheet.png` | Every icon and variant at 4x. |
+| `../docs/design/ICON_MAP.md` | Which keys are custom and which vanilla material every other key uses. |
 
-**Rules:**
-- **Original art only.** Never copy, trace or recolour Mojang textures.
-- **Vanilla items keep vanilla textures.**
+## Rule: custom only when there is no good vanilla item
+A custom icon exists only for things that are not a real Minecraft item: currencies, UI actions (Back, pages, Close, Confirm, Cancel, Buy, Sell,
+Sell all, Info, Help, Danger, Search, Lock, Undo, Fill, Type, switches) and a few feature symbols (Bank, Top, Auction). Everything else is a plain
+vanilla item under a stable key in `"vanilla"`. To give one a custom picture later: add it to `icons`, remove it from `vanilla`.
 
-**Not here yet** (RP1 builds it):
-- `ids.yml`, `pack.mcmeta`, `pack.png`;
-- the generated model and font JSON;
-- the Bedrock pack;
-- sounds, HUD bars and the crate opening animation.
+## Switch a look, replace an icon (owner)
+1. Open `feature-overview/inspiration/icons-v2-preview.html` (made by `python3 tools/icons_preview.py --out feature-overview/inspiration --open`) and pick a style.
+2. `python3 tools/build_icons.py use nav/back B`, then `pack` and `check` (must print `OK`). Style `vanilla` removes the custom model. The hotbar menu item is the plain vanilla Nether Star (no key, no PNG). `feature/depths_lit` is the lit Depths pickaxe shown during the tutorial's Depths step.
+3. Draw your own: put a **16x16 or 32x32 RGBA** PNG over `pack/.../icon/<file>.png` (key with `/` replaced by `_`). Keep the vanilla look: no anti-aliasing, a dark outline.
+4. Rebuild the plugin (`./gradlew build`). The new pack has a new hash, so clients download it again; online players get it after `/pack reload`.
 
-The owner decided (31 Oct) that the only custom in-game items are the crate chests and their keys. Tools, books, sets and other items keep the vanilla look.
+The generator **never overwrites an existing PNG** (only `art --force-art` or `art --only <key>` do), so hand-drawn art survives.
+The art itself is code (`tools/icons_lib/sprites.py`, ASCII sprites with an automatic outline), so a redesign is a diff, not a binary.
+
+## Add or change an icon (developer)
+1. Add a row to `icons.json` `icons` (key `group/name`, a base item that exists in 1.21.5, a meaning, optional `variants` + `style`).
+2. `python3 tools/build_icons.py fetch-vanilla` if the base item is new (needs network, or `--jar client.jar`), then `verify-jars --jar` for 1.21.5, the newest release and the Paper client version.
+3. Add the sprite to `sprites.py` (`SINGLE` or `VARIANTS`), then `art`, `pack`, `sheet`, `check`.
+4. Use it in code with `core.menus().icon(viewer, "group/name", name, lore)`.
+
+Never base a custom icon on an item whose definition differs between client versions (`verify-jars` fails for those: bed, compass, shield, spyglass
+and filled map are examples); the pack REPLACES the whole item definition, so a stale fallback shows the purple missing-model cube.
+Never point `item_model` at a pack-only model.
+
+## Frame layer: panels, plaques, tiles, title letters and the logo (GUI-FONT)
+Two fonts in the pack: `phoenix:frame` (panel `E300-E302`, plaques `E320-E322`, soft tile `E330-E335` one per row, logo `E340`/`E341`,
+space glyphs `F800-F80F`) and `phoenix:title` (the cartoon capitals; lowercase maps to the same pictures). `minecraft:default` is never
+touched. Code points stay out of `E000-E1FF` (Bedrock's own emoji). Only Java players with the pack loaded ever get these glyphs.
+
+| File | What |
+|---|---|
+| `frame/panels.json` | **Source of truth**: code points, geometry constants (`title_origin_x`, `title_baseline`, `plaque_extend`, `advance_pad`), the vanilla corner mask, plaque sizes, letter set. |
+| `frame/art/*.png` | The sprites (`panel_frame` 24x24 9-slice, `panel_cell` 18x18, `tile` 18x18, `plaque_left/mid/right` 12/8/12 x 20, `letters` 256x36, `logo` 96x20). `art` only draws missing ones. |
+| `frame/owner-final/<final>.png` | Optional: a finished glyph by name (`panel_p6.png`, `plaque_m.png`, `cell.png`, `logo.png`, `letters.png`) used verbatim by `pack` (size is checked). |
+| `frame/frame-metrics.json` | Generated: every pixel number the Java title builder needs, measured from the final PNGs; bundled into the plugin. |
+| `pack/assets/phoenix/font/{frame,title}.json`, `pack/assets/phoenix/textures/font/**` | Generated fonts and final glyph PNGs. |
+| `preview/frame-sheet.png` | Generated preview: three framed menus at 3x, the letter set and the logo (our own art only). |
+
+Commands: `python3 tools/build_panels.py art | pack | sheet | check | metrics`. Release: `build_panels.py pack && check`, `build_icons.py pack && check`,
+`./gradlew build`. Tuning after the in-game spike (`/pack glyphtest`): change only `panels.json` (`title_origin_x`, `title_baseline`,
+`plaque_extend`, `advance_pad`), then `pack` and `check`; no Java change. The whole pack tree must stay under 250 KB.

@@ -78,8 +78,15 @@ final class MyListingsMenu extends PagedMenu<Listing> {
 
     @Override
     protected void decorate() {
-        set(4, service.item(org.bukkit.Material.BOOK, viewer, AuctionModule.ID, "mine.summary",
-                Msg.number("used", rows.size()), Msg.number("slots", module.slots(viewer))));
+        ItemStack summary = service.item(org.bukkit.Material.BOOK, viewer, AuctionModule.ID, "mine.summary",
+                Msg.number("used", rows.size()), Msg.number("slots", module.slots(viewer)));
+        String hint = module.core.messages().raw(AuctionModule.ID, "mine.slots-hint");
+        if (hint != null && !hint.isBlank()) { // C2: optional line (e.g. the next rank's slots), empty by default
+            List<Component> lore = new java.util.ArrayList<>(summary.lore() == null ? List.of() : summary.lore());
+            lore.add(service.text(viewer, AuctionModule.ID, "mine.slots-hint", Msg.number("slots", module.slots(viewer))));
+            summary.lore(lore);
+        }
+        set(4, summary);
     }
 
     @Override
@@ -96,7 +103,7 @@ final class MyListingsMenu extends PagedMenu<Listing> {
         return MenuButton.of(item, click -> openChild(cancelConfirm(module, viewer, l)));
     }
 
-    /** "Cancel this listing?": the item goes to the collection bin (or straight into the inventory if it fits). */
+    /** "Cancel this listing?": the item goes into the inventory, the rest to /box (C3). */
     static ConfirmMenu cancelConfirm(AuctionModule module, Player viewer, Listing l) {
         TagResolver[] p = {Msg.p("item", l.item().name()), Msg.number("amount", l.item().amount()),
                 module.moneyTag("price", viewer, l.price()), module.moneyTag("fee", viewer, l.fee())};

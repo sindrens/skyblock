@@ -29,7 +29,7 @@ class WorldSettingsTest {
         Map<String, Object> defaults = WorldSettings.parseDefaults(config);
         ConfigurationSection worlds = config.getConfigurationSection("worlds");
 
-        assertEquals(Set.of("spawn", "islands", "outposts", "depths", "warzone"), worlds.getKeys(false));
+        assertEquals(Set.of("spawn", "islands", "outposts", "depths", "warzone", "grind"), worlds.getKeys(false));
         for (String name : worlds.getKeys(false)) {
             WorldSettings s = WorldSettings.parse(name, worlds.getConfigurationSection(name), defaults);
             assertTrue(s.gamerules().containsKey("keep_inventory"), name + " inherits defaults");

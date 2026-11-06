@@ -1,5 +1,9 @@
 # /shop v2: the right items, one layout, easy buying
 
+> **Built differently since GUI-P3 (I9 v2 section 12, Nov 2026):** `/shop` opens a category menu, the grid has no tab row, left click = buy GUI, right click = sell GUI, middle click / Shift + Right-click = sell all, and sales go through `SellService`. Where this file differs, `docs/commands/shop.md` and card I9 win.
+
+> **Shop v3 (MENUS-V3, Nov 2026):** tab order wood, stone-earth, special, colors, decoration / essentials, farming, redstone, spawners; the grid shows `groups:` as centred rows (whole groups per page); one Java hint per tile; wallet tile `Your Money` on slot 4; live files move to config-version 3 by a data-driven migration (`shop.yml.before-v3`). The item lists are the economy lane's (ECON-TABLES D).
+
 **Status:** draft v1 for the owner (31 Oct 2026). Nothing is built yet.
 **Sources:**
 - `modules/shop` (ShopModule, ShopMenu, CategoryMenu, BuyAmountMenu, QuickBuy, ShopCatalog);

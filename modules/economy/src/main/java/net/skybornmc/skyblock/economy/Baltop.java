@@ -118,9 +118,14 @@ final class Baltop {
         });
     }
 
-    /** {@link #refreshIfOlder(Currency, long, int)} for every currency (the background task). */
+    /** {@link #refreshIfOlder(Currency, long, int)} for every currency (tests). */
     void refreshIfOlder(long maxAgeMillis, int size) {
-        for (Currency currency : Currency.values()) {
+        refreshIfOlder(maxAgeMillis, size, List.of(Currency.values()));
+    }
+
+    /** {@link #refreshIfOlder(Currency, long, int)} for each of {@code currencies} (the background task: the public lists). */
+    void refreshIfOlder(long maxAgeMillis, int size, java.util.Collection<Currency> currencies) {
+        for (Currency currency : currencies) {
             refreshIfOlder(currency, maxAgeMillis, size);
         }
     }

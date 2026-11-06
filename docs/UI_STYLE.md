@@ -40,7 +40,7 @@ The V2 update made every color brighter so it reads on the light chest backgroun
 | `brand_bright` | `#FF5A4D` | red `§c` | Gradient highlight only |
 | `ember` | `#FF8C1A` | gold `§6` | Secondary accent: separators `»`, small labels |
 | `flame` | `#FFD21A` | yellow `§e` | Highlights, filled progress/level dots, "new"/"ready" badges |
-| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds (resource-pack panels) |
+| `charcoal` | `#2B2B2B` | black `§0` | Dark backgrounds |
 | `parchment` | `#E8DCC0` | white `§f` | Highlighted body text |
 | `text` | `#E0E0E0` | gray `§7` | Normal body text, lore labels |
 | `muted` | `#A0A0A0` | dark_gray `§8` | Hints, subtitles, "each", asides |
@@ -166,6 +166,22 @@ Rules:
 ### 3.3 Announcements (server-wide)
 Blank line, a centered header with the brand gradient, 1–2 lines, a clickable action, blank line. Max one per 30 s from the auto-announcer.
 
+- **Cards** (4 Nov 2026): build them with `ChatCard` (common/text): bold gradient title, 1–3 body lines (highlight with `<c:value>`, currencies with `<cur:...>`), the action `<c:muted>»</c:muted> <c:action>/shop</c:action> <c:muted>«</c:muted>` with a hover text. Java lines are centred by pixel width (`ChatWidth`: default font, 320 px chat, bold +1 px per character); Bedrock lines are left-aligned because its font has other widths. The auto-broadcast cards live in `messages/broadcasts.yml` and only go out while chat is active (`chat.yml → broadcasts.*`).
+- **System notices** to everyone (a countdown, a server event) start with `<notice>`: the gradient word **PHOENIX**, a gray arrow, then `<c:text>` with `<c:value>` values: `<notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.` (`style.yml → notice`).
+
+### 3.4 Event tags (G1-R1-01)
+Server event lines are one line that starts with a short bold tag in a fixed colour (`style.yml tag:`), then one space; the tag is never clickable and never inside `<click>`/`<hover>`. Direct replies to one player keep the `<prefix>`.
+
+| Tag | Colour (Bedrock) | Used by |
+|---|---|---|
+| `[Crate]` | flame gold `#FFD21A` (yellow) | top crate rewards (`crates.yml broadcast.top`, `top-many`) |
+| `[Store]` | brand red `#FF2D3F` (red) | store purchases (I6, later) |
+| `[Market]` | money green `#4DFF88` (green) | Black Market restock (`blackmarket.yml announce`); price news (C4, later) |
+| `[Event]` | ember orange `#FF8C1A` (gold) | KOTH, envoys, bosses (I1/I3, later) |
+| `[Booster]` | steel sky `#5AB4E5` (aqua) | global boosters started, queued, ended (`boosters.yml global.*`) |
+
+Written `<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won ...`. Example: **[Crate]** Pouched won Legendary Sword from the Phoenix Crate! Players cannot fake one: public chat always reads `[RANK] name » text`.
+
 ---
 
 ## 4. Items
@@ -233,41 +249,65 @@ Rules:
 
 ## 5. GUIs
 
-### 5.1 Layout standard (6-row chest = 54 slots)
-Built by the menu framework (`common/menu`, `frame()`), so every menu looks the same automatically.
+**FORMAT (I9 v3) is the template for every new screen:** `docs/FORMAT.md` (panel types P3/P4/P6/List, tile limits, wallet tile, icon keys, frame keys). Where this section and FORMAT disagree, FORMAT wins.
+
+**Frame layer (GUI-FONT, Java with the icon pack only):** a 3, 4 or 6-row menu is drawn as our panel (empty slots hidden, a soft tile behind each item) with a plaque holding one short cartoon noun from `Menu#plaqueKey()` (a message key, e.g. `title.short: "SHOP"`; A-Z 0-9 `& ' - ! ? ( ) / . , :`, at most 16 letters; anything else falls back to the plain title). Bedrock, no pack, the **Plain menus** setting and `menus.yml gui.font.enabled: false` see the same layout on the plain chest. Menus with real drop slots override `panel()` with `false`. Lore, chat, holograms and the boss bar never use the fonts.
+
+### 5.1 Layout standard (I9 v2: compact, no frame, empty slots stay empty)
+Built by the menu framework (`common/menu`, `navBar()`), so every menu behaves the same automatically. Sizes are **3, 4 or 6 rows** (5 rows only in old menus until their pass). **No border, no filler panes**: empty slots stay empty (a pane may only mark a state, e.g. the red error glass).
 ```
- R  O  B  B  B  B  B  O  R      R = red pane (corner accent)   O = orange pane (ember glow)
- B  .  .  .  .  .  .  .  B      B = black pane (border)         . = content (28 slots: 10-16, 19-25, 28-34, 37-43)
- B  .  .  .  .  .  .  .  B
- B  .  .  .  .  .  .  .  B
- B  .  .  .  .  .  .  .  B
- ←  a  a  ?  ✘  M  a  <  >      45 Back · 46/47/51 screen actions · 48 ? · 49 Close · 50 Main menu · 52/53 pages
+ .  .  .  .  S  .  .  .  D      S = optional summary tile (4: your head, balance, "what is this")   D = danger corner (8)
+ .  x  x  x  x  x  x  x  .      x = list grid (28 slots: 10-16, 19-25, 28-34, 37-43), filled left to right
+ .  x  x  x  x  x  x  x  .
+ .  x  x  x  x  x  x  x  .
+ .  x  x  x  x  x  x  x  .
+ ←  a  a  .  ✕  .  s  <  >      45 Back · 46/47 screen actions · 49 Close · 51 Search (auction house only) · 52/53 pages
 ```
-- **Why this frame:** full red rows (the old look) were loud and fought with red error items and the content. A dark border makes items pop; red only on the corners with an orange "glow" next to them is the phoenix accent, like embers at the edges. Content slots stay empty (no filler), so the list reads cleanly. All panes have no tooltip at all.
-- **Fixed slots everywhere (GUI-1, docs/design/GUI_DESIGN.md §1.1, `MenuLayout`):** 45 = Back on every page (when there is somewhere to go back to); 48 = **?** "What is this?" (book: the screen's short guide in the lore, a click opens its help topic and Back returns here); 49 = Close (barrier); 50 = Main menu (nether star, opens /menu; on /menu itself: Help & guides); 52 = Previous page, 53 = Next page (only when there is one). Free for screen actions: 46, 47, 51. A paged menu that puts its own button on 52 is logged at startup of that menu.
-- **4 and 5 rows:** the same bar on the last row (4 rows: 27 Back, 30 ?, 31 Close, 32 Main menu, 34/35 pages). **3 rows:** 18 Back, 22 Close.
+| Rows | Back | Actions | Close | Search | Previous | Next | Danger |
+|---|---|---|---|---|---|---|---|
+| 6 | 45 | 46, 47 | 49 | 51 (AH only) | 52 | 53 | 8 |
+| 4 | 27 | 28, 29 | 31 | - | 34 | 35 | 8 |
+| 3 | 18 | 19, 20 | 22 | - | - | - | 8 |
+- **Minimal bottom row (I9 §4):** Back (arrow, only when there is somewhere to go back to; never replaced by Previous page), Close (barrier, white name: red is danger only), Previous/Next page (paper, the stack count is the target page, only when there is more than one page). **There is no `?` button and no Main menu button** (the hotbar Nether Star opens the hub from anywhere); slots 48 and 50 are free. The `/menu` hub alone has Help on 50 (book). `MenuLayout` holds the table; a paged menu that puts its own button on a standard slot is logged.
+- **Centred small menus (`Centered`, I9 §2):** 1 button = column 4; 2 = 3 5; 3 = 2 4 6; 4 = 1 3 5 7; 5 = 0 2 4 6 8 (6-9 keep a gap in the middle). Up to 8 buttons fit row 1 of a 3-row menu; 9 to 14 use rows 1-2 of a 4-row menu (row 1 gets the bigger half: nine = 5 + 4). Groups with different meanings get an empty column or row between them. Lists use the 7x4 grid and are not centred (a half-empty last row stays left aligned).
 - **Back (navigation stack):** Back returns to the menu that opened this one. A menu opened from another menu (also through a command, e.g. /menu → /is, or after a chat prompt) gets it as its Back target automatically; /menu is the bottom of the stack; closing the menu ends the stack (`common/menu/Navigation`).
-- **In place:** tabs, page turns and refreshes rebuild the same window and update the title in place (no close/reopen flicker, the cursor stays). `menus.yml → title.update-in-place: false` falls back to reopening when the title changes.
-- **Clicks:** left and right click both run a button's action (a Bedrock tap too). Right-click and shift-click only do something else on buttons that mark a Java-only shortcut (`MenuButton.withRight/withShift`); the plain click must still do the main thing.
-- **Navigation heads:** Back/Previous/Next are textured player heads (Mojang's official `MHF_ArrowLeft` / `MHF_ArrowRight` by default, or any minecraft-heads.com texture value in `menus.yml → heads.*`); loaded once in the background, with a plain arrow until ready or if the lookup fails. Bedrock shows a player head with the same name.
-- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Rule `Feature » Screen`: at most **2 parts** (`title.max-parts`, the item or player name stays last) and max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`. An empty title shows the fallback title (`messages/menus.yml → title.fallback`).
-- **Page indicator:** in the title (`(2/5)`, only when there is more than one page) and in the lore of Previous/Next ("Go to page 3 of 5").
-- **Button lore:** name = color word + white value; lore = description lines (`<c:text>`), an empty line, then the action line `» CLICK to …` (bold action color, verb upper case). No italics anywhere.
-- **States (one look each, shared builders in `MenuService`):** Loading = clock "⌛ Loading..." (`loadingItem`, `Menu.setLoading`); Error = red stained glass "✘ Couldn't load this" (`errorItem`, with a retry click when given); Empty list = cobweb in slot 22 (13 on small menus) "Nothing here yet" + one hint (`emptyItem`, `Menu.setEmpty`); Locked = gray dye "✘ Name" + how to unlock, a click shows it in the action bar (`locked`); Tab = selected glints with "✔ You are here", others "» CLICK to view" (`tab`); Toggle = lime dye "✔ Enabled" / red dye "✘ Disabled" + "▸ Click to switch".
-- Smaller GUIs (3-row) for simple choices and confirmations: same frame, inner slots filled with gray panes, Back 18 and Close 22.
+- **In place:** tabs, page turns and refreshes rebuild the same window and update the title in place (no close/reopen flicker, the cursor stays). `menus.yml → title.update-in-place: false` falls back to reopening when the title changes. A menu whose row count changes (the You menu when an entry appears) is reopened.
+- **Clicks (`ClickRoute`):** left and right click both run a button's action (a Bedrock tap too). Java-only shortcuts on buttons that declare them: right-click (`withRight`), shift-click (`withShift`), **middle click and Shift + Right-click** (`withMiddle`; a survival client sends no middle click, so Shift + Right-click does the same). Every other click (number keys, drop, double-click, offhand, a middle click on a button without a middle action) is ignored and the client is resynced (no cloned item in creative). The plain click always does the main thing.
+- **Icons (I7/I9):** every button is a real vanilla item (`MenuService#icon(viewer, key, name, lore)`, keys in `resourcepack/icons.json`); Java players with the pack loaded see our own picture on it. Back/Previous/Next are the arrow and paper items, not heads. Heads stay only for people.
+- **Title format:** `▸ Island » Upgrades (2/5)`: red `▸` marker, crumbs in title gray `#3F3F3F` (readable on the light chest background), separator and page in `#8B8B8B`. Built with `service.title(viewer, crumbs…)`. Rule `Feature » Screen`: at most **2 parts** (`title.max-parts`, the item or player name stays last) and max **32 characters** (`menus.yml → title.max-length`): leading crumbs are dropped first, then the last one is shortened with `..`. An empty title shows the fallback title (`messages/menus.yml → title.fallback`). Vanilla font only.
+- **Page indicator:** in the title (`(2/5)`, only when there is more than one page), as the count on the paper and in the lore of Previous/Next ("Go to page 3 of 5").
+- **States (one look each, shared builders in `MenuService`, icons from the catalogue):** Loading = clock "⌛ Loading..." (`loadingItem`, `state/loading`); Error = red stained glass "✘ Couldn't load this" (`errorItem`, with a retry click when given); Empty list = cobweb in slot 22 (13 on small menus) "Nothing here yet" + one hint (`emptyItem`, `state/empty`); Locked = gray dye "✘ Name" + how to unlock, a click shows it in the action bar (`locked`, `state/locked`); Tab = selected glints with "✔ You are here"; Toggle = **lime dye "✔ On" / gray dye "✘ Off"** (`state/on` / `state/off`; red is reserved for danger).
+
+### 5.1.1 Tooltip template (I9 §6, one builder: `LoreBuilder`)
+```
+Island Upgrades                 name: bold, colour = area meaning (<area:...>, below), no italics, no [brackets]
+Make your island better.        ONE grey sentence (text colour, 32-36 characters)
+
+| Level: 3 / 9                  optional sections (at most 2): bold red | Header, dark red bar, grey label, white value
+
+Right-click: sell               optional muted hint, Java viewers only (MenuService#javaLines, LoreBuilder#hint)
+» CLICK to open                 bold action yellow, verb UPPER CASE, always the last line
+```
+- At most **6 lines** per button and **36 visible characters** per line; only Bedrock-safe symbols (§2.1).
+- **Area colours** (`style.yml → area`, `<area:money>`): money (green: Shop, Sell, Bank, Auction House, prices), reward (flame: Rewards, Daily, Crates, ready counts), move (ember: Travel, Back, pages, timers, Events), depths (steel sky: The Depths, info, crystals), skills (violet: Skills, Enchanter, Wardrobe, Forge, Collection), people (blue: Friends, Members, Visit), home (lime: Home, Island), danger (red: delete, reset, disband, leave only), neutral (white: Settings, Help, Rules, Profiles), locked (gray). No module writes a hex value in a menu text. The `/menu` hub names take their row colour (G9).
+
+### 5.1.2 Danger rule (I9 §5)
+- Delete island, delete profile, reset, disband, leave, permanent ban, destroy items: **one tile each**, TNT with our red danger icon (`MenuService#dangerItem`, `nav/danger`), red name (`<area:danger>`), two grey lines saying exactly what is lost, red `» CLICK to ...` line (`lore.action-danger`, `LoreBuilder#dangerAction`).
+- In a corner away from Back, the page arrows and the main action: **slot 8** (`MenuLayout.danger`). Never in the centre. TNT is used for nothing else; Close stays the barrier.
+- The click opens the `ConfirmMenu`; things that cannot be undone use `twoStep()`.
 
 ### 5.2 Confirmation dialog (3-row)
 ```
- R  O  B  B  B  B  B  O  R
- B  ✔  ✔  ✔  ◆  ✘  ✘  ✘  B      10-12 Confirm (11 lime concrete, 10/12 lime panes: one big target)
- ←  O  B  B  ✘  B  B  O  R      13 what is confirmed + what you lose · 14-16 Cancel (15 red concrete) · 18 Back · 22 Close
+ .  .  .  .  .  .  .  .  .
+ .  .  ✔  .  ◆  .  ✘  .  .      11 Confirm (lime concrete, state/confirm) · 13 what is confirmed + what you lose · 15 Cancel (red concrete, state/cancel)
+ ←  .  .  .  ✕  .  .  .  .      18 Back · 22 Close
 ```
-- The middle item (13) carries the details: its name is the key fact, the lore says "This will:" + exactly what happens and what it costs (GUI-1: no longer on the green button, so Bedrock players read it before tapping). Confirm: "Read the middle item first". Cancel: "Nothing will change."
+- No panes. The middle item (13) carries the details: its name is the key fact, the lore says "This will:" + exactly what happens and what it costs (Bedrock players read it before tapping). Confirm: "Read the middle item first". Cancel: "Nothing will change."
 - One-shot: a confirm can never run twice. Cancel returns to the parent menu.
-- **Two-step** (`ConfirmMenu.twoStep()`) for things that can't be undone (disband, delete profile, permanent ban): the first Confirm shows a second check in the same window with the sides swapped (Cancel left, "Yes, do it" right) and "Last check: this can't be undone"; the title shows `(1/2)` / `(2/2)`.
-- Title: `▸ Disband island` (or the default `▸ Are you sure?`).
+- **Two-step** (`ConfirmMenu.twoStep()`) for things that can't be undone (disband, delete profile, permanent ban): the first Confirm shows a second check in the same window with the sides swapped (Cancel left on 11, "Yes, do it" right on 15) and "Last check: this can't be undone"; the title shows `(1/2)` / `(2/2)`.
+- Title: `▸ Disband island` (or the default `▸ Are you sure?`). The tiles are single slots (one constant in `ConfirmFlow` if they must be wider).
 
-Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with gems.
+Required for: anything irreversible, anything above a money threshold, solo→team, disband, prestige, merges, leaving islands, buying with credits.
 
 ### 5.2.0 Bedrock popups for chat offers (3-row, GUI-5)
 Bedrock can't click chat. Anything answered with a chat click (TPA, island invites, trades, /discord /store /vote /website /rules, /help command picks, tutorial "I'm stuck", staff alerts) goes through **one API**: `core.menus().offers().offer(player, Offer...)`. Everyone gets the chat line; Bedrock players also get a popup:
@@ -287,19 +327,18 @@ Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a no
 - **Bedrock:** a Floodgate form popup with one text field and the on-screen keyboard, the current text filled in; texts `<key>-form.title` and `<key>-form.label`. Falls back to chat without Floodgate. Turn off: `menus.yml → bedrock-forms.enabled: false`.
 - The answer arrives cleaned (no colour codes, trimmed, 1..max; `TypedText`); empty or closed runs `onCancel`. Pass `<max>` yourself when a text shows it.
 
-### 5.2.1 Number picker (6-row)
+### 5.2.1 Number picker (4-row)
 ```
- R  O  B  B  B  B  B  O  R
- B  ·  ·  ·  ·  ·  ·  ·  B      · = gray pane
- B −100 −10 −1  $  +1 +10 +100 B   19-21 red dye (stack size = step), 22 sunflower = value (exact + compact, min/max)
- B  ·  · Min  ✎  Max ·  ·  B     30 bucket = set minimum, 31 name tag = type an amount in chat (1.5k/2M), 32 water bucket = set maximum
- B  ·  ·  ✔ [✔]  ✔  ·  ·  B     39-41 Confirm (40 lime concrete)
- ←  O  B  ?  ✘  M  B  O  R
+ .   .   .   .   $   .   .   .   .       4 sunflower = value (exact + compact, min/max)
+ . −100 −10 −1  [✔] +1 +10 +100  .       10-12 red dye (stack size = step) · 13 Confirm (lime concrete, name shows the value) · 14-16 lime dye
+ .   .  Min  .   ✎   .  Max  .   .       20 bucket = minimum · 22 name tag = type an amount (1.5k/2M) · 24 water bucket = maximum
+ ←   .   .   .   ✕   .   .   .   .       27 Back · 31 Close
 ```
+Fewer than three step sizes leave their slots empty. Bedrock uses the same picker for "Type an amount".
 
-### 5.3 Help on every screen
-- **? item (slot 48, "What is this?"):** what this screen does, in 2–4 lines, plus "Click for the full guide". Opens `/help <topic>` for that screen; Back in the help returns to the screen.
-- Every clickable item's lore ends with the action lines (§4.1).
+### 5.3 Help
+- **No `?` button on every screen** (I9 rule 7): help is in the world (NPCs, holograms), on the hub's Help button (slot 50) and in `/help <topic>`. Lore stays short.
+- Every clickable item's lore ends with the action line (§4.1, §5.1.1).
 - First time a player opens a feature GUI: a one-time tip in chat with a link to its help topic (togglable in `/settings`).
 
 ### 5.4 Behavior
@@ -310,80 +349,83 @@ Typing is the last option (GUI_DESIGN §5); when a feature needs free text (a no
 - Close the GUI on teleport or on long actions.
 
 ### 5.5 Feature icon map (same icon everywhere for the same feature)
-| Feature | Icon |
-|---|---|
-| Island | Grass block |
-| Island upgrades | Anvil |
-| Island stats / top | Gold ingot / golden helmet |
-| The Depths `/dungeon` | Iron pickaxe → shows mode icons inside |
-| Shop | Emerald |
-| Sell | Gold nugget |
-| Auction house | Gold block |
-| Bank | Barrel (personal) / Ender chest (island) |
-| Crates | Tripwire hook |
-| Quests | Writable book |
-| Skills | Experience bottle |
-| Sets | Leather chestplate (dyed Phoenix Red) |
-| Enchanter | Enchanting table |
-| Pets | Bone / spawn egg |
-| Events | Clock |
-| Black Market | Wither rose |
-| Settings | Comparator |
-| Help | Knowledge book |
-| Warps | Ender pearl |
-| Collection log | Bookshelf |
-| Titles / cosmetics | Name tag / armor stand |
+**The contract is [`docs/design/ICON_MAP.md`](design/ICON_MAP.md)** (27 custom keys, 49 plain vanilla keys, icon set v3); the table below is a short overview and ICON_MAP wins on any difference.
+Icons come from `resourcepack/icons.json` (I7 pack v2): one vanilla base item per key, shown to everyone; Java players with the pack loaded see our own picture on that base item (`MenuService#icon(viewer, key, ...)`). Never use a pack-only `item_model`. Two buttons on one screen never share a base item (documented exception: You → Store and Credits are both diamond, I9 §9).
+
+| Feature | Base item | Icon key |
+|---|---|---|
+| Home | Red bed | `feature/home` |
+| Island | Grass block | `feature/island` |
+| The Depths `/dungeon` | Iron pickaxe | `feature/depths` |
+| Travel | Ender pearl | `feature/travel` |
+| Shop | Emerald | `feature/shop` |
+| Sell | Gold nugget | `feature/sell` |
+| Bank | Barrel (personal) / Ender chest (island) | `feature/bank` / `island/bank` |
+| Auction House | Gold block | `feature/auction` |
+| Forge | Smithing table | `feature/forge` |
+| Skills | Experience bottle | `feature/skills` |
+| Enchanter | Enchanting table | `feature/enchanter` |
+| Wardrobe | Leather chestplate | `feature/wardrobe` |
+| Rewards | Chest | `feature/rewards` |
+| Top | Golden helmet | `feature/top` |
+| Profiles | Armor stand | `feature/profiles` |
+| Titles | Name tag | `feature/titles` |
+| Achievements | Totem of undying | `feature/achievements` |
+| Settings | Comparator | `feature/settings` |
+| Store | Diamond | `feature/store` |
+| Rules | Lectern | `feature/rules` |
+| Quests | Writable book | `feature/quests` |
+| Collection | Bookshelf | `feature/collection` |
+| Staff (hub tile) | Shield | `feature/staff` |
+| Help (hub) | Book | `nav/help` |
+| Search (auction house only) | Spyglass | `nav/search` |
+| Danger | TNT | `nav/danger` |
+| Back / Close / Previous / Next | Arrow / Barrier / Paper / Paper | `nav/back` / `nav/close` / `nav/prev` / `nav/next` |
+| Island upgrades / stats / warps | Anvil / Gold ingot / Ender pearl | `island/upgrades` / `island/stats` / `island/warps` |
+| Crates | Tripwire hook | `travel/crate_yard` |
+| Events | Clock | (later) |
+| Black Market | Wither rose | (later) |
+| Pets | Bone / spawn egg | (later) |
+
+**Currencies (I9 §9):** money = gold ingot (`currency/money`), crystals = amethyst shard (`currency/crystals`), shards = prismarine shard (`currency/shards`), credits = diamond (`currency/credits`, earned credits too); `economy.yml → icons`.
 
 ---
 
 ## 6. HUD
 
-### 6.1 Scoreboard (right side, max 9 lines + title)
-V2 (STYLE2): the same `| Header` sections as lore.
+### 6.1 Scoreboard (right side, 10 lines at most counting title and footer; G7-R1-01)
+Two sections: `| You` first, then one section named after the place. Each section is a bold red `| Header` and at most 3 rows; one progress line and one timer line, each only while something fills or runs. Text and Bedrock-safe symbols only, no icons, no logo, no online count.
 ```
- PHOENIX SKYBLOCK          ← phoenix gradient (red → orange → gold), bold
- | Profile                 ← bold header color
- | Pouched · Mod           ← dark red bar, name + rank in the rank color
- | Money: $1.2M            ← label gray + colon, money green
- | Crystals: ◆ 4,250
- | Gems: ✦ 120
-
- | Island
+ PHOENIX SKYBLOCK          ← phoenix gradient, bold, the same on every board
+                           ← blank line, only while the board has 5 rows or fewer
+ | You                     ← bold header colour
+ | Money: $1.2M            ← dark red bar, label gray + colon, money green
+ | Crystals: ◆ 4,250       ← only while you have some
+ | Island                  ← the place section
  | Level: Lv 34 #12
+ | ●●●●●●●●●● 46%          ← progress: 4 dots flame, 6 dots the same ● in locked gray (never ○)
+ | Booster: +50% Sell 37m  ← timer: label gray, time ember; soonest-ending first
  play.skybornmc.net        ← footer, network ice blue
 ```
-**Per place (SB, owner Q6 "a different scoreboard per place, only relevant lines").** `hud.yml → places` picks the layout from where the player is; the layouts (title + lines) are in `messages/hud.yml → scoreboard.<layout>`:
+**Per place (SB + G7-R1-01).** `hud.yml → places` picks the layout; the texts are in `messages/hud.yml → scoreboard.<layout>`.
 
-| Place | Layout | Shows |
-|---|---|---|
-| Own island (and the island world outside any island) | `island` | name · rank, Island Lv, **Next: newest open note** (only when there is one and the "Next note on scoreboard" setting is on), money, crystals |
-| Someone else's island (coop counts as visiting) | `island-visit` | name · rank, **Visiting <island name>**, money, crystals |
-| The Depths, Mine wing and causeways | `depths` | zone, tier, Mining Lv (%), money |
-| The Gate (Depths hub) | `depths-gate` | zone, Mining / Foraging / Combat Lv (the skills that unlock the wings) |
-| Forest / Combat wing | `depths-forest` / `depths-combat` | zone, tier, Foraging / Combat Lv (%), money |
-| Spawn | `spawn` | same as default (change freely) |
-| Warzone (placeholder until it exists) | `warzone` | title WARZONE, Combat Lv, money |
-| Anywhere else | world-named layout, else `default` | |
+| Place | Layout | `\| You` rows | Place section (in order; the 3-row cap drops later rows) |
+|---|---|---|---|
+| Own island (and the island world outside any island) | `island` | Money, Crystals, Credits | `\| Island`: Level (`Lv 34 #12`), `Next:` (tutorial), progress to the next level, Note, timer |
+| Someone else's island (coop counts as visiting) | `island-visit` | Money, Crystals | `\| Visiting`: Island, Owner, timer |
+| Spawn | `spawn` | Money, Crystals, Credits | `\| Spawn`: `Next:`, AFK pool line, timer |
+| The Depths, Mine wing and causeways | `depths` | Money, Crystals | `\| <zone>`: Tier, Mining Lv, `Next:`, Mining progress |
+| Forest / Combat wing | `depths-forest` / `depths-combat` | Money, Crystals | same with Foraging / Combat |
+| The Gate (Depths hub) | `depths-gate` | Money, Crystals | `\| The Gate`: Mining, Foraging, Combat Lv |
+| Warzone (placeholder until it exists) | `warzone` | Money | `\| Warzone`: Combat Lv, Combat progress, timer |
+| Anywhere else | world-named layout, else `default` | Money, Crystals, Credits | `\| Island`: Level, `Next:`, progress, timer |
 
-```
- PHOENIX SKYBLOCK                THE DEPTHS
-
-  Pouched · Mod                   Pouched · Mod
-
-  Island  Lv 34 #12               Zone  Copper Caves
-  Next  Build the farm            Tier  Mine · Tier 2
-                                  Mining  Lv 12 (48%)
-  Money  $1.2M
-  Crystals  ◆ 4,250               Money  $1.2M
-  play.skybornmc.net              play.skybornmc.net
-```
-- A missing layout falls back: Depths variant → `depths`, `island-visit` → `island`, any place → world-named layout → `default`.
-- The board switches on the tick after a teleport or respawn and right away on a world change; walking onto another island or into another Depths zone switches on the next refresh (1 s). Only changed lines are sent, so switching never flickers.
-- Conditional lines: `"if:<placeholder>|<line>"` only shows while the placeholder has a value (not empty, not `-`); hidden lines take no space.
-- Built-in `<island_here>`: name of the island you stand on (visit board).
-- Section headers `<bold><c:header>| Name`, rows `<c:bar>|</c:bar> <c:text>Label:</c:text> value`, values white or their currency color, one leading space. Layouts that would pass 9 lines drop the blank line between sections.
-- No separator bars, no online count, no objective line (the objective returns with the tutorial/quests as its own layout).
-- Max 10 lines with the title, conditional lines included (`SidebarLinesTest` checks every bundled layout). Events add their own layout through `HudService#addLayout` (wins over places).
+- Crystals and Credits show only while you have some; a section with no row left (no island level yet) disappears with its header.
+- Board rules (automatic, `hud.yml scoreboard.*`): a header (`<bold><c:header>`) takes at most `section-rows` (3) rows (`<c:bar>`), the first in the layout win; an empty header disappears; `<soft-blank>` shows only while the other lines are at most `blank-under-title-max-lines` (8).
+- Built-ins: `<progress:key>` (placeholder as a percent → `progress-length` dots, rounded down), `<plain:key>` (plain text, takes the colour around it), `<timer>` (soonest `BoardTimers` timer: boosters now, events later), condition key `board_timer`; plus `<island>`, `<island_here>`, `<objective>`, `<money>`, `<crystals>`, `<credits>`.
+- Timer text: `45s`, `37m`, `2h 15m`, `3d 4h` (minutes round up, so it changes once a minute).
+- A missing layout falls back: Depths variant → `depths`, `island-visit` → `island`, any place → world-named layout → `default`. The board switches on the tick after a teleport or respawn and right away on a world change; only changed lines are sent.
+- `SidebarLinesTest` checks every bundled layout fits 9 lines under the title with every condition true. Events add their own layout through `HudService#addLayout` (wins over places).
 
 ### 6.2 Tab list
 ```
@@ -413,9 +455,20 @@ Skill XP gains (`+12 Mining XP (68%)`), tool mode changes, satchel full warnings
 - Modules only pass a destination name (plain, or a styled one from their messages file such as `dungeon.destination`); they never write their own warmup texts.
 
 ### 6.4 Boss bar
-Event and timer countdowns (KOTH, envoys, world boss HP, boosters). Color = event color.
+Event and timer countdowns (KOTH, envoys, world boss HP, boosters). One colour per meaning so two bars never look alike:
+- **Events and bosses: red** (KOTH, envoys, mini bosses).
+- **Tutorial: yellow** (A3-R1-02, `tutorial.yml guide.bossbar-color`, overlay `guide.bossbar-overlay`, default `progress`). Text `Tutorial 3/11` (bold ember) + muted `·` + the one instruction in white: `Tutorial 3/11 · Plant wheat · 2 / 3`, `Tutorial 5/11 · » Starter Chest · 24m «`, `Tutorial 6/11 · Go back · /is home`. The fill is always steps done out of the total, never distance; hidden while a camera shot plays.
+- **Global boosters: blue** (`boosters.yml global.boss-bar-color`, GUI-P19).
 
 ### 6.4b Holograms (V2)
+**NPC labels and holograms (A5-R1-01, `messages/npcs.yml`):**
+```
+[ Banker ]        bold flame, square brackets with inner spaces (npc.label)
+/bank             white, the command the NPC runs (npc.command; only when it runs one; npcs.command-line)
+Click me          muted (npc.hint-action); help-only NPCs: "Click for help" (npc.hint-help)
+```
+Holograms: a bold flame title (a short noun), then plain text lines (about 36 characters at most, one idea each), and a muted `Click me` (`hologram-click`) as the last line **only** on holograms you can click (they have a `hologram-help.<id>` text). Portals and signs have no click line; locked places add a muted `· Soon`. Commands sit inside a line in white (`Open the menu: /menu`). One action word: `Click`. Tutorial target holograms use the same pattern (`Starter Chest` / `Open me`).
+
 Shared formats in `messages/items.yml → hologram.*` for every module that spawns one (crates, leaderboards):
 title bold in its rarity color, `Click: Open` / `Sneak-click: View rewards` in bold action color (UX3: holograms and blocks that react to both buttons say "Click"; crates M10.3), leaderboard places
 `#1` / `#2` / `#3` bold in `top1` / `top2` / `top3`, other places muted. `/baltop` uses the same place colors.
@@ -466,5 +519,5 @@ All sounds are configurable and can be muted in `/settings`.
 | SkybornMC logo | **Owner's logo (2026-10-29):** `branding/skybornmc-logo-source.png` (transparent, cropped) + 128/512/1024 PNG. A chunky 3D **icy marble S** (frost white → ice blue, deep navy extrusion) on a scalloped steel-blue plate with silver spikes, white sparkles, sitting on a puffy white cloud. Colors: frost `#E4EBF0`, ice `#9FC6E8`, blue `#6CA1D6`, steel `#49649E`, navy `#192F66`, cloud `#FBFCFF`. Old red concept in `branding/old/` |
 | Server icon | `server/server-icon.png`, **64×64 PNG**: the SkybornMC S logo (deployed with the server configs) |
 | MOTD | Animated hex gradients from the `motd` module (`motd.yml`): 4 designs (coming soon, the phoenix rises, season live, double XP), rotation, auto-centering, hover info. Once the network has a proxy, the same module/config moves there |
-| Resource pack glyph | The phoenix as a font glyph (for chat prefix, scoreboard title, tab). Needs a Geyser mapping so Bedrock shows it too; until then, fall back to `✦` |
+| Phoenix symbol | `✦` in chat prefix, scoreboard title and tab (no font glyph: resource pack v1 was removed, I7 phase 0; no custom fonts) |
 | Particles | Brand particles: `flame`, `small_flame`, `lava` drips, `dust` in brand red. Used at spawn, crates, level-ups |

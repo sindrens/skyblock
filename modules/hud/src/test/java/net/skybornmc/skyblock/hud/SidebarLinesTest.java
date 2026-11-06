@@ -52,8 +52,9 @@ class SidebarLinesTest {
     }
 
     /**
-     * UX1 + SB: every bundled layout stays short (title + max 10 lines (FIXES1: blank line under the title), conditional lines included), every place layout
-     * named in hud.yml's defaults exists, and each layout shows what is relevant for its place.
+     * UX1 + SB + G7-R1-01: every bundled layout parses and fits 15 lines with the title under the board rules (every
+     * condition true), every place layout named in hud.yml's defaults exists, and each layout shows what is relevant
+     * for its place.
      */
     @Test
     void bundledLayoutsAreShort() {
@@ -70,7 +71,10 @@ class SidebarLinesTest {
             for (String layout : section.getKeys(false)) {
                 List<String> lines = yaml.getStringList("scoreboard." + layout + ".lines");
                 assertTrue(yaml.isString("scoreboard." + layout + ".title"), file + " " + layout + " title");
-                assertTrue(!lines.isEmpty() && lines.size() <= 10, file + " " + layout + ": " + lines.size() + " lines");
+                LayoutLines.Rules rules = new LayoutLines.Rules(defaults.maxLines, defaults.sectionRows, defaults.blankUnderTitleMaxLines);
+                int shown = LayoutLines.parse(String.join("<newline>", lines)).visible(k -> true, rules).size();
+                // Owner 2 Nov 2026: fuller boards (Rank row, spawn shows your island); Bedrock still shows at most 15 with the title.
+                assertTrue(!lines.isEmpty() && shown <= 14, file + " " + layout + ": " + shown + " lines below the title");
                 for (String line : lines) {
                     assertTrue(!line.startsWith(LayoutLines.IF) || LayoutLines.line(line).condition() != null,
                             file + " " + layout + ": broken if: line " + line);
@@ -79,12 +83,16 @@ class SidebarLinesTest {
             for (String layout : places) {
                 assertTrue(section.isConfigurationSection(layout), file + " misses layout " + layout);
             }
-            contains(yaml, file, "depths", "<ph:depths_zone>", "<ph:depths_tier>", "<ph:skill_mining_level>");
-            contains(yaml, file, "depths-forest", "<ph:depths_zone>", "<ph:skill_foraging_level>");
-            contains(yaml, file, "depths-combat", "<ph:depths_zone>", "<ph:skill_combat_level>");
+            contains(yaml, file, "depths", "<plain:depths_zone>", "<ph:depths_tier>", "<ph:skill_mining_level>", "<progress:skill_mining_progress>");
+            contains(yaml, file, "grind-farm", "<ph:grind_tier>", "<ph:grind_progress>", "<ph:grind_bonus_visit>");
+            contains(yaml, file, "grind-mine", "<ph:grind_tier>", "<ph:grind_progress>", "<ph:grind_bonus_visit>");
+            contains(yaml, file, "depths-forest", "<plain:depths_zone>", "<ph:skill_foraging_level>", "<progress:skill_foraging_progress>");
+            contains(yaml, file, "depths-combat", "<plain:depths_zone>", "<ph:skill_combat_level>", "<progress:skill_combat_progress>");
             contains(yaml, file, "depths-gate", "<ph:skill_mining_level>", "<ph:skill_foraging_level>", "<ph:skill_combat_level>");
-            contains(yaml, file, "island", "<island>", "if:island_next_note|");
-            contains(yaml, file, "island-visit", "<island_here>");
+            contains(yaml, file, "island", "<island>", "if:island_next_note|", "<progress:island_level_progress>", "<timer>");
+            contains(yaml, file, "island-visit", "<island_here>", "<ph:island_here_owner>");
+            contains(yaml, file, "spawn", "<ph:afk_line>", "<objective>", "<rank>", "<island>", "<online>");
+            contains(yaml, file, "warzone", "<ph:skill_combat_level>");
         }
     }
 

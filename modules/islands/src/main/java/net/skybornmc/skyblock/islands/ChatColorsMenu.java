@@ -86,7 +86,7 @@ final class ChatColorsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         boolean editable = IslandChatRules.canPickColors(island.roleOrNull(islands.key(viewer)));
         set(SLOT_SUMMARY, MenuButton.display(service.item(new ItemStack(Material.OAK_SIGN), text("chat.colors.summary.name"),
                 lines(editable ? "chat.colors.summary.lore-edit" : "chat.colors.summary.lore-view",

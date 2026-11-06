@@ -71,7 +71,7 @@ final class IslandStatsMembersMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Map<UUID, Long> allTime = new HashMap<>();
         Map<UUID, Long> week = new HashMap<>();
         snapshot.members().forEach((member, values) -> {

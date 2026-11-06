@@ -5,37 +5,45 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 /**
- * The Phoenix resource pack (RP1–RP6), published by the pack module: {@code core.services().optional(PackService.class)}.
- * Without the pack module everyone counts as a no-pack viewer, so every caller renders its plain fallback.
- *
- * <p>Rule (PACK_BUILD_PROMPT must-have 4): glyphs, badge fonts, menu backgrounds and pack icon models go only to
- * viewers for whom {@link #hasPack} is true. Everyone else gets plain text and vanilla items, never a missing texture.
+ * The icon pack (I7 pack v2), published by the pack module ({@code core.services().optional(PackService.class)}).
+ * Absent when the module is off: then nobody gets pack models and {@link PackWait} runs actions at once.
+ * Statuses are memory only.
  */
 public interface PackService {
 
     /** Where a player stands with the pack. */
     enum Status {
-        /** Not sent yet, or still downloading. */
+        /** Sent, no final answer yet (still downloading or the prompt is open). */
         PENDING,
-        /** Loaded on the client: render pack content for this viewer. */
+        /** Loaded: the only status that gets pack models. */
         LOADED,
-        /** Declined the prompt (kicked when the pack is required). */
         DECLINED,
-        /** Download or apply failed (kicked when {@code kick-on-fail}). */
         FAILED,
-        /** Bedrock player (Floodgate): never sent; text fallback and Geyser mappings. */
+        /** Floodgate player: never sent. */
         BEDROCK,
-        /** The pack is turned off in pack.yml. */
-        DISABLED
+        /** {@code pack.yml enabled: false}. */
+        DISABLED,
+        /** Not sent: the pack host was down at join time. */
+        SKIPPED
     }
 
     Status status(UUID player);
 
-    /** True when this viewer should get pack content (fonts, backgrounds, icon models). Any thread. */
+    /** True only when {@code viewer}'s client has loaded the pack. */
     default boolean hasPack(Player viewer) {
         return viewer != null && status(viewer.getUniqueId()) == Status.LOADED;
     }
 
-    /** The ids of the pack the server is sending right now (parsed from the bundled {@code pack-ids.yml}). */
-    PackIds ids();
+    /**
+     * Runs {@code action} on the main thread once, as soon as the player's status is not {@link Status#PENDING}, or
+     * after {@code join.wait-seconds}, whichever comes first; at once when not pending; never when the player left or
+     * was kicked. Several calls run in order.
+     */
+    void afterAnswer(Player player, Runnable action);
+
+    /** The pack host passed its last self-check (unhealthy = the pack is not sent and nobody is kicked). */
+    boolean healthy();
+
+    /** {@code pack.yml required}. */
+    boolean required();
 }

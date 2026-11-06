@@ -144,6 +144,11 @@ final class MemberStore {
         return db.async(c -> Sql.update(c, "DELETE FROM island_invites WHERE island_id = ? AND target_uuid = ?", islandId, target) > 0);
     }
 
+    /** Owner 4 Nov 2026: a wiped profile's invites move to its fresh profile key (the key is brand new: no conflicts). */
+    CompletableFuture<Integer> moveInvites(UUID from, UUID to) {
+        return db.async(c -> Sql.update(c, "UPDATE island_invites SET target_uuid = ? WHERE target_uuid = ?", to, from));
+    }
+
     CompletableFuture<Integer> deleteExpiredInvites(long now) {
         return db.async(c -> Sql.update(c, "DELETE FROM island_invites WHERE expires_at <= ?", now));
     }
@@ -317,14 +322,15 @@ final class MemberStore {
     }
 
     /**
-     * Owner P3 in the database: true if {@code player} has join history on the island with ANOTHER profile than
-     * {@code key}, or their profile-1 key (= the player UUID) is a member or coop of it. (Other current members are
-     * checked from the cache before; their joins are in the history anyway.) Rows from before profiles have no
-     * profile id and belong to profile 1.
+     * Owner P3 in the database: true if ANOTHER profile of {@code player} than {@code key} is on the island now (an open
+     * join row: not left yet), or their profile-1 key (= the player UUID) is a member or coop of it. (Other current
+     * members are checked from the cache before.) Rows from before profiles have no profile id and belong to profile 1.
+     * Feedback 4 Nov 2026 (A7): only CURRENT profiles count; a profile that left (or was kicked) no longer blocks the
+     * player's other profiles ("is or was on this island" became "is").
      */
     static boolean otherOwnProfileOn(Connection c, UUID islandId, UUID key, UUID player) throws SQLException {
-        if (Sql.queryOne(c, "SELECT 1 FROM player_island_joins WHERE uuid = ? AND island_id = ? AND COALESCE(profile_id, uuid) <> ?",
-                rs -> 1, player, islandId, key).isPresent()) {
+        if (Sql.queryOne(c, "SELECT 1 FROM player_island_joins WHERE uuid = ? AND island_id = ? AND COALESCE(profile_id, uuid) <> ? "
+                        + "AND left_at IS NULL", rs -> 1, player, islandId, key).isPresent()) {
             return true;
         }
         return !player.equals(key)
@@ -340,7 +346,13 @@ final class MemberStore {
         }
         Optional<UUID> current = islandOf(c, target);
         if (current.isPresent()) {
-            return current.get().equals(islandId) ? new InviteResult.AlreadyMember() : new InviteResult.HasIsland();
+            if (current.get().equals(islandId)) {
+                return new InviteResult.AlreadyMember();
+            }
+            if (memberCount(c, current.get()) > 1) {
+                return new InviteResult.HasIsland(); // a team island: leave it first
+            }
+            // alone on a solo island: the invite is sent; accepting asks to replace that island
         }
         if (otherOwnProfileOn(c, islandId, target, targetPlayer)) {
             return new InviteResult.OwnProfile();

@@ -5,6 +5,8 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | Command | What | Permission | Status |
 |---|---|---|---|
 | `/spawn` | Teleport to spawn (warmup 3 s, cooldown 5 s) | `skyblock.player.spawn` (everyone) | ✅ |
+| `/farm` · `/mine` | Teleport to the Farm / the Mine (world `grind`, per-player crops and ores, money bonus; count for skills, island tasks and quests) | `skyblock.player.spawn` (everyone) | ✅ |
+| `/start` | The guide Rowan's menu: Island, Farm, Mine (also opened by clicking Rowan at spawn; hides the start boss bar) | `skyblock.start` (everyone) | ✅ |
 | `/tpa <player>` · `/tpahere <player>` | Ask to teleport to someone / ask them to come to you (clickable Accept/Deny, expires after 60 s). Refused like "requests off" when the target `/ignore`s you (owner answer 316) | `skyblock.player.tpa` (everyone) | ✅ |
 | `/tpaccept [player]` · `/tpdeny [player]` · `/tpcancel` | Answer or cancel requests (aliases `/tpyes`, `/tpno`) | `skyblock.player.tpa` | ✅ |
 | `/tp <player> [target]` | Teleport to a player, or a player to another | `skyblock.staff.tp` (+ `.others`) | ✅ |
@@ -15,6 +17,7 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | `/shome [name]` · `/setshome [name]` · `/delshome <name>` | Staff homes (max 5). Owner answer 347: `/home` and `/sethome` are the island's (islands module) | `skyblock.staff.home` | ✅ |
 | `/gm <c/s/sp/a> [player]` · `/gmc` `/gms` `/gmsp` `/gma` | Game mode (each mode has its own permission). Creative: builders and admins only, only in `staff-powers.creative-worlds` (spawn, Depths; owner answer 331); mods use spectator | `skyblock.staff.gamemode` + `.creative/.survival/.spectator/.adventure` (+ `.others`) | ✅ |
 | `/fly [player]` | Toggle `/fly`; turning it on only works in staff mode (`/s`) or `/build` mode, and only for a target in one of those modes (owner answer 333). FIXES1: the toggle switches only its own flight (never island fly, staff mode or freeze; shared `FlightGrants` in common), says the real result once ("Fly on", "Fly off", or "/fly off. You can still fly here: island fly"), and in creative/spectator says you always fly there. A `/fly` that is still on and allowed comes back after respawn, game mode or world change | `skyblock.staff.fly` (+ `.others`) | ✅ |
+| `/fly` (rank perk, E17 4 Nov 2026) | Players with `skyblock.fly` but no staff fly: toggles island fly (islands module, `PlayerFlight` service): on islands where you are a member, and on visited islands whose visitor-fly setting is on (`/is settings`). Never at spawn, `/farm`, `/mine` or other worlds: flight ends when you leave the island border or the world, with a soft landing (`fly.landing-protection-seconds`). Off is remembered (player data) until the next `/fly`. Staff with `skyblock.staff.fly` keep the staff `/fly` above (it includes `skyblock.fly`) | `skyblock.fly` (Flamecrest and up) | ✅ |
 | `/speed <1-10> [fly/walk]` | Fly/walk speed (1 = normal) | `skyblock.staff.speed` | ✅ |
 | `/god [player]` | No damage, no hunger; only in staff mode or `/build` mode, target too (owner answer 333) | `skyblock.staff.god` (+ `.others`) | ✅ |
 | `/heal [player]` · `/feed [player]` | Heal (only while in staff mode or `/build` mode, owner answer 333) / feed | `skyblock.staff.heal` · `skyblock.staff.feed` (+ `.others`) | ✅ |

@@ -10,4 +10,6 @@ menu-item:
   slot: 9
   # Item used for the menu item.
   material: nether_star
+  # Force the enchant glint on the menu item. The vanilla Nether Star glints by itself; set true only if it does not on your client version.
+  glint: false
 config-version: 1

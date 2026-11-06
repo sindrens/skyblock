@@ -14,6 +14,7 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 import java.util.regex.Pattern;
 
 /**
@@ -76,11 +77,42 @@ public final class ShopCatalog {
         }
     }
 
-    /** A tab: id, icon item id, tab slot (0-8), kind, items in file order (disabled ones included). */
-    public record Category(String id, String icon, int slot, Kind kind, List<Item> items) {
+    /**
+     * A tab: id, icon item id, tab slot (0-8), kind, items in file order (disabled ones included) and its groups.
+     *
+     * @param icon vanilla item id (the plain icon for owner-added categories without a catalogue icon)
+     * @param slot parsed from shop.yml but no longer used for layout (GUI-P3: the category menu is centred in file order)
+     */
+    public record Category(String id, String icon, int slot, Kind kind, List<Item> items, List<Group> groups) {
 
         public Category {
             items = List.copyOf(items);
+            groups = groups == null ? List.of() : List.copyOf(groups);
+        }
+
+        /** A category without {@code groups:} (flat file order). */
+        public Category(String id, String icon, int slot, Kind kind, List<Item> items) {
+            this(id, icon, slot, kind, items, List.of());
+        }
+
+        /**
+         * The groups the grid shows (MENUS-V3 6.2): the {@code groups:} of shop.yml in file order, then a last group
+         * {@code more} with every item in no group (file order). Without {@code groups:} that is one group of all items.
+         */
+        public List<Group> displayGroups() {
+            List<Group> out = new ArrayList<>(groups);
+            Set<String> grouped = new HashSet<>();
+            groups.forEach(g -> grouped.addAll(g.items()));
+            List<String> rest = items.stream().map(Item::id).filter(id -> !grouped.contains(id)).toList();
+            if (!rest.isEmpty()) {
+                out.add(new Group(MORE, rest));
+            }
+            return out;
+        }
+
+        /** The icon catalogue key of this category ({@code shop/stone_earth}); I7 pack v2. */
+        public String iconKey() {
+            return "shop/" + id.replace('-', '_');
         }
 
         public List<Item> enabledItems() {
@@ -88,11 +120,70 @@ public final class ShopCatalog {
         }
     }
 
+    /** One group of a tab: its id ({@code /admin} name in {@code messages/shop.yml groups.<tab>.<id>}) and item ids in display order. */
+    public record Group(String id, List<String> items) {
+        public Group {
+            items = List.copyOf(items);
+        }
+    }
+
+    /**
+     * How prices are resolved at load (ECON-SELL-SHOP-AH B1): {@code price: auto} = {@code ceil(autoMarkup x sell base)}
+     * (at least 1; an item without a sell base is skipped), then every price x {@code multiplier}
+     * ({@code buy.price-multiplier}), kept to 2 significant figures when the multiplier is not 1. Block worth uses the
+     * price before the multiplier, so the island level does not move with it.
+     *
+     * @param sellBase item id → sell base price ({@code sell.yml}, after its own multiplier); 0 or NaN = none
+     */
+    public record Pricing(ToDoubleFunction<String> sellBase, double autoMarkup, double multiplier) {
+
+        /** No sell prices known: {@code auto} items are skipped; multiplier 1. */
+        public static final Pricing NONE = new Pricing(id -> Double.NaN, 10, 1.0);
+
+        /** The price of an {@code auto} item, or -1 when it has no sell base. */
+        long auto(String id) {
+            double base = sellBase.applyAsDouble(id);
+            if (!(base > 0) || !(autoMarkup > 0)) {
+                return -1;
+            }
+            return Math.max(1, (long) Math.ceil(autoMarkup * base - 1e-9));
+        }
+
+        /** {@code price} x the multiplier (unchanged at 1.0), 2 significant figures, at least 1. */
+        long scale(long price) {
+            if (multiplier == 1.0 || !(multiplier > 0) || !Double.isFinite(multiplier)) {
+                return price;
+            }
+            return Math.max(1, twoSignificant(price * multiplier));
+        }
+
+        static long twoSignificant(double v) {
+            if (v < 100) {
+                return Math.round(v);
+            }
+            double scale = Math.pow(10, Math.floor(Math.log10(v)) - 1);
+            return Math.round(Math.round(v / scale) * scale);
+        }
+    }
+
+    /** The word for a price worked out from the sell price ({@code price: auto}). */
+    public static final String AUTO = "auto";
+
+    /** Id of the implicit last group (items in no group). */
+    public static final String MORE = "more";
+
     private final List<Category> categories;
     private final Map<String, Item> items;
     private final Map<String, Long> worthOnly;
+    /** Block worth of sold items: the price before {@code buy.price-multiplier}. */
+    private final Map<String, Long> worthPrice;
 
     private ShopCatalog(List<Category> categories, Map<String, Long> worthOnly) {
+        this(categories, worthOnly, Map.of());
+    }
+
+    private ShopCatalog(List<Category> categories, Map<String, Long> worthOnly, Map<String, Long> worthPrice) {
+        this.worthPrice = Map.copyOf(worthPrice);
         this.categories = List.copyOf(categories);
         Map<String, Item> all = new LinkedHashMap<>();
         for (Category c : categories) {
@@ -140,7 +231,7 @@ public final class ShopCatalog {
     public OptionalLong worth(String id) {
         Item item = id == null ? null : items.get(id);
         if (item != null && !item.spawner()) {
-            return OptionalLong.of(item.price());
+            return OptionalLong.of(worthPrice.getOrDefault(id, item.price()));
         }
         Long old = id == null ? null : worthOnly.get(id);
         return old == null ? OptionalLong.empty() : OptionalLong.of(old);
@@ -148,6 +239,78 @@ public final class ShopCatalog {
 
     Map<String, Long> worthOnly() {
         return worthOnly;
+    }
+
+    /**
+     * B2 ({@code /eco shop disable}): this catalog with these item ids switched off (still listed, price kept, block worth
+     * unchanged). Unknown ids are ignored.
+     */
+    public ShopCatalog withDisabled(Set<String> ids) {
+        if (ids.isEmpty()) {
+            return this;
+        }
+        List<Category> out = new ArrayList<>();
+        for (Category c : categories) {
+            List<Item> items = new ArrayList<>();
+            for (Item i : c.items()) {
+                items.add(ids.contains(i.id()) && i.enabled()
+                        ? new Item(i.id(), i.category(), i.price(), i.contains(), i.requires(), false, i.kind()) : i);
+            }
+            out.add(new Category(c.id(), c.icon(), c.slot(), c.kind(), items, c.groups()));
+        }
+        return new ShopCatalog(out, worthOnly, worthPrice);
+    }
+
+    /**
+     * {@code categories.<tab>.groups.<group>: [item ids]} (MENUS-V3 6.2, optional). An id that is not an item of this tab or
+     * is already in a group is reported and skipped (so the item lists can change without breaking the groups). In a
+     * Spawners tab the ids are the YAML keys ({@code pig}); the groups hold the catalog ids ({@code spawner_pig}). An
+     * empty list is allowed (a group whose items are not sold yet) and leaves no group.
+     */
+    static List<Group> readGroups(ConfigurationSection section, List<Item> items, String where, Consumer<String> problems) {
+        return readGroups(section, items, Kind.ITEM, where, problems);
+    }
+
+    static List<Group> readGroups(ConfigurationSection section, List<Item> items, Kind kind, String where,
+                                  Consumer<String> problems) {
+        List<Group> out = new ArrayList<>();
+        if (section == null) {
+            return out;
+        }
+        Set<String> known = new HashSet<>();
+        items.forEach(i -> known.add(i.id()));
+        // An id listed under the tab's items: but skipped there (already reported) leaves its group silently.
+        Set<String> listed = new HashSet<>();
+        ConfigurationSection tab = section.getParent();
+        ConfigurationSection rawItems = tab == null ? null : tab.getConfigurationSection("items");
+        if (rawItems != null) {
+            rawItems.getKeys(false).forEach(k -> listed.add(k.toLowerCase(Locale.ROOT)));
+        }
+        Set<String> used = new HashSet<>();
+        for (String groupId : section.getKeys(false)) {
+            if (MORE.equals(groupId)) {
+                problems.accept(where + "." + groupId + ": '" + MORE + "' is the name of the last group of ungrouped items (skipped)");
+                continue;
+            }
+            List<String> ids = new ArrayList<>();
+            for (String raw : section.getStringList(groupId)) {
+                String key = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+                String id = kind == Kind.SPAWNER ? SPAWNER_PREFIX + key : key;
+                if (!known.contains(id) && listed.contains(key)) {
+                    continue;
+                } else if (!known.contains(id)) {
+                    problems.accept(where + "." + groupId + ": '" + raw + "' is not an item of this tab (skipped)");
+                } else if (!used.add(id)) {
+                    problems.accept(where + "." + groupId + ": '" + raw + "' is already in a group (skipped)");
+                } else {
+                    ids.add(id);
+                }
+            }
+            if (!ids.isEmpty()) {
+                out.add(new Group(groupId, ids));
+            }
+        }
+        return out;
     }
 
     /** {@link #load(ConfigurationSection, Predicate, Predicate, Consumer)} without a Spawners tab (spawner types rejected). */
@@ -163,6 +326,13 @@ public final class ShopCatalog {
      */
     public static ShopCatalog load(ConfigurationSection file, Predicate<String> validMaterial, Predicate<String> validSpawner,
                                    Consumer<String> problems) {
+        return load(file, validMaterial, validSpawner, Pricing.NONE, problems);
+    }
+
+    /** As above, with {@code price: auto} and {@code buy.price-multiplier} resolved by {@code pricing}. */
+    public static ShopCatalog load(ConfigurationSection file, Predicate<String> validMaterial, Predicate<String> validSpawner,
+                                   Pricing pricing, Consumer<String> problems) {
+        Map<String, Long> worthPrice = new LinkedHashMap<>();
         List<Category> out = new ArrayList<>();
         if (file == null) {
             problems.accept("shop.yml: missing; the shop is empty");
@@ -204,8 +374,9 @@ public final class ShopCatalog {
                 }
             };
             List<Item> items = readItems(cat.getConfigurationSection("items"), id, kind, where + ".items",
-                    kind == Kind.SPAWNER ? validSpawner : validMaterial, seen, problems);
-            out.add(new Category(id, icon, out.size(), kind, items));
+                    kind == Kind.SPAWNER ? validSpawner : validMaterial, seen, pricing, worthPrice, problems);
+            out.add(new Category(id, icon, out.size(), kind, items, readGroups(cat.getConfigurationSection("groups"), items, kind,
+                    where + ".groups", problems)));
         }
         Map<String, Long> worth = new LinkedHashMap<>();
         ConfigurationSection old = file.getConfigurationSection(WORTH_ONLY);
@@ -219,11 +390,12 @@ public final class ShopCatalog {
                 }
             }
         }
-        return new ShopCatalog(out, worth);
+        return new ShopCatalog(out, worth, worthPrice);
     }
 
     private static List<Item> readItems(ConfigurationSection items, String category, Kind kind, String where,
-                                        Predicate<String> valid, Set<String> seen, Consumer<String> problems) {
+                                        Predicate<String> valid, Set<String> seen, Pricing pricing,
+                                        Map<String, Long> worthPrice, Consumer<String> problems) {
         List<Item> out = new ArrayList<>();
         if (items == null) {
             problems.accept(where + ": missing (the tab is empty)");
@@ -252,7 +424,7 @@ public final class ShopCatalog {
             Map<?, ?> map = items.isConfigurationSection(key) ? items.getConfigurationSection(key).getValues(false)
                     : items.get(key) instanceof Map<?, ?> m ? m : null;
             if (map != null) {
-                price = whole(map.get("price"));
+                price = isAuto(map.get("price")) ? autoPrice(pricing, kind, id, at, problems) : whole(map.get("price"));
                 enabled = !(map.get("enabled") instanceof Boolean b) || b;
                 if (!readCounts(section(map.get("contains")), at + ".contains", contains, problems, k -> ID.matcher(k).matches())) {
                     continue;
@@ -261,15 +433,38 @@ public final class ShopCatalog {
                     continue;
                 }
             } else {
-                price = whole(items.get(key));
+                price = isAuto(items.get(key)) ? autoPrice(pricing, kind, id, at, problems) : whole(items.get(key));
+            }
+            if (price == AUTO_MISSING) {
+                continue; // reported by autoPrice
             }
             if (price < 1) {
-                problems.accept(at + ": price must be a whole number of at least 1 (skipped)");
+                problems.accept(at + ": price must be a whole number of at least 1 or 'auto' (skipped)");
                 continue;
             }
-            out.add(new Item(id, category, price, contains, requires, enabled, kind));
+            if (kind == Kind.ITEM) {
+                worthPrice.put(id, price);
+            }
+            out.add(new Item(id, category, pricing.scale(price), contains, requires, enabled, kind));
         }
         return out;
+    }
+
+    /** Marker: an {@code auto} item without a sell base (already reported). */
+    private static final long AUTO_MISSING = Long.MIN_VALUE;
+
+    static boolean isAuto(Object raw) {
+        return raw instanceof String s && s.trim().equalsIgnoreCase(AUTO);
+    }
+
+    private static long autoPrice(Pricing pricing, Kind kind, String id, String at, Consumer<String> problems) {
+        long price = kind == Kind.ITEM ? pricing.auto(id) : -1;
+        if (price < 1) {
+            problems.accept(at + ": price 'auto' needs a sell price in sell.yml (" + (kind == Kind.ITEM ? "none for " + id
+                    : "spawners need a fixed price") + "; skipped)");
+            return AUTO_MISSING;
+        }
+        return price;
     }
 
     /** A nested map from YAML (a section or a plain map), or null. */

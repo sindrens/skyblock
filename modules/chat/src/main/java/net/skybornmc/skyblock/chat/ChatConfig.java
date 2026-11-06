@@ -15,8 +15,12 @@ public final class ChatConfig extends ModuleConfig {
     // ---------------------------------------------------------------- formats (MiniMessage + parts)
 
     @Setting(path = "format.chat", desc = "Chat line. Parts: <title> <tag> <rank> <name> <message> (empty parts disappear). "
-            + "Titles go before the name, tags after it: [MOD] Pouched (Phoenix) » hi")
-    public String chatFormat = "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>";
+            + "Tags go after the name: OWNER Pouched PHOENIX » hi. Titles show in the hover card on the name (owner 2 Nov 2026).")
+    public String chatFormat = "<rank><name><tag> <gray>»</gray> <white><message>";
+
+    @Setting(path = "ranks.name-color", desc = "Colour of every player name next to a rank word (chat, tab, nameplate, /list, "
+            + "sidebar). White (owner EP-Q14). Empty = the name takes the rank colour as before.")
+    public String rankNameColor = "#FFFFFF";
 
     @Setting(path = "format.tab", desc = "Tab list entry. Parts: <rank> <name> <title> <tag> <afk>. Default (FIXES1, clean): "
             + "MOD Pouched (Phoenix) - rank prefix, name in the rank color, tag; the title stays in chat.")
@@ -41,7 +45,18 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "format.nametag", desc = "Show the rank prefix above heads (scoreboard teams).")
     public boolean nametagPrefix = true;
 
+    @Setting(path = "format.nametag-island-level", desc = "Owner 3 Nov 2026: after the name above a head, the level of the island "
+            + "the player is standing on (<level>). Empty = off. Shown only on islands.")
+    public String nametagIslandLevel = " <c:muted>[</c:muted><c:value>Lv <level></c:value><c:muted>]</c:muted>";
+
     // ---------------------------------------------------------------- rank badges
+
+    @Setting(path = "ranks.looks", desc = "How each rank word looks (no brackets) in chat, tab, nametags, /list and the sidebar. A '&l' in the Bedrock part makes the Java word bold too. "
+            + "One line per LuckPerms group: group=#RRGGBB|&code. Three colours (#A,#B,#C) draw a gradient (Immortal). "
+            + "The Bedrock part is the legacy colour code; '>' splits the name into equal parts (&e&l>&6&l>&c&l). The "
+            + "'default' line is the look of every group without a line. Values copied from the retired pack v1 "
+            + "(pack-ids.yml badges.ranks, I7 phase 0); LuckPerms 'color' meta is only a fallback for missing groups.")
+    public List<String> rankLooks = net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS;
 
     @Setting(path = "badges.immortal-gradients", desc = "Approved rank colours Immortal players can pick in /settings. One per "
             + "line: id=#RRGGBB,#RRGGBB,#RRGGBB (2-5 colours, left to right). The first one is the default. Keep them dark "
@@ -139,6 +154,48 @@ public final class ChatConfig extends ModuleConfig {
     @Setting(path = "tab.tps-ok", desc = "Staff TPS line: at or above this TPS (and below tps-good) it shows orange; below it red.", min = 0, max = 20)
     public double tpsOk = 15.0;
 
+    // ---------------------------------------------------------------- broadcast cards (plan chat look, owner 4 Nov 2026)
+
+    @Setting(path = "broadcasts.enabled", desc = "Tip and feature cards in chat now and then (texts: messages/broadcasts.yml). "
+            + "Players turn them off with the Tips switch in /settings.")
+    public boolean broadcastsEnabled = true;
+
+    @Setting(path = "broadcasts.interval-minutes", desc = "At least this many minutes between two cards.", min = 1, max = 240)
+    public int broadcastsIntervalMinutes = 7;
+
+    @Setting(path = "broadcasts.min-messages", desc = "A card goes out only after players sent at least this many chat messages "
+            + "since the last card (a quiet chat gets no cards, so they never stack up). 0 = no chat needed.", min = 0, max = 500)
+    public int broadcastsMinMessages = 6;
+
+    @Setting(path = "broadcasts.min-chatters", desc = "...and those messages came from at least this many different players.",
+            min = 0, max = 100)
+    public int broadcastsMinChatters = 2;
+
+    @Setting(path = "broadcasts.min-online", desc = "No cards with fewer players online than this.", min = 0, max = 1000)
+    public int broadcastsMinOnline = 3;
+
+    @Setting(path = "broadcasts.join-grace-seconds", desc = "A player gets no card in the first seconds after joining (they just "
+            + "got the welcome).", min = 0, max = 3600)
+    public int broadcastsJoinGraceSeconds = 120;
+
+    @Setting(path = "broadcasts.check-seconds", desc = "How often the rule above is checked.", min = 5, max = 300)
+    public int broadcastsCheckSeconds = 15;
+
+    @Setting(path = "broadcasts.cards", desc = "Cards in the rotation (ids under messages/broadcasts.yml cards). Random order, "
+            + "each once before any repeats, never the same twice in a row. A card whose command does not exist is skipped.")
+    public List<String> broadcastsCards = List.of("shop", "farm", "mine", "store", "vote", "discord", "daily", "upgrades",
+            "tip-menu", "tip-settings");
+
+    @Setting(path = "broadcasts.places", desc = "Players at a card's place don't get that card: card=world,centerX,halfWidth "
+            + "(x within halfWidth of centerX) or card=world (the whole world). The temporary /farm is around x 0 and /mine "
+            + "around x 1000 of world grind.")
+    public List<String> broadcastsPlaces = List.of("farm=grind,0,500", "mine=grind,1000,500");
+
+    BroadcastPacing.Rules broadcastRules() {
+        return new BroadcastPacing.Rules(broadcastsIntervalMinutes * 60_000L, broadcastsMinMessages, broadcastsMinChatters,
+                broadcastsMinOnline);
+    }
+
     @Override
     public String fileName() {
         return "chat.yml";
@@ -147,22 +204,25 @@ public final class ChatConfig extends ModuleConfig {
     /** Version 2 (owner answer 301): the English starter word lists fill the lists that were still empty. */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of(
                 "protection.words.replace", ValueChange.of(List.of(), STARTER_REPLACE),
-                "protection.words.block", ValueChange.of(List.of(), STARTER_BLOCK)));
+                "protection.words.block", ValueChange.of(List.of(), STARTER_BLOCK)),
+                // Version 3 (owner 2 Nov 2026): owner badge yellow &e&l instead of amber.
+                3, java.util.Map.of("ranks.looks", ValueChange.of(net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS_V1,
+                        net.skybornmc.skyblock.common.rank.RankLooks.DEFAULTS)));
     }
 
     @Override
     public String header() {
         return """
                 Phoenix Skyblock chat, tab list and nametags.
-                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Rank prefixes come from LuckPerms
-                (& codes like Essentials), name colors from the rank's 'color' meta. Texts: messages/chat.yml.
+                Formats are MiniMessage with style tags (<c:brand>, <grad:phoenix> ...). Ranks show as a coloured word (OWNER, Hatchling ...)
+                before a white name (ranks.name-color); the word looks come from ranks.looks. Texts: messages/chat.yml.
                 Reload: /skyblock reload chat""";
     }
 
@@ -173,7 +233,12 @@ public final class ChatConfig extends ModuleConfig {
      */
     static final Map<String, String[]> CHANGED_DEFAULTS = Map.of(
             "format.chat", new String[]{"<title><rank><name> <c:muted>»</c:muted> <c:text><message>",
-                    "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>"},
+                    "<title><rank><name><tag> <c:muted>»</c:muted> <c:text><message>",
+                    "<title><rank><name><tag> <gray>»»</gray> <white><message>",
+                    // Owner 2 Nov 2026: titles only in the hover card on the name, never in the line itself.
+                    "<rank><name><tag> <gray>»»</gray> <white><message>",
+                    // Owner 3 Nov 2026: one arrow between the name and the message.
+                    "<rank><name><tag> <gray>»</gray> <white><message>"},
             "format.tab", new String[]{"<rank><name><title><tag><afk>", "<title><rank><name><tag><afk>", "<rank><name><tag><afk>"},
             "format.tab-title-part", new String[]{" <value>", "<value> "},
             "format.tag-part", new String[]{"", " <value>"});

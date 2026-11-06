@@ -42,11 +42,24 @@ import java.util.function.LongSupplier;
  *       {@code UPDATE … SET balance = balance + ? WHERE balance <= MAX - ?} for the receiver, read the balances after,
  *       insert the ledger row (its unique {@code idem_key} stops replays), commit.</li>
  * </ol>
- * Any failed step rolls back everything. Deadlocks/lock timeouts are retried a few times.
+ * Any failed step rolls back everything. Deadlocks/lock timeouts are retried ({@code database.retry.*} in economy.yml).
  */
 final class EconomyStore {
 
+    /** Default of {@code database.retry.attempts}. */
     static final int MAX_ATTEMPTS = 4;
+
+    /** Deadlock retries (C1-R3-03: economy.yml {@code database.retry.*}); read on every retry, set on load and reload. */
+    private volatile int retryAttempts = MAX_ATTEMPTS;
+    private volatile int retryStepMs = 5;
+    private volatile int retryJitterMs = 10;
+
+    /** Applies {@code database.retry.attempts}, {@code step-ms} and {@code jitter-ms}. */
+    void retries(int attempts, int stepMs, int jitterMs) {
+        this.retryAttempts = Math.max(1, attempts);
+        this.retryStepMs = Math.max(0, stepMs);
+        this.retryJitterMs = Math.max(0, jitterMs);
+    }
 
     private static final String LOCK = "SELECT balance FROM eco_accounts WHERE owner_type = ? AND owner_id = ? AND currency = ? FOR UPDATE";
     private static final String READ = "SELECT balance FROM eco_accounts WHERE owner_type = ? AND owner_id = ? AND currency = ?";
@@ -122,16 +135,20 @@ final class EconomyStore {
         T run() throws SQLException;
     }
 
-    private static <T> T withRetry(Attempt<T> attempt) throws SQLException {
+    private <T> T withRetry(Attempt<T> attempt) throws SQLException {
+        int attempts = retryAttempts;
+        int step = retryStepMs;
+        int jitter = retryJitterMs;
         for (int i = 1; ; i++) {
             try {
                 return attempt.run();
             } catch (SQLException e) {
-                if (i >= MAX_ATTEMPTS || !retryable(e)) {
+                if (i >= attempts || !retryable(e)) {
                     throw e;
                 }
                 try {
-                    Thread.sleep(5L * i + (long) (Math.random() * 10));
+                    // Runs on a database thread (db.async), never on the main thread.
+                    Thread.sleep((long) step * i + (long) (Math.random() * jitter));
                 } catch (InterruptedException interrupted) {
                     Thread.currentThread().interrupt();
                     throw e;
@@ -351,8 +368,104 @@ final class EconomyStore {
         }
     }
 
-    private static boolean keyUsed(Connection c, String key) throws SQLException {
-        return Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), key).isPresent();
+    /**
+     * True if {@code key} (or its pre-rename twin, see {@link #legacyKey}) is already in the ledger. The twin check means a
+     * payment written before the gems → credits rename (its key ended in {@code :gems}, e.g. {@code vote:<id>:gems},
+     * {@code <claim>:gems}, {@code start:<season>:gems:<player>}) can never be paid again under the new key
+     * {@code ...:credits_earned} after the deploy. The ledger keys themselves are never rewritten.
+     */
+    static boolean keyUsed(Connection c, String key) throws SQLException {
+        if (Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), key).isPresent()) {
+            return true;
+        }
+        String legacy = legacyKey(key);
+        return legacy != null
+                && Sql.queryOne(c, "SELECT id FROM eco_ledger WHERE idem_key = ?", rs -> rs.getLong(1), legacy).isPresent();
+    }
+
+    /** The key a payment had before gems were renamed (card C1): {@code credits_earned} → {@code gems}; null if none. Pure. */
+    static String legacyKey(String key) {
+        if (key == null || !key.contains(Currency.CREDITS_EARNED.key())) {
+            return null;
+        }
+        return key.replace(Currency.CREDITS_EARNED.key(), Currency.LEGACY_GEMS_KEY);
+    }
+
+    // ------------------------------------------------------------------------------------------------ credit spends
+
+    /** One ledger half a credit spend took: the amount, its ledger row and the half's balance after. */
+    record CreditLeg(Currency currency, long amount, long ledgerId, long balanceAfter) {
+    }
+
+    /** Result of {@link #spendCredits}: the overall result ({@code fromBalance} = credit total left) and the legs written. */
+    record CreditOutcome(TxResult result, List<CreditLeg> legs) {
+        static CreditOutcome of(TxResult.Status status) {
+            return new CreditOutcome(TxResult.of(status), List.of());
+        }
+    }
+
+    /**
+     * A credit spend (card C1) in <b>one</b> database transaction: the guard runs, both credit rows of the player are
+     * locked ({@code SELECT ... FOR UPDATE}, in the global lock order: account, then currency, as in {@link #runBatch}),
+     * the earned-first split is computed from those locked, current balances, each half is debited with a conditional
+     * {@code UPDATE ... WHERE balance >= ?} and gets its ledger row. The first leg keeps {@code template}'s idempotency key,
+     * the second {@code key:2}; a known key (or its pre-rename twin) is refused as DUPLICATE before anything runs, and the
+     * unique ledger key refuses a concurrent replay. {@code template}: a withdraw in {@link Currency#CREDITS} from the
+     * player account (already normalized).
+     */
+    CompletableFuture<CreditOutcome> spendCredits(Transaction template, Guard guard) {
+        return db.async(c -> withRetry(() -> runCreditSpend(c, template, guard)));
+    }
+
+    CreditOutcome runCreditSpend(Connection c, Transaction t, Guard guard) throws SQLException {
+        if (t.problem() != null || t.currency() != Currency.CREDITS || t.from() == null || t.to() != null) {
+            return CreditOutcome.of(TxResult.Status.INVALID);
+        }
+        String key = t.idempotencyKey();
+        String second = key == null ? null : key + net.skybornmc.skyblock.common.economy.CreditSpend.SECOND_LEG;
+        if (second != null && second.length() > 96) {
+            return CreditOutcome.of(TxResult.Status.INVALID);
+        }
+        if (key != null && (keyUsed(c, key) || keyUsed(c, second))) {
+            return CreditOutcome.of(TxResult.Status.DUPLICATE);
+        }
+        AccountRef account = t.from();
+        // Row order = Row#compareTo (same account, currency ordinal): CREDITS before CREDITS_EARNED, like every batch.
+        ensureAccount(c, account, Currency.CREDITS);
+        ensureAccount(c, account, Currency.CREDITS_EARNED);
+        List<CreditLeg> legs = new ArrayList<>(2);
+        TxResult result = inTransaction(c, () -> {
+            legs.clear();
+            if (guard != null && !guard.holds(c)) {
+                throw new Abort(TxResult.of(TxResult.Status.DUPLICATE));
+            }
+            long bought = lock(c, account, Currency.CREDITS);
+            long earned = lock(c, account, Currency.CREDITS_EARNED);
+            net.skybornmc.skyblock.common.economy.CreditSpend.Split split =
+                    net.skybornmc.skyblock.common.economy.CreditSpend.plan(earned, bought, t.amount());
+            if (split == null) {
+                throw new Abort(TxResult.of(TxResult.Status.INSUFFICIENT_FUNDS));
+            }
+            long now = clock.getAsLong();
+            boolean first = true;
+            for (Currency currency : List.of(Currency.CREDITS_EARNED, Currency.CREDITS)) {
+                long part = currency == Currency.CREDITS_EARNED ? split.earned() : split.bought();
+                if (part <= 0) {
+                    continue;
+                }
+                if (Sql.update(c, DEBIT, part, now, account.type().key(), account.owner(), currency.key(), part) == 0) {
+                    throw new Abort(TxResult.of(TxResult.Status.INSUFFICIENT_FUNDS));
+                }
+                long after = read(c, account, currency);
+                long id = ledger(c, now, currency, account, null, part, after, null, t.reason(), t.reference(),
+                        first ? key : second, t.actor());
+                legs.add(new CreditLeg(currency, part, id, after));
+                first = false;
+            }
+            long left = (earned - split.earned()) + (bought - split.bought());
+            return new TxResult(TxResult.Status.SUCCESS, legs.getFirst().ledgerId(), left, null);
+        });
+        return new CreditOutcome(result, result.ok() ? List.copyOf(legs) : List.of());
     }
 
     /** Creates the account row (balance 0) if it does not exist yet. Autocommit, outside the transaction. */
@@ -419,7 +532,7 @@ final class EconomyStore {
         }
         for (Object[] row : Sql.query(c, "SELECT currency, balance FROM eco_accounts WHERE owner_type = ? AND owner_id = ?",
                 rs -> new Object[]{rs.getString(1), rs.getLong(2)}, account.type().key(), account.owner())) {
-            Currency.byKey((String) row[0]).ifPresent(cur -> out.put(cur, (Long) row[1]));
+            Currency.byCanonicalKey((String) row[0]).ifPresent(cur -> out.put(cur, (Long) row[1])); // stored keys are canonical
         }
         return out;
     }
@@ -434,6 +547,9 @@ final class EconomyStore {
     }
 
     static List<TopEntry> topNow(Connection c, Currency currency, int limit) throws SQLException {
+        if (currency.isCredits()) {
+            return topCreditsNow(c, limit);
+        }
         return Sql.query(c, "SELECT a.owner_id, a.balance, p.name FROM eco_accounts a "
                         + "LEFT JOIN players p ON p.uuid = a.owner_id "
                         + "WHERE a.currency = ? AND a.owner_type = ? AND a.balance > 0 ORDER BY a.balance DESC LIMIT ?",
@@ -442,7 +558,20 @@ final class EconomyStore {
     }
 
     /**
-     * {@code /baltop} with owner decision P7: one line per player from their best live profile. Gems are already per
+     * Richest players by credits: bought plus earned (C1-R1-08, the total only; credits belong to the player, so there is
+     * one row per player and currency). One grouped query over the credit rows; /baltop caches it (30 s, async).
+     */
+    static List<TopEntry> topCreditsNow(Connection c, int limit) throws SQLException {
+        return Sql.query(c, "SELECT a.owner_id, SUM(a.balance) AS total, MAX(p.name) AS name FROM eco_accounts a "
+                        + "LEFT JOIN players p ON p.uuid = a.owner_id "
+                        + "WHERE a.currency IN (?, ?) AND a.owner_type = ? AND a.balance > 0 "
+                        + "GROUP BY a.owner_id ORDER BY total DESC LIMIT ?",
+                rs -> new TopEntry(Sql.uuid(rs, "owner_id"), rs.getString("name"), rs.getLong("total")),
+                Currency.CREDITS.key(), Currency.CREDITS_EARNED.key(), AccountType.PLAYER.key(), limit);
+    }
+
+    /**
+     * {@code /baltop} with owner decision P7: one line per player from their best live profile. Credits are already per
      * player. Reads a few times more rows than shown, because one player can have up to 3 profiles in the list.
      */
     CompletableFuture<List<TopEntry>> topBest(Currency currency, int size, ProfileService profiles) {
@@ -450,7 +579,7 @@ final class EconomyStore {
     }
 
     static List<TopEntry> topBestNow(Connection c, Currency currency, int size, ProfileService profiles) throws SQLException {
-        if (currency == Currency.GEMS) {
+        if (currency.accountWide()) {
             return topNow(c, currency, size);
         }
         List<TopEntry> raw = topNow(c, currency, size * SlotRules.MAX_SLOTS + 10);
@@ -496,12 +625,33 @@ final class EconomyStore {
     }
 
     /**
-     * A profile's ledger: rows of {@code account} plus the gem rows of {@code gemsAccount} (its player; {@code null} or
-     * equal = none extra), newest first.
+     * A profile's ledger: rows of {@code account} plus the credit rows (both halves) of {@code creditsAccount} (its player;
+     * {@code null} or equal = none extra), newest first.
      */
-    CompletableFuture<LedgerPage> history(AccountRef account, AccountRef gemsAccount, LedgerFilter filter, int offset, int limit) {
+    CompletableFuture<LedgerPage> history(AccountRef account, AccountRef creditsAccount, LedgerFilter filter, int offset, int limit) {
         UnaryOperator<UUID> map = owners;
-        return db.async(c -> withNames(c, historyNow(c, account, gemsAccount, filter, offset, limit, clock.getAsLong()), map));
+        return db.async(c -> withNames(c, historyNow(c, account, creditsAccount, filter, offset, limit, clock.getAsLong()), map));
+    }
+
+    /**
+     * What the withdraw rows written under a credit spend's keys ({@code key} and {@code key:2}, see
+     * {@link net.skybornmc.skyblock.common.economy.CreditSpend}) took, per currency. Empty when none exist.
+     */
+    CompletableFuture<Map<Currency, Long>> creditLegs(String spendKey) {
+        return db.async(c -> creditLegsNow(c, spendKey));
+    }
+
+    static Map<Currency, Long> creditLegsNow(Connection c, String spendKey) throws SQLException {
+        Map<Currency, Long> out = new EnumMap<>(Currency.class);
+        if (spendKey == null || spendKey.isBlank()) {
+            return out;
+        }
+        for (Object[] row : Sql.query(c, "SELECT currency, amount FROM eco_ledger WHERE idem_key IN (?, ?) AND from_id IS NOT NULL "
+                        + "AND to_id IS NULL", rs -> new Object[]{rs.getString(1), rs.getLong(2)}, spendKey,
+                spendKey + net.skybornmc.skyblock.common.economy.CreditSpend.SECOND_LEG)) {
+            Currency.byCanonicalKey((String) row[0]).filter(Currency::isCredits).ifPresent(cur -> out.merge(cur, (Long) row[1], Long::sum));
+        }
+        return out;
     }
 
     static LedgerPage historyNow(Connection c, AccountRef account, LedgerFilter filter, int offset, int limit, long now)
@@ -509,24 +659,30 @@ final class EconomyStore {
         return historyNow(c, account, null, filter, offset, limit, now);
     }
 
-    static LedgerPage historyNow(Connection c, AccountRef account, AccountRef gemsAccount, LedgerFilter filter, int offset, int limit,
-                                 long now) throws SQLException {
+    static LedgerPage historyNow(Connection c, AccountRef account, AccountRef creditsAccount, LedgerFilter filter, int offset,
+                                 int limit, long now) throws SQLException {
         List<Object> params = new ArrayList<>();
         StringBuilder where = new StringBuilder("WHERE (((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?))");
         params.add(account.type().key());
         params.add(account.owner());
         params.add(account.type().key());
         params.add(account.owner());
-        if (gemsAccount != null && !gemsAccount.equals(account)) {
-            where.append(" OR (l.currency = ? AND ((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?)))");
-            params.add(Currency.GEMS.key());
-            params.add(gemsAccount.type().key());
-            params.add(gemsAccount.owner());
-            params.add(gemsAccount.type().key());
-            params.add(gemsAccount.owner());
+        if (creditsAccount != null && !creditsAccount.equals(account)) {
+            where.append(" OR (l.currency IN (?, ?) AND ((l.from_type = ? AND l.from_id = ?) OR (l.to_type = ? AND l.to_id = ?)))");
+            params.add(Currency.CREDITS.key());
+            params.add(Currency.CREDITS_EARNED.key());
+            params.add(creditsAccount.type().key());
+            params.add(creditsAccount.owner());
+            params.add(creditsAccount.type().key());
+            params.add(creditsAccount.owner());
         }
         where.append(")");
-        if (filter.currency() != null) {
+        if (filter.currency() != null && filter.currency().isCredits()) {
+            // "Credits" in a filter means both halves (players never pick one half)
+            where.append(" AND l.currency IN (?, ?)");
+            params.add(Currency.CREDITS.key());
+            params.add(Currency.CREDITS_EARNED.key());
+        } else if (filter.currency() != null) {
             where.append(" AND l.currency = ?");
             params.add(filter.currency().key());
         }
@@ -582,7 +738,7 @@ final class EconomyStore {
 
     private static LedgerEntry entry(ResultSet rs) throws SQLException {
         return new LedgerEntry(rs.getLong("id"), rs.getLong("created_at"), rs.getInt("season_id"),
-                Currency.byKey(rs.getString("currency")).orElse(Currency.MONEY),
+                Currency.byCanonicalKey(rs.getString("currency")).orElse(Currency.MONEY),
                 ref(rs.getString("from_type"), Sql.uuid(rs, "from_id")), ref(rs.getString("to_type"), Sql.uuid(rs, "to_id")),
                 rs.getLong("amount"), Sql.nullableLong(rs, "from_balance"), Sql.nullableLong(rs, "to_balance"),
                 rs.getString("reason"), rs.getString("reference"), rs.getString("actor_name"),

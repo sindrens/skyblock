@@ -171,6 +171,14 @@ final class ToolTracker implements ToolService {
      * stacked kills, R3-24). It joins the family total before the family cap, so the cap still applies once.
      */
     void gain(Player player, double baseXp, String stat, long statAmount, double extraFamilyPercent) {
+        gain(player, baseXp, stat, statAmount, extraFamilyPercent, null);
+    }
+
+    /**
+     * Milestones slice 6: the same with the block, crop or mob the XP is for ({@code WHEAT}, {@code DIAMOND_ORE}), so target
+     * bonus sources (milestone perks) can match it. {@code target} null = no target.
+     */
+    void gain(Player player, double baseXp, String stat, long statAmount, double extraFamilyPercent, String target) {
         PlayerInventory inv = player.getInventory();
         int slot = inv.getHeldItemSlot();
         ItemStack stack = inv.getItem(slot);
@@ -188,7 +196,8 @@ final class ToolTracker implements ToolService {
         double extra = Double.isFinite(extraFamilyPercent) ? Math.max(0, extraFamilyPercent) : 0;
         xp *= module.core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class)
                 .map(b -> {
-                    var ctx = new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()), forBonus.kind().skill().id());
+                    var ctx = new net.skybornmc.skyblock.common.bonus.BonusContext(player, stack, forBonus.info(slotLevels()),
+                            forBonus.kind().skill().id()).withTarget(target);
                     var family = net.skybornmc.skyblock.common.bonus.BonusFamily.TOOL_XP;
                     return extra > 0 ? net.skybornmc.skyblock.common.bonus.BonusMath.multiplier(b.total(family, ctx) + extra, b.cap(family))
                             : b.multiplier(family, ctx);

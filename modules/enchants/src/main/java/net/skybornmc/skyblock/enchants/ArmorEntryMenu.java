@@ -87,7 +87,7 @@ final class ArmorEntryMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         WardrobeService w = module.wardrobe();
         Optional<SetEntryView> found = w == null ? Optional.empty() : w.entry(viewer, entryId);
         if (found.isEmpty()) {

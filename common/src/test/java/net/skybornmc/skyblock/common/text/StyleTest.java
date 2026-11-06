@@ -94,7 +94,7 @@ class StyleTest {
                 java.util.Map.entry("c.sell", "#ff5a5a red"), java.util.Map.entry("c.top1", "#ffd21a yellow"),
                 java.util.Map.entry("c.top2", "#e6e6e6 white"), java.util.Map.entry("c.top3", "#ff9a3d gold"),
                 java.util.Map.entry("cur.money", "#4dff88 green"), java.util.Map.entry("cur.crystals", "#33e0ff aqua"),
-                java.util.Map.entry("cur.gems", "#2effc0 dark_green"), java.util.Map.entry("cur.shards", "#ff6b8a red"),
+                java.util.Map.entry("cur.shards", "#ff6b8a red"),
                 java.util.Map.entry("cur.credits", "#ff8c1a gold"),
                 java.util.Map.entry("rarity.common", "#f2f2f2 white"), java.util.Map.entry("rarity.uncommon", "#4dff6a green"),
                 java.util.Map.entry("rarity.rare", "#3da5ff blue"), java.util.Map.entry("rarity.epic", "#c05cff dark_purple"),
@@ -141,5 +141,32 @@ class StyleTest {
         var reloaded = style.fullResolver(false, mm);
         assertNotSame(java, reloaded, "a reload drops the cache");
         assertEquals("Q hi", plain.serialize(mm.deserialize("<prefix>hi", reloaded)));
+    }
+
+    @Test
+    void eachModuleCanHaveItsOwnPrefix(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, YAML + "prefixes:\n  islands: \"Island » \"\n");
+        Style style = new Style();
+        style.load(file.toFile());
+        assertEquals("Island » ", style.prefixFor("islands"));
+        assertEquals("<c:brand>P</c:brand> ", style.prefixFor("shop"), "no own label: the shared prefix");
+        assertEquals("<c:brand>P</c:brand> ", style.prefixFor(null));
+    }
+
+    @Test
+    void noticeTagInsertsTheSystemNoticePrefix(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("style.yml");
+        Files.writeString(file, YAML);
+        Style style = new Style();
+        style.load(file.toFile());
+        assertEquals(Style.DEFAULT_NOTICE, style.notice(), "an older style.yml without notice: the default");
+
+        Files.writeString(file, YAML + "notice: \"<c:brand>N</c:brand> > \"\n");
+        style.load(file.toFile());
+        net.kyori.adventure.text.minimessage.MiniMessage mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+        net.kyori.adventure.text.Component parsed = mm.deserialize("<notice>Items are cleared", style.fullResolver(false, mm));
+        assertEquals("N > Items are cleared",
+                net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(parsed));
     }
 }

@@ -6,6 +6,13 @@ error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Not
 loading: "<prefix><c:error><sym:cross></c:error> <c:text>Crates are still loading. Try again in a moment."
 frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates while frozen."
 staff-mode: "<prefix><c:error><sym:cross></c:error> <c:text>You can't open crates in staff mode."
+# /keys (feedback 31 Oct 2026). <key> <keys> <tradeable> <crate>
+keys:
+  header: "<c:header><bold>| Your keys"
+  line: "<c:bar>|</c:bar> <key> <c:muted>x</c:muted><c:value><keys></c:value> <click:run_command:'/crates <crate>'><hover:show_text:'<c:text>Open this crate'><c:action>[Open]</c:action></hover></click>"
+  line-tradeable: "<c:bar>|</c:bar> <key> <c:muted>x</c:muted><c:value><keys></c:value> <c:muted>(<tradeable> tradeable)</c:muted> <click:run_command:'/crates <crate>'><hover:show_text:'<c:text>Open this crate'><c:action>[Open]</c:action></hover></click>"
+  none: "<prefix><c:text>You have no keys yet. Get them from voting, quests, the AFK pool and daily rewards. <click:run_command:'/crates'><hover:show_text:'<c:text>See every crate'><c:action>[Crates]</c:action></hover></click>"
+  footer: "<c:muted>All crates and rewards:</c:muted> <click:run_command:'/crates'><hover:show_text:'<c:text>Open the crates menu'><c:action>[Crates]</c:action></hover></click>"
 switching: "<prefix><c:error><sym:cross></c:error> <c:text>Wait until your profile switch is done."
 unknown-crate: "<prefix><c:error><sym:cross></c:error> <c:text>No crate <c:value><input></c:value><c:text>. Try: <c:value><crates>"
 coming-soon: "<prefix><c:error><sym:cross></c:error> <c:text>This crate is coming soon."
@@ -29,7 +36,6 @@ crates:
 reward-types:
   money: "Money Pouch (<amount>)"
   crystals: "Crystal Pouch (<amount>)"
-  shards: "Shards (<amount>)"
   key: "<key>"
   enchant-book: "Enchant Book"
   scroll: "Disenchant Scroll"
@@ -88,6 +94,7 @@ rewards:
     tome: "Wardrobe Tome"
     lorekeeper_token: "Lorekeeper Robes Set Token"
     blueprint: "Blueprint"
+    shard_block: "Shard Block"
   inferno:
     money: "Money Pouch (<amount>)"
     crystals: "Crystal Pouch (<amount>)"
@@ -104,7 +111,7 @@ rewards:
     greater_tome: "Greater Wardrobe Tome"
     set_token_a: "Deepforge, Cropwarden or Dreadguard Token"
     set_token_b: "Thornward or Stormkeel Token"
-    spawner_t5: "Tier 5 Spawner"
+    shard_block: "Shard Block"
     phoenix_key: "<key>"
     blueprint: "Blueprint"
   phoenix:
@@ -121,31 +128,47 @@ rewards:
     autosell_chest: "Auto-sell Chest, tier 3"
     blueprint: "Blueprint (rare ability)"
     phoenix_key: "<key> (open again)"
-    spawner_t5: "Tier 5 Spawner"
+    shard_block: "Shard Block"
     elytra: "Elytra"
     voidforged_token: "Voidforged Plate Set Token"
     title: "Legendary Title"
     eclipse_key: "<key>"
   eclipse:
-    book: "Legendary Enchant Book"
-    money: "Money Pouch (<amount>)"
-    crystals: "Crystal Pouch (<amount>)"
-    month_skin: "The Month's Tool Skin"
-    month_tag: "The Month's Tag"
-    month_theme: "The Month's Border Theme"
-    pet_egg: "Pet Egg"
-    spawner_t5: "Tier 5 Spawner"
-    greater_tome: "Greater Wardrobe Tome"
-    collector: "Chunk Collector, tier 3"
-    global_booster: "Global Sell Booster +50%, 60 min"
-    autosell_chest: "Auto-sell Chest, tier 4"
+    money_s: "Money Pouch (<amount>)"
+    crystals_s: "Crystal Pouch (<amount>)"
+    rare_book: "Rare Enchant Book"
+    scroll: "Disenchant Scroll"
+    fuel: "Island Fuel (<amount>)"
+    blaze_key: "<key>"
+    sell_booster: "Sell Booster +25%, 30 min"
+    xp_booster: "Skill XP Booster +25%, 30 min"
+    xp_bottles: "32 Bottles o' Enchanting"
+    money_m: "Money Pouch (<amount>)"
+    crystals_m: "Crystal Pouch (<amount>)"
+    epic_book: "Epic Enchant Book"
+    inferno_key: "<key>"
+    spawner_t3: "Tier 3 Spawner"
+    tool_booster: "Tool XP Booster +50%, 30 min"
+    crystal_booster: "Crystal Booster +50%, 30 min"
+    scrolls: "3 Disenchant Scrolls"
+    fuel_l: "Island Fuel (<amount>)"
+    money_l: "Big Money Pouch (<amount>)"
+    crystals_l: "Big Crystal Pouch (<amount>)"
+    legendary_book: "Legendary Enchant Book"
     phoenix_key: "<key>"
-    mythic_book: "Mythic Enchant Book"
+    spawner_t4: "Tier 4 Spawner"
+    shard_block: "Shard Block"
+    elytra: "Elytra"
+    global_booster: "Global Sell Booster +50%, 60 min"
     regalia_token: "Phoenix Regalia Set Token"
+    mythic_book: "Mythic Enchant Book"
+    month_tag: "The ECLIPSE Tag"
     month_title: "The Month's Mythic Title"
+    voidforged_token: "Voidforged Set Token"
+    eclipse_key: "<key>"
   conqueror:
     money: "Money Pouch (<amount>)"
-    shards: "Shards (<amount>)"
+    shard_block: "Shard Block"
     combat_rare_book: "Rare Enchant Book"
     scroll: "Disenchant Scroll"
     banneret_token: "Banneret Tabard Set Token"
@@ -245,6 +268,14 @@ preview:
     - ""
     - "<c:muted>Untradeable keys are used first."
     - "<c:muted>What they give can't be traded."
+  # Tiered crates (Eclipse): <per_open> rewards from the three rows plus <jackpots> jackpot(s) per open, no pity.
+  status-tiered:
+    - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+    - ""
+    - "<c:text>Every open gives <c:value><per_open></c:value> rewards:"
+    - "<c:muted>3 from each row, all different,"
+    - "<c:text>plus <c:value><jackpots></c:value> <c:text>jackpot from the top row."
+    - "<c:muted>No pity: every open is fresh."
   open-one:
     name: "<c:success>Open 1"
     lore: ["<c:text>Uses 1 <key><c:text>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
@@ -452,8 +483,8 @@ world:
 # Global chat line for a top reward of the big crates (crates-settings.yml -> broadcast.crates). Java: hover the reward
 # to see the item. <player>, <crate>, <reward>, <more> = other top rewards of the same bulk open.
 broadcast:
-  top: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>from the <crate><c:text>!"
-  top-many: "<prefix><c:flame><sym:star></c:flame> <c:value><player></c:value> <c:text>won <reward> <c:text>and <c:value><more></c:value> <c:text>more top rewards from the <crate><c:text>!"
+  top: "<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won <reward> <c:text>from the <crate><c:text>!"
+  top-many: "<tag:crate><bold>[Crate]</bold></tag> <c:value><player></c:value> <c:text>won <reward> <c:text>and <c:value><more></c:value> <c:text>more top rewards from the <crate><c:text>!"
   hover:
     - "<c:text>From the <crate>"
     - "<c:muted>Chance: <chance>%"
@@ -492,3 +523,29 @@ key-items:
     id: "<c:muted>ID {id}"
     action-input: "USE"
     action-text: "to put it on your keys"
+
+# Eclipse Crate around its pool (owner M1-M5, F6, V5).
+eclipse:
+  teaser: "<prefix><bold><grad:mythic>ECLIPSE</grad></bold> <c:text>Next month's Eclipse Crate arrives on the 1st of <c:value><month></c:value>: <c:muted>??? <sym:dot> new rewards"
+  staff-missing: "<prefix><c:warning><sym:cross></c:warning> <c:text>Staff: crates.yml has no Eclipse table for <c:value><month></c:value> (crates.eclipse.months.<month>). That month uses the base table."
+  teaser-item:
+    name: "<bold><grad:mythic>Next month: ???</grad></bold>"
+    lore:
+      - "<c:text>A new Eclipse table arrives on the 1st."
+      - "<c:muted>Keys never expire: they open the table"
+      - "<c:muted>of the month you open them in."
+  buy:
+    name: "<area:money>Buy <key> <c:muted>· <cur:credits><sym:credits> <price></cur:credits>"
+    lore:
+      - "<c:text>One <key> for <cur:credits><sym:credits> <price></cur:credits><c:text>."
+      - "<c:muted>Earned credits are used first."
+      - "<c:muted>Bought keys can be traded."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+  buy-crumb: "Buy an Eclipse key?"
+  buy-details:
+    - "<c:text>Pay <cur:credits><sym:credits> <price></cur:credits> <c:text>for 1 Eclipse key."
+    - "<c:muted>It goes to your keys (tradeable)."
+  bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought 1 Eclipse key for <cur:credits><sym:credits> <price></cur:credits><c:text>. Open it here or trade it."
+  buy-poor: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><sym:credits> <price></cur:credits><c:text>. <click:run_command:'/store'><c:action>/store</c:action></click>"
+  buy-failed: "<prefix><c:error><sym:cross></c:error> <c:text>The purchase failed; nothing was charged. Try again."

@@ -20,12 +20,12 @@ public final class IslandsConfig extends ModuleConfig {
     public int startChunks = 3;
 
     @Setting(path = "size.max-chunks", desc = "Largest border width in chunks any island can ever have (odd; 15 = 240x240): the cap "
-            + "of the paid sizes above size.normal-max-chunks (gems or black market, owner answers 157/167/171) and of /isadmin setsize.",
+            + "of the paid sizes above size.normal-max-chunks (credits or black market, owner answers 157/167/171) and of /isadmin setsize.",
             min = 1, max = 31, level = Setting.Level.OWNER)
     public int maxChunks = 15;
 
     @Setting(path = "size.normal-max-chunks", desc = "Largest border width the normal Island Size upgrades reach (odd; owner answer "
-            + "157: 3x3 up to 9x9). Bigger sizes only with gems or from the black market (hook for Phase 5 upgrades).", min = 1,
+            + "157: 3x3 up to 9x9). Bigger sizes only with credits or from the black market (hook for Phase 5 upgrades).", min = 1,
             max = 31, level = Setting.Level.OWNER)
     public int normalMaxChunks = 9;
 
@@ -41,6 +41,27 @@ public final class IslandsConfig extends ModuleConfig {
             + "Missing file or no FastAsyncWorldEdit = the built-in placeholder islet.")
     public String schematic = "islands_starter_meadow";
 
+    @Setting(path = "creation.farm.enabled", desc = "Owner 3 Nov 2026: a ready-made farm (water row, farmland, some wheat, a composter and a crafting table) next to every new island. Placed only into air.")
+    public boolean farmEnabled = true;
+
+    @Setting(path = "creation.farm.offset-x", desc = "X of the farm's path column, relative to the island centre (the starter meadow ends at x 10).", min = -64, max = 64)
+    public int farmOffsetX = 11;
+
+    @Setting(path = "creation.farm.offset-z", desc = "Z of the farm's water row, relative to the island centre.", min = -64, max = 64)
+    public int farmOffsetZ = 0;
+
+    @Setting(path = "creation.farm.width", desc = "Farm columns between the path and the rim.", min = 1, max = 16)
+    public int farmWidth = 6;
+
+    @Setting(path = "creation.farm.rows", desc = "Farm rows on each side of the water row.", min = 1, max = 4)
+    public int farmRows = 3;
+
+    @Setting(path = "creation.farm.planted-rows", desc = "Rows next to the water (each side) that start with wheat; the outer rows stay empty for the player.", min = 0, max = 4)
+    public int farmPlantedRows = 2;
+
+    @Setting(path = "creation.farm.crop", desc = "Crop planted on the farm (block id).")
+    public String farmCrop = "wheat";
+
     @Setting(path = "creation.paste-timeout-seconds", desc = "A schematic paste that takes longer than this falls back to the placeholder islet.",
             min = 5, max = 300)
     public int pasteTimeoutSeconds = 30;
@@ -49,8 +70,16 @@ public final class IslandsConfig extends ModuleConfig {
             min = -180, max = 360)
     public double homeYaw = 180;
 
-    @Setting(path = "starter-chest.items", desc = "Starter chest contents as material:amount (plan open question 2).")
+    @Setting(path = "starter-chest.clear-before-fill", desc = "Empty the starter chest before filling it, so a new island's chest "
+            + "(also after a disband on a reused slot, or a rebuild) holds exactly the starter contents (feedback 31 Oct 2026).")
+    public boolean starterChestClearBeforeFill = true;
+
+    @Setting(path = "starter-chest.items", desc = "Starter chest contents as material:amount (owner 3 Nov 2026 start flow).")
     public List<String> starterItems = List.of(
+            "wheat_seeds:8", "oak_sapling:2", "bread:16", "water_bucket:1", "lava_bucket:1", "ice:2");
+
+    /** {@code starter-chest.items} up to config version 2 (plan open question 2). */
+    static final List<String> STARTER_ITEMS_V2 = List.of(
             "lava_bucket:1", "ice:1", "bone_meal:2", "bread:16", "oak_sapling:2", "sugar_cane:1", "cactus:1",
             "melon_seeds:1", "pumpkin_seeds:1");
 
@@ -163,6 +192,10 @@ public final class IslandsConfig extends ModuleConfig {
     @Setting(path = "permissions.role-defaults.homes", desc = "Roles that may set the island home and set or delete the shared named homes "
             + "(/is sethome [name], /is delhome; PHASE-5 M5.5 Homestead, P5-21; roles: admin, mod, member). The leader always can; every member can use them.")
     public List<String> homesRoles = List.of("admin", "mod");
+
+    @Setting(path = "permissions.role-defaults.shard-blocks", desc = "Roles that may place, break, upgrade and pick up shard blocks "
+            + "by default (ECON-SHARDS; roles: admin, mod, member). The leader always can; coop players and visitors never.")
+    public List<String> shardBlocksRoles = List.of("admin", "mod", "member");
 
     // GUI-4 (owner U8): permission presets. Strict = defaults minus these keys, Open = defaults plus these keys, Normal = defaults.
     @Setting(path = "permissions.presets.strict.admin", desc = "Strict preset: permissions taken away from island admins (keys as in "
@@ -302,12 +335,28 @@ public final class IslandsConfig extends ModuleConfig {
             + "are online on that profile (restorable from the backup; offline members keep their items, see OPEN_QUESTIONS).")
     public boolean profileResetItems = true;
 
+    @Setting(path = "lifecycle.profile-reset.on-join", desc = "Feedback 3 Nov 2026: replacing your solo island to join another one "
+            + "resets your profile (inventory and ender chest emptied, money taken; restorable backup) and you start with join-money.")
+    public boolean profileResetOnJoin = true;
+
+    @Setting(path = "lifecycle.profile-reset.join-money", desc = "Money a player has right after joining an island (topped up to this; 0 = off).",
+            min = 0, max = 1_000_000_000)
+    public long joinMoney = 1_000;
+
+    @Setting(path = "lifecycle.wipe-profile", desc = "Owner 4 Nov 2026 (island = profile): every way of leaving an island (leave, "
+            + "kick, staff removal, disband, staff delete/reset, replacing your solo island) wipes that profile: money, items, ender "
+            + "chest, XP, tools, shards, skills, quests, collection, milestones, storages. Credits, rank, achievements and cosmetics "
+            + "stay. Staff can restore it (/profiles restore). Replaces the profile-reset settings above while on.",
+            level = Setting.Level.OWNER)
+    public boolean wipeProfile = true;
+
     /** Owner answer 591: does removing an island for {@code reason} reset its members' profiles? */
     public boolean resetsProfiles(String reason) {
         return switch (reason) {
             case IslandStore.REASON_DISBAND -> profileResetOnDisband;
             case IslandStore.REASON_RESET -> profileResetOnReset;
             case IslandStore.REASON_DELETE -> profileResetOnDelete;
+            case IslandStore.REASON_JOIN -> profileResetOnJoin;
             default -> false;
         };
     }
@@ -631,6 +680,7 @@ public final class IslandsConfig extends ModuleConfig {
         perPermission.put(IslandPerm.BANK_HISTORY, bankHistoryRoles);
         perPermission.put(IslandPerm.UPGRADES, upgradesRoles);
         perPermission.put(IslandPerm.HOMES, homesRoles);
+        perPermission.put(IslandPerm.SHARD_BLOCKS, shardBlocksRoles);
         return RolePermissions.parse(defaultsAdmin, defaultsMod, defaultsMember, defaultsCoop, defaultsVisitor, perPermission);
     }
 
@@ -698,6 +748,16 @@ public final class IslandsConfig extends ModuleConfig {
         return problems;
     }
 
+    @Setting(path = "obsidian-bucket.enabled", desc = "Right-click obsidian on an island with an empty bucket to get a lava bucket back "
+            + "(needs the Break right on that island; feedback 31 Oct 2026).")
+    public boolean obsidianBucketEnabled = true;
+
+    @Setting(path = "obsidian-bucket.cooldown-seconds", desc = "Seconds between two obsidian-to-lava clicks of one player.", min = 0, max = 60)
+    public int obsidianBucketCooldownSeconds = 2;
+
+    @Setting(path = "obsidian-bucket.max-per-hour", desc = "Most obsidian-to-lava clicks per player per hour (0 = no limit).", min = 0, max = 10_000)
+    public int obsidianBucketMaxPerHour = 120;
+
     static int odd(int value) {
         int v = Math.max(1, Math.min(IslandGrid.MAX_POSSIBLE_CHUNKS, value));
         return v % 2 == 0 ? v - 1 : v;
@@ -705,11 +765,17 @@ public final class IslandsConfig extends ModuleConfig {
 
     /**
      * Version 2 (owner answers round 1): member slots count the leader on top of the team (4 + leader = 5, cap 8 + leader
-     * = 9); see {@link #upgradeValues}. Sizes need no value change: the new size.normal-max-chunks (9) caps normal upgrades.
+     * = 9); see {@link #upgradeValues}. Version 3: the start-flow starter chest ({@link #valueChanges}). Sizes need no value change: the new size.normal-max-chunks (9) caps normal upgrades.
      */
     @Override
     public int version() {
-        return 2;
+        return 3;
+    }
+
+    /** Version 3 (owner 3 Nov 2026 start flow): the new starter chest, only when the live list is the untouched old default. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of("starter-chest.items", ValueChange.of(STARTER_ITEMS_V2, new IslandsConfig().starterItems)));
     }
 
     /** Old defaults that version 2 changes (only untouched old defaults are changed; owner-chosen values stay). */

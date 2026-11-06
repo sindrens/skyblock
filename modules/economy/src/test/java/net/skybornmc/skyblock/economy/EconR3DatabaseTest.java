@@ -54,6 +54,7 @@ class EconR3DatabaseTest {
         db.start();
         new Migrations(db, Logger.getLogger("econ-r3")).migrate("core", getClass().getClassLoader());
         new Migrations(db, Logger.getLogger("econ-r3")).migrate("economy", getClass().getClassLoader());
+        config.sendGateRequired = 10_000; // the F1 rule itself (off by default since 6 Nov 2026) is still tested here
         AuditLog audit = new AuditLog(db, new AuditConfig(), dir.toFile(), Logger.getLogger("econ-r3"));
         EconomyStore store = new EconomyStore(db, () -> 0, clock::get);
         economy = new EconomyServiceImpl(store, new BalanceCache(), audit, () -> config, uuid -> null, c -> "$", () -> 0,
@@ -124,7 +125,7 @@ class EconR3DatabaseTest {
         assertEquals(10_000, before.missing());
         assertTrue(gate.check(steve, mate, Currency.MONEY).join().allowed(), "island member: always");
         assertFalse(gate.check(steve, null, Currency.SHARDS).join().allowed(), "notes to anyone: no island exception");
-        assertTrue(gate.check(steve, alex, Currency.GEMS).join().allowed(), "gems are not covered");
+        assertTrue(gate.check(steve, alex, Currency.CREDITS_EARNED).join().allowed(), "gems are not covered");
 
         give(steve, Currency.MONEY, 6_000, TxReason.SELL);
         assertTrue(economy.execute(Transaction.deposit(AccountRef.bank(steve), Currency.MONEY, 1_000, TxReason.INTEREST)).join().ok());

@@ -1,7 +1,7 @@
 # LuckPerms grants for the auction module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/auction/src/main/resources/permissions/auction.yml. One console command per line; # = comment.
 # Player nodes (/ah, /ah sell) default to true, so they need no grants.
-# Extra listing slots per donor rank (skyblock.auction.slots.<n>) come with the store ranks (docs/OPEN_QUESTIONS.md).
+# Extra listing slots per donor rank (skyblock.auction.slots.<n>) are granted in base.txt (Ranks V2 section) (RANKS-V2).
 
 # --- Auction house (staff) ---
 lp group mod permission set skyblock.staff.auction.remove true

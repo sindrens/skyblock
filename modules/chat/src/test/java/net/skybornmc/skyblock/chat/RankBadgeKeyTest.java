@@ -1,7 +1,7 @@
 package net.skybornmc.skyblock.chat;
 
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.skybornmc.skyblock.common.pack.BadgeGradients;
+import net.skybornmc.skyblock.common.rank.BadgeGradients;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

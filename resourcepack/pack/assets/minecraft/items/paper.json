@@ -1,0 +1,55 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_rules",
+     "type": "minecraft:model"
+    },
+    "when": "feature/rules"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_invites",
+     "type": "minecraft:model"
+    },
+    "when": "island/invites"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_disenchant_scroll",
+     "type": "minecraft:model"
+    },
+    "when": "item/disenchant_scroll"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_money_note",
+     "type": "minecraft:model"
+    },
+    "when": "item/money_note"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_next",
+     "type": "minecraft:model"
+    },
+    "when": "nav/next"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_prev",
+     "type": "minecraft:model"
+    },
+    "when": "nav/prev"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/paper",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

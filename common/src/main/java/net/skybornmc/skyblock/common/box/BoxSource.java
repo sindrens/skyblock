@@ -41,6 +41,8 @@ public final class BoxSource {
     public static final String PRODUCTION = "production";
     /** An item given back into the box after a take failed (keeps its original source when known). */
     public static final String RETURNED = "returned";
+    /** ECON-SHARDS: a picked-up or staff-given shard block that did not fit. */
+    public static final String SHARD_BLOCK = "shard-block";
 
     private BoxSource() {
     }

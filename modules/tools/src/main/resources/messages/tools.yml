@@ -228,7 +228,7 @@ level-up:
 # /tool
 tool:
   gone: "<prefix><c:error><sym:cross></c:error> <c:text>That tool is no longer in your inventory."
-  hold-a-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Hold a custom tool first. Get one at <c:value>/forge</c:value>."
+  hold-a-tool: "<prefix><c:error><sym:cross></c:error> <c:text>Hold a tool first: an island tool (<click:run_command:'/is tools'><c:action>/is tools</c:action></click><c:text>) or a custom tool (<c:value>/forge</c:value><c:text>)."
 
 tool-menu:
   title: "Tool"
@@ -376,16 +376,34 @@ forge:
       needs-skill: ["<c:error><sym:cross> <c:text>Locked: skill too low"]
       needs-materials: ["<c:error><sym:cross> <c:text>Locked: materials missing"]
       needs-money: ["<c:error><sym:cross> <c:text>Locked: not enough money"]
-      starter: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim the starter kit"]
+      starter: ["<c:text>Tier 1 comes with your first visit to the Depths."]
   confirm:
     crumb: "Forge"
     details: ["<c:text>Upgrades <tool> <c:text>(Lv <level>)", "<c:text>to <to>", "<c:text>Keeps level, perks and stats", "<c:text>Costs <c:value><money></c:value> <c:text>and", "<c:value><materials>"]
 
 # Starter kit (Quartermaster). <count> <hours> <time>
+# Owner 3 Nov 2026: Depths tools only in the Depths (action bar). <count>
+world-tools:
+  forge-in-depths: "<prefix><c:text>Your Depths tools are in the Depths, so forging happens there: the smith stands at the Depths gate. <click:run_command:'/warp depths'><hover:show_text:'<c:text>Go to the Depths'><c:action>[Go to the Depths]</c:action></hover></click>"
+
+world-inventory:
+  to-depths: "<c:text>Depths inventory <c:muted>· your island items wait on the island"
+  to-surface: "<c:text>Island inventory <c:muted>· your Depths items wait in the Depths"
+  item:
+    satchel:
+      name: "<c:value>Satchel"
+      lore: "<c:muted>Right-click: open your satchel (everything you mine goes here)"
+    dungeon:
+      name: "<c:value>Dungeon Map"
+      lore: "<c:muted>Right-click: pick a mine, forest or combat tier"
+
 starter:
   claimed: "<prefix><c:success><sym:check></c:success> <c:text>You got <c:value><count></c:value> starter tool(s). Claim missing ones again in <hours> h."
   cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>You can claim the starter kit again in <c:value><time></c:value>."
   have-all: "<prefix><c:text>You already have all starter tools."
+  used: "<prefix><c:error><sym:cross></c:error> <c:text>The starter tools are only given once. Forge or buy new tools at the smith."
+  depths-only: "<prefix><c:error><sym:cross></c:error> <c:text>There is no free starter kit. Your first visit to the Depths gives you tier 1 tools; after that, forge or buy them."
+  depths-given: "<prefix><c:success><sym:check></c:success> <c:text>Your Depths tools: <c:value><count></c:value> starter tool(s) for this inventory."
 
 # Staff: /tool give, /blueprint give, /skin give. <tool> <blueprint> <skin> <player> <tier> <tiers>
 admin:

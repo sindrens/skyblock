@@ -3,29 +3,8 @@ package net.skybornmc.skyblock.common.menu;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
-/** Menu framework settings ({@code menus.yml}). Texts live in {@code messages/menus.yml}. Layout: docs/UI_STYLE.md §5. */
+/** Menu framework settings ({@code menus.yml}). Texts live in {@code messages/menus.yml}. Layout: docs/UI_STYLE.md §5 (I9). */
 public final class MenuConfig extends ModuleConfig {
-
-    @Setting(path = "frame.border", desc = "Border pane of every menu (item id). Dark, so the content stands out.")
-    public String frameBorder = "black_stained_glass_pane";
-
-    @Setting(path = "frame.accent", desc = "Corner accent pane (Phoenix red).")
-    public String frameAccent = "red_stained_glass_pane";
-
-    @Setting(path = "frame.accent-glow", desc = "Pane next to each corner (ember orange), so the corners fade like a flame.")
-    public String frameAccentGlow = "orange_stained_glass_pane";
-
-    @Setting(path = "frame.inner", desc = "Filler for empty slots inside small menus (confirm dialog, number picker).")
-    public String frameInner = "gray_stained_glass_pane";
-
-    @Setting(path = "heads.back", desc = "Back button head: a player name (e.g. MHF_ArrowLeft) or a base64 texture value from minecraft-heads.com. Empty = arrow item.")
-    public String headBack = "MHF_ArrowLeft";
-
-    @Setting(path = "heads.previous", desc = "Previous page head (player name or base64 texture). Empty = arrow item.")
-    public String headPrevious = "MHF_ArrowLeft";
-
-    @Setting(path = "heads.next", desc = "Next page head (player name or base64 texture). Empty = arrow item.")
-    public String headNext = "MHF_ArrowRight";
 
     @Setting(path = "title.max-length", desc = "Longest chest title in characters (Bedrock cuts long titles). Leading breadcrumbs are dropped first.",
             min = 12, max = 48)
@@ -38,9 +17,6 @@ public final class MenuConfig extends ModuleConfig {
     @Setting(path = "title.update-in-place", desc = "Tabs, pages and refreshes update the open window (no close/reopen flicker). "
             + "false = reopen the window when its title changes (fallback if a client shows the old title).")
     public boolean titleUpdateInPlace = true;
-
-    @Setting(path = "bar.main-menu-command", desc = "Command the Main menu button (slot 50) runs, without the slash.")
-    public String mainMenuCommand = "menu";
 
     @Setting(path = "navigation.max-depth", desc = "Most screens Back remembers per player (older ones are forgotten).",
             min = 2, max = 64)
@@ -84,9 +60,59 @@ public final class MenuConfig extends ModuleConfig {
             + "their on-screen keyboard instead of the chat (needs Floodgate). false = chat for everyone.")
     public boolean bedrockForms = true;
 
+    @Setting(path = "gui.font.enabled", desc = "Frame layer master switch (GUI-FONT): Java players with the icon pack see menus as "
+            + "our panel with a plaque and soft tiles, and the logo on the scoreboard and tab. false = nobody gets any glyph "
+            + "(menus, scoreboard, tab); everyone sees the plain chest. Bedrock never sees glyphs.")
+    public boolean fontEnabled = true;
+
+    @Setting(path = "gui.font.panels", desc = "Draw the panel and hide empty slots. false also switches the plaque and the tiles off "
+            + "(owner 3 Nov 2026: menus are the plain vanilla chest).")
+    public boolean fontPanels = false;
+
+    @Setting(path = "gui.font.titles", desc = "Plaque with the cartoon title letters (needs panels). false = the panel shows the plain title text.")
+    public boolean fontTitles = true;
+
+    @Setting(path = "gui.font.tiles", desc = "Soft tile behind every filled slot (needs panels). false = items float on the panel.")
+    public boolean fontTiles = true;
+
+    @Setting(path = "gui.font.logo", desc = "Logo glyph for the scoreboard title and the tab header (independent of panels).")
+    public boolean fontLogo = true;
+
+    @Setting(path = "gui.font.title-resend-min-ms", desc = "At most one frame title update per player per this many milliseconds "
+            + "(a menu whose tiles change while open re-sends its title).", min = 100, max = 5000)
+    public int fontTitleResendMinMs = 500;
+
+    /** The frame layer switches of this file. */
+    public net.skybornmc.skyblock.common.frame.FrameSwitches fontSwitches() {
+        return new net.skybornmc.skyblock.common.frame.FrameSwitches(fontEnabled, fontPanels, fontTitles, fontTiles, fontLogo);
+    }
+
+    /**
+     * Version 2 (owner 2 Nov 2026: "a full improvement on all the GUIs"): the frame layer is on unless switched off by hand.
+     * Version 3 (owner 3 Nov 2026: "it's red, but it's supposed to be VANILLA"): menus are the plain chest again (no panel,
+     * plaque or tiles); the scoreboard and tab logo stay.
+     */
+    @Override
+    public int version() {
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("gui.font.enabled", ValueChange.of(false, true)),
+                3, java.util.Map.of("gui.font.panels", ValueChange.of(true, false)));
+    }
+
     @Override
     public String fileName() {
         return "menus.yml";
+    }
+
+    /** I9 (GUI-P2 3.7): no frame, no filler, vanilla arrow/paper icons, no Main menu button. */
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        String why = "I9: no frame, no filler, vanilla arrow/paper icons, no Main menu button";
+        return java.util.Map.of("frame", why, "heads", why, "bar", why);
     }
 
     @Override

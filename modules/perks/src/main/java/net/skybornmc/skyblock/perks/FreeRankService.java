@@ -79,10 +79,11 @@ final class FreeRankService {
                 fail(player, "load", error);
                 return;
             }
-            FreeRankRules.State state = FreeRankRules.state(config.freerankEnabled, core.ranks().available(), playtime(player),
-                    config.freerankMinPlaytimeMinutes, claim.orElse(null));
+            FreeRankRules.State state = FreeRankRules.state(config.freerankEnabled, core.ranks().available(),
+                    tutorialComplete(player), playtime(player), config.freerankMinPlaytimeMinutes, claim.orElse(null));
             switch (state) {
                 case DISABLED -> msg.send(player, "freerank.disabled");
+                case TUTORIAL -> msg.send(player, "freerank.need-tutorial");
                 case DONE -> msg.send(player, "freerank.done");
                 case NO_RANKS -> msg.send(player, "freerank.unavailable");
                 case TOO_EARLY -> msg.send(player, "freerank.too-early", Msg.p("time", Format.duration(Duration.ofMillis(
@@ -97,10 +98,30 @@ final class FreeRankService {
         }, new MainThread(core.plugin()));
     }
 
+    /** The join tutorial was replaced by the start guide (owner 3 Nov 2026): always true. */
+    boolean tutorialComplete(Player player) {
+        return true;
+    }
+
+    long playtimeOf(Player player) {
+        return playtime(player);
+    }
+
     private void claim(Player player) {
+        claim(player, false);
+    }
+
+    /**
+     * The safe one-time claim: the {@code perks_freerank} row (one per account) first, then the LuckPerms group, undone when
+     * LuckPerms fails. Only ever ADDS the group (Ranks V2: never a downgrade). {@code automatic} = AshbornAuto: its own
+     * chat line with a [Pick your tag] button instead of opening the picker. Completes on the main thread.
+     */
+    CompletableFuture<Outcome> claim(Player player, boolean automatic) {
         UUID id = player.getUniqueId();
+        CompletableFuture<Outcome> result = new CompletableFuture<>();
         if (!busy.add(id)) {
-            return;
+            result.complete(Outcome.BUSY);
+            return result;
         }
         String group = config.freerankGroup;
         long now = System.currentTimeMillis();
@@ -122,33 +143,52 @@ final class FreeRankService {
                 .whenCompleteAsync((outcome, error) -> {
                     busy.remove(id);
                     if (error != null) {
-                        fail(player, "claim", error);
+                        if (!automatic) {
+                            fail(player, "claim", error);
+                        } else {
+                            core.plugin().getLogger().log(Level.WARNING, "Ashborn: claim for " + player.getName() + " failed", error);
+                        }
+                        result.complete(Outcome.RANK_FAILED);
                         return;
                     }
                     switch (outcome) {
                         case ALREADY -> {
-                            if (player.isOnline()) {
+                            if (player.isOnline() && !automatic) {
                                 run(player);
                             }
                         }
                         case RANK_FAILED -> {
-                            msg.send(player, "freerank.failed");
-                            core.sounds().play(player, "error");
+                            if (!automatic) {
+                                msg.send(player, "freerank.failed");
+                                core.sounds().play(player, "error");
+                            }
                         }
                         case CLAIMED -> {
                             core.audit().logPlayer(AuditCategory.AUTH, "freerank_claim", Actor.player(player), id, player.getName(),
-                                    null, player.getLocation(), Map.of("group", group, "playtime_minutes", played / 60_000));
+                                    null, player.getLocation(), Map.of("group", group, "playtime_minutes", played / 60_000,
+                                            "automatic", automatic));
                             if (player.isOnline()) {
-                                msg.send(player, "freerank.claimed");
+                                msg.send(player, automatic ? "freerank.auto-claimed" : "freerank.claimed");
                                 core.sounds().play(player, "success");
-                                openPicker(player);
+                                if (!automatic) {
+                                    openPicker(player);
+                                }
                             }
                         }
+                        default -> { }
                     }
+                    result.complete(outcome);
                 }, new MainThread(core.plugin()));
+        return result;
     }
 
-    private enum Outcome { ALREADY, RANK_FAILED, CLAIMED }
+    /** What a claim did. */
+    enum Outcome { ALREADY, RANK_FAILED, CLAIMED, BUSY }
+
+    /** True when the account has a claim (async). */
+    CompletableFuture<Boolean> claimed(UUID player) {
+        return store.load(player).thenApply(java.util.Optional::isPresent);
+    }
 
     private void openPicker(Player player) {
         List<String> choices = choices();

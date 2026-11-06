@@ -127,7 +127,7 @@ final class Purchases {
     }
 
     static long priceOf(CharterRules.Step step, Currency currency) {
-        return step == null ? 0 : currency == Currency.GEMS ? step.gems() : step.shards();
+        return step == null ? 0 : currency.isCredits() ? step.credits() : step.shards();
     }
 
     // ================================================================== plans
@@ -144,7 +144,7 @@ final class Purchases {
         }
         int slot = offer.slot() == OfferCatalog.Slot.FIXED ? -1 : m.market().row(offer.id()).map(BlackMarketStore.RotationRow::index).orElse(-1);
         long rotationId = slot >= 0 ? m.market().currentId() : m.rotation().id(System.currentTimeMillis());
-        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), Currency.SHARDS, offer.price(), slot,
+        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), BlackMarketModule.CURRENCY, offer.price(), slot,
                 rotationId, null, 0));
     }
 
@@ -226,12 +226,13 @@ final class Purchases {
                 .detail("rotation", now.rotationId())
                 .detail("buy", buyId.toString());
         String counted = periodKey;
-        economy.executeGuarded(tx, guard).whenCompleteAsync((result, error) -> {
+        // Credits: earned first, then bought, in the same database transaction as the guard (C1, CreditSpend).
+        net.skybornmc.skyblock.common.economy.CreditSpend.execute(economy, tx, guard).whenCompleteAsync((result, error) -> {
             inFlight.remove(account);
             TxResult.Status status = error != null || result == null ? TxResult.Status.ERROR : result.status();
             switch (status) {
                 case SUCCESS -> bought(p, now, row, counted, result.fromBalance());
-                case INSUFFICIENT_FUNDS -> m.fail(p, now.currency() == Currency.GEMS ? "buy.no-gems" : "buy.no-shards",
+                case INSUFFICIENT_FUNDS -> m.fail(p, now.currency().isCredits() ? "buy.no-credits" : "buy.no-shards",
                         Msg.p("price", m.price(now.currency(), now.price())));
                 case DUPLICATE -> refused(p, outcome.get());
                 default -> {

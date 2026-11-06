@@ -1,6 +1,7 @@
 package net.skybornmc.skyblock.rewards;
 
 import net.kyori.adventure.text.Component;
+import net.skybornmc.skyblock.common.milestones.MilestoneRewards;
 import net.skybornmc.skyblock.common.pass.PassRewards;
 import net.skybornmc.skyblock.common.rewards.RewardsService;
 import net.skybornmc.skyblock.common.text.Msg;
@@ -34,16 +35,26 @@ final class RewardsServiceImpl implements RewardsService {
     public List<String> ready(Player player) {
         boolean daily = dailyReady(m.settings.calendarEnabled, player.hasPermission(RewardsModule.PERM_DAILY),
                 m.daily().state(m.profiles().profileKey(player)), m.daily().today());
-        boolean votes = m.votesSettings.enabled && player.hasPermission(RewardsModule.PERM_VOTE) && m.votes().queued(player.getUniqueId()) > 0;
-        List<String> out = new ArrayList<>(3);
+        // Spec G1 / F12: with the /rewards menu on, the count equals what /rewards lists (votes stay in /vote).
+        boolean votes = !m.settings.menuEnabled && m.votesSettings.enabled && player.hasPermission(RewardsModule.PERM_VOTE)
+                && m.votes().queued(player.getUniqueId()) > 0;
+        List<String> out = new ArrayList<>(5);
         if (daily) {
             out.add(DAILY);
         }
         if (votes) {
             out.add(VoteService.READY);
         }
+        for (PeriodicRules.Period period : PeriodicRules.Period.values()) {
+            if (m.periodic().ready(player, period)) {
+                out.add(period.source());
+            }
+        }
         if (PassRewards.of(m.core.services()).map(p -> p.claimable(player) > 0).orElse(false)) {
             out.add(PassRewards.SOURCE);
+        }
+        if (MilestoneRewards.of(m.core.services()).map(ms -> ms.ready(player) > 0).orElse(false)) {
+            out.add(MilestoneRewards.SOURCE);
         }
         return out;
     }
@@ -57,13 +68,36 @@ final class RewardsServiceImpl implements RewardsService {
                 // Waiting votes pay themselves with their own chat lines (one per vote); the summary only counts them.
                 : daily.thenCombine(m.votes().payQueued(player), (summary, paid) -> withVotes(summary, paid,
                 () -> m.msg.component(player, "claim-all.votes", Msg.number("votes", paid))));
-        Optional<PassRewards> pass = PassRewards.of(m.core.services());
-        if (!ready.contains(PassRewards.SOURCE) || pass.isEmpty()) {
-            return withVotes;
+        // Weekly and Monthly Reward: each its own claim (spec 4.3 step 6: one failure never stops the others).
+        CompletableFuture<ClaimSummary> withPeriodic = withVotes;
+        for (PeriodicRules.Period period : PeriodicRules.Period.values()) {
+            if (ready.contains(period.source())) {
+                withPeriodic = withPeriodic.thenComposeAsync(summary -> m.periodic().claim(player, period, true)
+                        .thenApply(r -> withPeriodic(summary, r, period.source(), () -> m.msg.component(player,
+                                "claim-all." + period.source(), Msg.c("rewards", r.inline())))), m.main());
+            }
         }
-        // Pass tiers are claimed in the pass module's own transaction, which also writes its own chat lines.
-        return withVotes.thenComposeAsync(summary -> pass.get().claimAll(player, true).thenApply(tiers -> withPass(summary, tiers,
+        Optional<PassRewards> pass = PassRewards.of(m.core.services());
+        CompletableFuture<ClaimSummary> withPassTiers = !ready.contains(PassRewards.SOURCE) || pass.isEmpty() ? withPeriodic
+                // Pass tiers are claimed in the pass module's own transaction, which also writes its own chat lines.
+                : withPeriodic.thenComposeAsync(summary -> pass.get().claimAll(player, true).thenApply(tiers -> withPass(summary, tiers,
                 () -> m.msg.component(player, "claim-all.pass", Msg.number("count", tiers)))), m.main());
+        Optional<MilestoneRewards> milestones = MilestoneRewards.of(m.core.services());
+        if (!ready.contains(MilestoneRewards.SOURCE) || milestones.isEmpty()) {
+            return withPassTiers;
+        }
+        // Milestone tiers: one claim per chain in the milestones module; the summary line says how many.
+        return withPassTiers.thenComposeAsync(summary -> milestones.get().claimAll(player, false).thenApply(n -> withExtraOrFailed(
+                summary, n, MilestoneRewards.SOURCE, () -> m.msg.component(player, "claim-all.milestones", Msg.number("count", n)))),
+                m.main());
+    }
+
+    /** Like {@link #withPass} for any count-based source (milestones). */
+    static ClaimSummary withExtraOrFailed(ClaimSummary before, int count, String source, Supplier<Component> line) {
+        if (count < 0) {
+            return before.outcome() == Outcome.NOTHING_READY ? ClaimSummary.failed() : before;
+        }
+        return withExtra(before, count, source, line);
     }
 
     /**
@@ -75,6 +109,15 @@ final class RewardsServiceImpl implements RewardsService {
             return before.outcome() == Outcome.NOTHING_READY ? ClaimSummary.failed() : before;
         }
         return withExtra(before, tiers, PassRewards.SOURCE, passLine);
+    }
+
+    /** Adds a Weekly or Monthly claim to a summary (pure, unit-tested); a failed one turns "nothing ready" into "failed". */
+    static ClaimSummary withPeriodic(ClaimSummary before, PeriodicService.Result result, String source, Supplier<Component> line) {
+        return switch (result.outcome()) {
+            case CLAIMED -> withExtra(before, 1, source, line);
+            case FAILED -> before.outcome() == Outcome.NOTHING_READY ? ClaimSummary.failed() : before;
+            default -> before;
+        };
     }
 
     /** Adds paid waiting votes to a daily summary (pure, unit-tested). */

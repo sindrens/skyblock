@@ -50,8 +50,13 @@ skyblock.staff.gamemode.others:
   description: Change other players' game mode
   default: op
 skyblock.staff.fly:
-  description: Toggle flying (/fly)
+  description: Staff /fly - toggle flying anywhere (staff/build mode rule); includes skyblock.fly so /fly is shown
   default: op
+  children:
+    skyblock.fly: true
+skyblock.fly:
+  description: Rank perk - /fly toggles island fly on islands where you are a member and on visited islands whose visitor-fly setting is on (never at spawn, /farm, /mine or PvP; soft landing when it turns off)
+  default: false
 skyblock.staff.fly.others:
   description: Toggle flying for others
   default: op
@@ -125,3 +130,6 @@ skyblock.build.spawn:
   default: op
 skyblock.admin.setspawn:
   description: Set the spawn point (/setspawn)
+skyblock.start:
+  description: Open the start guide menu (/start; Island, Farm, Mine)
+  default: true

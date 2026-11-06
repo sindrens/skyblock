@@ -26,7 +26,7 @@ You want players to trade "everything", but nobody should be able to **boost**. 
 | Currency | Earned by | `/pay` | Notes | `/trade` | AH |
 |---|---|---|---|---|---|
 | Money | selling, quests, interest, events | yes | yes | yes | is the AH currency |
-| Shards | bosses, envoys, KOTH, Depths tier 9+ | yes | no | yes | no |
+| Shards | shard blocks only (ECON-SHARDS) | yes | no | yes | no |
 | Crystals | custom tools, island missions | no | no | no | no |
 | Gems | store credits, voting (3 per vote), "gg" | no | no | no | no |
 | Credits | store (Tebex) | no | no | no | no |

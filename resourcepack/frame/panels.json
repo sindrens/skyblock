@@ -1,0 +1,42 @@
+{
+ "version": 1,
+ "comment": "Frame layer catalogue (GUI-FONT, I7 v4, FORMAT section 7). Source of truth for tools/build_panels.py; frame-metrics.json and the font JSONs are generated from it. Window-relative pixels; a glyph's top is title_baseline - ascent.",
+ "title_origin_x": 8,
+ "title_baseline": 13,
+ "plaque_extend": 8,
+ "window_width": 176,
+ "advance_pad": 1,
+ "cell_mode": "ascent",
+ "rows_extra": 113,
+ "corner_mask": {
+  "comment": "Pixels of the vanilla chest window that are transparent (its rounded corners; measured on the 1.21.5, 1.21.11 and 26.3 window, identical). Our panel is transparent exactly there and opaque everywhere else, so no vanilla grey can show. tl at (0,0), tr at (171,0), bl at (0,H-5), br at (171,H-5); '.' = transparent.",
+  "tl": ["..###", ".####", "#####", "#####", "#####"],
+  "tr": ["##...", "###..", "####.", "#####", "#####"],
+  "bl": ["#####", "#####", ".####", "..###", "...##"],
+  "br": ["#####", "#####", "#####", "####.", "###.."]
+ },
+ "panels": {
+  "p3": {"rows": 3, "cp": "E300"},
+  "p4": {"rows": 4, "cp": "E301"},
+  "p6": {"rows": 6, "cp": "E302"}
+ },
+ "plaque_height": 20,
+ "plaques": {
+  "s": {"width": 80, "cp": "E320"},
+  "m": {"width": 112, "cp": "E321"},
+  "l": {"width": 144, "cp": "E322"}
+ },
+ "plaque_padding": 8,
+ "cell": {"size": 18, "x0": 7, "y0": 17, "step": 18, "first_ascent": -4, "cp": ["E330", "E331", "E332", "E333", "E334", "E335"]},
+ "logo": {"width": 96, "height": 20, "wide": {"cp": "E340", "ascent": 18}, "small": {"cp": "E341", "ascent": 8}},
+ "space": {"neg_first": "F800", "pos_first": "F808", "steps": [1, 2, 4, 8, 16, 32, 64, 128]},
+ "letters": {
+  "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&'-!?()/.,:",
+  "cols": 16,
+  "cell_w": 16,
+  "cell_h": 17,
+  "art_h": 12,
+  "ascent": 17,
+  "space": 4
+ }
+}

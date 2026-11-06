@@ -1,0 +1,139 @@
+# Milestones (Complete Developer Spec section 7). <chain> chain name, <tier> tier number, <count> how many.
+discovered: "<prefix><c:flame><sym:star></c:flame> <c:text>New milestone: <c:value><chain></c:value><c:text>. See <c:action>/ms"
+# One tier became ready (island tiers: every online member; spec 7.4).
+tier-ready:
+  chat: "<prefix><c:success><sym:check></c:success> <c:value><chain></c:value> <c:text>tier <c:value><tier></c:value> <c:text>is ready: <c:action>/ms</c:action> <c:text>to claim."
+  title:
+    title: "<c:flame><bold><chain> <tier>"
+    subtitle: "<c:text>Milestone ready: <c:action>/ms"
+# Several tiers inside notify.batch-seconds.
+tiers-ready:
+  chat: "<prefix><c:success><sym:check></c:success> <c:value><count></c:value> <c:text>milestone tiers are ready: <c:action>/ms</c:action> <c:text>to claim."
+  title:
+    title: "<c:flame><bold><count> milestones"
+    subtitle: "<c:text>Ready to claim: <c:action>/ms"
+
+# Slice 4: progress in the action bar after a counted action (actionbar.* in milestones-settings.yml).
+actionbar:
+  progress: "<c:flame><sym:star></c:flame> <c:value><chain></c:value> <c:muted>tier <tier></c:muted> <c:success><bar></c:success> <c:text><progress>/<target>"
+  maxed: "<c:flame><sym:star></c:flame> <c:value><chain></c:value> <c:success>all tiers done</c:success> <c:muted>(<progress>)"
+settings:
+  milestones-actionbar:
+    name: "<c:value>Milestones: progress in the action bar"
+    lore: ["<c:text>Shows your milestone progress", "<c:text>while you farm and mine."]
+disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Milestones are not open yet."
+error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing changed; try again."
+claim:
+  done: "<prefix><c:success><sym:check></c:success> <c:value><chain></c:value> <c:text>tier <c:value><tier></c:value> <c:text>claimed. The perk is active now."
+  by-member: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>claimed <c:value><chain></c:value> <c:text>tier <c:value><tier></c:value> <c:text>for your island."
+  not-ready: "<prefix><c:muted><sym:time></c:muted> <c:text>That tier was claimed already or is not ready."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last claim is still going through."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island for island milestones."
+  # /rewards Claim all (or the Milestones card): one line for every chain claimed. <count> = chains.
+  all: "<prefix><c:success><sym:check></c:success> <c:text>Claimed <c:value><count></c:value> <c:text>milestone tier(s). The perks are active now."
+
+# Plain-language perks (spec C6). <value> percent, <target> the block or mob.
+perk:
+  none: "<c:muted>none"
+  extra_drops: "<c:text>Extra <target> drops <c:success>+<value>%"
+  crop_growth: "<c:text><target> grows <c:success>+<value>%</c:success> <c:text>faster"
+  sell: "<c:text><target> sells for <c:success>+<value>%"
+  tool_xp: "<c:text>Tool XP from <target> <c:success>+<value>%"
+  skill_xp: "<c:text>Skill XP <c:success>+<value>%"
+  crystals: "<c:text>Crystals <c:success>+<value>%"
+  rare_finds: "<c:text>Rare finds from <target> <c:success>+<value>%"
+  production: "<c:text>Output of every <target> <c:success>+<value>%"
+
+menu:
+  title: "Milestones"
+  info: ["<c:text>Grind an activity to reach tiers.", "<c:text>Each tier gives a perk for that", "<c:text>same activity once you claim it."]
+  no-island:
+    name: "<c:muted>No island yet"
+    lore: ["<c:text>Island milestones belong to", "<c:text>your island. Make one with <c:action>/is"]
+  overview:
+    island:
+      name: "<c:value><bold>Island Milestones"
+      lore: ["<c:text>Shared by your island's members:", "<c:text>crops, ores, logs and mobs", "<c:text>on your island.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    personal:
+      name: "<c:value><bold>Farm & Mine Milestones"
+      lore: ["<c:text>Only yours, on this profile:", "<c:text>crops at /farm and ores at /mine.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    top:
+      name: "<c:value><bold>Milestone Top"
+      lore: ["<c:text>Islands and players with the", "<c:text>most completed tiers.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to view"]
+  island:
+    title: "Island Milestones"
+    empty:
+      name: "<c:muted>Nothing here yet"
+      lore: ["<c:text>A milestone appears the first", "<c:text>time anyone on your island", "<c:text>does its activity."]
+  personal:
+    title: "Farm & Mine Milestones"
+    empty:
+      name: "<c:muted>Nothing here yet"
+      lore: ["<c:text>A milestone appears the first", "<c:text>time you do its activity", "<c:text>at /farm or /mine."]
+  # A chain in the list. <chain> <tier> <max> <progress> <target> <bar> <percent> <perk> <next-perk>
+  chain:
+    progress:
+      name: "<c:value><bold><chain></bold> <c:muted>Tier <tier> / <max>"
+      lore: ["<c:bar>| </c:bar><c:text>Progress", "<c:value><progress></c:value> <c:muted>/</c:muted> <c:value><target></c:value> <c:success><percent>%", "<c:success><bar>", "<c:bar>| </c:bar><c:text>Next tier", "<next-perk>", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the tiers"]
+    ready:
+      name: "<c:flame><bold><chain></bold> <c:muted>Tier <tier> / <max>"
+      lore: ["<c:success><sym:star> A tier is ready to claim", "<c:bar>| </c:bar><c:text>Perk", "<next-perk>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+    maxed:
+      name: "<c:ember><bold><chain></bold> <c:success><sym:check> Maxed"
+      lore: ["<c:text>Every tier is done.", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to see the tiers"]
+  chain-detail:
+    title: "<chain>"
+    info: ["<c:text>Claimed tiers are green, a ready", "<c:text>tier glows. Claim it to start", "<c:text>its perk. The perk of your", "<c:text>highest claimed tier counts."]
+    summary:
+      name: "<c:value><bold><chain>"
+      lore: ["<c:text>Done: <c:value><progress>", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
+    summary-island:
+      name: "<c:value><bold><chain>"
+      lore: ["<c:text>Done: <c:value><progress>", "<c:text>You contributed <c:value><percent>%", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
+  tier:
+    claimed:
+      name: "<c:success><sym:check> Tier <tier>"
+      lore: ["<c:muted>Claimed", "<perk>"]
+    ready:
+      name: "<c:flame><sym:star> Tier <tier>"
+      lore: ["<c:success>Ready to claim", "<perk>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+    current:
+      name: "<c:value>▶ Tier <tier>"
+      lore: ["<c:value><progress></c:value> <c:muted>/</c:muted> <c:value><target>", "<c:success><bar>", "<perk>"]
+    next:
+      name: "<c:muted>Tier <tier>"
+      lore: ["<c:text>Reach <c:value><target>", "<perk>"]
+    hidden:
+      name: "<c:locked>Tier <tier>"
+      lore: ["<c:locked>???"]
+
+# ------------------------------------------------------------------ F13a milestone leaderboard (/milestones → Milestone Top)
+top:
+  crumb: "Top"
+  info: ["<c:text>Every completed milestone tier", "<c:text>is one point. Your own island", "<c:text>or you glow."]
+  tab:
+    island:
+      name: "<c:value><bold>Island Milestones"
+      lore: ["<c:text>Tiers completed by each island."]
+    personal:
+      name: "<c:value><bold>Farm & Mine Milestones"
+      lore: ["<c:text>Tiers completed by each player", "<c:text>(their best profile)."]
+  empty:
+    name: "<c:muted>Nobody yet"
+    lore: ["<c:text>Complete a milestone tier", "<c:text>to be the first on this board."]
+  unknown-island: "Unnamed island"
+  unknown-player: "Unknown"
+  # <place> <name> <points>
+  entry:
+    first:
+      name: "<bold><c:top1>#1</c:top1></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    second:
+      name: "<bold><c:top2>#2</c:top2></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    third:
+      name: "<bold><c:top3>#3</c:top3></bold> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]
+    other:
+      name: "<c:muted>#<place> <c:value><name>"
+      lore: ["<c:text>Milestone points: <c:value><points>"]

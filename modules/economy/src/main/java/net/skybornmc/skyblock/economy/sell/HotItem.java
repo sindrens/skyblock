@@ -21,7 +21,15 @@ public final class HotItem {
      * @param salt       changes the sequence ({@code sell.hot-item.salt}), so players can't predict it from the code
      */
     public static String pick(LocalDate day, List<SellCatalog.Entry> entries, List<String> categories, long salt) {
-        List<String> eligible = entries.stream().filter(SellCatalog.Entry::sellable)
+        return pick(day, entries, categories, salt, 0);
+    }
+
+    /**
+     * ECON-SELL-SHOP-AH A3: as {@link #pick(LocalDate, List, List, long)}, only items worth at least {@code minBase}
+     * ({@code sell.hot-item.min-base}) can be hot, so a +25% on a 0.05 item never becomes the day's headline.
+     */
+    public static String pick(LocalDate day, List<SellCatalog.Entry> entries, List<String> categories, long salt, double minBase) {
+        List<String> eligible = entries.stream().filter(SellCatalog.Entry::sellable).filter(e -> e.base() >= minBase)
                 .filter(e -> categories == null || categories.isEmpty()
                         || categories.stream().anyMatch(c -> c != null && c.trim().toLowerCase(Locale.ROOT).equals(e.category())))
                 .map(SellCatalog.Entry::key).sorted().toList();

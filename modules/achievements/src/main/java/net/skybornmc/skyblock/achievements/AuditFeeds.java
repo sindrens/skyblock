@@ -34,6 +34,7 @@ final class AuditFeeds {
     static final String TRADE_COMPLETE = "trade_complete";
     static final Set<String> ENCHANT_ACTIONS = Set.of("enchant_apply", "enchant_combine_tool");
     static final String ISLAND_VISIT = "island_visit";
+    static final String GUIDE_HAND_IN = "guide_hand_in";
     /** {@code island/island_like}: target = the liked island's id (AC3 island metric {@code likes}). */
     static final String ISLAND_LIKE = "island_like";
 
@@ -45,7 +46,7 @@ final class AuditFeeds {
         return switch (e.category()) {
             case ECONOMY -> SELL.equals(e.action());
             case TRADE -> TRADE_COMPLETE.equals(e.action());
-            case ITEM -> ENCHANT_ACTIONS.contains(e.action());
+            case ITEM -> ENCHANT_ACTIONS.contains(e.action()) || GUIDE_HAND_IN.equals(e.action());
             case ISLAND -> ISLAND_VISIT.equals(e.action()) || ISLAND_LIKE.equals(e.action());
             default -> false;
         };
@@ -88,7 +89,7 @@ final class AuditFeeds {
                     out.add(new Feed(other, null, Metric.TRADES_COMPLETED, 1));
                 }
             }
-            case ITEM -> out.add(new Feed(actor, null, Metric.ENCHANTS_APPLIED, 1));
+            case ITEM -> out.add(new Feed(actor, null, GUIDE_HAND_IN.equals(e.action()) ? Metric.GUIDE_HAND_INS : Metric.ENCHANTS_APPLIED, 1));
             case ISLAND -> out.add(new Feed(actor, null, Metric.ISLANDS_VISITED, 1));
             default -> {
             }

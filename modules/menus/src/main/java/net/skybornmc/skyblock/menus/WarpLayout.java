@@ -4,7 +4,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -34,27 +33,32 @@ public record WarpLayout(List<Warp> warps) {
     }
 
     /**
+     * @param slot   unused (-1): places are centred in file order by {@code Centered}
+     * @param icon   an icon catalogue key ({@code travel/spawn}) or a vanilla item id
      * @param reason teleport reason id (warmup and cooldown of {@code teleport.yml}): {@code spawn} or {@code dungeon}
      */
-    public record Warp(String id, int slot, String icon, Target target, String reason, String permission, String model) {
+    public record Warp(String id, int slot, String icon, Target target, String reason, String permission) {
     }
 
     public static final String DEFAULT_REASON = "spawn";
     static final Set<String> REASONS = Set.of("spawn", "dungeon");
 
-    /** The Travel menu: {@code menu.yml → travel}, slots 10-16 of the 3-row menu. */
+    /** The Travel menu: {@code menu.yml → travel}; up to 7 places, centred on row 1 of the 3-row menu. */
     static WarpLayout parse(YamlConfiguration yaml, Consumer<String> problem) {
         return parse(yaml, ButtonLayout::isItem, problem);
     }
 
     static WarpLayout parse(YamlConfiguration yaml, java.util.function.Predicate<String> items, Consumer<String> problem) {
-        return parse(yaml, "travel", ButtonLayout.SMALL_SLOTS, items, problem);
+        return parse(yaml, "travel", items, problem);
     }
 
-    static WarpLayout parse(YamlConfiguration yaml, String sectionName, Set<Integer> slots, java.util.function.Predicate<String> items,
+    /** Most places the 3-row Travel menu shows (one centred row of 7). */
+    static final int MAX_PLACES = 7;
+
+    static WarpLayout parse(YamlConfiguration yaml, String sectionName, java.util.function.Predicate<String> items,
                             Consumer<String> problem) {
         List<Warp> out = new ArrayList<>();
-        Set<Integer> used = new HashSet<>();
+        boolean slotsIgnored = false;
         ConfigurationSection section = yaml.getConfigurationSection(sectionName);
         if (section == null) {
             return new WarpLayout(List.of());
@@ -66,25 +70,16 @@ public record WarpLayout(List<Warp> warps) {
                 problem.accept(where + ": needs slot, icon and target (skipped)");
                 continue;
             }
-            int slot = e.getInt("slot", -1);
-            if (!slots.contains(slot)) {
-                problem.accept(where + ".slot: " + slot + " is not a free slot of the menu (skipped)");
-                continue;
-            }
-            if (!used.add(slot)) {
-                problem.accept(where + ".slot: slot " + slot + " is already used (skipped)");
-                continue;
-            }
+            slotsIgnored |= e.contains("slot");
             Target target = target(e.getString("target", ""));
             if (target == null) {
                 problem.accept(where + ".target: '" + e.getString("target", "") + "' is not 'command <cmd>', 'point <category> <id>' "
                         + "or 'location <world> <x> <y> <z> [yaw] [pitch]' (skipped)");
-                used.remove(slot);
                 continue;
             }
             String icon = e.getString("icon", "ender_pearl").strip().toLowerCase(Locale.ROOT);
             if (!items.test(icon)) {
-                problem.accept(where + ".icon: unknown item '" + icon + "' (using ender pearl)");
+                problem.accept(where + ".icon: '" + icon + "' is neither an item id nor an icon key (using ender pearl)");
                 icon = "ender_pearl";
             }
             String reason = e.getString("reason", DEFAULT_REASON).toLowerCase(Locale.ROOT);
@@ -92,8 +87,14 @@ public record WarpLayout(List<Warp> warps) {
                 problem.accept(where + ".reason: '" + reason + "' is not spawn or dungeon (using spawn)");
                 reason = DEFAULT_REASON;
             }
-            out.add(new Warp(id, slot, icon, target, reason, e.getString("permission"),
-                    MenuModels.resolve(sectionName, id, e.getString("model"))));
+            if (out.size() >= MAX_PLACES) {
+                problem.accept(where + ": Travel shows at most " + MAX_PLACES + " places (skipped)");
+                continue;
+            }
+            out.add(new Warp(id, -1, icon, target, reason, e.getString("permission")));
+        }
+        if (slotsIgnored) {
+            problem.accept("menu.yml → " + sectionName + ": 'slot' is placed automatically now (centred, file order); the values are ignored");
         }
         return new WarpLayout(List.copyOf(out));
     }

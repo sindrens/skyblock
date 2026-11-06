@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  *
  * @param id        lowercase id ({@code [a-z0-9_]+}), stored in the item's PDC
  * @param unique    unique items get a UUID, stack to 1 and are checked by the dupe scanner
- * @param itemModel resource-pack model ({@code item_model} component); {@code null} = vanilla look until a pack exists
+ * @param itemModel item model key ({@code item_model} component, e.g. a vanilla {@code minecraft:} model); {@code null} = the material's look
  */
 public record ItemDefinition(
         String id,

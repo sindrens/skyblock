@@ -1,0 +1,91 @@
+# Broadcast cards in chat (chat module; plan chat look, owner 4 Nov 2026).
+# A card: an empty line, the bold title, 1-3 lines, a clickable action, an empty line. Java players see it centred,
+# Bedrock players left-aligned. Which cards rotate and how often: chat.yml -> broadcasts.* (/admin).
+# Preview one in your own chat: /chat card <id>. Reload: /skyblock reload chat
+#
+# Each card under 'cards':
+#   title    the heading (made bold), usually a gradient: <grad:phoenix>SHOP</grad>
+#   lines    1-3 short lines; highlight words with <c:value>, <cur:money>, <area:...>
+#   command  the command a click runs (/shop). The card is skipped while that command does not exist.
+#   link     instead of a command: a web link a click opens (https://...)
+#   action   optional own action line; default: format.command / format.link
+#   hover    optional own hover text; default: format.hover-command / format.hover-link
+#   (no command and no link: a plain tip without a click)
+
+format:
+  command: "<c:muted>»</c:muted> <c:action><command></c:action> <c:muted>«</c:muted>"
+  link: "<c:muted>»</c:muted> <c:action><link></c:action> <c:muted>«</c:muted>"
+  hover-command: "<c:text>Click to run <c:value><command></c:value>"
+  hover-link: "<c:text>Click to open the link"
+
+cards:
+  shop:
+    title: "<grad:phoenix>SHOP</grad>"
+    lines:
+      - "<c:text>Need blocks for your island?"
+      - "<c:text>Buy <c:value>building materials</c:value> instantly with"
+    command: "/shop"
+    hover: "<c:text>Click to open the shop"
+  farm:
+    title: "<grad:flame>THE FARM</grad>"
+    lines:
+      - "<c:text>Harvest <c:value>wheat</c:value> with your hoe for"
+      - "<cur:money>money</cur:money> <c:text>and <c:value>Farming XP</c:value>. Free for everyone!"
+    command: "/farm"
+    hover: "<c:text>Click to go to the farm"
+  mine:
+    title: "<grad:skyborn>THE MINE</grad>"
+    lines:
+      - "<c:text>Grab your pickaxe and mine <c:value>ores</c:value>"
+      - "<c:text>for <cur:money>money</cur:money> <c:text>and <c:value>Mining XP</c:value>."
+    command: "/mine"
+    hover: "<c:text>Click to go to the mine"
+  store:
+    title: "<grad:phoenix>STORE</grad>"
+    lines:
+      - "<c:text>Ranks and perks from the store help"
+      - "<c:value>keep Phoenix Skyblock running</c:value><c:text>. Thank you!"
+    command: "/store"
+    hover: "<c:text>Click to get the store link"
+  vote:
+    title: "<grad:flame>VOTE</grad>"
+    lines:
+      - "<c:text>Vote for <c:value>play.skybornmc.net</c:value> every day"
+      - "<c:text>and get <c:value>free rewards</c:value> for it."
+    command: "/vote"
+    hover: "<c:text>Click to open the vote menu"
+  discord:
+    title: "<grad:skyborn>DISCORD</grad>"
+    lines:
+      - "<c:text>News, giveaways and help from staff:"
+      - "<c:text>join the <c:value>SkybornMC Discord</c:value>."
+    command: "/discord"
+    hover: "<c:text>Click to get the Discord invite"
+  daily:
+    title: "<grad:flame>DAILY REWARD</grad>"
+    lines:
+      - "<c:text>A <c:value>free reward</c:value> waits for you every day."
+      - "<c:text>Come back daily for a bigger streak!"
+    command: "/daily"
+    hover: "<c:text>Click to claim your daily reward"
+  upgrades:
+    title: "<grad:phoenix>ISLAND UPGRADES</grad>"
+    lines:
+      - "<c:text>More space, more members, a bigger"
+      - "<c:value>sell bonus</c:value><c:text>: upgrade your island with"
+    command: "/is upgrade"
+    hover: "<c:text>Click to open island upgrades"
+  tip-menu:
+    title: "<grad:phoenix>TIP</grad>"
+    lines:
+      - "<c:text>Everything on the server is one click away"
+      - "<c:text>in the <c:value>main menu</c:value>."
+    command: "/menu"
+    hover: "<c:text>Click to open the menu"
+  tip-settings:
+    title: "<grad:phoenix>TIP</grad>"
+    lines:
+      - "<c:text>Sounds, chat, scoreboard and these cards:"
+      - "<c:text>change them all in your <c:value>settings</c:value>."
+    command: "/settings"
+    hover: "<c:text>Click to open your settings"

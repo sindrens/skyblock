@@ -25,6 +25,8 @@ final class FreeRankRules {
         DONE,
         /** No rank plugin: can't give the rank. */
         NO_RANKS,
+        /** The tutorial is not complete yet (Ranks V2, owner EP-Q15). */
+        TUTORIAL,
         /** Not played long enough yet. */
         TOO_EARLY,
         /** Can claim now. */
@@ -42,6 +44,12 @@ final class FreeRankRules {
     }
 
     static State state(boolean enabled, boolean ranksAvailable, long playtimeMillis, int minMinutes, Claim claim) {
+        return state(enabled, ranksAvailable, true, playtimeMillis, minMinutes, claim);
+    }
+
+    /** Ranks V2: Ashborn needs the finished tutorial too ({@code tutorialComplete}; true when the tutorial module is off). */
+    static State state(boolean enabled, boolean ranksAvailable, boolean tutorialComplete, long playtimeMillis, int minMinutes,
+                       Claim claim) {
         if (claim != null) {
             return claim.tagPicked() ? State.DONE : State.PICK_TAG;
         }
@@ -51,7 +59,19 @@ final class FreeRankRules {
         if (!ranksAvailable) {
             return State.NO_RANKS;
         }
+        if (!tutorialComplete) {
+            return State.TUTORIAL;
+        }
         return remainingMillis(playtimeMillis, minMinutes) > 0 ? State.TOO_EARLY : State.CLAIM;
+    }
+
+    /**
+     * Ranks V2 automatic Ashborn (pure): due only when on, LuckPerms is there, the tutorial is complete, the playtime is
+     * reached and the account has no claim yet. There is no remove path: the claim only ever adds the group.
+     */
+    static boolean due(boolean enabled, boolean ranksAvailable, boolean tutorialComplete, long playtimeMillis, int minMinutes,
+                       boolean alreadyClaimed) {
+        return enabled && ranksAvailable && tutorialComplete && !alreadyClaimed && remainingMillis(playtimeMillis, minMinutes) == 0;
     }
 
     /** Playtime still needed (0 when enough). */

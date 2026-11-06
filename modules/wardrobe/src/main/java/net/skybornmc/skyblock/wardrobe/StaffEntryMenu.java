@@ -46,7 +46,7 @@ final class StaffEntryMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         WardrobeMenus m = module.menus();
         String name = module.text().entryName(module.registry(), entry);
         var look = module.registry().get(entry.look()).or(() -> module.registry().get(entry.setId()));

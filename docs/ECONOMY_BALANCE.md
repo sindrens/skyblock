@@ -937,7 +937,7 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 - Crystal income is ~20% below what ENCHANTS §12 and WARDROBE §2.4 assumed for an "active" (4 h/day) player, because the regular plays 3 h/day. Deepforge (◆25,000) lands around day 15 for a regular and day 5 for a grinder; the price can stay.
 - **TUNE:** Deepforge's 4-piece bonus (+16% → +32% crystals) and Vein Rend's area blocks (crystals at 50% yield) now raise crystal income: +25–68% for regular and grinder from month 1 (§9.6). The enchant demand also follows the real costs of the build (§9.10), so the shares above are the built rules, not a stand-in.
 
-### 9.2 Gems (premium, not tradeable, decided)
+### 9.2 Credits (were "gems"; card C1: bought credits are tradeable, earned credits never)
 <!-- BEGIN table:gems -->
 | Gem source | Gems | Typical | Type |
 |---|---|---|---|
@@ -947,17 +947,23 @@ Enchant level costs follow 10 steps × a rarity factor (ENCHANTS §5):
 | Store credit | set in Tebex | - | paid |
 <!-- END table:gems -->
 
-Gem uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, gem sets (tier II–III, also in crates), profile slots. **Gems never buy money, upgrade levels, task progress, crystals, set XP or crate keys.** There is no gem→money exchange, so gems can't cause inflation.
+> **Card C1 (31 Oct 2026, built in wave 1a):** gems are renamed **credits** and split into two ledgers: `credits` (bought in the store, tradeable with `/credit pay`) and `credits_earned` (the sources in the table above, never tradeable). Every old gem became an earned credit. Spending takes earned credits first. The table keeps its old generated labels until `tools/economy_model.py` is updated; read "gem" as "earned credit".
 
-### 9.3 Shards (tradeable, decided; earning is an open question)
-| Source (proposal, `OPEN_QUESTIONS.md` #1) | Shards |
-|---|---|
-| World boss, top-3 damage | 20 / 15 / 10, everyone else with ≥ 1% damage: 3 |
-| KOTH capture | 10 |
-| Envoy crate | 1–3 |
-| Depths tier 9+ rare drop | 1 (≈ 1 per hour of play) |
+Credit uses: cosmetics, tool skins, extra `/pv` vaults, nickname colours, credit sets (tier II–III, also in crates), profile slots, and (C1-R1-32/38) island perks and boosters inside their caps. **Credits never directly grant money, upgrade levels, task progress, crystals, set XP or crate keys (C1-R2-06).** There is no credit→money exchange.
 
-Shards only buy from the **Black Market** (rotating, limited stock: tier 5 spawners, crate sets), so supply is set by events, not by grinding.
+### 9.3 Shards (tradeable; owner 1 Nov 2026: "shards only from blocks, no other rewards", ECON-SHARDS)
+Shards come **only** from **shard blocks** on islands (module `shardblock`): breaking a ready block pays 1 shard (a double roll pays 2), the block regrows (30 min at level 0, 7 min at level 5), max 4 blocks per island, max 100 shards per profile and Oslo day (checked in the payout transaction), nothing while away. Bosses, KOTH, envoys, Depths, crates, daily/vote/pass/quests/tutorial never pay shards (source-scan rule; crates may drop a `shard_block` item as a rare reward).
+
+| Level | Respawn (s) | Shards/h per block, attended | Double chance | Respawn upgrade (crystals) | Double upgrade (shards) |
+|---|---|---|---|---|---|
+| 0 | 1,800 | 2.00 | 0% | start | start |
+| 1 | 1,500 | 2.40 | 5% | 100 | 10 |
+| 2 | 1,200 | 3.00 | 10% | 300 | 25 |
+| 3 | 900 | 4.00 | 15% | 900 | 50 |
+| 4 | 600 | 6.00 | 20% | 2,700 | 100 |
+| 5 | 420 | 8.57 | 25% | 8,100 | 200 |
+
+Budget: a regular (1 block, respawn 2, double 1, 3 h attended) ≈ 9.5 shards a day; dedicated (2 blocks, 4 h) ≈ 55; whale (4 blocks maxed, 4 h) 171, capped to 100. Shards only buy from the **Black Market** (premium spawners 400, set tokens, keys, books, Island Charter). Revisit after one week of real inflow (`/shardblock stats`).
 
 ### 9.4 Money notes and crates
 - Notes (`/withdraw`) are only a transfer, so **no fee**. Each note has a unique id; copies are confiscated (M3.2).

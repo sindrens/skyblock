@@ -42,6 +42,14 @@ public final class CoreConfig extends ModuleConfig {
     @Setting(path = "combat.mobs", desc = "Hitting or being hit by a hostile mob counts as combat too (off = only PvP).")
     public boolean combatMobs = true;
 
+    @Setting(path = "next-step.objective-placeholder", desc = "The default next step (Kindle, /help Find my way, the "
+            + "scoreboard Next line) when no module offers one: the text of this placeholder (the start flow's objective).")
+    public String nextStepPlaceholder = "objective";
+
+    @Setting(path = "next-step.objective-command", desc = "The command the default next step runs (without /): the start "
+            + "flow's guide menu.")
+    public String nextStepCommand = "start";
+
     @Override
     public String fileName() {
         return "core.yml";

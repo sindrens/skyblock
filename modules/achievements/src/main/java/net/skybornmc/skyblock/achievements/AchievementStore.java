@@ -77,6 +77,35 @@ final class AchievementStore {
                 + Sql.update(c, "DELETE FROM achievement_unlocks WHERE profile_key = ?", profileKey);
     }
 
+    /**
+     * Owner 4 Nov 2026 (island = profile): achievements are kept when a profile is wiped. Moves progress and unlocks from
+     * {@code from} to {@code to}: a metric both have keeps the higher amount (never inflated), an unlock both have stays
+     * once. Returns the rows moved.
+     */
+    int carry(Connection c, UUID from, UUID to) throws SQLException {
+        if (from == null || to == null || from.equals(to)) {
+            return 0;
+        }
+        int moved = 0;
+        for (Object[] row : Sql.query(c, "SELECT metric, amount, updated_at FROM achievement_progress WHERE profile_key = ?",
+                rs -> new Object[]{rs.getString("metric"), rs.getLong("amount"), rs.getLong("updated_at")}, from)) {
+            if (Sql.update(c, MAX, row[1], row[2], to, row[0]) == 0) {
+                Sql.update(c, INSERT, to, row[0], row[1], row[2]);
+            }
+            moved++;
+        }
+        for (Object[] row : Sql.query(c, "SELECT achievement, tier, owner_uuid, unlocked_at FROM achievement_unlocks WHERE profile_key = ?",
+                rs -> new Object[]{rs.getString("achievement"), rs.getInt("tier"), Sql.uuid(rs, "owner_uuid"), rs.getLong("unlocked_at")}, from)) {
+            if (Sql.queryOne(c, "SELECT 1 FROM achievement_unlocks WHERE profile_key = ? AND achievement = ? AND tier = ?", rs -> 1,
+                    to, row[0], row[1]).isEmpty()) {
+                Sql.update(c, INSERT_UNLOCK, to, row[0], row[1], row[2], row[3]);
+            }
+            moved++;
+        }
+        delete(c, from);
+        return moved;
+    }
+
     // ------------------------------------------------------------------ islands (AC3)
 
     /** Every island's rows. Unknown metric keys are ignored. */

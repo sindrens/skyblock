@@ -50,7 +50,7 @@ final class NotifyMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Map<NotifyRules.Type, Boolean> view = notify.view(viewer);
         if (view.isEmpty()) {
             setEmpty(PunishMenus.MODULE, "notify-settings.menu.none");

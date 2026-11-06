@@ -14,6 +14,7 @@ import net.skybornmc.skyblock.common.command.CommandFailure;
 import net.skybornmc.skyblock.common.command.CommandSpec;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.db.Migrations;
+import net.skybornmc.skyblock.common.hud.BoardTimers;
 import net.skybornmc.skyblock.common.item.BoundItems;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
@@ -59,7 +60,7 @@ import java.util.logging.Level;
  *   <li><b>Banked time</b> (the AFK pool's sell booster, moved here) starts by itself when the type is free and you are
  *       not in the AFK pool.</li>
  *   <li><b>Global boosters</b> (Phoenix/Eclipse crates, later the store): everyone online gets the bonus; one per type
- *       runs, the rest queue. Boss bar countdown; {@code /thanks} or "thanks" in chat gives the starter 1 gem, once per
+ *       runs, the rest queue. Boss bar countdown; {@code /thanks} or "thanks" in chat gives the starter 1 earned credit, once per
  *       booster per player.</li>
  *   <li>Every booster is a {@link net.skybornmc.skyblock.common.bonus.BonusSource}: the family caps and the +300% sell
  *       cap always apply (O11).</li>
@@ -120,6 +121,8 @@ public final class BoostersModule implements SkyblockModule, Listener {
                     "settings.booster-bar", false));
             s.onChange(SETTING_BAR, global::setting);
         });
+        // G7-R1-01: the soonest-ending booster is the scoreboard's timer row (hud enables before boosters).
+        core.services().optional(BoardTimers.class).ifPresent(t -> t.register(ID, this::boardTimer));
         registerCommands();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -154,6 +157,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
         personal.saveAllBlocking();
         global.stopBlocking();
         core.services().optional(BonusService.class).ifPresent(b -> b.unregister(ID));
+        core.services().optional(BoardTimers.class).ifPresent(t -> t.unregister(ID));
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         core.services().unregisterAll(ID);
         items.unregister();
@@ -191,7 +195,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
                 .example("boosters")
                 .executes(ctx -> openMenu(ctx.player())));
         core.commands().register(CommandSpec.command("thanks")
-                .description("Thank the players whose global boosters run (they get a gem)")
+                .description("Thank the players whose global boosters run (they get a credit)")
                 .category("Rewards")
                 .permission(PERM_THANKS)
                 .playerOnly()
@@ -239,6 +243,31 @@ public final class BoostersModule implements SkyblockModule, Listener {
     List<String> rawList(String key) {
         String raw = core.messages().raw(ID, key);
         return raw == null || raw.isEmpty() ? List.of() : List.of(raw.split("<newline>", -1));
+    }
+
+    /**
+     * The scoreboard timer of a player (BoardTimers contract: main thread, map reads only): the soonest-ending of their
+     * running personal boosters on the active profile and the running global boosters. Label
+     * {@code scoreboard.timer} ("Booster: +50% Sell").
+     */
+    private Optional<BoardTimers.Timer> boardTimer(Player player) {
+        BoosterRules.Candidate best = null;
+        PersonalBoosters.State state = personal.state(player);
+        if (state != null) {
+            for (Map.Entry<BoosterType, PersonalBoosters.Run> e : state.runs.entrySet()) {
+                PersonalBoosters.Run r = e.getValue();
+                best = BoosterRules.sooner(best, new BoosterRules.Candidate(e.getKey(), r.percent, r.remaining));
+            }
+        }
+        GlobalQueue.Entry g = global.soonestActive();
+        if (g != null) {
+            best = BoosterRules.sooner(best, new BoosterRules.Candidate(g.type, g.percent, g.remaining));
+        }
+        if (best == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new BoardTimers.Timer(msg.component(player, "scoreboard.timer",
+                Msg.number("percent", best.percent()), Msg.p("type", typeName(best.type()))), best.remainingMillis()));
     }
 
     /** The display name of a type ({@code types.<id>}). */

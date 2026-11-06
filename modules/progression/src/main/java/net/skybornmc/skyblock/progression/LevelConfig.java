@@ -10,6 +10,29 @@ import net.skybornmc.skyblock.common.config.Setting;
  */
 public final class LevelConfig extends ModuleConfig {
 
+    /**
+     * Version 2 (owner 2 Nov 2026: "we will not use pillars"): pillar levels give no island level points; block worth
+     * counts twice as much to make up for it. Owner-edited values stay.
+     */
+    /*
+     * Version 3 (2 Nov 2026): the caps were shares of a total that pillars carried. Without pillar points the capped
+     * sources only had each other (and upgrades) to be measured against, so a new island's blocks, bank, skills and
+     * Depths all squeezed to almost 0. The caps go to 0 (no cap) unless the owner changed them; island milestones and
+     * collections now carry the earned part (OPEN_QUESTIONS LEVEL-NP1).
+     */
+    @Override
+    public int version() {
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("points.per-pillar-level", ValueChange.of(1, 0), "points.blocks-factor", ValueChange.of(0.5, 1.0)),
+                3, java.util.Map.of("caps.achievements-percent", ValueChange.of(10, 0), "caps.collections-percent", ValueChange.of(5, 0),
+                        "caps.skills-percent", ValueChange.of(8, 0), "caps.depths-percent", ValueChange.of(6, 0),
+                        "caps.bank-percent", ValueChange.of(5, 0), "caps.blocks-percent", ValueChange.of(20, 0)));
+    }
+
     @Override
     public String fileName() {
         return "progression.yml";
@@ -34,7 +57,7 @@ public final class LevelConfig extends ModuleConfig {
     // ------------------------------------------------------------------ source points
 
     @Setting(path = "points.per-pillar-level", desc = "Points per shown pillar level (source 1, uncapped).", min = 0, max = 1000, level = Setting.Level.OWNER)
-    public double perPillarLevel = 1;
+    public double perPillarLevel = 0;
 
     @Setting(path = "points.skills-divisor", desc = "Members' skills points = average total skill level of counted members / this (source 5).", min = 0.01, max = 100_000, level = Setting.Level.OWNER)
     public double skillsDivisor = 10;
@@ -49,7 +72,7 @@ public final class LevelConfig extends ModuleConfig {
     public long bankBase = 100_000;
 
     @Setting(path = "points.blocks-factor", desc = "Block points = blocks-factor x square root(block worth / blocks-unit) (source 8).", min = 0, max = 1000, level = Setting.Level.OWNER)
-    public double blocksFactor = 0.5;
+    public double blocksFactor = 1.0;
 
     @Setting(path = "points.blocks-unit", desc = "Money unit of the block worth square root.", min = 1, max = 1_000_000_000L, level = Setting.Level.OWNER)
     public double blocksUnit = 1000;
@@ -57,22 +80,22 @@ public final class LevelConfig extends ModuleConfig {
     // ------------------------------------------------------------------ caps (percent of the total, 0 = no cap)
 
     @Setting(path = "caps.achievements-percent", desc = "Most island achievements can be of the total (percent, 0 = no cap).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capAchievements = 10;
+    public double capAchievements = 0;
 
     @Setting(path = "caps.collections-percent", desc = "Most collections can be of the total (percent, 0 = no cap).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capCollections = 5;
+    public double capCollections = 0;
 
     @Setting(path = "caps.skills-percent", desc = "Most members' skills can be of the total (percent, 0 = no cap).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capSkills = 8;
+    public double capSkills = 0;
 
     @Setting(path = "caps.depths-percent", desc = "Most Depths progress can be of the total (percent, 0 = no cap).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capDepths = 6;
+    public double capDepths = 0;
 
     @Setting(path = "caps.bank-percent", desc = "Most the island bank can be of the total (percent, 0 = no cap).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capBank = 5;
+    public double capBank = 0;
 
     @Setting(path = "caps.blocks-percent", desc = "Most block worth can be of the total (percent, owner O3: 20).", min = 0, max = 99, level = Setting.Level.OWNER)
-    public double capBlocks = 20;
+    public double capBlocks = 0;
 
     // ------------------------------------------------------------------ anti-abuse
 

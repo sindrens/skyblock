@@ -13,7 +13,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The island level formula (PHASE-5 M5.2): source math, caps and the plan's month-1 example. */
 class LevelMathTest {
 
-    private static final LevelMath.Weights W = LevelMath.Weights.of(new LevelConfig());
+    /** The plan's worked example uses the version 1 weights (1 point per pillar level, blocks factor 0.5). */
+    private static final LevelMath.Weights W = LevelMath.Weights.of(v1());
+
+    private static LevelConfig v1() {
+        LevelConfig c = new LevelConfig();
+        c.perPillarLevel = 1;
+        c.blocksFactor = 0.5;
+        c.capAchievements = 10;
+        c.capCollections = 5;
+        c.capSkills = 8;
+        c.capDepths = 6;
+        c.capBank = 5;
+        c.capBlocks = 20;
+        return c;
+    }
 
     @Test
     void planExampleRegularSoloMonthOne() {
@@ -30,6 +44,18 @@ class LevelMathTest {
         assertEquals(384, r.total(), 1.0);
         assertEquals(38, r.level());
         assertEquals(295, r.earned(), 1e-9, "pillars + upgrades + achievements + collections");
+    }
+
+    @Test
+    void withoutPillarsANewIslandStillGetsItsBlocksAndSkills() {
+        // Version 3 defaults: no pillar points and no caps, so blocks and skills count in full.
+        LevelMath.Weights now = LevelMath.Weights.of(new LevelConfig());
+        LevelMath.Inputs in = new LevelMath.Inputs(170, 0, 0, 0, List.of(190), 0, 0, 6_000_000);
+        LevelMath.Result r = LevelMath.calculate(in, now);
+        assertEquals(0, r.points().get(LevelSource.PILLARS), 1e-9);
+        assertTrue(r.points().get(LevelSource.BLOCKS) > 70, "blocks are not squeezed to 0: " + r.points());
+        assertTrue(r.points().get(LevelSource.SKILLS) > 10, "skills count: " + r.points());
+        assertTrue(r.level() > 0);
     }
 
     @Test

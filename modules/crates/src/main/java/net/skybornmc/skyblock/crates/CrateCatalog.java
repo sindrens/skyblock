@@ -65,18 +65,76 @@ final class CrateCatalog {
     }
 
     /** One crate. {@code pity} = opens without a top-band reward after which the next open is forced into it (0 = off). */
-    record Crate(String id, String rarity, String icon, int order, int pity, boolean hidden, long fallback, List<Reward> rewards) {
+    record Crate(String id, String rarity, String icon, int order, int pity, boolean hidden, long fallback, List<Reward> rewards,
+                 Map<String, String> bands, Map<String, Integer> draws) {
+
+        /** Bands of a tiered crate, in draw order (Eclipse, owner V1: 9 common, 9 mid, 9 rare, then 1 of 5 jackpots). */
+        static final List<String> BAND_ORDER = List.of("common", "mid", "rare", "jackpot");
 
         Crate {
             rewards = List.copyOf(rewards);
+            bands = Map.copyOf(bands);
+            draws = Map.copyOf(draws);
+        }
+
+        /** A plain weighted crate (one reward per open). */
+        Crate(String id, String rarity, String icon, int order, int pity, boolean hidden, long fallback, List<Reward> rewards) {
+            this(id, rarity, icon, order, pity, hidden, fallback, rewards, Map.of(), Map.of());
+        }
+
+        /** True for a tiered crate: every open gives {@link #perOpen()} rewards, drawn per band (Eclipse). */
+        boolean tiered() {
+            return !bands.isEmpty();
+        }
+
+        /** The band of a reward of a tiered crate, or "". */
+        String band(Reward reward) {
+            return bands.getOrDefault(reward.id(), "");
+        }
+
+        List<Reward> inBand(String band) {
+            return rewards.stream().filter(r -> band.equals(band(r))).toList();
+        }
+
+        /** Rewards drawn from a band per open (never more than the band holds). */
+        int draw(String band) {
+            return Math.max(0, Math.min(draws.getOrDefault(band, 0), inBand(band).size()));
+        }
+
+        /** Rewards per open: 1, or the sum of the band draws of a tiered crate. */
+        int perOpen() {
+            if (!tiered()) {
+                return 1;
+            }
+            int n = 0;
+            for (String b : BAND_ORDER) {
+                n += draw(b);
+            }
+            return Math.max(1, n);
         }
 
         double totalChance() {
             return rewards.stream().mapToDouble(Reward::chance).sum();
         }
 
-        /** The real share of a reward in percent (its chance / all chances of the crate). */
+        /**
+         * The real share of a reward in percent (its chance / all chances of the crate). Tiered crates: the chance the
+         * reward is among the open's rewards (draw / band size for common, mid and rare, which are drawn evenly without
+         * repeats; the jackpot by its weight inside the jackpot band).
+         */
         double percent(Reward reward) {
+            if (tiered()) {
+                String b = band(reward);
+                List<Reward> pool = inBand(b);
+                if (pool.isEmpty() || draw(b) == 0) {
+                    return 0;
+                }
+                if (b.equals("jackpot")) {
+                    double total = pool.stream().mapToDouble(Reward::chance).sum();
+                    return total <= 0 ? 0 : reward.chance() * 100.0 / total * draw(b);
+                }
+                return draw(b) * 100.0 / pool.size();
+            }
             double total = totalChance();
             return total <= 0 ? 0 : reward.chance() * 100.0 / total;
         }
@@ -102,8 +160,38 @@ final class CrateCatalog {
 
     private final Map<String, Crate> crates;
 
+    /** crate id → month ("2026-11") → that month's table (Eclipse, owner M1/M4: the rewards change monthly). */
+    private final Map<String, Map<String, Crate>> monthly;
+    /** Clock of the month tables (Europe/Oslo by default; tests set a fixed one). */
+    static volatile java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Oslo"));
+
     private CrateCatalog(Map<String, Crate> crates) {
+        this(crates, Map.of());
+    }
+
+    private CrateCatalog(Map<String, Crate> crates, Map<String, Map<String, Crate>> monthly) {
         this.crates = Collections.unmodifiableMap(crates);
+        this.monthly = Map.copyOf(monthly);
+    }
+
+    /** The month key now, e.g. {@code 2026-11}. */
+    static String month() {
+        return java.time.YearMonth.now(clock).toString();
+    }
+
+    /** The month after this one. */
+    static String nextMonth() {
+        return java.time.YearMonth.now(clock).plusMonths(1).toString();
+    }
+
+    /** True when the crate has its own table for {@code month}. */
+    boolean hasMonth(String crateId, String month) {
+        return monthly.getOrDefault(crateId, Map.of()).containsKey(month);
+    }
+
+    /** True when the crate uses month tables at all ({@code months:} in crates.yml). */
+    boolean monthlyCrate(String crateId) {
+        return monthly.containsKey(crateId);
     }
 
     static CrateCatalog empty() {
@@ -120,8 +208,14 @@ final class CrateCatalog {
         return crates().stream().filter(c -> !c.hidden()).toList();
     }
 
+    /** The crate; a crate with month tables gives this month's table (or its base table when the month has none). */
     Optional<Crate> crate(String id) {
-        return id == null ? Optional.empty() : Optional.ofNullable(crates.get(id.trim().toLowerCase(Locale.ROOT)));
+        if (id == null) {
+            return Optional.empty();
+        }
+        String key = id.trim().toLowerCase(Locale.ROOT);
+        Crate month = monthly.getOrDefault(key, Map.of()).get(month());
+        return Optional.ofNullable(month != null ? month : crates.get(key));
     }
 
     List<String> ids() {
@@ -167,8 +261,40 @@ final class CrateCatalog {
                 continue;
             }
             int pity = Math.max(0, s.getInt("pity", 0));
+            // Tiered crates (Eclipse, owner V1/V2): rewards carry a band, the crate a draw per band, and there is no pity.
+            Map<String, String> bands = new LinkedHashMap<>();
+            for (Map<?, ?> m : list) {
+                Object rid = m.get("id");
+                Object band = m.get("band");
+                if (rid != null && band != null) {
+                    String b = String.valueOf(band).trim().toLowerCase(Locale.ROOT);
+                    if (Crate.BAND_ORDER.contains(b)) {
+                        bands.put(String.valueOf(rid).toLowerCase(Locale.ROOT), b);
+                    } else {
+                        warn.accept("crates.yml → crates." + id + ": reward '" + rid + "' has unknown band '" + band
+                                + "' (use " + Crate.BAND_ORDER + "), not drawn");
+                    }
+                }
+            }
+            bands.keySet().retainAll(rewards.stream().map(Reward::id).toList());
+            Map<String, Integer> draws = new LinkedHashMap<>();
+            if (!bands.isEmpty()) {
+                ConfigurationSection d = s.getConfigurationSection("draw");
+                for (String b : Crate.BAND_ORDER) {
+                    draws.put(b, Math.max(0, d == null ? (b.equals("jackpot") ? 1 : 3) : d.getInt(b, 0)));
+                }
+                if (pity > 0) {
+                    warn.accept("crates.yml → crates." + id + ": a tiered crate has no pity (owner V2), pity ignored");
+                    pity = 0;
+                }
+                List<Reward> unbanded = rewards.stream().filter(r -> !bands.containsKey(r.id())).toList();
+                if (!unbanded.isEmpty()) {
+                    warn.accept("crates.yml → crates." + id + ": rewards without a band are never drawn in a tiered crate: "
+                            + unbanded.stream().map(Reward::id).toList());
+                }
+            }
             out.put(id, new Crate(id, rarity, s.getString("icon", "chest"), s.getInt("order", out.size() + 1), pity,
-                    s.getBoolean("hidden", false), fallback, rewards));
+                    s.getBoolean("hidden", false), fallback, rewards, bands, draws));
         }
         // Keys must name a crate that exists; otherwise the reward pays its crystals (never a key to nothing).
         Map<String, Crate> checked = new LinkedHashMap<>();
@@ -186,13 +312,67 @@ final class CrateCatalog {
             if (c.pity() > 0 && !c.hasTop()) {
                 warn.accept("crates.yml → crates." + c.id() + ": pity is set but no reward has 'top: true' (pity is off)");
             }
-            if (Math.abs(c.totalChance() - 100.0) > 0.001) {
+            if (!c.tiered() && Math.abs(c.totalChance() - 100.0) > 0.001) {
                 warn.accept("crates.yml → crates." + c.id() + ": chances add up to " + c.totalChance()
                         + " instead of 100 (they are used as weights; the preview shows the real share)");
             }
-            checked.put(c.id(), new Crate(c.id(), c.rarity(), c.icon(), c.order(), c.pity(), c.hidden(), c.fallback(), fixed));
+            checked.put(c.id(), new Crate(c.id(), c.rarity(), c.icon(), c.order(), c.pity(), c.hidden(), c.fallback(), fixed,
+                    c.bands(), c.draws()));
         }
-        return new CrateCatalog(checked);
+        return new CrateCatalog(checked, months(yaml, root, checked, warn));
+    }
+
+    /**
+     * Month tables: {@code crates.<id>.months.<yyyy-MM>.rewards} (and optionally {@code draw}) replace the crate's rewards in
+     * that month; everything else comes from the crate. Each month is parsed like a crate of its own, next to the other
+     * crates (so keys to them stay valid).
+     */
+    private static Map<String, Map<String, Crate>> months(YamlConfiguration yaml, ConfigurationSection root, Map<String, Crate> base,
+                                                          Consumer<String> warn) {
+        Map<String, Map<String, Crate>> out = new LinkedHashMap<>();
+        for (String rawId : root.getKeys(false)) {
+            String id = rawId.toLowerCase(Locale.ROOT);
+            ConfigurationSection months = root.getConfigurationSection(rawId + ".months");
+            if (months == null || !base.containsKey(id)) {
+                continue;
+            }
+            Map<String, Crate> byMonth = new LinkedHashMap<>();
+            for (String month : months.getKeys(false)) {
+                if (!month.matches("\\d{4}-\\d{2}")) {
+                    warn.accept("crates.yml → crates." + id + ".months." + month + ": the month must look like 2026-11, skipped");
+                    continue;
+                }
+                YamlConfiguration tmp = new YamlConfiguration();
+                for (String other : root.getKeys(false)) {
+                    ConfigurationSection sec = root.getConfigurationSection(other);
+                    if (sec == null) {
+                        continue;
+                    }
+                    for (String k : sec.getKeys(false)) {
+                        if (!k.equals("months")) {
+                            tmp.set(ROOT + "." + other + "." + k, sec.get(k));
+                        }
+                    }
+                }
+                ConfigurationSection m = months.getConfigurationSection(month);
+                tmp.set(ROOT + "." + rawId + ".rewards", m.getMapList("rewards"));
+                if (m.isConfigurationSection("draw")) {
+                    tmp.set(ROOT + "." + rawId + ".draw", m.getConfigurationSection("draw").getValues(false));
+                }
+                String where = "crates.yml → crates." + id + ".months." + month;
+                CrateCatalog parsed = load(tmp, w -> {
+                    if (w.contains("crates." + id + ".") || w.contains("crates." + id + ":")) {
+                        warn.accept(w.replace("crates.yml → crates." + id, where)); // other crates were reported already
+                    }
+                });
+                Crate c = parsed.crates.get(id);
+                if (c != null) {
+                    byMonth.put(month, c);
+                }
+            }
+            out.put(id, Map.copyOf(byMonth));
+        }
+        return out;
     }
 
     private static Optional<Reward> parseReward(Map<?, ?> map, String crateRarity, long crateFallback, String where,
@@ -204,6 +384,10 @@ final class CrateCatalog {
         }
         String rawType = text(map, "type", "");
         Optional<RewardType> type = RewardType.byKey(rawType);
+        if ("shards".equalsIgnoreCase(rawType.trim())) {
+            warn.accept(where + " (" + id + "): type 'shards' is not allowed: shards are only found in shard blocks (ECON-SHARDS), skipped");
+            return Optional.empty();
+        }
         if (type.isEmpty()) {
             warn.accept(where + " (" + id + "): unknown type '" + rawType + "', skipped");
             return Optional.empty();
@@ -229,7 +413,6 @@ final class CrateCatalog {
         String problem = switch (t) {
             case MONEY -> minutes < 1 ? "'minutes' must be at least 1" : null;
             case CRYSTALS -> base < 1 ? "'base' must be at least 1" : null;
-            case SHARDS -> null;
             case KEY -> crate.isEmpty() ? "'crate' is missing" : null;
             case ENCHANT_BOOK -> RARITIES.contains(pool) ? null : "'pool' must be a rarity";
             case SET_TOKEN -> sets.isEmpty() ? "'sets' is empty" : null;

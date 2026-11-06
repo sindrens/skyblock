@@ -62,7 +62,7 @@ final class ReportMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TagResolver[] parts = reports.parts(viewer, report);
         set(SLOT_HEADER, service.item(Material.WRITABLE_BOOK, viewer, PunishMenus.MODULE,
                 report.partial() ? "report.menu.header-partial" : "report.menu.header", parts));
@@ -84,13 +84,19 @@ final class ReportMenu extends Menu {
         });
         YearMonth month = report.yearMonth();
         YearMonth before = month.minusMonths(1);
-        set(SLOT_PREVIOUS, service.item(Material.ARROW, viewer, PunishMenus.MODULE, "report.menu.previous",
-                Msg.p("month", reports.monthName(viewer, before))), click -> reports.open(viewer, before));
+        // Month arrows: our page icons (paper, nav/prev and nav/next) with the report's own month texts.
+        set(SLOT_PREVIOUS, monthItem(false, "report.menu.previous", Msg.p("month", reports.monthName(viewer, before))),
+                click -> reports.open(viewer, before));
         YearMonth after = month.plusMonths(1);
         if (!after.isAfter(reports.currentMonth())) {
-            set(SLOT_NEXT, service.item(Material.ARROW, viewer, PunishMenus.MODULE, "report.menu.next",
-                    Msg.p("month", reports.monthName(viewer, after))), click -> reports.open(viewer, after));
+            set(SLOT_NEXT, monthItem(true, "report.menu.next", Msg.p("month", reports.monthName(viewer, after))),
+                    click -> reports.open(viewer, after));
         }
+    }
+
+    private org.bukkit.inventory.ItemStack monthItem(boolean next, String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver month) {
+        return service.icon(viewer, next ? "nav/next" : "nav/prev", service.text(viewer, PunishMenus.MODULE, key + ".name", month),
+                service.lines(viewer, PunishMenus.MODULE, key + ".lore", month));
     }
 
     private org.bukkit.inventory.ItemStack list(Material icon, String key, List<Component> lines, TagResolver... parts) {

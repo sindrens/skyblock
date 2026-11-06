@@ -72,5 +72,6 @@ docs/            design, standards, roadmap, commands, open questions
 ## Agents and state
 - Work queue: `docs/QUEUE.md`; current state: `docs/STATUS.md`; everything unbuilt, ideas and questions: `docs/BACKLOG.md`. A fresh session reads all three and continues.
 - Owner answers come from the Decisions page (link in BACKLOG.md); never delete ideas, questions or later items, mark them done instead.
-- Max 3 agents at once, each in its own git worktree on branch `q/<item>`, one lane each. Merge as soon as one finishes (`./gradlew build` on its branch), release, then start the next item.
+- **Owner, 6 Nov 2026: no sub-agents for coding or implementing.** Sub-agents (Sonnet) may only read and plan; the lead session writes all code itself, one item at a time, on a branch `q/<item>`. Merge after `./gradlew build` passes, release in batches.
+- **Plans before code (6 Nov):** start from [`docs/MASTER_PLAN.md`](docs/MASTER_PLAN.md). Nothing is built until its plan is approved; fixes in its section 2 are pre-approved.
 - Open questions never block: safest default + `docs/OPEN_QUESTIONS.md` → "Waiting for owner".

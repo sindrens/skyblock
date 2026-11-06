@@ -1,5 +1,7 @@
 # Phoenix Pack: test checklist (run once per release)
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 Run once on **Java** and once on **Bedrock**. Note the pack version from the pack menu ("Phoenix Pack v…").
 
 **Client versions to test each release:** 26.3 (current), 1.21.11, 1.21.5 (oldest supported, via ViaVersion).

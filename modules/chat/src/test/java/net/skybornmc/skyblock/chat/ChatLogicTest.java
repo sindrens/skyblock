@@ -87,9 +87,10 @@ class ChatLogicTest {
     }
 
     @Test
-    void titleBeforeTagAfterTheName() {
+    void noTitleInTheLineTagAfterTheName() {
         ChatConfig c = new ChatConfig();
-        assertTrue(c.chatFormat.indexOf("<title>") < c.chatFormat.indexOf("<name>"));
+        assertFalse(c.chatFormat.contains("<title>"), "titles are in the hover card only (owner 2 Nov 2026)");
+        assertFalse(c.tabFormat.contains("<title>"), "only tags in tab");
         assertTrue(c.chatFormat.indexOf("<tag>") > c.chatFormat.indexOf("<name>"));
         assertTrue(c.chatFormat.indexOf("<tag>") < c.chatFormat.indexOf("»"));
         assertTrue(c.tabFormat.indexOf("<title>") < c.tabFormat.indexOf("<rank>"));

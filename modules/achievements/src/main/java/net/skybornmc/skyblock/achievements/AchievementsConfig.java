@@ -21,6 +21,11 @@ public final class AchievementsConfig extends ModuleConfig {
     @Setting(path = "tracking.playtime", desc = "Count minutes played per profile for the playtime achievements.")
     public boolean playtime = true;
 
+    @Setting(path = "tracking.playtime-active-seconds", desc = "Owner 2 Nov 2026 (\"achievements while I do nothing\"): a minute "
+            + "only counts when the player moved, built, fought, chatted or used a command in the last this many seconds, and "
+            + "was not AFK, in the AFK pool, in staff mode or vanished. 0 = count every online minute (old behaviour).", min = 0, max = 3600)
+    public int playtimeActiveSeconds = 90;
+
     @Setting(path = "tracking.hotbar-tools", desc = "Look at the hotbar for the best custom tool level and prestige (every gauge poll).")
     public boolean hotbarTools = true;
 

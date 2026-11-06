@@ -12,6 +12,12 @@ import java.util.List;
 /** Pick an item from your inventory to put in the Wardrobe Chest (unique items only: tools, books, scrolls, tokens). */
 final class StorePickMenu extends PagedMenu<Integer> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final WardrobeModule module;
 
     StorePickMenu(WardrobeModule module) {

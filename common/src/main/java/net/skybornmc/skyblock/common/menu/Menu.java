@@ -18,10 +18,17 @@ import java.util.logging.Level;
  * Base class of every chest menu. One instance per viewer: subclasses describe the content in {@link #build()} with
  * {@link #set}; the {@link MenuService} handles opening, click protection, debounce, sounds and live updates.
  *
- * <p>Layout (docs/design/GUI_DESIGN.md §1, {@link MenuLayout}): call {@link #frame()} first in {@code build()} for the
- * standard frame (black border, red corners with ember glow) and the standard buttons: on 6 rows 45 Back, 48 ? (what is
- * this), 49 Close, 50 Main menu, 52/53 pages; on 3 rows 18 Back and 22 Close. Free action slots on the bottom bar: 46,
- * 47 and 51. Build titles with {@link MenuService#title} so every menu reads {@code ▸ Island » Upgrades}.</p>
+ * <p>Layout (I9 v2, {@link MenuLayout}): menus are 3, 4 or 6 rows; empty slots stay empty (no frame, no filler panes).
+ * Call {@link #navBar()} first in {@code build()} for the minimal bottom row: Back (when there is somewhere to go back
+ * to) and Close; paged menus add Previous/Next ({@link MenuService#pageItem}).</p>
+ * <pre>
+ *  Rows | Back | Actions | Close | Search (AH only) | Previous | Next | Danger corner | Summary
+ *   6   |  45  |  46 47  |  49   |        51        |    52    |  53  |       8       |    4
+ *   4   |  27  |  28 29  |  31   |        -         |    34    |  35  |       8       |    4
+ *   3   |  18  |  19 20  |  22   |        -         |    -     |  -   |       8       |    4
+ * </pre>
+ * <p>Small menus centre their buttons with {@link Centered}; lists use the 7x4 grid. Build titles with
+ * {@link MenuService#title} so every menu reads {@code ▸ Island » Upgrades}.</p>
  *
  * <p>Back returns to the menu that opened this one ({@link Navigation}); re-opening this menu
  * ({@code service.open(viewer, this)}, {@link #redraw()}) updates the open window in place.</p>
@@ -31,11 +38,17 @@ public abstract class Menu implements InventoryHolder {
     public static final int SLOT_BACK = 45;
     /** Previous page (52, so Back at 45 works on every page). */
     public static final int SLOT_PREVIOUS = 52;
-    public static final int SLOT_INFO = 48;
     public static final int SLOT_CLOSE = 49;
-    /** Main menu (on the main menu itself: Help & guides). */
-    public static final int SLOT_MAIN_MENU = 50;
     public static final int SLOT_NEXT = 53;
+    /** The optional summary tile of the top row (your head, balance, "what is this"). */
+    public static final int SLOT_SUMMARY = 4;
+    /** Free screen actions of the 6-row bottom row (shop: Sell 46, Undo 47). */
+    public static final int SLOT_ACTION_A = 46;
+    public static final int SLOT_ACTION_B = 47;
+    /** The auction house's Search button (I9 section 11; nowhere else). */
+    public static final int SLOT_SEARCH = 51;
+    /** The red danger tile corner (I9 section 5). */
+    public static final int SLOT_DANGER = 8;
     /** Back on 3-row menus. */
     public static final int SLOT_SMALL_BACK = 18;
     /** Close on 3-row menus. */
@@ -48,9 +61,22 @@ public abstract class Menu implements InventoryHolder {
     private Menu parent;
     private boolean open;
     private long ticks;
-    private final ItemStack[] frameButtons = new ItemStack[4];
+    /** The Back and Close items built for this opening, reused by every refresh (PERF2). */
+    private final ItemStack[] navItems = new ItemStack[2];
     /** The title the open window shows (to update it in place only when it changed). */
     Component shownTitle;
+    /** The plain title of the last build ({@link #title()}), the source of a framed title (GUI-FONT). */
+    Component plainTitle;
+    /** True while the window shows a frame title (panel glyphs). */
+    boolean framed;
+    /** Top inventory slots that hold an item now. */
+    private final java.util.BitSet filledMask = new java.util.BitSet();
+    /** The filled slots the shown frame title was built for. */
+    java.util.BitSet shownMask = new java.util.BitSet();
+    /** A slot went empty or filled (or a title swap was throttled): the framework re-checks the frame title. */
+    boolean tilesDirty;
+    /** When the last frame title was sent (epoch ms; 0 = never), for {@code gui.font.title-resend-min-ms}. */
+    long titleSentAt;
 
     /** Number of rows (1-6). */
     public abstract int rows();
@@ -66,12 +92,17 @@ public abstract class Menu implements InventoryHolder {
         return "menus";
     }
 
-    /** Message key (in {@link #messageModule()}) of the 2-4 info lines of the "?" item, or {@code null} for no info item. */
+    /**
+     * Ignored: there is no {@code ?} button any more (I9 section 4). Kept so the menus that still override it compile;
+     * the overrides and their {@code *.info} texts go in the per-module pass.
+     */
+    @Deprecated
     public String infoKey() {
         return null;
     }
 
-    /** The /help topic the "?" item opens. */
+    /** Ignored (no {@code ?} button any more, I9 section 4); see {@link #infoKey()}. */
+    @Deprecated
     public String helpTopic() {
         return "menus";
     }
@@ -105,10 +136,7 @@ public abstract class Menu implements InventoryHolder {
         return out.toString();
     }
 
-    /**
-     * True for the main menu (/menu): the bottom of the navigation stack (never gets a parent) and its slot 50 shows
-     * Help & guides instead of Main menu.
-     */
+    /** True for the main menu (/menu): the bottom of the navigation stack (never gets a parent, so no Back). */
     public boolean isMainMenu() {
         return false;
     }
@@ -126,6 +154,60 @@ public abstract class Menu implements InventoryHolder {
     protected void onClose() {
     }
 
+    // ------------------------------------------------------------------ frame layer (GUI-FONT 6.3)
+
+    /**
+     * Framed for Java viewers with the pack (panel, hidden empty slots, soft tiles). Override with {@code false} for
+     * menus whose empty slots are real drop slots (the sell chest, deliver screens): they keep the plain chest.
+     */
+    public boolean panel() {
+        return true;
+    }
+
+    /** The panel of this menu: empty when {@link #panel()} is false or the menu has 1, 2 or 5 rows. */
+    public final java.util.Optional<net.skybornmc.skyblock.common.frame.PanelType> panelType() {
+        if (!panel()) {
+            return java.util.Optional.empty();
+        }
+        return net.skybornmc.skyblock.common.frame.PanelType.forRows(rows());
+    }
+
+    /**
+     * Message key (in {@link #messageModule()}) of the plaque noun, e.g. {@code title.short} = {@code SHOP}; at most 16
+     * letters, all caps. {@code null} = the panel shows the plain title text in its top band.
+     */
+    public String plaqueKey() {
+        return null;
+    }
+
+    /** The messages module of {@link #plaqueKey()} (default {@link #messageModule()}). */
+    public String plaqueModule() {
+        return messageModule();
+    }
+
+    /** True only for the staff glyph test: framed for Java with the pack even when {@code gui.font.*} is off. */
+    public boolean frameForced() {
+        return false;
+    }
+
+    /** Top inventory slots that hold an item (a copy). */
+    final java.util.BitSet filled() {
+        return (java.util.BitSet) filledMask.clone();
+    }
+
+    /** Swaps the window's inventory for a new one with the same holder and contents (frame title update). */
+    final void replaceInventory(Inventory next) {
+        this.inventory = next;
+    }
+
+    private void track(int slot, ItemStack item) {
+        boolean now = item != null && !item.getType().isAir();
+        if (filledMask.get(slot) != now) {
+            filledMask.set(slot, now);
+            tilesDirty = true;
+        }
+    }
+
     // ------------------------------------------------------------------ API for subclasses
 
     /** Puts a button in a slot (replaces what was there). */
@@ -136,22 +218,25 @@ public abstract class Menu implements InventoryHolder {
         if (button == null) {
             buttons.remove(slot);
             inventory.setItem(slot, null);
+            track(slot, null);
             return;
         }
-        ItemStack item = service.mark(service.render(viewer, button.item()));
+        ItemStack item = service.mark(button.item());
         buttons.put(slot, button.withItem(item));
         inventory.setItem(slot, item);
+        track(slot, item);
     }
 
-    /** Framework only: puts an item that is already marked as a menu item (cached frame panes and buttons). */
+    /** Framework only: puts an item that is already marked as a menu item (the cached Back and Close). */
     final void setMarked(int slot, ItemStack marked, Consumer<MenuClick> onClick) {
         buttons.put(slot, new MenuButton(marked, onClick));
         inventory.setItem(slot, marked);
+        track(slot, marked);
     }
 
-    /** The fixed frame buttons built for this opening (back, info, close, help), reused by every refresh (PERF2). */
-    final ItemStack[] frameButtons() {
-        return frameButtons;
+    /** The Back and Close items built for this opening, reused by every refresh (PERF2). */
+    final ItemStack[] navItems() {
+        return navItems;
     }
 
     protected final void set(int slot, ItemStack item, Consumer<MenuClick> onClick) {
@@ -161,6 +246,20 @@ public abstract class Menu implements InventoryHolder {
     /** Decoration only. */
     protected final void set(int slot, ItemStack item) {
         set(slot, new MenuButton(item, null));
+    }
+
+    /** True when nothing is on {@code slot} (no item and no button). Framework use (menu hints). */
+    final boolean emptyAt(int slot) {
+        if (inventory == null || slot < 0 || slot >= inventory.getSize() || buttons.containsKey(slot)) {
+            return false;
+        }
+        ItemStack s = inventory.getItem(slot);
+        return s == null || s.isEmpty();
+    }
+
+    /** Framework use: the tutorial hint (display only). */
+    final void setHint(int slot, ItemStack item) {
+        set(slot, item);
     }
 
     /**
@@ -182,9 +281,33 @@ public abstract class Menu implements InventoryHolder {
         }));
     }
 
-    /** Standard frame: black border, red corners, ember glow next to them, plus the standard buttons ({@link MenuLayout}). */
-    protected final void frame() {
-        service.applyFrame(this);
+    /**
+     * The minimal bottom row (I9 section 4): Back when there is somewhere to go back to (never on the main menu) and
+     * Close, for this menu's row count. No panes, no {@code ?}, no Main menu button.
+     */
+    protected final void navBar() {
+        service.applyNavBar(this);
+    }
+
+    /**
+     * Help on the bottom row ({@link MenuLayout#help}: 50 on 6 rows, 32 on 4, 23 on 3; plan 4 Nov C §3): a plain book
+     * that opens {@code /help} ("What do you want to do?") with Back to this menu. Call after {@link #navBar()}.
+     */
+    protected final void helpButton() {
+        int slot = MenuLayout.help(rows());
+        if (slot == MenuLayout.NONE) {
+            return;
+        }
+        set(slot, service.helpItem(viewer), click -> service.navigate(click.player(), this, () -> click.player().performCommand("help")));
+    }
+
+    /**
+     * The wallet tile on {@link #SLOT_SUMMARY} (FORMAT 4, MENUS-V3): {@code currencyKey} {@code money}, {@code crystals},
+     * {@code shards}, {@code credits} or {@code bank}; {@code amountText} the full amount; {@code noteKey} an optional
+     * muted line from {@code messages/menus.yml} (null = none).
+     */
+    protected final void setWallet(String currencyKey, String amountText, String noteKey) {
+        set(SLOT_SUMMARY, service.wallet(viewer, currencyKey, amountText, noteKey));
     }
 
     /** The one "nothing here yet" item (cobweb, framework texts) in the middle of the content. */
@@ -224,7 +347,14 @@ public abstract class Menu implements InventoryHolder {
         }
         buttons.clear();
         inventory.clear();
+        if (!filledMask.isEmpty()) {
+            filledMask.clear();
+            tilesDirty = true;
+        }
         build();
+        if (service != null) {
+            service.applyHint(this);
+        }
     }
 
     /** Opens {@code menu} for the same viewer with this menu as its parent (Back returns here). */
@@ -270,9 +400,14 @@ public abstract class Menu implements InventoryHolder {
         this.viewer = viewer;
         this.inventory = inventory;
         this.buttons.clear();
-        java.util.Arrays.fill(this.frameButtons, null);
+        java.util.Arrays.fill(this.navItems, null);
         this.ticks = 0;
         this.open = true;
+        this.filledMask.clear();
+        this.shownMask = new java.util.BitSet();
+        this.framed = false;
+        this.tilesDirty = false;
+        this.titleSentAt = 0;
     }
 
     final void detach() {

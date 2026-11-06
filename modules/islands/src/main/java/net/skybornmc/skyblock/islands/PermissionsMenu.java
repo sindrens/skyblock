@@ -67,6 +67,7 @@ final class PermissionsMenu extends Menu {
         ICONS.put(IslandPerm.BANK_HISTORY, Material.KNOWLEDGE_BOOK);
         ICONS.put(IslandPerm.UPGRADES, Material.ANVIL);
         ICONS.put(IslandPerm.HOMES, Material.RED_BED);
+        ICONS.put(IslandPerm.SHARD_BLOCKS, Material.AMETHYST_SHARD);
         ROLE_ICONS.put(PermRole.ADMIN, Material.DIAMOND_HELMET);
         ROLE_ICONS.put(PermRole.MOD, Material.GOLDEN_HELMET);
         ROLE_ICONS.put(PermRole.MEMBER, Material.IRON_HELMET);
@@ -132,7 +133,7 @@ final class PermissionsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         IslandPerm[] perms = IslandPerm.cached();
         int from = page * PER_PAGE;
         Role editor = viewerRole();
@@ -152,12 +153,10 @@ final class PermissionsMenu extends Menu {
             }
         }
         if (page > 0) {
-            set(SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous", Msg.p("page", page),
-                    Msg.p("pages", pages())), click -> turn(-1));
+            set(SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages()), click -> turn(-1));
         }
         if (page < pages() - 1) {
-            set(SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next", Msg.p("page", page + 2),
-                    Msg.p("pages", pages())), click -> turn(1));
+            set(SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages()), click -> turn(1));
         }
     }
 

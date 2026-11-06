@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Getting sets (WARDROBE §2.4): buying with money/crystals/gems, free gem-set claims (Sigils), redeeming Set Tokens,
+ * Getting sets (WARDROBE §2.4): buying with money/crystals/credits, free credit-set claims (Sigils), redeeming Set Tokens,
  * minting tokens, and the staff give/remove actions. The database decides (one transaction each); the player's
  * session and items follow on the main thread. Every change is audited.
  */
@@ -114,7 +114,7 @@ final class Shop {
                 details.put("currency", offer.currency().key());
                 details.put("price", offer.price());
                 details.put("profile", profile.toString());
-                details.put("sigil", offer.currency() == Currency.GEMS);
+                details.put("sigil", offer.currency() == Currency.CREDITS);
                 module.core.audit().logPlayer(AuditCategory.ITEM, "wardrobe_buy", who.actor(), who.player(), who.name(), offer.price(), null, details);
             }
             if (p == null) {
@@ -124,7 +124,7 @@ final class Shop {
                 case OK -> {
                     if (module.equipment().sessionOrNull(p.getUniqueId()) == s && s.profile.equals(profile)) {
                         s.add(r.entry());
-                        if (offer.currency() == Currency.GEMS) {
+                        if (offer.currency() == Currency.CREDITS) {
                             s.sigils = plus(s.sigils, def.id());
                             s.claims = plus(s.claims, def.id());
                         }
@@ -133,7 +133,8 @@ final class Shop {
                     module.core.sounds().play(p, "unlock");
                 }
                 case NOT_ENOUGH -> module.fail(p, "not-enough", Msg.p("price", price(offer.currency(), offer.price())),
-                        Msg.p("have", price(offer.currency(), economy() == null ? 0 : economy().cached(p.getUniqueId(), offer.currency()).orElse(0))));
+                        Msg.p("have", price(offer.currency(), economy() == null ? 0
+                                : net.skybornmc.skyblock.common.economy.CreditView.cachedShown(economy(), p.getUniqueId(), offer.currency()).orElse(0))));
                 case OWNED -> module.fail(p, "owned");
                 case HAS_SIGIL, CLAIMED -> {
                     module.fail(p, "has-sigil");
@@ -145,7 +146,7 @@ final class Shop {
         }));
     }
 
-    /** Claims a gem set the account has a Sigil for (free, once per profile per season). */
+    /** Claims a credit set the account has a Sigil for (free, once per profile per season). */
     void claim(Player player, SetDef def) {
         Session s = module.equipment().sessionOrNull(player.getUniqueId());
         if (!ready(player, s)) {

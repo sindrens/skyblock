@@ -18,6 +18,12 @@ import java.util.List;
  */
 final class DeletedNotesMenu extends PagedMenu<Note> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final IslandsModule module;
     private final IslandManager islands;
     private final Island island;

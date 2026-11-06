@@ -21,6 +21,24 @@ final class StateCodec {
     private StateCodec() {
     }
 
+    /**
+     * Owner 4 Nov 2026: per-profile values that other modules keep in the player's persistent data (the /farm and /mine
+     * tier counters): saved and loaded with the profile, removed for a fresh profile (tier 1). From
+     * {@code state.persistent-keys} (profiles.yml); set on enable and reload.
+     */
+    private static volatile List<org.bukkit.NamespacedKey> persistentKeys = List.of();
+
+    static void persistentKeys(List<String> keys) {
+        List<org.bukkit.NamespacedKey> parsed = new ArrayList<>();
+        for (String key : keys) {
+            org.bukkit.NamespacedKey k = key == null ? null : org.bukkit.NamespacedKey.fromString(key.strip().toLowerCase(java.util.Locale.ROOT));
+            if (k != null && !parsed.contains(k)) {
+                parsed.add(k);
+            }
+        }
+        persistentKeys = List.copyOf(parsed);
+    }
+
     static StoredState capture(Player player) {
         byte[] inventory = ItemStack.serializeItemsAsBytes(nonNull(player.getInventory().getContents()));
         byte[] ender = ItemStack.serializeItemsAsBytes(nonNull(player.getEnderChest().getContents()));
@@ -35,6 +53,12 @@ final class StateCodec {
         yaml.set("fire-ticks", player.getFireTicks());
         yaml.set("air", player.getRemainingAir());
         yaml.set("effects", new ArrayList<>(player.getActivePotionEffects()));
+        for (org.bukkit.NamespacedKey key : persistentKeys) {
+            Long value = player.getPersistentDataContainer().get(key, org.bukkit.persistence.PersistentDataType.LONG);
+            if (value != null) {
+                yaml.set("persistent." + key.getNamespace() + "." + key.getKey(), value);
+            }
+        }
         Location l = player.getLocation();
         if (l.getWorld() != null) {
             yaml.set("location.world", l.getWorld().getName());
@@ -55,6 +79,9 @@ final class StateCodec {
         player.getEnderChest().clear();
         for (PotionEffect effect : new ArrayList<>(player.getActivePotionEffects())) {
             player.removePotionEffect(effect.getType());
+        }
+        for (org.bukkit.NamespacedKey key : persistentKeys) {
+            player.getPersistentDataContainer().remove(key); // a fresh profile starts at tier 1
         }
         double maxHealth = maxHealth(player);
         if (state == null || state.fresh()) {
@@ -94,6 +121,12 @@ final class StateCodec {
         player.setExhaustion((float) Math.clamp(yaml.getDouble("exhaustion", 0), 0.0, 4.0));
         player.setFireTicks(Math.max(0, yaml.getInt("fire-ticks", 0)));
         player.setRemainingAir(Math.clamp(yaml.getInt("air", player.getMaximumAir()), 0, player.getMaximumAir()));
+        for (org.bukkit.NamespacedKey key : persistentKeys) {
+            String path = "persistent." + key.getNamespace() + "." + key.getKey();
+            if (yaml.contains(path)) {
+                player.getPersistentDataContainer().set(key, org.bukkit.persistence.PersistentDataType.LONG, yaml.getLong(path));
+            }
+        }
         List<?> effects = yaml.getList("effects", List.of());
         for (Object o : effects) {
             if (o instanceof PotionEffect effect) {

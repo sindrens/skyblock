@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(3, config.version());
+        assertEquals(7, config.version()); // v7: send-gate.required 10k -> 0 (owner 6 Nov 2026, the pay limit replaces it)
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());
@@ -68,6 +68,7 @@ class EconomyConfigTest {
         EconomyConfig config = new EconomyConfig();
         config.icons = List.of("tokens:AMETHYST_SHARD");
         assertEquals("AMETHYST_SHARD", config.iconName(Currency.CRYSTALS));
-        assertNull(config.iconName(Currency.GEMS));
+        assertNull(config.iconName(Currency.CREDITS_EARNED));
+        assertEquals("DIAMOND", new EconomyConfig().iconName(Currency.CREDITS_EARNED));
     }
 }

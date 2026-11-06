@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** GUI-1: the menu framework rules (GUI_DESIGN §1, §3-§5) without a server. */
+/** GUI-1 / I9: the menu framework rules without a server. */
 class MenuFrameworkTest {
 
     // ------------------------------------------------------------------ bottom bar per row count
@@ -23,17 +23,19 @@ class MenuFrameworkTest {
     @Test
     void sixRowBarFollowsTheDesign() {
         assertEquals(45, MenuLayout.back(6));
-        assertEquals(48, MenuLayout.info(6));
+        assertEquals(46, MenuLayout.actionA(6));
+        assertEquals(47, MenuLayout.actionB(6));
         assertEquals(49, MenuLayout.close(6));
-        assertEquals(50, MenuLayout.mainMenu(6));
+        assertEquals(51, MenuLayout.search(6));
+        assertEquals(8, MenuLayout.danger(6));
         assertEquals(52, MenuLayout.previous(6));
         assertEquals(53, MenuLayout.next(6));
         assertEquals(22, MenuLayout.empty(6));
         // the constants menus use agree with the layout
         assertEquals(MenuLayout.back(6), Menu.SLOT_BACK);
-        assertEquals(MenuLayout.info(6), Menu.SLOT_INFO);
         assertEquals(MenuLayout.close(6), Menu.SLOT_CLOSE);
-        assertEquals(MenuLayout.mainMenu(6), Menu.SLOT_MAIN_MENU);
+        assertEquals(MenuLayout.search(6), Menu.SLOT_SEARCH);
+        assertEquals(MenuLayout.danger(6), Menu.SLOT_DANGER);
         assertEquals(MenuLayout.previous(6), Menu.SLOT_PREVIOUS);
         assertEquals(MenuLayout.next(6), Menu.SLOT_NEXT);
         assertEquals(PagedMenu.SLOT_EMPTY, MenuLayout.empty(6));
@@ -42,9 +44,8 @@ class MenuFrameworkTest {
     @Test
     void fourAndFiveRowBarsSitOnTheLastRow() {
         assertEquals(27, MenuLayout.back(4));
-        assertEquals(30, MenuLayout.info(4));
         assertEquals(31, MenuLayout.close(4));
-        assertEquals(32, MenuLayout.mainMenu(4));
+        assertEquals(MenuLayout.NONE, MenuLayout.search(4));
         assertEquals(34, MenuLayout.previous(4));
         assertEquals(35, MenuLayout.next(4));
         assertEquals(36, MenuLayout.back(5));
@@ -52,14 +53,14 @@ class MenuFrameworkTest {
     }
 
     @Test
-    void threeRowMenusHaveBackAndCloseOnly() {
+    void threeRowMenusHaveBackCloseAndPages() {
         assertEquals(18, MenuLayout.back(3));
         assertEquals(22, MenuLayout.close(3));
         assertEquals(Menu.SLOT_SMALL_BACK, MenuLayout.back(3));
         assertEquals(Menu.SLOT_SMALL_CLOSE, MenuLayout.close(3));
-        assertEquals(MenuLayout.NONE, MenuLayout.info(3));
-        assertEquals(MenuLayout.NONE, MenuLayout.mainMenu(3));
-        assertEquals(MenuLayout.NONE, MenuLayout.previous(3));
+        assertEquals(MenuLayout.NONE, MenuLayout.search(3));
+        assertEquals(25, MenuLayout.previous(3));
+        assertEquals(26, MenuLayout.next(3));
         assertEquals(13, MenuLayout.empty(3));
         for (int rows = 1; rows <= 2; rows++) {
             assertEquals(MenuLayout.NONE, MenuLayout.back(rows));
@@ -76,10 +77,10 @@ class MenuFrameworkTest {
             assertTrue(back != MenuLayout.next(rows));
         }
         // the free action slots of the 6-row bar
-        for (int slot : new int[]{46, 47, 51}) {
-            assertFalse(MenuLayout.standard(6, slot), "slot " + slot + " is free for screen actions");
+        for (int slot : new int[]{46, 47, 48, 50, 51}) {
+            assertFalse(MenuLayout.standard(6, slot), "slot " + slot + " is free (no ? and no Main menu any more)");
         }
-        for (int slot : new int[]{45, 48, 49, 50, 52, 53}) {
+        for (int slot : new int[]{45, 49, 52, 53}) {
             assertTrue(MenuLayout.standard(6, slot));
         }
         // the confirm buttons (10-16) never collide with the 3-row standard buttons
@@ -91,8 +92,8 @@ class MenuFrameworkTest {
     @Test
     void everyStandardSlotFitsItsMenu() {
         for (int rows = 1; rows <= 6; rows++) {
-            for (int slot : new int[]{MenuLayout.back(rows), MenuLayout.info(rows), MenuLayout.close(rows),
-                    MenuLayout.mainMenu(rows), MenuLayout.previous(rows), MenuLayout.next(rows), MenuLayout.empty(rows)}) {
+            for (int slot : new int[]{MenuLayout.back(rows), MenuLayout.close(rows), MenuLayout.search(rows), MenuLayout.danger(rows),
+                    MenuLayout.previous(rows), MenuLayout.next(rows), MenuLayout.empty(rows)}) {
                 assertTrue(slot == MenuLayout.NONE || (slot >= 0 && slot < rows * 9), rows + " rows, slot " + slot);
             }
         }
@@ -230,8 +231,8 @@ class MenuFrameworkTest {
     @Test
     void oneStepConfirmRunsOnce() {
         ConfirmFlow flow = new ConfirmFlow(false);
-        assertArrayEquals(new int[]{10, 11, 12}, flow.confirmSlots());
-        assertArrayEquals(new int[]{14, 15, 16}, flow.cancelSlots());
+        assertArrayEquals(new int[]{11}, flow.confirmSlots());
+        assertArrayEquals(new int[]{15}, flow.cancelSlots());
         assertEquals(ConfirmFlow.Result.RUN, flow.confirm());
         assertEquals(ConfirmFlow.Result.IGNORED, flow.confirm(), "a double click never runs twice");
         assertEquals(ConfirmFlow.Result.IGNORED, flow.cancel());
@@ -249,7 +250,7 @@ class MenuFrameworkTest {
         assertTrue(flow.swapped());
         // where Confirm was, Cancel is now: a double click lands on Cancel
         assertArrayEquals(firstConfirm, flow.cancelSlots());
-        assertArrayEquals(new int[]{14, 15, 16}, flow.confirmSlots());
+        assertArrayEquals(new int[]{15}, flow.confirmSlots());
         assertEquals(ConfirmFlow.Result.RUN, flow.confirm());
         assertEquals(ConfirmFlow.Result.IGNORED, flow.confirm());
     }
@@ -261,9 +262,6 @@ class MenuFrameworkTest {
         assertEquals(ConfirmFlow.Result.CANCEL, flow.cancel());
         assertEquals(ConfirmFlow.Result.IGNORED, flow.confirm());
         assertTrue(flow.done());
-        assertTrue(ConfirmFlow.bigButton(11));
-        assertTrue(ConfirmFlow.bigButton(15));
-        assertFalse(ConfirmFlow.bigButton(13));
     }
 
     // ------------------------------------------------------------------ clicks
@@ -329,5 +327,28 @@ class MenuFrameworkTest {
         // the length rule still applies on top
         assertEquals(2, MenuTitles.first(crumbs, 2, 2, 3, 16));
         assertEquals(0, MenuTitles.first(List.of(), 2, 2, 3, 40));
+    }
+
+    @Test
+    void compactListsFitTheirEntries() {
+        assertEquals(3, PagedMenu.fitRows(0));
+        assertEquals(3, PagedMenu.fitRows(7));
+        assertEquals(4, PagedMenu.fitRows(8));
+        assertEquals(6, PagedMenu.fitRows(28));
+        assertEquals(6, PagedMenu.fitRows(29));
+        var pages = PageLayout.<Integer>grid(7).pages(java.util.List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        assertEquals(2, pages.size());
+        assertEquals(16, pages.get(0).slots()[6]);
+        assertEquals(10, pages.get(1).slots()[0]);
+    }
+
+    @Test
+    void compactListsCentreTheirLastRow() {
+        var pages = PageLayout.<Integer>centered(14).pages(java.util.List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        assertEquals(1, pages.size());
+        assertEquals(10, pages.get(0).slots()[0]);
+        assertEquals(22, pages.get(0).slots()[7], "the 8th entry sits in the middle of row 2");
+        var three = PageLayout.<Integer>centered(7).pages(java.util.List.of(1, 2, 3));
+        assertEquals(java.util.List.of(12, 13, 14), java.util.Arrays.stream(three.get(0).slots()).boxed().toList());
     }
 }

@@ -71,7 +71,7 @@ final class ReportReasonMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         if (head.getItemMeta() instanceof SkullMeta meta) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(target));

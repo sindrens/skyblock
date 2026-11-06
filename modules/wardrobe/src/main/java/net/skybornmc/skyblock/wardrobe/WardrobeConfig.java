@@ -13,7 +13,7 @@ import java.util.Locale;
  */
 final class WardrobeConfig extends ModuleConfig {
 
-    @Setting(path = "season-id", desc = "Current season (gem-set claims are once per profile per season). Stays 0 until the season system exists.",
+    @Setting(path = "season-id", desc = "Current season (credit-set claims are once per profile per season). Stays 0 until the season system exists.",
             min = 0, max = 100_000, level = Setting.Level.OWNER)
     public int seasonId = 0;
 
@@ -259,7 +259,7 @@ final class WardrobeConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public int loadoutMaxSlots = 8;
 
-    @Setting(path = "loadout.bought-max", desc = "Most extra presets that can be bought with store credits (account-wide, kept across seasons).",
+    @Setting(path = "loadout.bought-max", desc = "Most extra presets that can be bought with credits (account-wide, kept across seasons).",
             min = 0, max = 8, level = Setting.Level.OWNER)
     public int loadoutBoughtMax = 3;
 

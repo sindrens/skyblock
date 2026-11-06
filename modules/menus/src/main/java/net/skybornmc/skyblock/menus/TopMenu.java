@@ -122,7 +122,7 @@ final class TopMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         List<Tab> tabs = visibleTabs();
         if (tabs.isEmpty()) {
             setEmpty(Nav.TEXTS, "top.none");

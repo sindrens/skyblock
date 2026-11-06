@@ -1,7 +1,12 @@
-# LuckPerms grants for the pack module. Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
+# LuckPerms grants for the pack module (I7 pack v2). Applied by scripts/apply-permissions.sh after base.txt (groups exist by then).
 # Node definitions: modules/pack/src/main/resources/permissions/pack.yml. One console command per line; # = comment.
 
-# Helpers can check why a player has no badges or menu art.
+# Helpers can check why a player sees plain items (/pack status).
 lp group helper permission set skyblock.pack.status true
-# Admins switch the variant (safe/shine) and resend the pack.
+# Admins reload pack.yml and offer the pack again (/pack reload).
 lp group admin permission set skyblock.pack.reload true
+# Mods and admins hear when the pack host goes down or comes back.
+lp group mod permission set skyblock.pack.alerts true
+lp group admin permission set skyblock.pack.alerts true
+# Admins run the menu frame test (/pack glyphtest, GUI-FONT spike).
+lp group admin permission set skyblock.pack.glyphtest true

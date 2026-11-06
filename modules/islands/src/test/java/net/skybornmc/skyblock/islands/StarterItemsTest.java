@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StarterItemsTest {
 
@@ -28,10 +30,15 @@ class StarterItemsTest {
 
     @Test
     void defaultConfigMatchesThePlanDefault() {
-        // plan open question 2: lava bucket, ice, 2 bone meal, 16 bread, 2 saplings, sugar cane, cactus, melon + pumpkin seeds
+        // owner 3 Nov 2026 start flow: 8 wheat seeds, 2 saplings, 16 bread, water, lava, 2 ice (no bone meal)
         StarterItems.Result r = StarterItems.parse(new IslandsConfig().starterItems, key -> true);
-        assertEquals(9, r.entries().size());
-        assertEquals(new StarterItems.Entry("bread", 16), r.entries().get(3));
+        assertEquals(6, r.entries().size());
+        assertEquals(new StarterItems.Entry("wheat_seeds", 8), r.entries().get(0));
+        assertEquals(new StarterItems.Entry("bread", 16), r.entries().get(2));
+        assertEquals(new StarterItems.Entry("ice", 2), r.entries().get(5));
         assertEquals(List.of(), r.problems());
+        var change = new IslandsConfig().valueChanges().get(3).get("starter-chest.items");
+        assertTrue(change.matches(new java.util.ArrayList<>(IslandsConfig.STARTER_ITEMS_V2)), "an untouched live list is upgraded");
+        assertFalse(change.matches(List.of("bread:1")), "an owner-chosen list stays");
     }
 }

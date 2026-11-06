@@ -112,6 +112,7 @@ protection:
     bank-history: "see the island bank history"
     upgrades: "buy island upgrades with the island bank"
     homes: "set and delete the island homes"
+    shard-blocks: "use shard blocks"
 
 bypass:
   "on": "<prefix><c:warning><sym:cross></c:warning> <c:text>Island bypass <c:value>on</c:value>: you can build and open everything on every island. <c:muted>(logged, /is bypass to stop)"
@@ -325,20 +326,22 @@ menu:
       - "<c:text>the island bank."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # I9 section 5: the red danger tile (TNT, top right corner, slot 8). Two grey lines say what is lost; the click asks
+  # first (disband: two steps).
   disband:
-    name: "<c:error><bold>Disband island"
+    name: "<area:danger><bold>Disband island"
     lore:
-      - "<c:text>Delete your island for good."
-      - "<c:muted>Only when nobody else is on it."
+      - "<c:text>Your island, its blocks and items"
+      - "<c:text>and the island bank are deleted."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to disband"
+      - "<bold><c:error>» CLICK</c:error></bold> <c:text>to disband"
   leave:
-    name: "<c:error><bold>Leave island"
+    name: "<area:danger><bold>Leave island"
     lore:
-      - "<c:text>Leave this island."
-      - "<c:muted>You confirm first."
+      - "<c:text>You lose access to this island"
+      - "<c:text>and its warps, bank and chat."
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to leave"
+      - "<bold><c:error>» CLICK</c:error></bold> <c:text>to leave"
 
 # ---------------------------------------------------------------- M2.5 island chat (/is chat)
 chat:
@@ -411,6 +414,8 @@ invite:
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Invite sent to <c:value><player></c:value>. <c:muted>(expires in <time>)"
   now-team: "<prefix><c:warning><sym:star></c:warning> <c:text>Your island is now a <c:value>Team Island</c:value>. <c:muted>It's on the team leaderboard from now on."
   received: "<prefix><c:value><player></c:value> <c:text>invited you to <c:value><island></c:value>. <c:muted>(<members>/<slots> members)</c:muted><newline><click:run_command:'/is accept <from>'><hover:show_text:'<c:text>Join <island>'><c:action>[Accept]</c:action></hover></click> <click:run_command:'/is deny <from>'><hover:show_text:'<c:text>Decline the invite'><c:action>[Deny]</c:action></hover></click> <c:muted>(expires in <time>)"
+  # Owner 4 Nov 2026: joining needs an empty profile (shown under the invite when this profile has an island).
+  received-not-empty: "<prefix><c:muted>Accepting replaces your island and wipes this profile. Or use an empty profile slot:</c:muted> <click:run_command:'/profiles'><hover:show_text:'<c:text>Open your profiles'><c:action>[Profiles]</c:action></hover></click>"
   # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <island>, <members>, <slots>, <left>.
   popup:
     title: "Island invite"
@@ -454,8 +459,34 @@ portal-choice:
 accept:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no island invites."
   none-from: "<prefix><c:error><sym:cross></c:error> <c:text>No invite from <c:value><player></c:value><c:text>'s island."
-  has-island: "<prefix><c:error><sym:cross></c:error> <c:text>You already have an island. Leave it first."
-  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is (or was) on this island. Profiles can't share one."
+  # Owner 4 Nov 2026 (island = profile): joining needs an empty profile.
+  has-island: "<prefix><c:error><sym:cross></c:error> <c:text>Joining needs an empty profile. Use an empty profile slot or leave your island first. <click:run_command:'/profiles'><hover:show_text:'<c:text>Open your profiles'><c:action>[Profiles]</c:action></hover></click> <click:run_command:'/is leave'><hover:show_text:'<c:text>Leave your island (wipes this profile)'><c:action>[Leave]</c:action></hover></click>"
+  # Owner 3 Nov 2026: accepting an invite while you lead an island alone. <island> yours, <target> the new one, <level>
+  replace:
+    crumb: "Join island"
+    shown:
+      name: "<c:error><bold>Your island will be deleted"
+      lore: ["<c:text>Join <c:value><target></c:value><c:text> instead of", "<c:value><island></c:value> <c:muted>(level <level>)</c:muted>"]
+    details:
+      - "<c:text>Your island <c:value><island></c:value><c:text> and"
+      - "<c:text>everything built on it is deleted."
+      - ""
+      - "<c:text>You keep your money, skills,"
+      - "<c:text>personal bank and items."
+    removed: "<prefix><c:text>Your island <c:value><island></c:value><c:text> was deleted. Joining now..."
+    # Owner 4 Nov 2026 (island = profile): replacing your island wipes this profile. <island> <target>
+    shown-wipe:
+      name: "<c:error><bold>Replace your island"
+      lore: ["<c:muted>Wipes this profile", "<c:text>Join <c:value><target></c:value><c:text> instead of <c:value><island></c:value>"]
+    details-wipe:
+      - "<c:text>Your island <c:value><island></c:value><c:text> is deleted"
+      - "<c:text>and this profile starts empty on"
+      - "<c:value><target></c:value><c:text>."
+      - ""
+    removed-wipe: "<prefix><c:text>Your island <c:value><island></c:value><c:text> was deleted. Wiping this profile and joining..."
+    wipe-later: "<prefix><c:error><sym:cross></c:error> <c:text>Your profile is still being wiped. Accept the invite again in a moment: <click:run_command:'/is invites'><hover:show_text:'<c:text>Your invites'><c:action>[Invites]</c:action></hover></click>"
+    cancelled: "<prefix><c:text>Nothing changed. You kept your island."
+  own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>One of your other profiles is on this island. Two of your profiles can't be on one island at the same time."
   expired: "<prefix><c:error><sym:cross></c:error> <c:text>That invite expired. Ask for a new one."
   full: "<prefix><c:error><sym:cross></c:error> <c:text>That island is full (<c:value><slots></c:value> members)."
   # Owner F10: the free slot of that island is locked after a recent leave or kick. <time> <hours>
@@ -469,6 +500,32 @@ accept:
     fade-in: 10
     stay: 50
     fade-out: 20
+
+# Owner 4 Nov 2026 (island = profile): what a wipe takes, on the leave/disband/replace screens.
+# <money> <shards> <items> <tools> <skills>
+wipe-loss:
+  top:
+    - "<c:bar>| </c:bar><c:error><bold>This profile loses"
+  money:
+    - "<c:bar>| </c:bar><c:text>Money: <c:error><money>"
+  shards:
+    - "<c:bar>| </c:bar><c:text>Shards: <c:error><shards>"
+  items:
+    - "<c:bar>| </c:bar><c:text>Items (inventory + ender chest): <c:error><items>"
+  tools:
+    - "<c:bar>| </c:bar><c:text>Tools: <c:error><tools>"
+  skills:
+    - "<c:bar>| </c:bar><c:text>Skill levels: <c:error><skills>"
+  more:
+    - "<c:bar>| </c:bar><c:text>Quests, collection, milestones,"
+    - "<c:bar>| </c:bar><c:text>storages and personal bank"
+  kept:
+    - ""
+    - "<c:bar>| </c:bar><c:success><bold>You keep"
+    - "<c:bar>| </c:bar><c:text>Credits, rank, achievements, cosmetics"
+    - ""
+    - "<c:muted>Staff can restore a mistake."
+  unknown: "unknown"
 
 deny:
   done: "<prefix><c:success><sym:check></c:success> <c:text>Declined the invite to <c:value><island></c:value>."
@@ -486,13 +543,23 @@ kick:
     - "<c:text><c:value><player></c:value> is removed from your island"
     - "<c:text>and sent to spawn if they're on it."
     - "<c:text>XP they earned stays with the island."
-    - "<c:muted>Staff keep a backup of what they had."
+    - "<c:error>Their profile is wiped (money, items, tools, skills);"
+    - "<c:text>credits, rank and cosmetics stay. Staff can restore it."
   done: "<prefix><c:success><sym:check></c:success> <c:text>Removed <c:value><player></c:value> from your island."
   you: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>removed you from <c:value><island></c:value>."
   you-reason: "<prefix><c:error><sym:cross></c:error> <c:text>You were removed from <c:value><island></c:value>. Reason: <c:value><reason>"
 
 leave:
-  leader: "<prefix><c:error><sym:cross></c:error> <c:text>The Leader can't leave. Hand the island over first: <click:suggest_command:'/is transfer '><hover:show_text:'<c:text>Pick a new Leader'><c:action>[Transfer]</c:action></hover></click>"
+  leader: "<prefix><c:error><sym:cross></c:error> <c:text>The Leader can't leave. Hand the island over first: <click:suggest_command:'/is transfer '><hover:show_text:'<c:text>Pick a new Leader'><c:action>[Transfer]</c:action></hover></click> <c:muted>or, alone on it,</c:muted> <click:run_command:'/is disband'><hover:show_text:'<c:text>Disband (wipes this profile)'><c:action>[Disband]</c:action></hover></click>"
+  # Owner 4 Nov 2026 (island = profile): leaving wipes the profile. <island>
+  shown-wipe:
+    name: "<c:error><bold>Leave <island>"
+    lore:
+      - "<c:muted>Wipes this profile"
+  details-wipe:
+    - "<c:text>You leave <c:value><island></c:value><c:text> and this"
+    - "<c:text>profile starts empty (new island or invite)."
+    - ""
   crumb: "Leave island"
   shown:
     name: "<c:error><bold>Leave <island>"
@@ -852,6 +919,7 @@ perms:
     bank-history: "Bank history"
     upgrades: "Upgrades"
     homes: "Homes"
+    shard-blocks: "Shard blocks"
 
 # ---------------------------------------------------------------- M2.7 lifecycle (/is disband) and staff tools (/isadmin)
 # Owner answer 591: told to every member whose profile was reset by a disband or an island reset.
@@ -979,7 +1047,7 @@ admin:
     done: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>is now a member of <c:value><island></c:value>. <c:muted>(<members>/<slots>)"
     has-island: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>already has an island. Remove them there first with <c:value>/isadmin kick</c:value>."
     full: "<prefix><c:error><sym:cross></c:error> <c:value><island></c:value> <c:text>is full (<c:value><slots></c:value> slots)."
-    own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Another profile of <c:value><player></c:value> is or was on this island. Profiles never share one."
+    own-profile: "<prefix><c:error><sym:cross></c:error> <c:text>Another profile of <c:value><player></c:value> is on this island. Two profiles of one player can't be on one island at the same time."
     you: "<prefix><c:success><sym:star></c:success> <c:text>Staff added you to <c:value><island></c:value>. <click:run_command:'/is home'><hover:show_text:'<c:text>Go to the island'><c:action>[Go there]</c:action></hover></click>"
   kick:
     not-member: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>isn't a member or coop player of any island."
@@ -1981,3 +2049,8 @@ stats:
 # QUICK1 island auto-pickup: shown (rate-limited) when the inventory is full and drops stay on the ground.
 auto-pickup:
   full: "<c:warning><sym:dot></c:warning> <c:text>Inventory full: drops stay on the ground. <c:muted>/sell</c:muted>"
+# Obsidian back to lava with an empty bucket (feedback 31 Oct 2026). Action bar.
+obsidian:
+  done: "<c:success><sym:check></c:success> <c:text>The obsidian melted back into a lava bucket."
+  cooldown: "<c:error><sym:cross></c:error> <c:text>Wait a moment before the next one."
+  limit: "<c:error><sym:cross></c:error> <c:text>That's enough lava for this hour. Try again later."

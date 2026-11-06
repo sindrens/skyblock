@@ -17,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
- * PROF on islands: membership per profile key, join limits per player (P11), two own profiles never on the same island,
- * also not one after the other (P3), rows from before profiles count as profile 1, own other profile can't visit (P4).
+ * PROF on islands: membership per profile key, join limits per player (P11), two own profiles never on the same island at
+ * once (P3; since 4 Nov 2026 one after the other is fine), rows from before profiles count as profile 1, own other
+ * profile can't visit (P4).
  */
 class IslandProfilesTest {
 
@@ -96,20 +97,30 @@ class IslandProfilesTest {
     }
 
     @Test
-    void twoOwnProfilesNeverOnTheSameIslandEvenOneAfterTheOther() {
+    void twoOwnProfilesNeverOnTheSameIslandAtOnce() {
         UUID leader = UUID.randomUUID();
         UUID a = island(leader);
         assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve2, steve));
         assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(a, steve2, steve));
-        leave(a, steve2, steve);
-        // profile 1 (key = player UUID) can't join the island profile 2 was on
+        // profile 1 (key = player UUID) can't join while profile 2 is on the island
         assertInstanceOf(MemberStore.InviteResult.OwnProfile.class, invite(a, leader, steve, steve));
         db.blocking(c -> Sql.update(c, "INSERT INTO island_invites (island_id, target_uuid, inviter_uuid, created_at, expires_at) "
                 + "VALUES (?, ?, ?, ?, ?)", a, steve, leader, now, now + MIN5));
         assertInstanceOf(MemberStore.AcceptResult.OwnProfile.class, accept(a, steve, steve));
         assertInstanceOf(MemberStore.AddResult.OwnProfile.class,
                 db.blockingTransaction(c -> MemberStore.addMember(c, a, steve, steve, UUID.randomUUID(), now, LIMITS)));
-        // the same profile may come back
+    }
+
+    /** Feedback 4 Nov 2026 (A7): a profile that left no longer blocks the player's other profiles ("is", not "was"). */
+    @Test
+    void aProfileThatLeftNoLongerBlocksTheOtherProfiles() {
+        UUID leader = UUID.randomUUID();
+        UUID a = island(leader);
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve2, steve));
+        assertInstanceOf(MemberStore.AcceptResult.Joined.class, accept(a, steve2, steve));
+        leave(a, steve2, steve);
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve, steve), "profile 1 may join now");
+        // the same profile may come back too
         assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve2, steve));
     }
 
@@ -117,11 +128,14 @@ class IslandProfilesTest {
     void rowsFromBeforeProfilesBelongToProfileOne() {
         UUID leader = UUID.randomUUID();
         UUID a = island(leader);
-        // a join + leave written before profiles: no profile id
-        db.blocking(c -> Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, left_at, left_reason, counted) "
-                + "VALUES (?, ?, 1, ?, ?, 'leave', TRUE)", steve, a, now - 10, now - 5));
-        assertInstanceOf(MemberStore.InviteResult.OwnProfile.class, invite(a, leader, steve2, steve), "profile 2 can't follow profile 1");
-        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve, steve), "profile 1 itself may rejoin");
+        // an open join written before profiles: no profile id, profile 1 is still on the island
+        db.blocking(c -> Sql.update(c, "INSERT INTO player_island_joins (uuid, island_id, season_id, joined_at, counted) "
+                + "VALUES (?, ?, 1, ?, TRUE)", steve, a, now - 10));
+        assertInstanceOf(MemberStore.InviteResult.OwnProfile.class, invite(a, leader, steve2, steve), "profile 2 can't join profile 1");
+        // ...and once that join is closed (left), profile 2 may join
+        db.blocking(c -> Sql.update(c, "UPDATE player_island_joins SET left_at = ?, left_reason = 'leave' WHERE uuid = ? AND island_id = ?",
+                now - 5, steve, a));
+        assertInstanceOf(MemberStore.InviteResult.Created.class, invite(a, leader, steve2, steve), "profile 1 left: profile 2 may join");
     }
 
     @Test

@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_travel",
+     "type": "minecraft:model"
+    },
+    "when": "feature/travel"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_search",
+     "type": "minecraft:model"
+    },
+    "when": "nav/search"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/ender_eye",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

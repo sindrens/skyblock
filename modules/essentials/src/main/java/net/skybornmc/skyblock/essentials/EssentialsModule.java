@@ -59,8 +59,11 @@ public final class EssentialsModule implements SkyblockModule {
         dropGuard = new DropGuard(core, config, msg, settings);
         autoRefill = new AutoRefill(core, config, settings);
         commandHints = new CommandHints(core, config, msg);
+        noHunger = new NoHunger(config);
+        grind = new GrindAreas(core, config, msg, core.services().get(TeleportService.class));
+        start = new StartGuide(core, config, msg);
 
-        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection)) {
+        for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind, start)) {
             group.register();
         }
         for (Listener listener : listeners()) {
@@ -68,14 +71,20 @@ public final class EssentialsModule implements SkyblockModule {
         }
         teleportCommands.start();
         powers.start();
+        grind.start();
         // DEPTHSPROT: /build mode also lifts the worlds module's protection flags in the protected worlds (spawn).
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class)
                 .ifPresent(flags -> flags.addBypass(id(), protection::buildModeIn));
         core.scheduler().later("essentials:settings", 1L, settings::register);
     }
 
+    private NoHunger noHunger;
+    private GrindAreas grind;
+    private StartGuide start;
+
     private List<Listener> listeners() {
-        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints);
+        return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints,
+                noHunger, grind, start);
     }
 
     @Override
@@ -96,6 +105,8 @@ public final class EssentialsModule implements SkyblockModule {
         settings.unregister();
         views.shutdown();
         vanish.shutdown();
+        start.shutdown();
+        grind.flush(); // FX-08: bonus money still waiting is paid before the stop
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);
         }

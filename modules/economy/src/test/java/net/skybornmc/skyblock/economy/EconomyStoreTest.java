@@ -337,7 +337,7 @@ class EconomyStoreTest {
         assertEquals("Bob", top.get(0).name());
         assertEquals(900L, top.get(0).balance());
         assertEquals(1, store.top(Currency.MONEY, 1).join().size());
-        assertTrue(store.top(Currency.GEMS, 10).join().isEmpty());
+        assertTrue(store.top(Currency.CREDITS_EARNED, 10).join().isEmpty());
     }
 
     @Test

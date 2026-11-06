@@ -1,0 +1,167 @@
+# Milestones (Complete Developer Spec §7, /milestones and /ms). Grind an activity, reach tiers, claim perks that speed up that
+# same activity. Island chains (menu: island) count player actions on island worlds and are shared by the island's members;
+# personal chains (menu: personal) count /farm and /mine (world: grind) per profile: owner 5 Nov 2026, sorted Farm, Mine, Island. Machines, placed blocks, AFK and visitors never count.
+#
+# A template with for-each makes one chain per target; ${target} is replaced in the filter and the perks. Tier targets come
+# from a curve preset: base x growth^(tier-1) x difficulty, rounded to two significant figures. All numbers are
+# placeholders for the balance run (owner C5). Perk values are percents in a bonus family; a perk with a target only helps
+# that block or mob (perks match on target only, never on world: owner V6). For one family and target all chains together
+# may reach at most budget-percent-of-cap of the family cap (owner B2: 15%); the load check reports anything above.
+# Reload: /skyblock reload milestones
+config-version: 2
+
+settings:
+  allowed-families: [sell, crystals, extra_drops, tool_xp, skill_xp, crop_growth, production, rare_finds]
+  budget-percent-of-cap: 15
+
+curves:
+  standard: {base: 250, growth: 3.9, tiers: 5}
+  # Crops: one count per ripe crop, and a big hoe harvests up to 81 per click (owner V9 improvement 3).
+  crop: {base: 1000, growth: 4.5, tiers: 5}
+  mob: {base: 100, growth: 3.6, tiers: 5}
+  ore: {base: 200, growth: 3.8, tiers: 5}
+
+templates:
+  crop_reaper:
+    menu: island
+    category: farming
+    action: harvest_crop
+    objective: {filter: {material: "${target}", world: island}}
+    curve: crop
+    for-each:
+      WHEAT: {name: "Wheat Reaper", icon: WHEAT}
+      CARROTS: {name: "Carrot Digger", icon: CARROT}
+      POTATOES: {name: "Potato Picker", icon: POTATO}
+      BEETROOTS: {name: "Beet Gatherer", icon: BEETROOT}
+      NETHER_WART: {name: "Wart Harvester", icon: NETHER_WART}
+      COCOA: {name: "Cocoa Collector", icon: COCOA_BEANS}
+      MELON: {name: "Melon Slicer", icon: MELON_SLICE}
+      PUMPKIN: {name: "Pumpkin Hauler", icon: PUMPKIN}
+      SWEET_BERRY_BUSH: {name: "Berry Picker", icon: SWEET_BERRIES}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}, {family: crop_growth, value: 2, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}, {family: crop_growth, value: 2, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: crop_growth, value: 3, target: "${target}"}, {family: sell, value: 3, target: "${target}"}]
+  plant_cutter:
+    menu: island
+    category: farming
+    action: break_block
+    objective: {filter: {material: "${target}", world: island}}
+    curve: standard
+    for-each:
+      SUGAR_CANE: {name: "Cane Cutter", icon: SUGAR_CANE, difficulty: 2}
+      CACTUS: {name: "Cactus Clipper", icon: CACTUS, difficulty: 1.5}
+      BAMBOO: {name: "Bamboo Chopper", icon: BAMBOO, difficulty: 2}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: sell, value: 3, target: "${target}"}]
+  island_miner:
+    menu: island
+    category: mining
+    action: break_block
+    objective: {filter: {material: "${target}", world: island}}
+    curve: ore
+    for-each:
+      COBBLESTONE: {name: "Cobblestone Breaker", icon: COBBLESTONE, difficulty: 4}
+      STONE: {name: "Stone Breaker", icon: STONE, difficulty: 4}
+      COAL_ORE: {name: "Coal Miner", icon: COAL_ORE, difficulty: 2}
+      IRON_ORE: {name: "Iron Miner", icon: IRON_ORE, difficulty: 1.5}
+      GOLD_ORE: {name: "Gold Miner", icon: GOLD_ORE}
+      REDSTONE_ORE: {name: "Redstone Miner", icon: REDSTONE_ORE}
+      LAPIS_ORE: {name: "Lapis Miner", icon: LAPIS_ORE}
+      DIAMOND_ORE: {name: "Diamond Miner", icon: DIAMOND_ORE}
+      EMERALD_ORE: {name: "Emerald Miner", icon: EMERALD_ORE}
+      OBSIDIAN: {name: "Obsidian Breaker", icon: OBSIDIAN}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: sell, value: 3, target: "${target}"}]
+  island_forager:
+    menu: island
+    category: foraging
+    action: break_block
+    objective: {filter: {material: "${target}", world: island}}
+    curve: standard
+    for-each:
+      OAK_LOG: {name: "Oak Chopper", icon: OAK_LOG}
+      BIRCH_LOG: {name: "Birch Chopper", icon: BIRCH_LOG}
+      SPRUCE_LOG: {name: "Spruce Chopper", icon: SPRUCE_LOG}
+      JUNGLE_LOG: {name: "Jungle Chopper", icon: JUNGLE_LOG}
+      ACACIA_LOG: {name: "Acacia Chopper", icon: ACACIA_LOG}
+      DARK_OAK_LOG: {name: "Dark Oak Chopper", icon: DARK_OAK_LOG}
+      MANGROVE_LOG: {name: "Mangrove Chopper", icon: MANGROVE_LOG}
+      CHERRY_LOG: {name: "Cherry Chopper", icon: CHERRY_LOG}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}]
+  island_slayer:
+    menu: island
+    category: combat
+    action: kill_mob
+    objective: {filter: {entity: "${target}", world: island}}
+    curve: mob
+    for-each:
+      ZOMBIE: {name: "Zombie Slayer", icon: ZOMBIE_SPAWN_EGG}
+      SKELETON: {name: "Skeleton Slayer", icon: SKELETON_SPAWN_EGG}
+      SPIDER: {name: "Spider Slayer", icon: SPIDER_SPAWN_EGG}
+      CREEPER: {name: "Creeper Slayer", icon: CREEPER_SPAWN_EGG}
+      COW: {name: "Cow Slayer", icon: COW_SPAWN_EGG}
+      PIG: {name: "Pig Slayer", icon: PIG_SPAWN_EGG}
+      CHICKEN: {name: "Chicken Slayer", icon: CHICKEN_SPAWN_EGG}
+      SHEEP: {name: "Sheep Slayer", icon: SHEEP_SPAWN_EGG}
+      BLAZE: {name: "Blaze Slayer", icon: BLAZE_SPAWN_EGG}
+      IRON_GOLEM: {name: "Iron Golem Slayer", icon: IRON_GOLEM_SPAWN_EGG}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: production, value: 0.5, target: spawner}]
+  # Owner 5 Nov 2026: milestones you earn grinding at /farm and /mine (per profile; your own crop or ore tier counts).
+  farm_harvester:
+    menu: personal
+    category: farm
+    action: harvest_crop
+    objective: {filter: {material: "${target}", world: grind}}
+    curve: crop
+    for-each:
+      WHEAT: {name: "Farm Wheat", icon: WHEAT}
+      CARROTS: {name: "Farm Carrots", icon: CARROT}
+      POTATOES: {name: "Farm Potatoes", icon: POTATO}
+      BEETROOTS: {name: "Farm Beetroot", icon: BEETROOT}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}, {family: tool_xp, value: 2, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: sell, value: 3, target: "${target}"}]
+  mine_digger:
+    menu: personal
+    category: mine
+    action: break_block
+    objective: {filter: {material: "${target}", world: grind}}
+    curve: ore
+    for-each:
+      COAL_ORE: {name: "Mine Coal", icon: COAL_ORE}
+      IRON_ORE: {name: "Mine Iron", icon: IRON_ORE}
+      GOLD_ORE: {name: "Mine Gold", icon: GOLD_ORE}
+      REDSTONE_ORE: {name: "Mine Redstone", icon: REDSTONE_ORE}
+      LAPIS_ORE: {name: "Mine Lapis", icon: LAPIS_ORE}
+      DIAMOND_ORE: {name: "Mine Diamond", icon: DIAMOND_ORE}
+      EMERALD_ORE: {name: "Mine Emerald", icon: EMERALD_ORE}
+    perks:
+      1: [{family: extra_drops, value: 2, target: "${target}"}]
+      2: [{family: extra_drops, value: 4, target: "${target}"}]
+      3: [{family: extra_drops, value: 6, target: "${target}"}, {family: tool_xp, value: 2, target: "${target}"}]
+      4: [{family: extra_drops, value: 8, target: "${target}"}]
+      5: [{family: extra_drops, value: 10, target: "${target}"}, {family: sell, value: 3, target: "${target}"}]

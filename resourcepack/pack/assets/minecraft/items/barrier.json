@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_close",
+     "type": "minecraft:model"
+    },
+    "when": "nav/close"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/barrier",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

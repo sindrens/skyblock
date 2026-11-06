@@ -15,6 +15,12 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ levels (ECONOMY_BALANCE §3.5)
 
+    @Setting(path = "forge.money-percent", desc = "Owner 3 Nov 2026 balance: Forge prices in percent of the tier table (15 = a sixth or so; progression is faster now).", min = 1, max = 1000)
+    public double forgeMoneyPercent = 15;
+
+    @Setting(path = "forge.materials-percent", desc = "Forge material amounts in percent of the tier table (25 = a quarter: 64 coal for copper).", min = 1, max = 1000)
+    public double forgeMaterialsPercent = 25;
+
     @Setting(path = "curve.base", desc = "XP from tool level 1 to 2. Each next level costs curve.growth times more.", min = 1, max = 1_000_000, level = Setting.Level.OWNER)
     public double curveBase = 400;
 
@@ -110,8 +116,30 @@ public final class ToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ starter kit, forge, menu
 
+    @Setting(path = "world-tools.enabled", desc = "Owner 3 Nov 2026: the Depths has its own inventory (island and spawn share the other one). Crossing swaps the whole inventory (armor and offhand too; the ender chest is shared), so Depths tools never reach the island.")
+    public boolean worldToolsEnabled = false; // owner 3 Nov 2026 20:31: one inventory everywhere (stored Depths sets come back on join)
+
+    @Setting(path = "world-tools.depths-worlds", desc = "Worlds where Depths tools are carried (everywhere else they are put away).")
+    public List<String> worldToolsDepthsWorlds = List.of("depths");
+
+    @Setting(path = "world-inventory.depths-items", desc = "Items of a profile's first Depths inventory, 'MATERIAL amount action'. Action satchel = opens /satchel, dungeon = opens /dungeon, - = a plain item. Names: tools messages world-inventory.item.<action>.")
+    public List<String> worldInventoryDepthsItems = List.of("LEATHER 1 satchel");
+
+    /** The first Depths kit of the 3 Nov 2026 release (replaced in version 2: "no torches and useless things, simple 3/4 items"). */
+    static final List<String> DEPTHS_ITEMS_V1 = List.of("LEATHER 1 satchel", "RECOVERY_COMPASS 1 dungeon", "TORCH 16 -");
+
+    @Setting(path = "world-inventory.depths-tools", desc = "Tier 1 tool types a profile's first Depths inventory gets (owner 3 Nov 2026: "
+            + "pickaxe, axe and sword, plus the satchel = 4 items).")
+    public List<String> worldInventoryDepthsTools = List.of("pickaxe", "axe", "sword");
+
+    @Setting(path = "world-tools.auto-starter", desc = "The first Depths inventory of a profile also gets the starter tools (once per profile, see starter-kit.once).")
+    public boolean worldToolsAutoStarter = true;
+
     @Setting(path = "starter-kit.cooldown-hours", desc = "Hours between two starter kit claims (owner: 24). Only missing pieces are given.", min = 0, max = 720)
     public int starterCooldownHours = 24;
+
+    @Setting(path = "starter-kit.once", desc = "Owner 3 Nov 2026 (\"remove the free starter kit\"): the starter tools are given once per profile (on the first visit to the Depths), never again for free.")
+    public boolean starterOnce = true;
 
     @Setting(path = "starter-kit.kinds", desc = "Tool types in the starter kit (tier 1 of each).")
     public List<String> starterKinds = List.of("pickaxe", "axe", "hoe", "sword", "rod");
@@ -193,17 +221,38 @@ public final class ToolsConfig extends ModuleConfig {
     }
 
     List<ToolKind> starterKinds() {
+        return kinds(starterKinds);
+    }
+
+    List<ToolKind> depthsKinds() {
+        return kinds(worldInventoryDepthsTools);
+    }
+
+    private static List<ToolKind> kinds(List<String> ids) {
         List<ToolKind> out = new ArrayList<>();
-        for (String s : starterKinds) {
+        for (String s : ids) {
             ToolKind.byId(s).filter(k -> !out.contains(k)).ifPresent(out::add);
         }
         return out;
     }
 
+    /** Version 2 (owner 3 Nov 2026): the first Depths kit is just the satchel and three tools (untouched lists only). */
+    @Override
+    public int version() {
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("world-inventory.depths-items", ValueChange.of(DEPTHS_ITEMS_V1, List.of("LEATHER 1 satchel"))),
+                3, java.util.Map.of("world-tools.enabled", ValueChange.of(true, false)));
+    }
+
     /** Dead-key rule (REVIEW3 §6): NPC places come from the applied builds now (npcs module); the old keys are deleted on load. */
     @Override
     public java.util.Map<String, String> removedKeys() {
-        return java.util.Map.of("npc", "NPCs stand at the applied builds' points (npcs module), never read here");
+        return java.util.Map.of("npc", "NPCs stand at the applied builds' points (npcs module), never read here",
+                "forge.tutorial-free", "the join tutorial was replaced by the start guide (owner 3 Nov 2026)");
     }
 
     @Override

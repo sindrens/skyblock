@@ -48,11 +48,12 @@ final class TradeRules {
     }
 
     /**
-     * Whether a currency can be offered in a trade. Crystals never (owner decision CR3, also if a config says otherwise);
+     * Whether a currency can be offered in a trade. Crystals and earned credits never (CR3, C1-R2-02, also if a config says
+     * otherwise);
      * every other currency needs {@code economy.yml → tradeable.<currency>} and must be listed in {@code money.currencies}.
      */
     static boolean currencyAllowed(Currency currency, boolean economyTradeable, Collection<String> configured) {
-        if (currency == null || currency == Currency.CRYSTALS || !economyTradeable) {
+        if (currency == null || !currency.transferable() || !economyTradeable) { // crystals, earned credits: never
             return false;
         }
         for (String raw : configured) {

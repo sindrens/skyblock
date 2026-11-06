@@ -20,7 +20,6 @@ import net.skybornmc.skyblock.common.island.IslandRemovedEvent;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.progression.TaskCompletedEvent;
-import net.skybornmc.skyblock.common.satchel.SatchelService;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
@@ -62,7 +61,7 @@ import java.util.logging.Level;
  *   <li><b>Effects:</b> BonusService source {@code masteries} for members (Warrior MOB_DAMAGE, which the enchants module
  *       applies to mobs only, never in PvP; Crystal Rush CRYSTALS; Lucky Strike RARE_FINDS; Market Contacts SELL; the family
  *       caps hold), Treasury → {@code IslandService#bankFeeMasteryProvider}, Wings → {@code #wingsProvider}, Homestead →
- *       {@code #extraIslandHomesProvider} (shared island homes, P5-21), Deep Pockets → {@code SatchelService#capacityBonus}.
+ *       {@code #extraIslandHomesProvider} (shared island homes, P5-21), Deep Pockets → nothing (the Depths satchel was removed, owner 3 Nov 2026; the mastery is a no-op).
  *       Island level points go into the upgrades' source ({@code LevelSource.UPGRADES}: upgrades + masteries).</li>
  * </ul>
  * Main thread unless noted; placeholders and hooks may read from other threads (concurrent map of immutable maps).
@@ -85,8 +84,6 @@ final class MasteryManager implements Listener {
     private final MasteryStore store = new MasteryStore();
     private final Map<UUID, Map<String, Integer>> bought = new ConcurrentHashMap<>();
     private final Set<String> inFlight = new HashSet<>();
-    /** Deep Pockets reads the satchel's capacity without itself (the satchel asks every bonus source). */
-    private final ThreadLocal<Boolean> satchelReentry = ThreadLocal.withInitial(() -> false);
     private volatile MasteryCatalog catalog = MasteryCatalog.empty();
     private boolean ready;
     private boolean closed;
@@ -177,7 +174,6 @@ final class MasteryManager implements Listener {
             s.bankFeeMasteryProvider(this::treasuryLevel);
             s.extraIslandHomesProvider(this::extraHomes);
         });
-        core.services().optional(SatchelService.class).ifPresent(s -> s.capacityBonus(SATCHEL_SOURCE, this::satchelBonus));
         upgrades.extraPoints(this::points);
         hooked = true;
     }
@@ -191,7 +187,6 @@ final class MasteryManager implements Listener {
                 s.bankFeeMasteryProvider(null);
                 s.extraIslandHomesProvider(null);
             });
-            core.services().optional(SatchelService.class).ifPresent(s -> s.removeCapacityBonus(SATCHEL_SOURCE));
             upgrades.extraPoints(null);
             hooked = false;
         }
@@ -600,28 +595,6 @@ final class MasteryManager implements Listener {
 
     int extraHomes(UUID islandId) {
         return ready ? MasteryRules.extraHomes(catalog, of(islandId)) : 0;
-    }
-
-    /** Deep Pockets: percent of the satchel's capacity without this bonus (the satchel asks every source; no recursion). */
-    int satchelBonus(Player player) {
-        if (!ready || player == null || satchelReentry.get()) {
-            return 0;
-        }
-        UUID island = islands().flatMap(s -> s.islandOf(player.getUniqueId())).map(IslandService.IslandInfo::id).orElse(null);
-        double percent = island == null ? 0 : MasteryRules.value(catalog, of(island), MasteryEffect.DEEP_POCKETS);
-        if (percent <= 0) {
-            return 0;
-        }
-        SatchelService satchel = core.services().optional(SatchelService.class).orElse(null);
-        if (satchel == null) {
-            return 0;
-        }
-        satchelReentry.set(true);
-        try {
-            return MasteryRules.satchelBonus(satchel.capacity(player), percent);
-        } finally {
-            satchelReentry.set(false);
-        }
     }
 
     // ------------------------------------------------------------------ events

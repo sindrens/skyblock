@@ -5,7 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
@@ -93,7 +93,7 @@ final class TabService implements Listener {
     private final ArrayDeque<UUID> checkOrder = new ArrayDeque<>();
     /**
      * Rank badges per viewer: every player has their own sidebar scoreboard (HUD), so the team prefix, which carries the
-     * nametag badge, is drawn per board for the board owner's pack/settings. A board that is shared (or the main one)
+     * nametag badge, is drawn per board for the board owner's client (Java or Bedrock). A board that is shared (or the main one)
      * gets the plain text form. The tab list name itself is one value for everybody (the client ignores team prefixes
      * when a list name is set), so it always shows the plain {@code [Name]} text.
      */
@@ -270,13 +270,10 @@ final class TabService implements Listener {
     }
 
     /**
-     * The badge variant of a player's own board (pack loaded, Bedrock, reduced motion / simple / bigger text). When it
+     * The badge variant of a player's own board (Java or Bedrock). When it
      * changed, every team on that board is applied again (queued, budgeted). A few cheap reads per check.
      */
     private void checkVariant(Player p, Scoreboard board) {
-        if (!display.badgesOn()) {
-            return;
-        }
         BadgeOptions options;
         if (board == Bukkit.getScoreboardManager().getMainScoreboard()) {
             options = BadgeOptions.PLAIN;
@@ -395,12 +392,9 @@ final class TabService implements Listener {
         if (old != null && old.key().equals(key)) {
             return;
         }
-        ChatConfig c = config.get();
-        Audience none = Audience.empty();
-        // With badges the prefix is drawn per board in apply(); this is the text prefix for servers without the pack.
-        Entry entry = new Entry(key, teamName(rank.weight(), p.getName()),
-                c.nametagPrefix && !display.badgesOn() ? display.rankPrefix(none, rank.prefix()) : Component.empty(),
-                display.afkSuffix(p), Display.teamColor(rank), rank);
+        // The rank badge is drawn per board in apply().
+        Entry entry = new Entry(key, teamName(rank.weight(), p.getName()), Component.empty(),
+                display.nametagSuffix(p), Display.teamColor(rank), rank);
         entries.put(id, entry);
         p.playerListName(display.tabEntry(p, rank));
         String staleTeam = old != null && !old.team().equals(entry.team()) ? old.team() : null;
@@ -438,7 +432,7 @@ final class TabService implements Listener {
             team = board.registerNewTeam(entry.team());
         }
         Component prefix = entry.prefix();
-        if (display.badgesOn() && config.get().nametagPrefix && entry.rank() != null) {
+        if (config.get().nametagPrefix && entry.rank() != null) {
             prefix = display.rankFor(Audience.empty(), entry.rank(), variants.getOrDefault(board, BadgeOptions.PLAIN));
         }
         if (!Objects.equals(team.prefix(), prefix)) {
@@ -497,7 +491,15 @@ final class TabService implements Listener {
         }
         long generation = core.messages().generation();
         String headerKey = headerKey(bedrock, visible, Bukkit.getMaxPlayers(), season);
-        String footerKey = footerKey(bedrock, staffKey);
+        // Owner 2 Nov 2026 ("tab looks boring, no user info"): every viewer sees their own rank, money, crystals, island
+        // level and ping under the footer. Only resent when one of them changes (ping in steps of 10 ms).
+        String money = core.placeholders().text(viewer, "balance_formatted").orElse("-");
+        String crystals = core.placeholders().text(viewer, "crystals_formatted").orElse("-");
+        String level = core.placeholders().text(viewer, "island_level").filter(l -> !l.isBlank()).orElse("-");
+        String rankWord = core.ranks().groupDisplayName(viewer);
+        int myPing = Math.max(0, viewer.getPing() / 10 * 10);
+        String youKey = "y|" + rankWord + '|' + money + '|' + crystals + '|' + level + '|' + myPing;
+        String footerKey = footerKey(bedrock, staffKey) + youKey;
         String sent = sentKey(generation, headerKey, footerKey);
         if (sent.equals(sentHeaderFooter.get(viewer.getUniqueId()))) {
             return; // the viewer already shows exactly this: nothing to build, nothing to send
@@ -508,15 +510,21 @@ final class TabService implements Listener {
         Component header = headerCache.get(generation, headerKey, k -> msg.component(viewer, "tab.header",
                 Msg.number("online", visibleCount), Msg.number("max", max), Msg.p("season", seasonText)));
         Component base = headerCache.get(generation, footerKey(bedrock, ""), k -> msg.component(viewer, "tab.footer"));
+        Component rank = core.services().optional(net.skybornmc.skyblock.common.rank.BadgeService.class)
+                .map(b -> b.badge(viewer, viewer)).orElse(Component.text(rankWord));
+        Component you = msg.component(viewer, "tab.footer-you", Msg.c("rank", rank), Msg.p("money", money),
+                Msg.p("crystals", crystals), Msg.p("level", level), Msg.number("ping", myPing), Msg.p("name", viewer.getName()));
+        base = base.append(Component.newline()).append(you);
         Component footer = base;
         if (!staffKey.isEmpty()) {
             String tier = tpsTier;
             String value = tpsValue;
             int pingValue = ping;
+            Component withYou = base;
             footer = headerCache.get(generation, footerKey, k -> {
                 Component tpsText = msg.component(viewer, "tab.tps." + tier, Msg.p("value", value));
                 TagResolver[] staff = {Msg.number("ping", pingValue), Msg.c("tps", tpsText)};
-                return base.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
+                return withYou.append(Component.newline()).append(msg.component(viewer, "tab.footer-staff", staff));
             });
         }
         viewer.sendPlayerListHeaderAndFooter(header, footer);

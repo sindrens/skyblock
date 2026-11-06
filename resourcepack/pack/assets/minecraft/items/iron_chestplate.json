@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_wardrobe",
+     "type": "minecraft:model"
+    },
+    "when": "feature/wardrobe"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/iron_chestplate",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -50,6 +50,29 @@ skyblock.staff.economy.dashboard:
 skyblock.staff.economy.flagged:
   description: A staff account (owner answer 334). Staff play normally, but their big transfers (pay, trade) are shown to admins as a staff-transfer alert
   default: false
+skyblock.staff.economy.sell.view:
+  description: Look up live sell prices and list the recipes behind derived prices (/eco sell price, /eco sell dump-recipes; ECON-SELL-SHOP-AH A6)
+  default: op
+skyblock.staff.economy.sell.reset:
+  description: Put an item's (or every item's) live sell price back to base (/eco sell reset <item|all> <reason>; always logged as sell_reset)
+  default: op
+  children:
+    skyblock.staff.economy.sell.view: true
 skyblock.staff.economy.anomalies:
   description: Get economy anomaly alerts in chat (fast earning, big or repeated transfers, many notes cashed, sell spikes, balance jumps, inflation) with [Open] and [Punish]
   default: op
+skyblock.credit.bal:
+  description: See your credits with the bought/earned split, or another player's total (/credit, /credit bal [player]; card C1)
+  default: true
+skyblock.credit.grant:
+  description: /credit grant and /storegrant (Tebex, CREDIT-SHOP 5.2). Console only and never granted to anyone; admin and owner get an explicit false in server/permissions/economy.txt.
+  default: false
+skyblock.credit.chargeback:
+  description: /credit chargeback <player> <transaction> (Tebex chargeback or refund, CREDIT-SHOP 5.3). Takes back at most the player's bought credits of that transaction; the console can always run it.
+  default: false
+skyblock.economy.credits.grant:
+  description: Create or set BOUGHT credits by hand (/eco give|set|reset <player> credits, ledger reason admin_buy). Owner only (C1-R1-18); admins get an explicit false in server/permissions/economy.txt. Earned credits (credits_earned) stay with skyblock.admin.economy.
+  default: op
+skyblock.economy.eco.self:
+  description: Use /eco give|take|set|reset and /eco note on your OWN account (admin and owner, owner 31 Oct 2026; the config switch eco.allow-self turns it off). Bought credits still need skyblock.economy.credits.grant, changes above the limit still wait for ANOTHER owner or admin, and every own-account change is flagged (audit eco_flagged + eco_self, staff alert). Other accounts on your address stay refused.
+  default: false

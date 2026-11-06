@@ -20,6 +20,12 @@ import java.util.UUID;
  */
 final class BlueprintMenu extends PagedMenu<Map.Entry<UUID, String>> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final ToolsModule module;
 
     BlueprintMenu(ToolsModule module) {

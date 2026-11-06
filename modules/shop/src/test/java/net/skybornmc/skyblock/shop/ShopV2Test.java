@@ -155,12 +155,13 @@ class ShopV2Test {
     }
 
     @Test
-    void settingsHaveIncomeForEveryTier() {
+    void spawnerSettingsDefaults() {
         ShopSettings s = new ShopSettings();
-        assertEquals(1_900, s.incomePerHour(1));
-        assertEquals(3_500, s.incomePerHour(2));
-        assertEquals(0, s.incomePerHour(6));
-        assertEquals(2, s.spawnerMaxTier);
+        // ECON-SPAWNERS step 11: income comes from the drop's sell price; tiers 1 to 4 are sold, 0.85 dynamic factor.
+        assertEquals(4, s.spawnerMaxTier);
+        assertEquals(0.85, s.spawnerDynamicFactor, 1e-9);
+        assertEquals(4, s.valueChanges().get(2).get("spawners.max-tier").to());
+        assertTrue(s.removedKeys().containsKey("spawners.income-per-hour"));
         assertEquals(15, s.undoSeconds);
         assertEquals(50, s.bigBuyPercent);
         assertEquals(5, s.bigBuyArmSeconds);

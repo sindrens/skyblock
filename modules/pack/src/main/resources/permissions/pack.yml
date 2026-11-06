@@ -1,9 +1,15 @@
-# Permissions of the pack module. Registered when the module enables, removed when it disables.
+# Permissions of the pack module (I7 pack v2). Registered when the module enables, removed when it disables.
 # Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
 # LuckPerms grants for these nodes: server/permissions/pack.txt. Commands: docs/commands/pack.md.
-skyblock.pack.reload:
-  description: Reload pack.yml and resend the resource pack (/pack reload)
-  default: op
 skyblock.pack.status:
-  description: See a player's resource pack status (/pack status)
+  description: See the icon pack status of everyone or one player (/pack status)
+  default: op
+skyblock.pack.reload:
+  description: Reload pack.yml, re-host the icon pack and offer it again (/pack reload)
+  default: op
+skyblock.pack.alerts:
+  description: Get the chat alert when the icon pack host goes down or comes back
+  default: op
+skyblock.pack.glyphtest:
+  description: Open the menu frame test (/pack glyphtest; Java with the icon pack only)
   default: op

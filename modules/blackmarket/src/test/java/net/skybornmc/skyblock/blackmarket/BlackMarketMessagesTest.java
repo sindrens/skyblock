@@ -67,7 +67,7 @@ class BlackMarketMessagesTest {
         for (OfferCatalog.Period p : OfferCatalog.Period.values()) {
             keys.add("periods." + p.id());
         }
-        for (String currency : List.of("shards", "gems")) {
+        for (String currency : List.of("shards", "credits")) {
             keys.add("currency." + currency);
         }
         // Every problem a menu item can show has a short state line.

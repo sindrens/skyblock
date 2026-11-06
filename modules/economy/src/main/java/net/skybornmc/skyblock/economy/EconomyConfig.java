@@ -18,8 +18,10 @@ public final class EconomyConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public long startCrystals = 0;
 
-    @Setting(path = "start.gems", desc = "Gems a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
-    public long startGems = 0;
+    @Setting(path = "start.credits_earned", desc = "Earned credits a new player starts with (once per season, account-wide). "
+            + "Bought credits never have a start balance (only the store and the owner create them, C1-R2-02).", min = 0,
+            level = Setting.Level.OWNER)
+    public long startCreditsEarned = 0;
 
     @Setting(path = "start.shards", desc = "Shards a new player starts with (once per season).", min = 0, level = Setting.Level.OWNER)
     public long startShards = 0;
@@ -34,8 +36,10 @@ public final class EconomyConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public boolean tradeableCrystals = false;
 
-    @Setting(path = "tradeable.gems", desc = "Players can /pay and trade gems (owner decision: no).", level = Setting.Level.OWNER)
-    public boolean tradeableGems = false;
+    @Setting(path = "tradeable.credits", desc = "Bought credits can be offered in /trade (owner, C1 wave 1b; also listed in "
+            + "trade.yml money.currencies). They are never sent with /pay (that will be /credit pay) and never become notes. "
+            + "Earned credits are never tradeable, whatever this says (hard rule in code, C1-R2-02).", level = Setting.Level.OWNER)
+    public boolean tradeableCredits = true;
 
     @Setting(path = "tradeable.shards", desc = "Players can /pay and trade shards (owner decision: yes).", level = Setting.Level.OWNER)
     public boolean tradeableShards = true;
@@ -48,11 +52,20 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay.min.crystals", desc = "Smallest /pay amount in crystals.", min = 1, level = Setting.Level.OWNER)
     public long payMinCrystals = 1;
 
-    @Setting(path = "pay.min.gems", desc = "Smallest /pay amount in gems.", min = 1, level = Setting.Level.OWNER)
-    public long payMinGems = 1;
+    @Setting(path = "pay.min.credits", desc = "Smallest amount of bought credits that can be sent (for /credit pay, coming "
+            + "later; /pay never sends credits).", min = 1, level = Setting.Level.OWNER)
+    public long payMinCredits = 1;
 
     @Setting(path = "pay.min.shards", desc = "Smallest /pay amount in shards.", min = 1, level = Setting.Level.OWNER)
     public long payMinShards = 1;
+
+    @Setting(path = "pay.leave-flag.amount", desc = "Owner 4 Nov 2026 (island = profile): the audit log flags a profile wipe "
+            + "(leave, kick, disband) when that profile sent at least this much money with /pay shortly before. 0 = off.", min = 0)
+    public long leavePayFlagAmount = 100_000;
+
+    @Setting(path = "pay.leave-flag.minutes", desc = "How far back before a profile wipe /pay transfers are added up for the flag.",
+            min = 1, max = 1440)
+    public int leavePayFlagMinutes = 10;
 
     @Setting(path = "pay.confirm-above.money", desc = "/pay asks to confirm at or above this much money. 0 = never.", min = 0)
     public long payConfirmMoney = 1_000_000;
@@ -60,8 +73,9 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay.confirm-above.crystals", desc = "/pay asks to confirm at or above this many crystals. 0 = never.", min = 0)
     public long payConfirmCrystals = 10_000;
 
-    @Setting(path = "pay.confirm-above.gems", desc = "/pay asks to confirm at or above this many gems. 0 = never.", min = 0)
-    public long payConfirmGems = 100;
+    @Setting(path = "pay.confirm-above.credits", desc = "Sending credits asks to confirm at or above this many (for /credit pay, "
+            + "coming later; C1-R2-04 confirms every credit payment anyway). 0 = never.", min = 0)
+    public long payConfirmCredits = 100;
 
     @Setting(path = "pay.confirm-above.shards", desc = "/pay asks to confirm at or above this many shards. 0 = never.", min = 0)
     public long payConfirmShards = 1_000;
@@ -78,6 +92,57 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "baltop.size", desc = "Players listed in /baltop.", min = 3, max = 50)
     public int baltopSize = 10;
+
+    @Setting(path = "baltop.check-ticks", desc = "How often the background task checks whether a /baltop list is older than "
+            + "refresh-seconds (ticks; only a time compare, off the main thread; C1-R3-03).", min = 20, max = 6_000, restart = true)
+    public int baltopCheckTicks = 100;
+
+    @Setting(path = "baltop.currencies", desc = "Currencies with a public /baltop list (and leaderboard holograms). Credits count "
+            + "the total of bought and earned (C1-R1-08). Crystals are never public (C1-R1-28), whatever this says.",
+            level = Setting.Level.OWNER)
+    public List<String> baltopCurrencies = List.of("money", "shards", "credits");
+
+    // ------------------------------------------------------------------ number display (UI_STYLE §1.3, C1-R3-03)
+
+    @Setting(path = "display.exact-below", desc = "Amounts below this are shown with every digit (12,500); bigger ones compact "
+            + "(1.2M). Credits are always exact (C1-R2-22).", min = 1_000, max = 1_000_000_000_000L)
+    public long displayExactBelow = 100_000;
+
+    // ------------------------------------------------------------------ credits (card C1)
+
+    @Setting(path = "legacy-gems-alias-until", desc = "Until this date (yyyy-MM-dd, UTC) the old currency name 'gems' still "
+            + "works in commands and configs and means earned credits (C1-R1-03: 90 days after the rename). Store grants never "
+            + "accept it.", level = Setting.Level.OWNER)
+    public String legacyGemsAliasUntil = "2027-01-29";
+
+    // ------------------------------------------------------------------ Tebex credit store (CREDIT-SHOP 5.1)
+
+    @Setting(path = "credit-store.packages", desc = "Credit packages sold on Tebex, one per line: '<id>=<credits>|<usd>' "
+            + "(C1-R2-28). The Tebex command 'credit grant {id} <id> {transaction}' names the id; the amount always comes from "
+            + "here. Ids a-z, 0-9, _ (max 32). A bad line is skipped with a console warning.", level = Setting.Level.OWNER)
+    public List<String> creditStorePackages = List.of("c500=500|5", "c1000=1000|10", "c2700=2700|25", "c14000=14000|130");
+
+    @Setting(path = "credit-store.max-grant", desc = "A package above this many credits is refused (typo guard).",
+            min = 1, max = 10_000_000, level = Setting.Level.OWNER)
+    public long creditStoreMaxGrant = 20_000;
+
+    @Setting(path = "credit-store.alert-failures", desc = "A failed store grant (unknown package, database error) alerts "
+            + "online staff (skyblock.staff.economy.anomalies), the console and the Discord 'alerts' channel. A success is silent.")
+    public boolean creditStoreAlertFailures = true;
+
+    // ------------------------------------------------------------------ database retries (C1-R3-03)
+
+    @Setting(path = "database.retry.attempts", desc = "Tries of one balance change when the database reports a deadlock or "
+            + "lock timeout (MariaDB 1213/1205). Every try is a full rollback, so a retry never pays twice.", min = 1, max = 10)
+    public int dbRetryAttempts = 4;
+
+    @Setting(path = "database.retry.step-ms", desc = "Wait before retry n is n times this (milliseconds), plus a random part.",
+            min = 0, max = 1_000)
+    public int dbRetryStepMs = 5;
+
+    @Setting(path = "database.retry.jitter-ms", desc = "Largest random extra wait before a retry (milliseconds), so two "
+            + "transactions that collided do not collide again.", min = 0, max = 1_000)
+    public int dbRetryJitterMs = 10;
 
     // ------------------------------------------------------------------ /transactions
 
@@ -106,10 +171,6 @@ public final class EconomyConfig extends ModuleConfig {
             level = Setting.Level.OWNER)
     public long noteMinCrystals = 1;
 
-    @Setting(path = "notes.min.gems", desc = "Smallest gems note (only if gems are in notes.currencies).", min = 1,
-            level = Setting.Level.OWNER)
-    public long noteMinGems = 1;
-
     @Setting(path = "notes.min.shards", desc = "Smallest shards note (only if shards are in notes.currencies).", min = 1,
             level = Setting.Level.OWNER)
     public long noteMinShards = 1;
@@ -119,9 +180,6 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "notes.max.crystals", desc = "Largest crystals note.", min = 1, level = Setting.Level.OWNER)
     public long noteMaxCrystals = 1_000_000_000L;
-
-    @Setting(path = "notes.max.gems", desc = "Largest gems note.", min = 1, level = Setting.Level.OWNER)
-    public long noteMaxGems = 1_000_000L;
 
     @Setting(path = "notes.max.shards", desc = "Largest shards note.", min = 1, level = Setting.Level.OWNER)
     public long noteMaxShards = 1_000_000_000L;
@@ -134,6 +192,14 @@ public final class EconomyConfig extends ModuleConfig {
             + "days after they were cashed (the ledger and audit log keep the money history). 0 = keep forever.", min = 0,
             max = 3_650, level = Setting.Level.OWNER)
     public int notePurgeDays = 90;
+
+    @Setting(path = "notes.purge-start-seconds", desc = "Seconds after start before the first purge of cashed notes (C1-R3-03).",
+            min = 1, max = 86_400, restart = true)
+    public int notePurgeStartSeconds = 120;
+
+    @Setting(path = "notes.purge-every-hours", desc = "Hours between two purges of cashed notes (C1-R3-03).", min = 1, max = 720,
+            restart = true)
+    public int notePurgeEveryHours = 6;
 
     @Setting(path = "notes.purge-batch", desc = "Cashed notes deleted per database round (the purge runs off the main thread, "
             + "once at start and then every few hours).", min = 50, max = 10_000)
@@ -149,8 +215,14 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "eco.approve-above.crystals", desc = "Same for crystals. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
     public long ecoApproveCrystals = 1_000_000_000L;
 
-    @Setting(path = "eco.approve-above.gems", desc = "Same for gems. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
-    public long ecoApproveGems = 1_000_000L;
+    @Setting(path = "eco.approve-above.credits", desc = "Same for bought credits. Only the owner can change them anyway "
+            + "(skyblock.economy.credits.grant, C1-R1-18), and the one who allows needs that node too. 0 = never wait.", min = 0,
+            level = Setting.Level.OWNER)
+    public long ecoApproveCredits = 0L;
+
+    @Setting(path = "eco.approve-above.credits_earned", desc = "Same for earned credits. 0 = never wait.", min = 0,
+            level = Setting.Level.OWNER)
+    public long ecoApproveCreditsEarned = 1_000_000L;
 
     @Setting(path = "eco.approve-above.shards", desc = "Same for shards. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
     public long ecoApproveShards = 1_000_000_000L;
@@ -159,16 +231,35 @@ public final class EconomyConfig extends ModuleConfig {
             + "without an Allow.", min = 1, max = 120, level = Setting.Level.OWNER)
     public int ecoPendingMinutes = 10;
 
-    @Setting(path = "eco.block-same-ip", desc = "Owner R3-39: /eco can't change your own account or an account that ever "
-            + "joined from one of your addresses (alt/IP history of the social module).", level = Setting.Level.OWNER)
+    @Setting(path = "eco.block-same-ip", desc = "Owner R3-39: /eco can't change another account that ever joined from one "
+            + "of your addresses or is online on your address now (alt/IP history of the social module).",
+            level = Setting.Level.OWNER)
     public boolean ecoBlockSameIp = true;
+
+    @Setting(path = "eco.allow-self", desc = "Owner 31 Oct 2026: staff with skyblock.economy.eco.self (admin and owner) may "
+            + "use /eco give|take|set|reset and /eco note on their OWN account. Still flagged, still waits above the limit "
+            + "for another owner or admin. Off = nobody can change their own balance (R3-39).", level = Setting.Level.OWNER)
+    public boolean ecoAllowSelf = true;
 
     // ------------------------------------------------------------------ sending money (owner F1)
 
     @Setting(path = "send-gate.required", desc = "Owner F1: a profile can send money away (/pay, notes, /trade) only after it "
-            + "earned this much itself. Sending to members of its own island is always allowed. 0 = off.", min = 0,
+            + "earned this much itself. Sending to members of its own island is always allowed. 0 = off (owner 6 Nov 2026: "
+            + "replaced by the playtime pay limit, pay-limit.tiers).", min = 0,
             level = Setting.Level.OWNER)
-    public long sendGateRequired = 10_000;
+    public long sendGateRequired = 0;
+
+    @Setting(path = "pay-limit.tiers", desc = "Owner 6 Nov 2026 (anti-boost): money a profile may send to other players per day "
+            + "(/pay, /trade, auction buys) by its account's playtime, as 'hours:limit' lines (limit -1 = no limit). Members of "
+            + "your own island never count. Empty = no limit.", level = Setting.Level.OWNER)
+    public List<String> payLimitTiers = List.of("0:20k", "3:100k", "6:500k", "12:2.5M", "24:-1");
+
+    @Setting(path = "pay-limit.zone", desc = "Time zone of the pay limit's day (it resets at midnight there).", level = Setting.Level.OWNER)
+    public String payLimitZone = "Europe/Oslo";
+
+    @Setting(path = "shards.island-only", desc = "Owner 6 Nov 2026: shards are personal and may only be paid (/pay, /trade) to "
+            + "members of your own island.", level = Setting.Level.OWNER)
+    public boolean shardsIslandOnly = true;
 
     @Setting(path = "send-gate.currencies", desc = "Currencies the F1 rule covers when sent (the earned amount is always "
             + "counted in money).", level = Setting.Level.OWNER)
@@ -180,8 +271,8 @@ public final class EconomyConfig extends ModuleConfig {
             "playtime_reward", "tutorial_reward", "tutorial_optional", "depths_drop", "pillar_milestone", "island_task",
             "quest_reward", "pass_reward");
 
-    @Setting(path = "notes.item.material", desc = "Material of the money note item (a resource-pack model can replace the "
-            + "look later).", restart = true)
+    @Setting(path = "notes.item.material", desc = "Material of the money note item (a vanilla item; "
+            + "pick one that does nothing on right-click).", restart = true)
     public String noteMaterial = "PAPER";
 
     @Setting(path = "notes.item.rarity", desc = "Rarity shown in the note's footer: common, uncommon, rare, epic, legendary, "
@@ -266,6 +357,47 @@ public final class EconomyConfig extends ModuleConfig {
             max = 3_600, restart = true)
     public int sellSaveSeconds = 300;
 
+    // ------------------------------------------------------------------ ECON-SELL-SHOP-AH part A (A7)
+
+    @Setting(path = "sell.price-multiplier", desc = "Multiplies every price in sell.yml (listed, custom, roots and derived). Keep "
+            + "shop-settings.yml buy.price-multiplier equal, or payback and the shop invariant change.", min = 0.01, max = 1000,
+            level = Setting.Level.OWNER)
+    public double sellPriceMultiplier = 1.0;
+
+    @Setting(path = "sell.derive.enabled", desc = "Every block sellable: prices of crafted and smelted items come from their "
+            + "parts (sell.yml derive.*: factors, exclude list). Off = only listed items and roots sell.", level = Setting.Level.OWNER)
+    public boolean sellDeriveEnabled = true;
+
+    @Setting(path = "sell.derive.max-depth", desc = "Rounds of the derived-price pass (ECON-TABLES E: 6; deeper recipes stay unsellable).",
+            min = 1, max = 20)
+    public int sellDeriveMaxDepth = 6;
+
+    @Setting(path = "sell.hot-item.min-base", desc = "The Hot Item is only picked from items worth at least this (keeps dirt out).",
+            min = 0, max = 1_000_000)
+    public double hotMinBase = 5.0;
+
+    @Setting(path = "sell.hot-item.announce", desc = "Tell everyone online once per day (00:00 Oslo) which item is hot.")
+    public boolean hotAnnounce = true;
+
+    @Setting(path = "sell.hot-item.join-line", desc = "One line on join (once per day per account) with today's Hot Item.")
+    public boolean hotJoinLine = true;
+
+    @Setting(path = "sell.menu.market-tips", desc = "Market Tips button in the sell chest (the items furthest above base right now).")
+    public boolean marketTipsButton = true;
+
+    @Setting(path = "sell.market-tips.min-base", desc = "Market Tips only list items worth at least this.", min = 0, max = 1_000_000)
+    public double marketTipsMinBase = 5.0;
+
+    @Setting(path = "sell.market-tips.min-percent", desc = "Market Tips only list items at least this many percent above base.",
+            min = 0, max = 1_000)
+    public double marketTipsMinPercent = 5.0;
+
+    @Setting(path = "sell.market-tips.size", desc = "Most Market Tips shown.", min = 1, max = 7)
+    public int marketTipsSize = 5;
+
+    @Setting(path = "sell.market-tips.refresh-seconds", desc = "How often Market Tips are worked out again (from memory).", min = 5, max = 3_600)
+    public int marketTipsRefreshSeconds = 60;
+
     @Setting(path = "sell.hot-item.enabled", desc = "A daily Hot Item sells for more (changes the price, not the sell bonus).",
             level = Setting.Level.OWNER)
     public boolean sellHotEnabled = true;
@@ -314,6 +446,18 @@ public final class EconomyConfig extends ModuleConfig {
             + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
     public long sellBigSaleChatFrom = 100_000;
 
+    @Setting(path = "autosell.interval-seconds", desc = "Owner 4 Nov 2026: an Auto-Sell Chest sells what is in it this often (Black Market item).", min = 5, max = 3600)
+    public int autosellIntervalSeconds = 30;
+
+    @Setting(path = "autosell.max-per-island", desc = "Most Auto-Sell Chests on one island.", min = 1, max = 100)
+    public int autosellMaxPerIsland = 1;
+
+    @Setting(path = "sell.menu-enabled", desc = "Owner 4 Nov 2026: /sell sells everything sellable at once (off). On: /sell opens the sell menu as before (it is always /sell menu).")
+    public boolean sellMenuEnabled = false;
+
+    @Setting(path = "sell.all-title", desc = "Feedback 5 Nov 2026: selling everything at once (/sell, Sell all) shows the total big on screen (a title).")
+    public boolean sellAllTitle = true;
+
     @Setting(path = "sell.big-sale-hover-lines", desc = "Most item lines in the hover breakdown of a big sale (the rest is "
             + "summed up as \"+N more\").", min = 1, max = 30)
     public int sellBigSaleHoverLines = 10;
@@ -330,20 +474,40 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "sell.skip-hotbar-default", desc = "QUICK1 sell protection: the default of the /settings switch "
             + "\"Sell all skips hotbar\" (/sell all and \"Sell inventory\" leave hotbar slots 1-9 alone; /sell hand and "
             + "putting items into the sell chest by hand still sell them).")
-    public boolean sellSkipHotbarDefault = true;
+    public boolean sellSkipHotbarDefault = false; // feedback 3 Nov 2026: /sell all also sells the hotbar
 
-    @Setting(desc = "Icon per currency in menus: currency:MATERIAL.")
-    public List<String> icons = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "gems:EMERALD", "shards:PRISMARINE_SHARD");
+    /** The icon list before I9 (GUI-P2 7.2); an untouched live list moves to the new one (version 5). */
+    static final List<String> OLD_ICONS = List.of("money:GOLD_INGOT", "crystals:PRISMARINE_CRYSTALS", "credits:EMERALD",
+            "credits_earned:EMERALD", "shards:PRISMARINE_SHARD");
+    /** I9 section 9: money gold ingot, crystals amethyst shard, shards prismarine shard, credits diamond. */
+    static final List<String> NEW_ICONS = List.of("money:GOLD_INGOT", "crystals:AMETHYST_SHARD", "shards:PRISMARINE_SHARD",
+            "credits:DIAMOND", "credits_earned:DIAMOND");
+
+    @Setting(desc = "Base item per currency in menus: currency:MATERIAL (I9 section 9). Java players with the icon pack see "
+            + "our own currency icon on these exact items (currency/<id>); another item shows plain.")
+    public List<String> icons = NEW_ICONS;
 
     /**
      * Version 2: tokens were replaced by island crystals (owner decision O8); old keys are moved on load.
      * Version 3: the new-account limit went from 120 to 30 minutes (owner decision #40). Since owner answer 131 (round 1)
      * there is no new-account limit; the old keys {@code pay.new-account-minutes} and {@code notes.new-account-minutes}
      * are ignored.
+     * Version 4 (card C1): gems were renamed credits; old gems are earned credits ({@code start.gems} →
+     * {@code start.credits_earned}, the /pay and /eco gem keys → credits). Gem notes never existed and are removed.
+     * Version 5 (I9 section 9, GUI-P2): currency base items crystals = amethyst shard, credits = diamond (an untouched
+     * {@code icons} list is replaced; an edited one stays).
      */
     @Override
     public int version() {
-        return 3;
+        return 7;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
+                6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)),
+                // owner 6 Nov 2026: the $10k earned rule is replaced by the playtime pay limit
+                7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)));
     }
 
     @Override
@@ -354,7 +518,12 @@ public final class EconomyConfig extends ModuleConfig {
                 "pay.min.tokens", "pay.min.crystals",
                 "pay.confirm-above.tokens", "pay.confirm-above.crystals",
                 "notes.min.tokens", "notes.min.crystals",
-                "notes.max.tokens", "notes.max.crystals"));
+                "notes.max.tokens", "notes.max.crystals"),
+                4, java.util.Map.of(
+                "start.gems", "start.credits_earned",
+                "pay.min.gems", "pay.min.credits",
+                "pay.confirm-above.gems", "pay.confirm-above.credits",
+                "eco.approve-above.gems", "eco.approve-above.credits_earned"));
     }
 
     /** R3-16: the old new-account keys (decision #40, then owner answer 131: no limit) are deleted on load. */
@@ -363,7 +532,11 @@ public final class EconomyConfig extends ModuleConfig {
         return java.util.Map.of(
                 "pay.new-account-minutes", "owner answer 131: no new-account limit for /pay (R3-16)",
                 "notes.new-account-minutes", "owner answer 131: no new-account limit for /withdraw (R3-16)",
-                "notes.withdraw-cooldown-seconds", "owner R3-40: replaced by notes.max-per-minute (20 notes a minute)");
+                "notes.withdraw-cooldown-seconds", "owner R3-40: replaced by notes.max-per-minute (20 notes a minute)",
+                "tradeable.gems", "card C1: gems became credits; earned credits are never tradeable (tradeable.credits = bought)",
+                "notes.min.gems", "card C1: credits never become notes",
+                "notes.max.gems", "card C1: credits never become notes",
+                "credits.spend-attempts", "card C1 wave 1b: a credit spend locks both rows in one transaction, no re-planning");
     }
 
     @Override
@@ -391,8 +564,10 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> startMoney;
             case CRYSTALS -> startCrystals;
-            case GEMS -> startGems;
+            case CREDITS -> 0L; // bought credits: only the store and the owner create them (C1-R2-02)
+            case CREDITS_EARNED -> startCreditsEarned;
             case SHARDS -> startShards;
+            case MINING_SHARDS -> 0L; // owner 4 Nov 2026: only the island pickaxe creates Mining Shards
         };
     }
 
@@ -404,8 +579,9 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> tradeableMoney;
             case CRYSTALS -> tradeableCrystals;
-            case GEMS -> tradeableGems;
-            case SHARDS -> tradeableShards;
+            case CREDITS -> tradeableCredits;
+            case CREDITS_EARNED -> false;
+            case SHARDS, MINING_SHARDS -> tradeableShards;
         };
     }
 
@@ -413,9 +589,32 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> payMinMoney;
             case CRYSTALS -> payMinCrystals;
-            case GEMS -> payMinGems;
-            case SHARDS -> payMinShards;
+            case CREDITS, CREDITS_EARNED -> payMinCredits;
+            case SHARDS, MINING_SHARDS -> payMinShards;
         };
+    }
+
+    /** The end of the {@code gems} alias (epoch millis, end of the configured UTC day); unlimited when the date is invalid. */
+    long legacyGemsAliasUntilMillis() {
+        try {
+            return java.time.LocalDate.parse(legacyGemsAliasUntil.trim()).plusDays(1)
+                    .atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli();
+        } catch (RuntimeException e) {
+            return Long.MAX_VALUE;
+        }
+    }
+
+    /** True if {@code currency} has a public /baltop list ({@code baltop.currencies}); crystals and earned credits never. */
+    boolean baltopPublic(Currency currency) {
+        if (currency == null || currency == Currency.CRYSTALS || currency == Currency.CREDITS_EARNED) {
+            return false;
+        }
+        for (String key : baltopCurrencies) {
+            if (key != null && Currency.byKey(key).orElse(null) == currency) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The menu icon of a currency ({@code icons}), or {@code fallback} if missing/invalid. */
@@ -426,6 +625,20 @@ public final class EconomyConfig extends ModuleConfig {
         }
         org.bukkit.Material m = org.bukkit.Material.matchMaterial(name);
         return m == null || !m.isItem() ? fallback : m;
+    }
+
+    /**
+     * The menu item of a currency for {@code viewer} (I7/I9): the configured base item; when it is the catalogue base of
+     * {@code currency/<id>} (earned credits use {@code currency/credits}), viewers with the pack loaded see our icon.
+     */
+    org.bukkit.inventory.ItemStack iconItem(net.skybornmc.skyblock.common.menu.MenuService menus, org.bukkit.entity.Player viewer,
+                                            Currency currency, org.bukkit.Material fallback) {
+        org.bukkit.Material base = icon(currency, fallback);
+        String key = "currency/" + (currency == Currency.CREDITS_EARNED ? "credits" : currency.name().toLowerCase(java.util.Locale.ROOT));
+        if (menus.icons().has(key) && menus.icons().base(key) == base) {
+            return menus.icon(viewer, key);
+        }
+        return new org.bukkit.inventory.ItemStack(base);
     }
 
     /** The material name configured for a currency in {@code icons}, or null. An old {@code tokens:} entry = crystals. */
@@ -444,8 +657,9 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> ecoApproveMoney;
             case CRYSTALS -> ecoApproveCrystals;
-            case GEMS -> ecoApproveGems;
-            case SHARDS -> ecoApproveShards;
+            case CREDITS -> ecoApproveCredits;
+            case CREDITS_EARNED -> ecoApproveCreditsEarned;
+            case SHARDS, MINING_SHARDS -> ecoApproveShards;
         };
     }
 
@@ -463,8 +677,8 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> noteMinMoney;
             case CRYSTALS -> noteMinCrystals;
-            case GEMS -> noteMinGems;
-            case SHARDS -> noteMinShards;
+            case CREDITS, CREDITS_EARNED -> Long.MAX_VALUE; // never a note (C1-R1-26)
+            case SHARDS, MINING_SHARDS -> noteMinShards;
         };
     }
 
@@ -472,8 +686,8 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> noteMaxMoney;
             case CRYSTALS -> noteMaxCrystals;
-            case GEMS -> noteMaxGems;
-            case SHARDS -> noteMaxShards;
+            case CREDITS, CREDITS_EARNED -> 0L; // never a note (C1-R1-26)
+            case SHARDS, MINING_SHARDS -> noteMaxShards;
         };
     }
 
@@ -481,8 +695,8 @@ public final class EconomyConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> payConfirmMoney;
             case CRYSTALS -> payConfirmCrystals;
-            case GEMS -> payConfirmGems;
-            case SHARDS -> payConfirmShards;
+            case CREDITS, CREDITS_EARNED -> payConfirmCredits;
+            case SHARDS, MINING_SHARDS -> payConfirmShards;
         };
     }
 }

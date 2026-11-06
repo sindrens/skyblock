@@ -151,6 +151,18 @@ final class StackMath {
         return own + Math.max(0, extraRolls);
     }
 
+    /**
+     * Feedback 5 Nov 2026 (vanilla spawner loot): the extra loot mobs after the island's Mob Loot multiplier. With a death
+     * event the dying mob's own drops count as one mob of the total, so a lone spawner mob gets the bonus too.
+     */
+    static long withLoot(long extra, double multiplier, boolean ownDrops) {
+        double m = Math.max(0, multiplier);
+        if (ownDrops) {
+            return Math.max(0, Math.round((Math.max(0, extra) + 1) * m) - 1);
+        }
+        return Math.max(0, Math.round(Math.max(0, extra) * m));
+    }
+
     // ------------------------------------------------------------------ loot
 
     /**

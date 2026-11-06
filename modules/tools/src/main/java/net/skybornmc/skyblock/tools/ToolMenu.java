@@ -84,7 +84,7 @@ final class ToolMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         int slot = ToolTracker.find(viewer.getInventory(), toolId);
         Optional<ToolData> found = slot < 0 ? Optional.empty() : ToolItems.read(viewer.getInventory().getItem(slot));
         if (found.isEmpty()) {

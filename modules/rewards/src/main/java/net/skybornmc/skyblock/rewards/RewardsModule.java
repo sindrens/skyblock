@@ -61,7 +61,7 @@ import java.util.logging.Level;
  * Rewards (PHASE-10-REWARDS.md M10.6 daily + playtime, M10.5 voting).
  * <ul>
  *   <li><b>Daily calendar</b> per profile (owner 128): {@code /daily}, the Daily Rewards NPC. One claim per day (reset
- *       00:00 Europe/Oslo); the calendar moves only on a claim; streak gems every 7 days, titles at 30 and 100.</li>
+ *       00:00 Europe/Oslo); the calendar moves only on a claim; streak credits every 7 days, titles at 30 and 100.</li>
  *   <li><b>Playtime</b> per profile (R6): active time only (not AFK, not in the AFK pool); hourly Crystal Pouch S (+ pass
  *       XP once the pass exists), a bound Cinder key every 10 hours, titles at 50/100/250/500 hours.</li>
  *   <li>Every claim is one transaction with an idempotency key ({@link ClaimEngine}); keys, items, fuel and titles are
@@ -89,6 +89,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
     final VotesSettings votesSettings = new VotesSettings();
     private final Grants grants;
     private final DailyService daily;
+    private final PeriodicService periodic;
+    private RewardsServiceImpl service;
     private final PlaytimeService playtime;
     private final ActivityTracker activity;
     private final VoteService votes;
@@ -98,6 +100,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
 
     // Parsed from the settings (replaced as a whole on reload).
     private volatile List<RewardSpec> calendar = List.of();
+    private volatile List<RewardSpec> weeklyRewards = List.of();
+    private volatile List<RewardSpec> monthlyRewards = List.of();
     private volatile NavigableMap<Integer, String> streakTitles = new TreeMap<>();
     private volatile NavigableMap<Integer, String> playtimeTitles = new TreeMap<>();
     private volatile long[] refPerMinute = new long[0];
@@ -109,6 +113,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         this.msg = core.messages(ID);
         this.grants = new Grants(this);
         this.daily = new DailyService(this);
+        this.periodic = new PeriodicService(this);
         this.activity = new ActivityTracker();
         this.playtime = new PlaytimeService(this, activity);
         this.votes = new VoteService(this);
@@ -132,12 +137,14 @@ public final class RewardsModule implements SkyblockModule, Listener {
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.register(new SettingToggle(ID, SETTING_REMINDER,
                 SettingCategory.CHAT, Material.CLOCK, true, PERM_DAILY, ID, "settings.daily-reminder", false)));
         registerCommands();
-        core.services().register(ID, net.skybornmc.skyblock.common.rewards.RewardsService.class, new RewardsServiceImpl(this));
+        service = new RewardsServiceImpl(this);
+        core.services().register(ID, net.skybornmc.skyblock.common.rewards.RewardsService.class, service);
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
         Bukkit.getPluginManager().registerEvents(activity, core.plugin());
         for (Player p : Bukkit.getOnlinePlayers()) {
             activity.touch(p.getUniqueId());
             daily.load(p);
+            periodic.load(p);
         }
         // PERF6: every tick, each player in their own slot once per playtime.tick-seconds (see PlaytimeService#tick).
         tasks.add(core.scheduler().repeat("rewards:playtime-tick", 1L, 1L, playtime::tick));
@@ -187,6 +194,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
     private void parse() {
         List<String> problems = new ArrayList<>();
         calendar = RewardTables.calendar(settings.days, RewardTables.filler(settings.defaultFallback), problems::add);
+        weeklyRewards = rewardLines(settings.weeklyRewards, "daily.yml -> weekly.rewards", problems::add);
+        monthlyRewards = rewardLines(settings.monthlyRewards, "daily.yml -> monthly.rewards", problems::add);
         streakTitles = RewardTables.thresholds(settings.streakTitles, "daily.yml -> streak.titles", problems::add);
         playtimeTitles = RewardTables.thresholds(settings.playtimeTitles, "daily.yml -> playtime.titles", problems::add);
         long[] ref = RewardTables.longs(settings.refPerMinute, "daily.yml -> pouch.ref-per-minute", problems::add);
@@ -240,6 +249,23 @@ public final class RewardsModule implements SkyblockModule, Listener {
                     }
                     openDaily(ctx.player());
                 }));
+        // Spec 5.1 / F4: /rewards opens the overview; /weekly and /monthly open it too (their card is on it). No arguments.
+        for (String[] c : new String[][]{{"rewards", "Open your rewards: daily, weekly, monthly and battle pass, with Claim all"},
+                {"weekly", "Open your rewards at the Weekly Reward (3 h active play this week on this profile)"},
+                {"monthly", "Open your rewards at the Monthly Reward (once a month on this profile)"}}) {
+            core.commands().register(CommandSpec.command(c[0])
+                    .description(c[1])
+                    .category("Rewards")
+                    .permission(PERM_DAILY)
+                    .playerOnly()
+                    .example(c[0])
+                    .executes(ctx -> {
+                        if (!settings.menuEnabled) {
+                            throw new CommandFailure(ID, "rewards.disabled");
+                        }
+                        openRewards(ctx.player());
+                    }));
+        }
         // M10.5 (RX42): /vote is the vote menu now (moved from the social module's link command). No arguments.
         core.commands().register(CommandSpec.command("vote")
                 .description("Vote for the server: links to every vote site, your vote streak and the vote party")
@@ -256,6 +282,17 @@ public final class RewardsModule implements SkyblockModule, Listener {
                         msg.send(ctx.sender(), "vote.console", Msg.p("url", votesSettings.pageUrl));
                     }
                 }));
+    }
+
+    /** {@code /rewards} (and the tab of /weekly, /monthly): loads the states and opens the overview. */
+    void openRewards(Player player) {
+        daily.load(player);
+        periodic.load(player);
+        core.menus().open(player, new RewardsMenu(this));
+    }
+
+    RewardsServiceImpl service() {
+        return service;
     }
 
     void openVote(Player player) {
@@ -343,6 +380,24 @@ public final class RewardsModule implements SkyblockModule, Listener {
 
     List<RewardSpec> calendar() {
         return calendar;
+    }
+
+    /** The contents of a periodic reward (Weekly or Monthly Reward). */
+    List<RewardSpec> rewards(PeriodicRules.Period period) {
+        return period == PeriodicRules.Period.WEEK ? weeklyRewards : monthlyRewards;
+    }
+
+    /** Parses reward lines; a bad line is skipped with one problem line. */
+    static List<RewardSpec> rewardLines(List<String> lines, String where, java.util.function.Consumer<String> problems) {
+        List<RewardSpec> out = new ArrayList<>();
+        for (String line : lines == null ? List.<String>of() : lines) {
+            RewardSpec.parse(line, p -> problems.accept(where + ": " + p)).ifPresent(out::add);
+        }
+        return List.copyOf(out);
+    }
+
+    PeriodicService periodic() {
+        return periodic;
     }
 
     NavigableMap<Integer, String> streakTitles() {
@@ -482,6 +537,8 @@ public final class RewardsModule implements SkyblockModule, Listener {
         if (p != null) {
             if (core.menus().openMenu(p) instanceof DailyMenu menu) {
                 menu.refresh();
+            } else if (core.menus().openMenu(p) instanceof RewardsMenu menu) {
+                menu.refresh();
             }
         }
     }
@@ -496,8 +553,25 @@ public final class RewardsModule implements SkyblockModule, Listener {
             if (p.isOnline()) {
                 daily.joined(p);
                 votes.joined(p);
+                periodic.load(p);
             }
         });
+        if (settings.menuEnabled) {
+            // Spec 5.1: one line when rewards wait, a second when votes wait; no other reminders. After the states loaded.
+            core.scheduler().later("rewards:join-notice", Math.max(1, settings.reminderDelayTicks) + 40L, () -> {
+                if (!p.isOnline()) {
+                    return;
+                }
+                int ready = service.readyCount(p);
+                if (ready > 0) {
+                    msg.send(p, "rewards.join", Msg.number("count", ready));
+                }
+                int votesWaiting = votesSettings.enabled && p.hasPermission(PERM_VOTE) ? votes.queued(p.getUniqueId()) : 0;
+                if (settings.joinNoticeVotes && votesWaiting > 0) {
+                    msg.send(p, "rewards.join-votes", Msg.number("count", votesWaiting));
+                }
+            });
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -505,6 +579,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         Player p = event.getPlayer();
         playtime.quit(p);
         daily.quit(p);
+        periodic.quit(p);
         votes.quit(p);
         activity.forget(p.getUniqueId());
     }
@@ -512,6 +587,10 @@ public final class RewardsModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSwitched(ProfileSwitchedEvent event) {
         daily.load(event.getPlayer());
+        periodic.load(event.getPlayer());
+        if (core.menus().openMenu(event.getPlayer()) instanceof RewardsMenu) {
+            event.getPlayer().closeInventory(); // spec 5.3: switching profile closes /rewards
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -519,6 +598,7 @@ public final class RewardsModule implements SkyblockModule, Listener {
         UUID profile = event.profile().id();
         playtime.forget(profile);
         daily.forget(profile);
+        periodic.forget(profile);
         core.database().transaction(c -> {
             RewardStore.deleteProfile(c, profile);
             return true;

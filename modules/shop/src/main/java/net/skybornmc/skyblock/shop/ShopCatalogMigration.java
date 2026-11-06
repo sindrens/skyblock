@@ -11,8 +11,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The one-time Shop v2 catalog migration (GUI-3, docs/design/SHOP_DESIGN.md §2): a live {@code shop.yml} of
- * config-version 1 (8 categories, 332 items) becomes the new 9 tabs and ~253 items. Pure (unit-tested).
+ * The one-time catalog migrations of the live {@code shop.yml}. Pure (unit-tested).
+ *
+ * <p><b>v1 &rarr; v2</b> (GUI-3, docs/design/SHOP_DESIGN.md §2, {@link #migrate}): config-version 1 (8 categories, 332
+ * items) becomes the 9 tabs and 253 items of the frozen {@code migrations/shop-v2.yml}.
  *
  * <ul>
  *   <li>The result starts from the bundled v2 file (tabs, order, comments).</li>
@@ -23,10 +25,77 @@ import java.util.Optional;
  *   <li>Old default items the design removes leave the shop but keep their live price under {@code worth-only} (island
  *       level block worth). Items the owner added himself are kept, in the tab their old category maps to.</li>
  * </ul>
+ *
+ * <p><b>v2 &rarr; v3</b> (MENUS-V3 6.3, {@link #migrateV3}): data-driven, it moves the live file to whatever the bundled
+ * v3 file says (tab order, {@code groups:}, items), so it needs no item list of its own. A v1 file runs both, in order.
  */
 final class ShopCatalogMigration {
 
-    static final int VERSION = 2;
+    /** Shop v2 (GUI-3): 9 tabs. */
+    static final int V2 = 2;
+    /** MENUS-V3: tab order 5 + 4, {@code groups:}, the item lists of the bundled file. */
+    static final int V3 = 3;
+    /** ECON-SELL-SHOP-AH B1: the shop lists of ECON-TABLES D (remove 53, add 46 with {@code price: auto}). */
+    static final int V4 = 4;
+    /** Owner 2 Nov 2026: tabs Building Blocks, Nature, Farming, Mob Drops, Colors, Decoration, Essentials, Redstone, Spawners. */
+    static final int V5 = 5;
+    /** The current version (what a fresh install writes). */
+    static final int V6 = 6;
+    static final int VERSION = V6;
+
+    /**
+     * v5 &rarr; v6 (owner 3 Nov 2026, "make the buy prices for the crops SUPER HIGH, so they buy 1 and regrow"): seeds and
+     * crops cost a lot. Only prices that are still the old default change; owner prices stay. id -> {old, new}.
+     */
+    static final Map<String, long[]> V6_PRICES = Map.of(
+            "wheat_seeds", new long[]{10, 1500}, "beetroot_seeds", new long[]{15, 2500}, "melon_seeds", new long[]{40, 4000},
+            "pumpkin_seeds", new long[]{40, 4000}, "carrot", new long[]{120, 2500}, "potato", new long[]{120, 2500},
+            "sugar_cane", new long[]{200, 3000}, "cocoa_beans", new long[]{350, 3500}, "cactus", new long[]{475, 3500},
+            "sweet_berries", new long[]{650, 4000});
+
+    /** v5 -> v6: the {@link #V6_PRICES} patch on the live file (in place), or empty when it is v6 already. */
+    static Optional<Result> pricesV6(YamlConfiguration live) {
+        if (version(live) >= V6) {
+            return Optional.empty();
+        }
+        List<String> changes = new ArrayList<>();
+        ConfigurationSection tabs = live.getConfigurationSection(ShopCatalog.ROOT);
+        if (tabs != null) {
+            for (String tab : tabs.getKeys(false)) {
+                ConfigurationSection items = tabs.getConfigurationSection(tab + ".items");
+                if (items == null) {
+                    continue;
+                }
+                for (String id : items.getKeys(false)) {
+                    long[] change = V6_PRICES.get(id);
+                    Object raw = items.get(id);
+                    if (change == null || ShopCatalog.priceOf(plain(raw)) != change[0]) {
+                        continue;
+                    }
+                    if (raw instanceof ConfigurationSection section) {
+                        section.set("price", change[1]);
+                    } else {
+                        items.set(id, change[1]);
+                    }
+                    changes.add(id + ": $" + change[0] + " -> $" + change[1]);
+                }
+            }
+        }
+        live.set("config-version", V6);
+        return Optional.of(new Result(live, changes));
+    }
+
+    /** {@code /shop <old tab>} still finds the tab its items moved to. */
+    static final Map<String, String> TAB_ALIASES = Map.of(
+            "wood", "building",
+            "stone-earth", "building",
+            "special", "building",
+            "building-blocks", "building",
+            "stone-bricks", "building",
+            "glass-colors", "colors",
+            "utility", "essentials",
+            "mobdrops", "mob-drops",
+            "plants", "nature");
 
     /** Old category → new tab, for items the owner added himself. */
     static final Map<String, String> TAB_OF_OLD_CATEGORY = Map.of(
@@ -55,12 +124,12 @@ final class ShopCatalogMigration {
 
     /**
      * @param live    the live {@code shop.yml}
-     * @param bundled the bundled v2 {@code shop.yml}
+     * @param bundled the v2 target: the frozen {@code migrations/shop-v2.yml}
      * @param v1      the frozen v1 defaults ({@code migrations/shop-v1.yml})
      * @return the migrated file, or empty when {@code live} is already version 2 or newer
      */
     static Optional<Result> migrate(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v1) {
-        if (version(live) >= VERSION) {
+        if (version(live) >= V2) {
             return Optional.empty();
         }
         YamlConfiguration out = new YamlConfiguration();
@@ -137,8 +206,215 @@ final class ShopCatalogMigration {
         if (kept > 0) {
             changes.add("kept " + kept + " other price(s) you had changed");
         }
-        out.set("config-version", VERSION);
+        out.set("config-version", V2);
         return Optional.of(new Result(out, changes));
+    }
+
+    /**
+     * v2 &rarr; v3 (MENUS-V3 6.3). Starts from the bundled v3 file (tab order, {@code groups:}, comments) and:
+     * <ul>
+     *   <li>an item the live file has keeps the live entry ({@code enabled}, {@code requires}, own {@code contains}) and
+     *       its live price; only a price that still equals its v2 default moves to the v3 default (copied verbatim, so
+     *       a {@code price: auto} stays {@code auto});</li>
+     *   <li>an item of {@code shop-v2.yml} that the bundled v3 file lacks goes to {@code worth-only} at its live price;</li>
+     *   <li>an item new in v3 is added exactly as the bundled entry and leaves the live {@code worth-only};</li>
+     *   <li>an item the owner added himself stays in its tab (or Decoration when that tab is gone);</li>
+     *   <li>a Spawners tab ({@code kind: spawners}) becomes the bundled one (mobs and prices of the economy design);</li>
+     *   <li>live {@code worth-only} entries are copied unless the item is sold again; a tab keeps the owner's icon.</li>
+     * </ul>
+     *
+     * @param live       the live {@code shop.yml} (version 2, or the result of {@link #migrate})
+     * @param bundledV3  the bundled {@code shop.yml} (version 3)
+     * @param v2Defaults the frozen v2 defaults ({@code migrations/shop-v2.yml})
+     * @return the migrated file, or empty when {@code live} is already version 3 or newer
+     */
+    static Optional<Result> migrateV3(YamlConfiguration live, YamlConfiguration bundledV3, YamlConfiguration v2Defaults) {
+        return migrateTo(live, bundledV3, v2Defaults, V3, "Shop v3");
+    }
+
+    /**
+     * v3 &rarr; v4 (ECON-SELL-SHOP-AH B1): the same data-driven move as {@link #migrateV3}, against the frozen v3 defaults:
+     * default items the bundled file drops (planks, furnace, chest ...) go to {@code worth-only} at their live price, the
+     * new {@code price: auto} items are added, owner prices and owner items stay.
+     */
+    static Optional<Result> migrateV4(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v3Defaults) {
+        return migrateTo(live, bundled, v3Defaults, V4, "Shop v4");
+    }
+
+    /**
+     * v4 &rarr; v5 (owner 2 Nov 2026): the tabs are regrouped (wood, stone-earth and special become Building Blocks; leaves,
+     * flowers and plants move to Nature; a Mob Drops tab with {@code price: auto}). Data-driven like v4: items keep their
+     * live entry and move to their new tab, owner items in a tab that is gone go to Decoration.
+     */
+    static Optional<Result> migrateV5(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v4Defaults) {
+        return migrateTo(live, bundled, v4Defaults, V5, "Shop v5");
+    }
+
+    private static Optional<Result> migrateTo(YamlConfiguration live, YamlConfiguration bundledV3, YamlConfiguration v2Defaults,
+                                              int target, String label) {
+        if (version(live) >= target) {
+            return Optional.empty();
+        }
+        YamlConfiguration out = new YamlConfiguration();
+        try {
+            out.loadFromString(bundledV3.saveToString());
+        } catch (InvalidConfigurationException e) {
+            throw new IllegalStateException("bundled shop.yml can't be copied", e);
+        }
+        List<String> changes = new ArrayList<>();
+        Map<String, Entry> left = items(live, false);
+        Map<String, Entry> liveSpawners = items(live, true);
+        Map<String, Entry> defaults = items(v2Defaults, false);
+        ConfigurationSection liveTabs = live.getConfigurationSection(ShopCatalog.ROOT);
+        ConfigurationSection tabs = out.getConfigurationSection(ShopCatalog.ROOT);
+        int kept = 0;
+        if (tabs != null) {
+            for (String tab : tabs.getKeys(false)) {
+                String liveIcon = liveTabs == null ? null : liveTabs.getString(tab + ".icon");
+                // An owner-chosen icon stays; the previous default icon follows the new bundled one (3 Nov 2026 vanilla icons).
+                String oldIcon = v2Defaults.getString(ShopCatalog.ROOT + "." + tab + ".icon");
+                if (liveIcon != null && !liveIcon.equalsIgnoreCase(tabs.getString(tab + ".icon", ""))
+                        && !liveIcon.equalsIgnoreCase(oldIcon == null ? "" : oldIcon)) {
+                    out.set(ShopCatalog.ROOT + "." + tab + ".icon", liveIcon);
+                }
+                boolean spawners = "spawners".equalsIgnoreCase(tabs.getString(tab + ".kind", "items"));
+                ConfigurationSection items = tabs.getConfigurationSection(tab + ".items");
+                if (items == null) {
+                    continue;
+                }
+                for (String id : items.getKeys(false)) {
+                    Object bundledRaw = plain(items.get(id));
+                    if (spawners) {
+                        Entry old = liveSpawners.remove(id);
+                        long oldPrice = old == null ? -1 : ShopCatalog.priceOf(old.raw());
+                        if (old == null) {
+                            changes.add("added spawner " + id + " to " + tab + " at " + priceText(bundledRaw));
+                        } else if (oldPrice != ShopCatalog.priceOf(bundledRaw)) {
+                            changes.add("spawner " + id + ": price $" + oldPrice + " -> " + priceText(bundledRaw));
+                        }
+                        continue;
+                    }
+                    String path = ShopCatalog.ROOT + "." + tab + ".items." + id;
+                    Entry liveEntry = left.remove(id);
+                    if (liveEntry == null) {
+                        if (live.contains(ShopCatalog.WORTH_ONLY + "." + id)) {
+                            changes.add("added " + id + " to " + tab + " at " + priceText(bundledRaw) + " (it left worth-only)");
+                        } else {
+                            changes.add("added " + id + " to " + tab + " at " + priceText(bundledRaw));
+                        }
+                        continue;
+                    }
+                    long livePrice = ShopCatalog.priceOf(liveEntry.raw());
+                    Entry old = defaults.get(id);
+                    long oldPrice = old == null ? -1 : ShopCatalog.priceOf(old.raw());
+                    Object bundledPrice = priceValue(bundledRaw);
+                    boolean designChanged = oldPrice > 0 && !Long.valueOf(oldPrice).equals(bundledPrice);
+                    Object price;
+                    if (ShopCatalog.isAuto(priceValue(liveEntry.raw()))) {
+                        price = ShopCatalog.AUTO; // the owner's (or an earlier default's) auto price stays auto
+                    } else if (livePrice < 1) {
+                        price = bundledPrice;
+                        changes.add(id + ": live entry had no valid price, using " + priceText(bundledRaw));
+                    } else if (designChanged && livePrice == oldPrice) {
+                        price = bundledPrice;
+                        changes.add(id + ": price $" + oldPrice + " -> " + priceText(bundledRaw) + " (" + label + ")");
+                    } else if (designChanged) {
+                        price = livePrice;
+                        changes.add(id + ": kept your price $" + livePrice + " (" + label + " default would be " + priceText(bundledRaw) + ")");
+                    } else {
+                        price = livePrice;
+                        if (!Long.valueOf(livePrice).equals(bundledPrice)) {
+                            kept++;
+                        }
+                    }
+                    if (!liveEntry.category().equals(tab)) {
+                        changes.add(id + ": moved from " + liveEntry.category() + " to " + tab);
+                    }
+                    out.set(path, mergeRaw(bundledRaw, liveEntry.raw(), price));
+                }
+            }
+        }
+        for (String id : liveSpawners.keySet()) {
+            changes.add("removed spawner " + id + " (not sold in " + label + ")");
+        }
+        // Live worth-only first (owner edits win over the bundled values), then the items that leave the shop now.
+        ConfigurationSection liveWorth = live.getConfigurationSection(ShopCatalog.WORTH_ONLY);
+        if (liveWorth != null) {
+            for (String id : liveWorth.getKeys(false)) {
+                out.set(ShopCatalog.WORTH_ONLY + "." + id, plain(liveWorth.get(id)));
+            }
+        }
+        for (Map.Entry<String, Entry> e : left.entrySet()) {
+            String id = e.getKey();
+            Entry entry = e.getValue();
+            long price = ShopCatalog.priceOf(entry.raw());
+            if (defaults.containsKey(id)) {
+                if (price >= 1) {
+                    out.set(ShopCatalog.WORTH_ONLY + "." + id, price);
+                }
+                changes.add("removed " + id + " (was $" + price + " in " + entry.category() + "); its price stays only as block worth");
+            } else {
+                String tab = entry.category();
+                if (tabs == null || !tabs.contains(tab + ".items") || isSpawnerTab(tabs, tab)) {
+                    tab = "decoration";
+                }
+                out.set(ShopCatalog.ROOT + "." + tab + ".items." + id, plain(entry.raw()));
+                changes.add("kept your own item " + id + " ($" + price + "), in tab " + tab);
+            }
+        }
+        // Nothing may be both sold and parked: the shop entry wins.
+        ConfigurationSection worth = out.getConfigurationSection(ShopCatalog.WORTH_ONLY);
+        if (worth != null) {
+            Map<String, Entry> sold = items(out, false);
+            for (String id : List.copyOf(worth.getKeys(false))) {
+                if (sold.containsKey(id)) {
+                    out.set(ShopCatalog.WORTH_ONLY + "." + id, null);
+                }
+            }
+        }
+        if (kept > 0) {
+            changes.add("kept " + kept + " other price(s) you had changed");
+        }
+        out.set("config-version", target);
+        return Optional.of(new Result(out, changes));
+    }
+
+    private static boolean isSpawnerTab(ConfigurationSection tabs, String tab) {
+        return "spawners".equalsIgnoreCase(tabs.getString(tab + ".kind", "items"));
+    }
+
+    /** The raw price of a bundled entry: a whole number, or a word such as {@code auto} (never compared as a number). */
+    static Object priceValue(Object raw) {
+        Map<?, ?> map = ShopCatalog.section(raw);
+        Object value = map != null ? map.get("price") : raw;
+        return value instanceof Integer i ? Long.valueOf(i) : value;
+    }
+
+    private static String priceText(Object raw) {
+        Object value = priceValue(raw);
+        return value instanceof Number ? "$" + value : "price " + value;
+    }
+
+    /** Every item of every non-spawner tab ({@code spawners == false}) or of every Spawners tab: id → (tab, raw). */
+    private static Map<String, Entry> items(ConfigurationSection yaml, boolean spawners) {
+        Map<String, Entry> out = new LinkedHashMap<>();
+        ConfigurationSection root = yaml == null ? null : yaml.getConfigurationSection(ShopCatalog.ROOT);
+        if (root == null) {
+            return out;
+        }
+        for (String category : root.getKeys(false)) {
+            if (isSpawnerTab(root, category) != spawners) {
+                continue;
+            }
+            ConfigurationSection items = root.getConfigurationSection(category + ".items");
+            if (items == null) {
+                continue;
+            }
+            for (String id : items.getKeys(false)) {
+                out.putIfAbsent(id, new Entry(category, plain(items.get(id))));
+            }
+        }
+        return out;
     }
 
     /** Every item of every category: id → (category, raw value); the first listing wins. */
@@ -165,6 +441,11 @@ final class ShopCatalogMigration {
      * {@code requires}, own {@code contains}), with {@code price}. A plain number when nothing else is left.
      */
     static Object merge(Object bundledRaw, Object liveRaw, long price) {
+        return mergeRaw(bundledRaw, liveRaw, price);
+    }
+
+    /** {@link #merge} with a raw price (a whole number or a word such as {@code auto}). */
+    static Object mergeRaw(Object bundledRaw, Object liveRaw, Object price) {
         Map<?, ?> bundled = ShopCatalog.section(bundledRaw);
         Map<?, ?> live = ShopCatalog.section(liveRaw);
         Map<String, Object> map = new LinkedHashMap<>();
@@ -176,7 +457,7 @@ final class ShopCatalogMigration {
             live.forEach((k, v) -> map.put(String.valueOf(k), plain(v)));
         }
         map.put("price", price);
-        return map.size() == 1 ? (Object) price : map;
+        return map.size() == 1 ? price : map;
     }
 
     /** Sections become plain maps (so they can be written anywhere). */

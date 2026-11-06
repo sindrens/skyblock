@@ -59,7 +59,9 @@ final class EntityLimits implements Listener {
             case Minecart ignored -> Kind.MINECARTS;
             case Boat ignored -> Kind.BOATS;
             case Villager ignored -> Kind.VILLAGERS;
-            case Display ignored -> Kind.DISPLAYS;
+            // FX-03: plugin displays (spawner labels, holograms, item labels) are not persistent and never count;
+            // only displays a player or a command placed do.
+            case Display d -> d.isPersistent() ? Kind.DISPLAYS : null;
             default -> null;
         };
     }

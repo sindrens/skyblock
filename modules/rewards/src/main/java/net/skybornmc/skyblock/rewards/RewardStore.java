@@ -139,10 +139,43 @@ final class RewardStore {
     // ================================================================== profiles
 
     /** A deleted profile loses its calendar, playtime and open grants (P4: nothing moves to another profile). */
+    /** Adds active seconds of a profile to its week (relative; written with the playtime save). */
+    static void addWeekSeconds(Connection c, UUID profile, String weekKey, long seconds, long now) throws SQLException {
+        if (seconds <= 0) {
+            return;
+        }
+        int n = Sql.update(c, "UPDATE profile_active_week SET active_seconds = active_seconds + ?, updated_at = ? "
+                + "WHERE profile_key = ? AND week_key = ?", seconds, now, profile, weekKey);
+        if (n == 0) {
+            Sql.update(c, "INSERT INTO profile_active_week (profile_key, week_key, active_seconds, updated_at) VALUES (?, ?, ?, ?)",
+                    profile, weekKey, seconds, now);
+        }
+    }
+
+    static long weekSeconds(Connection c, UUID profile, String weekKey) throws SQLException {
+        return Sql.queryOne(c, "SELECT active_seconds FROM profile_active_week WHERE profile_key = ? AND week_key = ?",
+                rs -> rs.getLong(1), profile, weekKey).orElse(0L);
+    }
+
+    /** True when the profile already claimed {@code source} in {@code periodKey}. */
+    static boolean periodClaimed(Connection c, String source, UUID profile, String periodKey) throws SQLException {
+        return Sql.queryOne(c, "SELECT 1 FROM reward_claims WHERE reward_source = ? AND entry_id = ? AND scope_id = ? AND period_key = ?",
+                rs -> 1, source, source, profile, periodKey).isPresent();
+    }
+
+    static void insertPeriodClaim(Connection c, String source, UUID profile, String periodKey, UUID player, String key, long now)
+            throws SQLException {
+        Sql.update(c, "INSERT INTO reward_claims (reward_source, entry_id, scope_type, scope_id, period_key, claimed_by_profile, "
+                + "claimed_by_player, claimed_at, idempotency_key) VALUES (?, ?, 'PROFILE', ?, ?, ?, ?, ?, ?)",
+                source, source, profile, periodKey, profile, player, now, key);
+    }
+
     static void deleteProfile(Connection c, UUID profile) throws SQLException {
         Sql.update(c, "DELETE FROM daily_calendar WHERE profile_key = ?", profile);
         Sql.update(c, "DELETE FROM daily_claims WHERE profile_key = ?", profile);
         Sql.update(c, "DELETE FROM playtime_rewards WHERE profile_key = ?", profile);
+        Sql.update(c, "DELETE FROM profile_active_week WHERE profile_key = ?", profile);
+        Sql.update(c, "DELETE FROM reward_claims WHERE scope_type = 'PROFILE' AND scope_id = ?", profile);
         Sql.update(c, "DELETE FROM reward_grants WHERE profile_key = ? AND grant_state IN (?, ?)", profile, PENDING, DELIVERED);
     }
 }

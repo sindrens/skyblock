@@ -36,8 +36,9 @@ public final class AuctionConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ listings
 
-    @Setting(path = "listing.durations", desc = "Durations a seller can choose (12h, 24h, 48h decided). Max 7d.")
-    public List<String> durations = List.of("12h", "24h", "48h");
+    @Setting(path = "listing.durations", desc = "Durations a seller can choose (12h, 24h, 48h, 7d decided; C6-Q4). Max 7d. "
+            + "The fee does not depend on the duration.")
+    public List<String> durations = List.of("12h", "24h", "48h", "7d");
 
     @Setting(path = "listing.default-duration", desc = "Duration used when the seller doesn't choose one (must be in durations).")
     public String defaultDuration = "24h";
@@ -52,13 +53,13 @@ public final class AuctionConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ anti-abuse
 
-    @Setting(path = "anti-abuse.listing-cooldown-seconds", desc = "Seconds between two listings by the same player.", min = 0,
-            max = 3600)
-    public int listingCooldownSeconds = 10;
+    @Setting(path = "anti-abuse.listing-cooldown-seconds", desc = "Seconds between two listings by the same player. 0 = none "
+            + "(owner C6-Q3: no pacing, only the slots).", min = 0, max = 3600)
+    public int listingCooldownSeconds = 0;
 
     @Setting(path = "anti-abuse.relist.max-same-item", desc = "How often the same item type may be listed within the window "
-            + "(relist spam). 0 = no limit.", min = 0, max = 100)
-    public int relistMaxSameItem = 3;
+            + "(relist spam). 0 = no limit (owner C6-Q3: no pacing, only the slots).", min = 0, max = 100)
+    public int relistMaxSameItem = 0;
 
     @Setting(path = "anti-abuse.relist.window-minutes", desc = "Window of the relist limit (minutes).", min = 1, max = 1440)
     public int relistWindowMinutes = 30;
@@ -94,18 +95,19 @@ public final class AuctionConfig extends ModuleConfig {
     @Setting(path = "menu.search-max-length", desc = "Longest search text players can type.", min = 3, max = 64)
     public int searchMaxLength = 32;
 
-    @Setting(path = "menu.icons", desc = "Menu icons: name:MATERIAL (categories, sort, search, own listings, collection bin).")
+    @Setting(path = "menu.icons", desc = "Menu icons: name:MATERIAL (categories, sort, search, own listings, sell, refresh).")
     public List<String> icons = List.of("all:CHEST", "tools:DIAMOND_PICKAXE", "armor:IRON_CHESTPLATE", "blocks:GRASS_BLOCK",
             "materials:IRON_INGOT", "consumables:GOLDEN_APPLE", "cosmetics:NAME_TAG", "enchant_books:ENCHANTED_BOOK", "special:NETHER_STAR", "sort:HOPPER",
-            "search:OAK_SIGN", "clear-search:BARRIER", "mine:GOLD_BLOCK", "collection:ENDER_CHEST", "sell:EMERALD",
+            "search:OAK_SIGN", "clear-search:BARRIER", "mine:GOLD_BLOCK", "sell:EMERALD",
             "refresh:SPYGLASS", "staff-remove:LAVA_BUCKET");
+    // "collection:" lines of older files are ignored (the bin button is gone; items go to /box).
 
     @Setting(path = "staff.remove-reasons", desc = "Reasons staff pick from when removing a listing (logged, shown to the seller).")
     public List<String> staffRemoveReasons = List.of("Scam listing", "Bugged item", "Duped item", "Offensive name", "Testing");
 
     // ------------------------------------------------------------------ background work
 
-    @Setting(path = "tasks.expire-check-seconds", desc = "How often ended listings are moved to the collection bin.", min = 5,
+    @Setting(path = "tasks.expire-check-seconds", desc = "How often ended listings end (their items go to /box).", min = 5,
             max = 600, restart = true)
     public int expireCheckSeconds = 20;
 
@@ -116,6 +118,46 @@ public final class AuctionConfig extends ModuleConfig {
     @Setting(path = "tasks.cache-resync-seconds", desc = "How often the browse cache is reloaded from the database.", min = 10,
             max = 3600, restart = true)
     public int cacheResyncSeconds = 60;
+
+    @Setting(path = "notify.popup", desc = "Online sellers see an action bar line when an item sells (C7).")
+    public boolean notifyPopup = true;
+
+    // ------------------------------------------------------------------ buying gate (C1-R1-07) and price hints (C6)
+
+    @Setting(path = "buy-gate.enabled", desc = "Buying needs the earned amount of economy.yml send-gate.required ($10k) first, "
+            + "unless the seller is on the buyer's island. Fails closed: no economy gate = no buying.", level = Setting.Level.OWNER)
+    public boolean buyGateEnabled = true;
+
+    @Setting(path = "hints.enabled", desc = "Show the typical price of an item (median of recent sales) on listings and when listing.")
+    public boolean hintsEnabled = true;
+
+    @Setting(path = "hints.median-days", desc = "Days of sales the typical price looks at.", min = 1, max = 90)
+    public int hintsMedianDays = 7;
+
+    @Setting(path = "hints.min-sales", desc = "Sales an item needs in that window before a typical price shows.", min = 1, max = 1000)
+    public int hintsMinSales = 5;
+
+    @Setting(path = "hints.min-distinct-sellers", desc = "Different sellers needed before a typical price shows.", min = 1, max = 1000)
+    public int hintsMinSellers = 5;
+
+    @Setting(path = "hints.min-distinct-buyers", desc = "Different buyers needed before a typical price shows.", min = 1, max = 1000)
+    public int hintsMinBuyers = 5;
+
+    @Setting(path = "hints.warn-factor", desc = "A price this many times above or below the typical price asks for a second confirm.",
+            min = 1.5, max = 1000)
+    public double hintsWarnFactor = 10;
+
+    @Setting(path = "hints.refresh-minutes", desc = "How often the typical prices are recomputed (async).", min = 1, max = 1440,
+            restart = true)
+    public int hintsRefreshMinutes = 5;
+
+    @Setting(path = "hints.confirm-seconds", desc = "How long the second click/command of a far-from-typical price stays valid.",
+            min = 5, max = 300)
+    public int hintsConfirmSeconds = 30;
+
+    @Setting(path = "tasks.box-drain-seconds", desc = "How often items still waiting in the old collection table are moved to /box "
+            + "(retry after a box failure).", min = 10, max = 3600, restart = true)
+    public int boxDrainSeconds = 60;
 
     @Setting(path = "notify.join-delay-ticks", desc = "Ticks after joining before sales/expiry news is shown.", min = 0, max = 600)
     public int joinNoticeDelayTicks = 60;
@@ -130,6 +172,20 @@ public final class AuctionConfig extends ModuleConfig {
             }
         }
         return fallback;
+    }
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** C6 (ECON-SELL-SHOP-AH C1): no pacing, 7-day listings. Owner-edited values stay. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of(
+                "anti-abuse.listing-cooldown-seconds", ValueChange.of(10, 0),
+                "anti-abuse.relist.max-same-item", ValueChange.of(3, 0),
+                "listing.durations", ValueChange.of(List.of("12h", "24h", "48h"), List.of("12h", "24h", "48h", "7d"))));
     }
 
     /** R3-16: the 30-minute / new-account rule is gone (owner answers 131/203); its old keys are deleted on load. */

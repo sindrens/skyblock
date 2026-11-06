@@ -45,7 +45,7 @@ final class MergeLookMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         button(11, first);
         button(15, second);
         set(13, service.item(Material.ANVIL, viewer, WardrobeModule.ID, "menu.merge.look-info"));

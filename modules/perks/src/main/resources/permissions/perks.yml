@@ -46,3 +46,21 @@ skyblock.sudo.exempt:
 skyblock.perks.freerank:
   description: Claim the free rank and a tag once after 30 minutes of playtime (/freerank)
   default: true
+skyblock.rank.kit:
+  description: Open Rank rewards (/rankrewards) and claim the weekly rank kit (donor ranks, RANKS-V2)
+  default: false
+skyblock.rank.monthly:
+  description: Claim the monthly rank cosmetic in /rankrewards (donor ranks)
+  default: false
+skyblock.rank.kit.size.1:
+  description: Weekly rank kit size S (the highest size node wins)
+  default: false
+skyblock.rank.kit.size.2:
+  description: Weekly rank kit size M
+  default: false
+skyblock.rank.kit.size.3:
+  description: Weekly rank kit size L
+  default: false
+skyblock.rank.kit.size.4:
+  description: Weekly rank kit size XL
+  default: false

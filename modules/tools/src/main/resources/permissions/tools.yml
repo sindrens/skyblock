@@ -16,3 +16,6 @@ skyblock.tools.admin.blueprint:
 skyblock.tools.admin.skin:
   description: Staff /skin give <player> <skin> (adds to the skin collection)
   default: op
+skyblock.tools.world-bypass:
+  description: Keep Depths tools in every world (staff testing; owner 3 Nov 2026 world tools)
+  default: false

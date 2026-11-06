@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
  * Why a player teleports. Each reason has its own warmup and cooldown ({@code teleport.yml → <reason id>.*}) and its
  * own bypass permission (skips warmup, cooldown and the combat block; guards still apply to warmup teleports).
  *
- * <p>The bypass nodes are declared by the module that owns the feature (essentials: {@code skyblock.staff.teleport.bypass},
- * depths: {@code skyblock.depths.bypass}); an undeclared node still works through LuckPerms/op.</p>
+ * <p>The bypass node is declared by the essentials module ({@code skyblock.staff.teleport.bypass}); an undeclared node
+ * still works through LuckPerms/op. The Depths {@code dungeon} reason was removed with the Depths (owner 3 Nov 2026).</p>
  */
 public enum TeleportReason {
 
@@ -21,8 +21,6 @@ public enum TeleportReason {
     ISLAND_VISIT("island-visit", TeleportReason.STAFF_BYPASS),
     /** {@code /is warp}, warp signs and the warp browser. */
     ISLAND_WARP("island-warp", TeleportReason.STAFF_BYPASS),
-    /** {@code /dungeon} tier teleports (bypass: builders and admins with the Depths bypass, as before). */
-    DUNGEON("dungeon", "skyblock.depths.bypass"),
     /** The teleport after a profile switch (always instant: the switch already happened). */
     PROFILE("profile", TeleportReason.STAFF_BYPASS),
     /** Build portals (step in, land at the target): always instant; the 3 s combat delay is the portal's own rule. */

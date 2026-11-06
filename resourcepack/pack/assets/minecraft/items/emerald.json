@@ -1,0 +1,34 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_shop",
+     "type": "minecraft:model"
+    },
+    "when": "feature/shop"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_buy",
+     "type": "minecraft:model"
+    },
+    "when": "shop/buy"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/travel_market",
+     "type": "minecraft:model"
+    },
+    "when": "travel/market"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/emerald",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

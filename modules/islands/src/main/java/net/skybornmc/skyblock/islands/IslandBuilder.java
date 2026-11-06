@@ -223,12 +223,32 @@ final class IslandBuilder {
                     ? new Location(world, x + meta.home()[0] + 0.5, y + meta.home()[1], z + meta.home()[2] + 0.5, yaw, 0)
                     : new Location(world, x + 0.5, y + 1, z + 0.5, yaw, 0);
         }
+        if (config.farmEnabled) {
+            placeFarm(world, x, y, z);
+        }
         if (!SafeSpots.isSafe(home)) {
             home = SafeSpots.nearest(home, island.bounds(), config.safeSearchRadius, config.minBuildY, config.maxBuildY).orElse(home);
         }
         List<String> filled = fillChest(chest, island.owner());
         return new Build(new Island.Home(home.getX(), home.getY(), home.getZ(), home.getYaw(), home.getPitch()), source,
                 !filled.isEmpty(), filled);
+    }
+
+    /** The ready-made farm ({@link StarterFarm}), only into air; a bad block id is skipped and logged once. */
+    private void placeFarm(World world, int x, int y, int z) {
+        for (StarterFarm.Piece piece : StarterFarm.plan(config.farmOffsetX, config.farmOffsetZ, config.farmWidth, config.farmRows,
+                config.farmPlantedRows, config.farmCrop)) {
+            org.bukkit.block.Block block = world.getBlockAt(x + piece.dx(), y + piece.dy(), z + piece.dz());
+            if (!block.getType().isAir()) {
+                continue;
+            }
+            try {
+                block.setBlockData(Bukkit.createBlockData("minecraft:" + piece.block()), false);
+            } catch (IllegalArgumentException e) {
+                core.plugin().getLogger().warning("Islands: starter farm block '" + piece.block() + "' is not valid (skipped)");
+                return;
+            }
+        }
     }
 
     // ------------------------------------------------------------------ placeholder islet
@@ -297,20 +317,14 @@ final class IslandBuilder {
     }
 
     /**
-     * Puts the starter items into the chest. With the tutorial module running its custom starter chest is used
-     * (TUTORIAL §6, owner answer 158: starter kit, seeds, Field Guide...); otherwise the plain {@code starter-chest.items}
-     * list. Returns what was added ("material:amount"), empty if no chest.
+     * Puts the {@code starter-chest.items} into the chest (owner 3 Nov 2026 start flow; the tutorial's custom chest is
+     * gone). Returns what was added ("material:amount"), empty if no chest.
      */
     private List<String> fillChest(Block block, java.util.UUID ownerProfile) {
-        java.util.Optional<net.skybornmc.skyblock.common.tutorial.StarterContents> custom =
-                core.services().optional(net.skybornmc.skyblock.common.tutorial.StarterContents.class);
-        if (custom.isPresent()) {
-            try {
-                Block chestBlock = block != null && block.getState() instanceof Chest ? block : null;
-                return custom.get().fillChest(chestBlock, ownerProfile);
-            } catch (RuntimeException e) {
-                core.plugin().getLogger().log(Level.WARNING, "Islands: the tutorial's starter chest failed; using starter-chest.items", e);
-            }
+        if (config.starterChestClearBeforeFill && block != null && block.getState() instanceof Chest old) {
+            // A reused slot or a rebuild can leave a chest that still holds items: the new island starts with exactly the
+            // starter contents (the whole chest, both halves of a double chest).
+            old.getInventory().clear();
         }
         List<String> added = new ArrayList<>();
         if (block == null || !(block.getState() instanceof Chest chest)) {

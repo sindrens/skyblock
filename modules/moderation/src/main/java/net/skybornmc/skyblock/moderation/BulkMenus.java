@@ -248,7 +248,7 @@ final class BulkMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             set(13, MenuButton.display(service.item(Material.PAPER, viewer, MODULE, "bulk.result.info",
                     Msg.p("reason", plan.reasonName()), Msg.number("apply", summary.apply()),
                     Msg.number("request", summary.request()), Msg.number("skip", summary.skip()),

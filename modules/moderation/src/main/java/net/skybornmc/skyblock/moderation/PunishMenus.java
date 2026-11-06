@@ -347,7 +347,7 @@ final class PunishMenus {
             for (int slot = 0; slot < rows() * 9; slot++) {
                 set(slot, filler);
             }
-            frame(); // GUI-BUGS: the framework bar (45 Back, 48 ?, 49 Close, 50 Main menu) like every other menu
+            navBar(); // GUI-BUGS: the framework bar (45 Back, 48 ?, 49 Close, 50 Main menu) like every other menu
             ItemStack divider = service.filler(l.divider());
             for (int slot : l.dividerSlots()) {
                 set(slot, divider);
@@ -817,7 +817,7 @@ final class PunishMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.service().suggestionParts(viewer, suggestion);
             set(13, service.item(Material.PAPER, viewer, MODULE, "suggest.menu.info", parts));
             set(11, service.item(Material.LIME_CONCRETE, viewer, MODULE, "suggest.menu.apply", parts), click -> handle(true));
@@ -892,7 +892,7 @@ final class PunishMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             set(4, summary(this, service, viewer, target, module));
             int i = 0;
             for (Templates.Category category : module.templates().categories()) {
@@ -1088,7 +1088,7 @@ final class PunishMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             String type = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                     .serialize(service.text(viewer, MODULE, "types." + p.type().name().toLowerCase(Locale.ROOT)));
             List<Component> info = new ArrayList<>(service.lines(viewer, MODULE, "entry.info.lore", Msg.p("id", p.id()),
@@ -1282,7 +1282,7 @@ final class PunishMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.service().requestParts(viewer, request);
             set(13, service.item(Material.PAPER, viewer, MODULE, "approval.menu.info", parts));
             set(11, service.item(Material.LIME_CONCRETE, viewer, MODULE, "approval.menu.approve", parts), click -> {
@@ -1340,7 +1340,7 @@ final class PunishMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             net.kyori.adventure.text.minimessage.tag.resolver.TagResolver parts = module.service().requestParts(viewer, request);
             List<String> reasons = module.templates().config().extras().approval().denyReasons();
             for (int i = 0; i < reasons.size() && i < SLOTS.length; i++) {

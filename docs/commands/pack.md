@@ -1,18 +1,22 @@
-# Resource pack (`modules/pack`)
+# Icon pack (`modules/pack`): I7 v3, pack v2 phase 1
 
-Sends the Phoenix resource pack to Java players **in the configuration phase** (before the world loads) as a required pack with a prompt, and hosts the zip itself. Bedrock (Floodgate) players are skipped and get the text fallback. Settings: `pack.yml` (editable in `/admin`); kick and command texts: `messages/pack.yml`. Reload: `/pack reload` or `/skyblock reload pack`.
+A small Java pack that only repaints menu icons (`resourcepack/icons.json`, 75 icons). Every button stays its real vanilla base item; Java players with the pack **loaded** see our own picture on it. Bedrock, declined, failed, still loading, pack host down or pack off: the plain base item. Settings: `pack.yml` (typed, editable in `/admin`); kick, alert and command texts: `messages/pack.yml`. Reload: `/pack reload` or `/skyblock reload pack`.
 
 | Command | Description | Permission | Status |
 |---|---|---|---|
-| `/pack reload` | Reload `pack.yml`, re-extract and re-host the zip, resend it to everyone online (the `variant` switch takes effect here) | `skyblock.pack.reload` | ✅ |
-| `/pack status <player>` | Shows `LOADED`, `DECLINED`, `FAILED`, `BEDROCK`, `PENDING` or `DISABLED` for an online player | `skyblock.pack.status` | ✅ |
+| `/pack status` | One line: online players loaded / loading / Bedrock / other, and whether the pack host is up | `skyblock.pack.status` | ✅ |
+| `/pack status <player>` | Status of one online player (`loaded`, `pending`, `declined`, `failed`, `bedrock`, `disabled`, `skipped`) with a short explanation; tab completes online players | `skyblock.pack.status` | ✅ |
+| `/pack reload` | Reload `pack.yml` and `messages/pack.yml`, re-host the zip and offer the pack again to every online Java player (never enforced: declining that offer does not kick) | `skyblock.pack.reload` | ✅ |
+| `/pack glyphtest [type] [fill]` | Staff spike of the menu frame (GUI-FONT): opens a framed test menu for a Java player whose pack is loaded, ignoring the `gui.font.*` switches. `type` = `p3`, `p4`, `p6`, `list` (P6 with the 28 grid slots); `fill` = `full`, `sparse`, `empty`; both tab complete. In the menu: switch type (R+1), fill (R+2), plaque sample `SHOP` / `UPGRADES` / `STONE & EARTH` (R+3). Every item is a paper numbered with its slot. Bedrock / no pack: an error with your status. Player only | `skyblock.pack.glyphtest` | ✅ |
+
+There is no player command (a player switch is planned in GUI-P9).
 
 ## How it works
-- **Hosting:** the zips are inside the plugin jar. On start the chosen one (`variant: safe|shine`) is extracted to `plugins/PhoenixSkyblock/pack/`, its SHA-1 is checked against `pack-ids.yml`, and a small web server (`host.port`, default **25580**, TCP; open it in the firewall) serves only `GET /<file name>`. URL = `url` if set, else `http://<host.public-host>:<port>/<file name>`. The file name contains the hash, so an unchanged pack is cached by clients.
-- **Sending:** `AsyncPlayerConnectionConfigureEvent`; the connection waits for the client's final answer (up to `timeout-seconds`).
-  - **Declined** (and `required: true`): disconnected with `kick.declined`, which explains why and how to enable it (Multiplayer → Edit → Server Resource Packs: Enabled).
-  - **Failed / timed out** (and `kick-on-fail: true`): disconnected with `kick.failed` ("Couldn't download the pack, please rejoin").
-- **Rendering:** other modules ask `PackService#hasPack(viewer)`; only `LOADED` viewers get pack glyphs, backgrounds, badges and `pack-sound.*` sounds.
-- **Reload:** resends to online Java players with the same pack id, so a new hash replaces the old copy; their status is tracked from the client's answers.
+- **Sending:** after the player is in the world (`PlayerJoinEvent`), as a non-vanilla-required pack with the `prompt` text. A decline or a failed download (or no answer within `timeout-seconds`, 60) on that first offer kicks with `kick.declined` / `kick.failed`, which explain how to turn Server Resource Packs on. Only when `required: true` and the host is healthy.
+- **Waiting:** the first-join welcome (essentials) and the tutorial start/resume wait until the pack is answered, at most `join.wait-seconds` (15), so the prompt never covers the camera.
+- **Hosting:** the zip is inside the plugin jar; a tiny web server serves only `GET /phoenix-icons-<hash>.zip` on TCP `host.port` (25580, `ufw allow 25580/tcp`). URL = `url` if set, else `http://<host.public-host>:25580/<file>`. A copy is written to `plugins/PhoenixSkyblock/pack/`.
+- **Fail-open:** every `host.check-seconds` (60) the server downloads its own URL (`host.check-url` overrides, e.g. loopback) and compares the SHA-1. Until the first success and after `host.check-failures` (2) misses the pack is not sent and nobody is kicked; players with `skyblock.pack.alerts` get **one** alert per outage (`alert.host-down`, with the reason) and one `alert.host-up` line; both are in the audit log (`pack_host_down` / `pack_host_up`, category CONFIG). When the host comes up, players who were skipped are offered the pack (not enforced).
+- **Frame layer (GUI-FONT, `phoenix:frame` and `phoenix:title` fonts):** for Java players whose pack is LOADED, every 3, 4 or 6-row menu gets our panel (one colour, empty slots hidden), a soft tile behind each filled slot and a plaque with one cartoon all-caps noun above the panel; the scoreboard title and tab header can show our logo (HUD lane, `Glyphs#logoWide/logoSmall`). The title of such a menu is glyph text; Paper can only re-title with a legacy string, so the framework swaps the inventory (same holder and contents, no close) when the filled slots or the plaque change, at most once per `menus.yml gui.font.title-resend-min-ms` (500). Bedrock, no pack, declined, the player setting **Plain menus** (`/settings`, Display) and `gui.font.enabled: false` get the same layout on the plain chest with the plain title. Kill switches (`menus.yml`, `/admin`, `/skyblock reload core`): `gui.font.enabled`, `.panels` (also plaque and tiles), `.titles` (plaque), `.tiles`, `.logo`. Menus whose empty slots are real drop slots (sell chest, deliver screen) keep the plain chest (`Menu#panel()` false). Art: `resourcepack/frame/` (`tools/build_panels.py`).
+- **Statuses** are memory only (no tables). Other modules use `PackService` / `PackWait` from `common` and `MenuService#icon`.
 
-Permissions: `skyblock.pack.reload`, `skyblock.pack.status` (default op; granted in `server/permissions/pack.txt`: helper = status, admin = reload).
+Permissions: `skyblock.pack.status` (helper), `skyblock.pack.reload` (admin), `skyblock.pack.alerts` (mod, admin), `skyblock.pack.glyphtest` (admin); all default op. Grants: `server/permissions/pack.txt`.

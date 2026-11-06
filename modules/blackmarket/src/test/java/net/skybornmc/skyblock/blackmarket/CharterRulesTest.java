@@ -62,7 +62,7 @@ class CharterRulesTest {
     @Test
     void theGemPriceIsOptional() {
         assertEquals(List.of(new CharterRules.Step(11, 150, 0)), CharterRules.parseSteps(List.of("11: 150"), 9, p -> { }));
-        assertEquals(0, Purchases.priceOf(new CharterRules.Step(11, 150, 0), net.skybornmc.skyblock.common.economy.Currency.GEMS));
+        assertEquals(0, Purchases.priceOf(new CharterRules.Step(11, 150, 0), net.skybornmc.skyblock.common.economy.Currency.CREDITS_EARNED));
         assertEquals(150, Purchases.priceOf(new CharterRules.Step(11, 150, 0), net.skybornmc.skyblock.common.economy.Currency.SHARDS));
     }
 }

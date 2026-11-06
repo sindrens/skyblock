@@ -7,6 +7,7 @@ import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.audit.AuditCategory;
 import net.skybornmc.skyblock.common.db.Database;
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.grind.GrindBreakEvent;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import net.skybornmc.skyblock.common.skills.SkillLevelUpEvent;
 import net.skybornmc.skyblock.common.profile.ProfileDeletedEvent;
@@ -358,15 +359,27 @@ final class SkillManager implements SkillService, Listener {
         }
     }
 
-    /** Mining/Foraging XP for a resource block broken in The Depths (called by {@link DepthsXpListener}). */
-    void onResourceBreak(Player player, String blockId) {
-        double mining = tables.xp(SkillType.MINING, blockId);
-        if (mining > 0) {
-            addXp(player, SkillType.MINING, mining, "depths_block");
+    /**
+     * Mining XP for an ore broken at {@code /mine} and Farming XP for a crop harvested at {@code /farm} (essentials grind
+     * areas; owner 3 Nov 2026, replaces the Depths resource blocks). The block is the one the player saw (their own ore or
+     * crop). Diamond and emerald fall back to the deepslate entry of the XP table.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGrindBreak(GrindBreakEvent event) {
+        Player player = event.getPlayer();
+        if (event.farm()) {
+            if (config.grindFarmXp > 0) {
+                addXp(player, SkillType.FARMING, config.grindFarmXp, "grind_crop");
+            }
+            return;
         }
-        double foraging = tables.xp(SkillType.FORAGING, blockId);
-        if (foraging > 0) {
-            addXp(player, SkillType.FORAGING, foraging, "depths_log");
+        String id = event.block().getKey().getKey();
+        double mining = tables.xp(SkillType.MINING, id);
+        if (mining <= 0 && id.endsWith("_ore")) {
+            mining = tables.xp(SkillType.MINING, "deepslate_" + id);
+        }
+        if (mining > 0) {
+            addXp(player, SkillType.MINING, mining, "grind_block");
         }
     }
 
@@ -413,7 +426,7 @@ final class SkillManager implements SkillService, Listener {
                     Msg.p("percent", XpFormat.percent(progress(player.getUniqueId(), e.getKey()))),
                     Msg.p("level", level(player, e.getKey()))));
         }
-        player.sendActionBar(line);
+        net.skybornmc.skyblock.common.hud.ActionBars.show(player, "xp", line, net.skybornmc.skyblock.common.hud.ActionBars.XP, config.actionBarIntervalMs); // one clean line (plan T1)
     }
 
     Component skillName(Audience viewer, SkillType skill) {

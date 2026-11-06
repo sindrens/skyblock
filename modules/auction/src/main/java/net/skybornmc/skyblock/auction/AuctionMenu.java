@@ -21,15 +21,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * {@code /ah}: active listings in the 28 content slots. Top row: sell held item, my listings, summary, collection bin,
- * refresh. Bottom row: category and sort (each opens a pick list), search (chat prompt); clear search in the top row. Every action works with a plain tap (Bedrock).
+ * {@code /ah}: active listings in the 28 content slots. Top row: sell held item, my listings, summary, refresh (C3: the
+ * collection bin is gone, items come back through /box). Bottom row: category and sort (each opens a pick list), search (chat prompt); clear search in the top row. Every action works with a plain tap (Bedrock).
  */
 final class AuctionMenu extends PagedMenu<Listing> {
 
     static final int SLOT_SELL = 2;
     static final int SLOT_MINE = 3;
     static final int SLOT_SUMMARY = 4;
-    static final int SLOT_COLLECTION = 5;
     static final int SLOT_REFRESH = 6;
     static final int SLOT_CATEGORY = 46;
     static final int SLOT_SORT = 47;
@@ -58,8 +57,6 @@ final class AuctionMenu extends PagedMenu<Listing> {
     private Category category; // null = all
     private Sort sort = Sort.NEWEST;
     private String search;
-    /** Items in the viewer's collection bin, loaded once per open (null = not loaded yet). */
-    private Integer binCount;
 
     AuctionMenu(AuctionModule module) {
         this.module = module;
@@ -88,11 +85,6 @@ final class AuctionMenu extends PagedMenu<Listing> {
     @Override
     protected void tick() {
         refresh();
-    }
-
-    @Override
-    protected void onClose() {
-        binCount = null; // reload when it is opened again (e.g. back from the collection bin)
     }
 
     @Override
@@ -146,14 +138,6 @@ final class AuctionMenu extends PagedMenu<Listing> {
         set(SLOT_MINE, service.item(cfg.icon("mine", Material.GOLD_BLOCK), viewer, AuctionModule.ID, "browse.mine",
                 Msg.number("used", ownCount()), Msg.number("slots", module.slots(viewer))), click -> openMine());
         set(SLOT_SUMMARY, summary());
-        if (binCount == null) {
-            setAsync(SLOT_COLLECTION, module.engine().store().collectionCount(module.key(viewer)).thenApply(count -> {
-                binCount = count;
-                return collectionButton(count);
-            }));
-        } else {
-            set(SLOT_COLLECTION, collectionButton(binCount));
-        }
         set(SLOT_REFRESH, service.item(cfg.icon("refresh", Material.SPYGLASS), viewer, AuctionModule.ID, "browse.refresh"),
                 click -> module.engine().refreshCache().thenRun(() -> module.core.scheduler().main("auction:refresh", this::refresh)));
 
@@ -161,9 +145,10 @@ final class AuctionMenu extends PagedMenu<Listing> {
         set(SLOT_CATEGORY, filterButton(categoryIcon(category), "browse.category", categoryName(category)), click -> pickCategory());
         set(SLOT_SORT, filterButton(cfg.icon("sort", Material.HOPPER), "browse.sort",
                 service.text(viewer, AuctionModule.ID, "sort." + sort.key())), click -> pickSort());
-        set(SLOT_SEARCH, service.item(cfg.icon("search", Material.OAK_SIGN), viewer, AuctionModule.ID,
-                search == null ? "browse.search" : "browse.search-active", Msg.p("search", search == null ? "" : search)),
-                click -> askSearch());
+        String searchKey = search == null ? "browse.search" : "browse.search-active";
+        TagResolver searchTag = Msg.p("search", search == null ? "" : search);
+        set(SLOT_SEARCH, service.icon(viewer, "nav/search", service.text(viewer, AuctionModule.ID, searchKey + ".name", searchTag),
+                service.lines(viewer, AuctionModule.ID, searchKey + ".lore", searchTag)), click -> askSearch());
         if (search != null) {
             set(SLOT_CLEAR, service.item(cfg.icon("clear-search", Material.BARRIER), viewer, AuctionModule.ID, "browse.clear-search",
                     Msg.p("search", search)), click -> {
@@ -174,24 +159,12 @@ final class AuctionMenu extends PagedMenu<Listing> {
         }
     }
 
-    private MenuButton collectionButton(int count) {
-        return MenuButton.of(glow(service.item(module.config.icon("collection", Material.ENDER_CHEST), viewer, AuctionModule.ID,
-                count > 0 ? "browse.collection-full" : "browse.collection", Msg.number("count", count)), count > 0),
-                click -> CollectionMenu.open(module, viewer, this));
-    }
-
     private ItemStack summary() {
         long balance = module.economy().cached(viewer.getUniqueId(), Currency.MONEY).orElse(0);
         return service.item(Material.BOOK, viewer, AuctionModule.ID, "browse.summary",
                 Msg.number("listings", module.engine().activeListings().size()), module.moneyTag("balance", viewer, balance),
+                Msg.number("used", ownCount()), Msg.number("slots", module.slots(viewer)),
                 Msg.p("fee", AuctionModule.percent(module.config.feePercent)), Msg.p("tax", AuctionModule.percent(module.config.taxPercent)));
-    }
-
-    private static ItemStack glow(ItemStack item, boolean glow) {
-        if (glow) {
-            item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
-        }
-        return item;
     }
 
     private int ownCount() {
@@ -280,9 +253,8 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 service.sound(viewer, "error");
                 return;
             }
-            if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)
-                    || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.tutorial.Gates.AUCTION)) {
-                return; // P7: blocked trading or frozen balance; TUTORIAL §4: locked until the sell step
+            if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(module.core.services(), viewer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.AUCTION_LIST)) {
+                return; // P7: blocked trading or frozen balance
             }
             Optional<String> problem = module.sellProblem(viewer, viewer.getInventory().getItem(slot), price);
             if (problem.isPresent()) {
@@ -358,6 +330,10 @@ final class AuctionMenu extends PagedMenu<Listing> {
             lore.addAll(existing);
         }
         lore.addAll(module.core.menus().lines(viewer, AuctionModule.ID, "browse.entry.lore", p));
+        java.util.OptionalDouble typical = module.typicalPrice(l);
+        if (typical.isPresent()) {
+            lore.add(module.core.menus().text(viewer, AuctionModule.ID, "browse.entry.typical", module.typicalTag(viewer, typical.getAsDouble())));
+        }
         lore.addAll(module.core.menus().lines(viewer, AuctionModule.ID, actionKey, p));
         item.lore(lore);
         return item;

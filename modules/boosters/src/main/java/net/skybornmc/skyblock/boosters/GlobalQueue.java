@@ -78,6 +78,18 @@ final class GlobalQueue {
         return Optional.empty();
     }
 
+    /** The active booster that ends first (scoreboard timer; no allocation), or null. */
+    Entry soonestActive() {
+        Entry best = null;
+        for (int i = 0; i < entries.size(); i++) {
+            Entry e = entries.get(i);
+            if (e.active && e.remaining > 0 && (best == null || e.remaining < best.remaining)) {
+                best = e;
+            }
+        }
+        return best;
+    }
+
     /** All active boosters, in id order. */
     List<Entry> active() {
         return entries.stream().filter(e -> e.active).toList();

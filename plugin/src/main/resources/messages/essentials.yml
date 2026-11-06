@@ -130,6 +130,12 @@ fly:
   disabled-notify: "<prefix><c:text>Your /fly was turned off <c:muted>(<staff>)</c:muted>."
   game-mode: "<prefix><c:warning><sym:dot></c:warning> <c:text>You always fly in <c:value><mode></c:value><c:text>. /fly is for survival."
   game-mode-other: "<prefix><c:warning><sym:dot></c:warning> <c:value><player></c:value> <c:text>is in <c:value><mode></c:value> <c:text>and always flies."
+  # Feedback 4 Nov 2026 (E17): /fly with the rank perk (skyblock.fly) = island fly, toggled.
+  player:
+    "on": "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>on</c:value><c:text>. Double-tap jump to fly. It works on your island and on islands that let visitors fly."
+    "off": "<prefix><c:success><sym:check></c:success> <c:text>Fly <c:value>off</c:value><c:text>. Type <c:action>/fly</c:action> <c:text>to turn it on again."
+    not-here: "<prefix><c:warning><sym:dot></c:warning> <c:text>You can't fly here. Fly is <c:value>on</c:value> <c:text>and starts on your island, or on an island that lets visitors fly."
+    unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Fly is not available right now (islands are off). Try again later."
 
 speed:
   fly: "<prefix><c:success><sym:check></c:success> <c:text>Fly speed: <c:value><speed></c:value>."
@@ -220,8 +226,8 @@ join:
     fade-in: 5
     stay: 40
     fade-out: 10
-  # Shown only when the tutorial does not welcome the player (tutorial off, staff): the tutorial's start title and chat are
-  # the one welcome otherwise (owner U2).
+  # First-join chat welcome. The title (first-title) is skipped when the start guide creates the island at once (its
+  # own title is the welcome then, owner U2).
   first-welcome:
     - ""
     - "  <grad:phoenix><bold>Welcome to Phoenix Skyblock!</bold></grad>"
@@ -258,3 +264,36 @@ command-hints:
   did-you-mean: "<prefix><c:error><sym:cross></c:error> <c:text>Unknown command <c:value>/<command></c:value>. Did you mean <c:action><suggestion></c:action><c:text>?"
   hover: "<c:text>Click to type <c:value><suggestion>"
   unknown: "<prefix><c:error><sym:cross></c:error> <c:text>Unknown command <c:value>/<command></c:value>. See <c:action>/help</c:action><c:text>."
+
+# Temporary grind areas: /farm, /mine, /dungeon (owner 3 Nov 2026).
+grind:
+  bonus: "<c:success>+<amount></c:success> <c:muted>bonus"
+  unlocked: "<prefix><c:success><sym:star></c:success> <c:text>New crop unlocked: <c:value><crop></c:value><c:text>! The farm now grows it for you."
+  progress: "<c:text>Next crop <c:value><crop></c:value><c:text>: <c:value><have></c:value><c:muted>/<need> harvested"
+  unlocked-ore: "<prefix><c:success><sym:star></c:success> <c:text>New ore unlocked: <c:value><ore></c:value><c:text>! The whole mine is that ore for you now."
+  progress-ore: "<c:text>Next ore <c:value><ore></c:value><c:text>: <c:value><have></c:value><c:muted>/<need> mined"
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>The farm, mine and dungeon are not ready yet. Tell staff."
+  arrived:
+    farm: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Farm</c:value><c:text>. Break ripe wheat, it grows back in seconds. Sell it with <c:value>/sell</c:value><c:text>."
+    mine: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Mine</c:value><c:text>. Every block comes back a few seconds after you mine it."
+    dungeon: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Dungeon</c:value><c:text>. Monsters keep coming while you're inside. Good luck!"
+
+# Start guide (owner 3 Nov 2026, replaces the tutorial). <guide> = the guide NPC's name (messages/npcs.yml roles.guide.name).
+start:
+  # Used only when messages/npcs.yml has no name for the guide role.
+  guide-name: "Rowan"
+  bossbar: "<c:flame><bold>Go to spawn and talk to <guide></bold>"
+  # Scoreboard "Next:" line (plain text) until the player talked to the guide.
+  objective: "Talk to <guide> at spawn"
+  welcome: "<prefix><c:success><sym:check></c:success> <c:value><guide></c:value><c:text>: Welcome, <c:value><player></c:value><c:text>! Your island, the farm and the mine are one click away. Open this again with <c:value>/start</c:value><c:text>."
+  menu:
+    title: "<guide>"
+    island:
+      name: "<c:flame><bold>Island</bold>"
+      lore: ["<c:text>Your own island in the sky.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go home"]
+    farm:
+      name: "<c:flame><bold>Farm</bold>"
+      lore: ["<c:text>Harvest crops for money and XP.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go to the farm"]
+    mine:
+      name: "<c:flame><bold>Mine</bold>"
+      lore: ["<c:text>Mine ores for money and XP.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go to the mine"]

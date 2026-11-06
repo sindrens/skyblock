@@ -48,6 +48,12 @@ final class TaskDeliverMenu extends Menu {
         return 6;
     }
 
+    /** GUI-FONT 6.3: empty slots here are real drop slots, so this menu keeps the plain chest (no panel). */
+    @Override
+    public boolean panel() {
+        return false;
+    }
+
     @Override
     public Component title() {
         return service.title(viewer, text("tasks.book.crumb"), text("tasks.deliver.crumb"));
@@ -85,7 +91,7 @@ final class TaskDeliverMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TaskDef def = menus.tasks().catalog().get(taskId).orElse(null);
         if (def == null) {
             return;

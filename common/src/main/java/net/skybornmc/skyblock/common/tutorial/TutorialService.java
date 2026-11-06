@@ -1,62 +1,46 @@
 package net.skybornmc.skyblock.common.tutorial;
 
-import net.skybornmc.skyblock.common.menu.Menu;
+import net.skybornmc.skyblock.common.service.ServiceRegistry;
 import org.bukkit.entity.Player;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
- * The join tutorial as seen by other modules (TUTORIAL.md §9.1), published by the tutorial module:
- * {@code core.services().optional(TutorialService.class)}. Progress is per <b>account</b> (player UUID), never per
- * profile (TQ3). Main thread.
+ * The guided tour {@code /tutorial} (tutorial module, docs/planning/PLAN_TUTORIAL_CHAT.md section 3) as seen by other
+ * modules: {@code TutorialService.of(core.services())}. Owner 4 Nov 2026: a new player always knows what to do, so the
+ * boss bar, the scoreboard "Next" line, Kindle, /help and /start all show the same step from here. Main thread.
  */
 public interface TutorialService {
 
-    /** Where an account stands. */
-    enum State {
-        /** Joined after the tutorial existed and has not walked into the island portal yet. */
-        NEW,
-        /** Running: {@link #currentStep} is the step to do. */
-        ACTIVE,
-        /** Done (reward paid). */
-        FINISHED,
-        /** Played before the tutorial existed: everything open, no reward (TQ6). */
-        LEGACY,
-        /** Finished by staff without a reward. */
-        STAFF_SKIPPED;
-
-        /** True when every lock is open. */
-        public boolean complete() {
-            return this == FINISHED || this == LEGACY || this == STAFF_SKIPPED;
-        }
-    }
-
-    /** The account's state, empty while it is not loaded (offline players). */
-    Optional<State> state(UUID player);
-
-    /** The step id the player has to do now ({@code chest}, {@code mine}...), empty when not running. */
-    Optional<String> currentStep(UUID player);
-
-    /** True while the tutorial runs for this online player. */
-    default boolean isActive(Player player) {
-        return player != null && state(player.getUniqueId()).orElse(null) == State.ACTIVE;
+    static Optional<TutorialService> of(ServiceRegistry services) {
+        return services.optional(TutorialService.class);
     }
 
     /**
-     * True when the tutorial gives this joining player the welcome (one title + one chat block with one next step, owner
-     * U2), so the join flow must not show its own first-join title and chat block on top of it.
+     * The player's next step.
+     *
+     * @param chapter chapter name, plain text ({@code The Farm})
+     * @param text    the step, plain text and short ({@code Meet Bramble at /farm}); fits the scoreboard
+     * @param hint    one short plain sentence on where to go or what to do (may be empty)
+     * @param command command without slash that takes the player there or opens the right screen (may be empty)
      */
-    default boolean welcomes(Player player) {
-        return false;
+    record NextStep(String chapter, String text, String hint, String command) {
     }
 
-    /** Starts the tutorial at its first step (nothing happens when it is running or complete). */
-    void start(Player player);
+    /** The player's next tutorial step; empty when the tutorial is finished, skipped, off or still loading. */
+    Optional<NextStep> next(Player player);
 
-    /** Opens the {@code /tutorial} menu. */
-    void openMenu(Player player);
+    /** Opens the pages of Rowan's {@code /start} menu: the current chapter and what's next, plus Island, Farm and Mine. */
+    void openStart(Player player);
 
-    /** Staff view for {@code /inspect}: status, skip, reset. {@code back} is the inspect menu. */
-    void openStaffView(Player staff, UUID player, String name, Menu back);
+    /** Opens {@code /tutorial} (the quest book; a chest menu on Bedrock). */
+    void open(Player player);
+
+    /**
+     * True while the tutorial shows its own boss bar for this player's start, so the start flow's "Talk to Rowan" bar
+     * (essentials) stays hidden.
+     */
+    default boolean ownsStartBar() {
+        return true;
+    }
 }

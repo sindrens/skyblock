@@ -43,7 +43,7 @@ final class FreeRankMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Cosmetics cosmetics = freeRank.cosmetics();
         for (int i = 0; i < choices.size() && i < SLOTS.length; i++) {
             String tag = choices.get(i);

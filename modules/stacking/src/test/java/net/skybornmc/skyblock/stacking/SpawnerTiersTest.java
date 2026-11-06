@@ -26,11 +26,12 @@ class SpawnerTiersTest {
         assertEquals(List.of(), problems);
         assertEquals(1, tiers.tier("pig").orElseThrow());
         assertEquals(2, tiers.tier("cave_spider").orElseThrow());
-        assertEquals(3, tiers.tier("magma_cube").orElseThrow());
+        assertEquals(3, tiers.tier("creeper").orElseThrow());
+        assertTrue(tiers.tier("magma_cube").isEmpty(), "ECON-SPAWNERS: magma cube is legacy (not in the tier lists)");
         assertEquals(4, tiers.tier("blaze").orElseThrow());
         assertEquals(5, tiers.tier("iron_golem").orElseThrow());
         assertEquals(5, tiers.tier("minecraft:EVOKER").orElseThrow());
-        assertEquals(30, tiers.types().size()); // 5 + 6 + 6 + 7 + 6
+        assertEquals(23, tiers.types().size()); // ECON-SPAWNERS: 5 + 5 + 5 + 5 + 3 (premium)
         assertEquals("pig", tiers.types().getFirst());
     }
 
@@ -62,8 +63,8 @@ class SpawnerTiersTest {
         List<String> problems = new ArrayList<>();
         List<SpawnerTiers.RareDrop> drops = SpawnerTiers.rareDrops(DEFAULTS.rareDrops, id -> true, id -> true, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(List.of(new SpawnerTiers.RareDrop("evoker", "totem_of_undying", 0.02),
-                new SpawnerTiers.RareDrop("shulker", "shulker_shell", 0.05)), drops);
+        // ECON-SPAWNERS: the shulker line left with the shulker (legacy); the evoker totem stays.
+        assertEquals(List.of(new SpawnerTiers.RareDrop("evoker", "totem_of_undying", 0.02)), drops);
     }
 
     @Test

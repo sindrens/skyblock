@@ -17,12 +17,18 @@ public final class RewardsSettings extends ModuleConfig {
     @Setting(path = "calendar.enabled", desc = "Daily calendar on (/daily, the Daily Rewards NPC).")
     public boolean calendarEnabled = true;
 
+    @Setting(path = "calendar.streak-grace-days", desc = "Owner 4 Nov 2026: days you may miss without losing the streak (1 = one missed day is fine, two break it).", min = 0, max = 7)
+    public int graceDays = 1;
+
+    @Setting(path = "calendar.min-online-minutes", desc = "Owner 4 Nov 2026 (anti-alt): minutes to play in this session before the daily reward can be claimed (0 = at once).", min = 0, max = 120)
+    public int minOnlineMinutes = 10;
+
     @Setting(path = "calendar.zone", desc = "Time zone of the daily reset (00:00 there; RX19: Europe/Oslo). Read at every claim.",
             level = Setting.Level.OWNER)
     public String zone = "Europe/Oslo";
 
     @Setting(path = "calendar.days", desc = "The calendar, one line per day: '<day>: <reward>'. Rewards: money <minutes of income "
-            + "at your tier> | crystals <pouch base> | gems <n> | key <crate> [n] | fuel <minutes> | booster <sell|skill_xp|tool_xp|"
+            + "at your tier> | crystals <pouch base> | credits <n> (earned credits; old word gems) | key <crate> [n] | fuel <minutes> | booster <sell|skill_xp|tool_xp|"
             + "crystals> <percent> <minutes> | book <rarity> [level] | scroll [n] | tome. End a line with 'fallback <crystals>' for "
             + "the crystal base paid when that system is not there yet. After the last day it starts at day 1 again (P10-17).",
             level = Setting.Level.OWNER)
@@ -78,23 +84,59 @@ public final class RewardsSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ streak
 
-    @Setting(path = "streak.gem-every", desc = "Every this many streak days pays the streak gems (§9.2: every 7 days). 0 = off.",
+    @Setting(path = "streak.credits-every", desc = "Every this many streak days pays the streak credits (earned; §9.2: every 7 "
+            + "days). 0 = off.",
             min = 0, max = 365, level = Setting.Level.OWNER)
-    public int gemEvery = 7;
+    public int creditsEvery = 7;
 
-    @Setting(path = "streak.gems", desc = "Gems paid every 'gem-every' streak days (§9.2: 10).", min = 0, max = 1_000,
+    @Setting(path = "streak.credits", desc = "Earned credits paid every 'credits-every' streak days (§9.2: 10).", min = 0, max = 1_000,
             level = Setting.Level.OWNER)
-    public long gems = 10;
+    public long credits = 10;
 
     @Setting(path = "streak.titles", desc = "Streak titles, '<streak days>: <title id>' (titles are account-wide). Display names: "
             + "messages/rewards.yml -> titles.<id>.", level = Setting.Level.OWNER)
     public List<String> streakTitles = List.of("30: devoted", "100: unbroken");
 
-    @Setting(path = "streak.save-enabled", desc = "Show the 'Save streak' button (100 store credits within 2 days, R5). Stays hidden "
-            + "until the store exists (Phase 11) even when on.", level = Setting.Level.OWNER)
+    @Setting(path = "streak.save-enabled", desc = "Show the 'Save streak' button (save a broken streak for 100 credits within 2 days, R5). "
+            + "Stays hidden until the credit shop exists (Phase 11) even when on.", level = Setting.Level.OWNER)
     public boolean saveEnabled = false;
 
     // ------------------------------------------------------------------ playtime
+
+    // ------------------------------------------------------------------ Reward Core: /rewards, Weekly, Monthly (spec 4-6)
+
+    @Setting(path = "menu.enabled", desc = "The /rewards menu (Daily, Weekly, Monthly, Battle pass on one screen, Claim all) and "
+            + "/weekly, /monthly. While on, the /menu Rewards count leaves out waiting votes and a second join line points to "
+            + "/vote (spec G1). Off by default until the release (golden rule 10).", level = Setting.Level.OWNER)
+    public boolean menuEnabled = false;
+
+    @Setting(path = "join-notice.votes", desc = "With the /rewards menu on: a second join line when votes are waiting "
+            + "(\"You have N votes waiting. /vote\").")
+    public boolean joinNoticeVotes = true;
+
+    @Setting(path = "weekly.enabled", desc = "Weekly Reward: once a week (Monday 00:00) per profile, after weekly.required-minutes "
+            + "of active play on that profile that week (owner W1b). Unclaimed = lost. Off by default until the release.",
+            level = Setting.Level.OWNER)
+    public boolean weeklyEnabled = false;
+
+    @Setting(path = "weekly.required-minutes", desc = "Active minutes on the profile this week before the Weekly Reward opens "
+            + "(owner W1b: 3 h). Per profile, never summed over profiles.", min = 0, max = 10_080, level = Setting.Level.OWNER)
+    public int weeklyRequiredMinutes = 180;
+
+    @Setting(path = "weekly.rewards", desc = "Weekly Reward contents, one reward per line (same words as calendar.days, plus "
+            + "'pass-xp <n>'; no shards: they only come from shard blocks). Keys are bound (owner F5a: one Blaze key). Placeholders for the balance run.",
+            level = Setting.Level.OWNER)
+    public List<String> weeklyRewards = List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25", "booster tool_xp 25 30 fallback 25",
+            "crystals 60", "key blaze fallback 60");
+
+    @Setting(path = "monthly.enabled", desc = "Monthly Reward (/monthly): once a month (the 1st 00:00) per profile, no requirement "
+            + "(owner F5c). Unclaimed = lost. Off by default until the release.", level = Setting.Level.OWNER)
+    public boolean monthlyEnabled = false;
+
+    @Setting(path = "monthly.rewards", desc = "Monthly Reward contents, one reward per line (owner F5b: bigger, two bound keys). "
+            + "Placeholders for the balance run.", level = Setting.Level.OWNER)
+    public List<String> monthlyRewards = List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+            "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150", "key blaze 2 fallback 120");
 
     @Setting(path = "playtime.enabled", desc = "Playtime rewards on (R6): active play only, per profile.")
     public boolean playtimeEnabled = true;
@@ -173,6 +215,34 @@ public final class RewardsSettings extends ModuleConfig {
 
     @Setting(path = "npc.daily-role", desc = "NPC role whose click opens /daily (sneak-click keeps the help text).")
     public String npcRole = "daily";
+
+    /**
+     * Version 2 (card C1): gems were renamed credits (earned credits); the gem keys are moved. Version 3 (ECON-SHARDS H11,
+     * owner 1 Nov 2026 "shards only from blocks, no other rewards"): the shard lines leave the untouched Weekly and Monthly
+     * defaults (an owner-edited list stays).
+     */
+    @Override
+    public int version() {
+        return 3;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of(
+                "weekly.rewards", ValueChange.of(List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25",
+                        "booster tool_xp 25 30 fallback 25", "crystals 60", "key blaze fallback 60", "shards 25"), List.of("pass-xp 400",
+                        "booster skill_xp 25 30 fallback 25", "booster tool_xp 25 30 fallback 25", "crystals 60", "key blaze fallback 60")),
+                "monthly.rewards", ValueChange.of(List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+                        "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150",
+                        "key blaze 2 fallback 120", "shards 100"), List.of("pass-xp 1500", "booster skill_xp 25 120 fallback 60",
+                        "booster tool_xp 25 120 fallback 60", "booster crystals 25 60 fallback 60", "crystals 150",
+                        "key blaze 2 fallback 120"))));
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of("streak.gem-every", "streak.credits-every", "streak.gems", "streak.credits"));
+    }
 
     @Override
     public String fileName() {

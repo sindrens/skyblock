@@ -308,9 +308,8 @@ public final class TradeModule implements SkyblockModule, Listener {
     void request(Player sender, Player target) {
         // P7 (spec 13.1): blocked trading / frozen balance, on either side
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), sender, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
-                || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), sender, target, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
-                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), sender, net.skybornmc.skyblock.common.tutorial.Gates.TRADE)) {
-            return; // TUTORIAL §4: /trade opens when the tutorial is finished
+                || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), sender, target, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
+            return;
         }
         long now = now();
         boolean self = sender.equals(target);
@@ -362,9 +361,8 @@ public final class TradeModule implements SkyblockModule, Listener {
 
     void accept(Player p, String name) {
         Player from = pickRequester(p, name, "accept");
-        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE) || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), p, from, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)
-                || net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), p, net.skybornmc.skyblock.common.tutorial.Gates.TRADE)) {
-            return; // P7: blocked trading / frozen balance, on either side; TUTORIAL §4: locked until the finish
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE) || net.skybornmc.skyblock.common.moderation.SanctionService.deniedOther(core.services(), p, from, net.skybornmc.skyblock.common.moderation.SanctionService.Use.TRADE)) {
+            return; // P7: blocked trading / frozen balance, on either side
         }
         long now = now();
         Optional<TradeRules.Problem> problem = TradeRules.request(false, state(p), state(from), true, 0);
@@ -677,7 +675,11 @@ public final class TradeModule implements SkyblockModule, Listener {
         if (s == null || !s.editable()) {
             return;
         }
+        if (!currency.transferable()) {
+            return; // crystals and earned credits can never be offered (hard rule; they are never listed either)
+        }
         TradeSession.Side side = s.side(p.getUniqueId());
+        // For credits this is the BOUGHT half only: earned credits are never tradeable (C1-R2-02).
         long balance = economy().cached(p.getUniqueId(), currency).orElse(0L);
         Optional<TradeRules.MoneyProblem> problem = TradeRules.money(currencies().contains(currency), amount, side.money(currency),
                 balance);
@@ -698,7 +700,7 @@ public final class TradeModule implements SkyblockModule, Listener {
             return;
         }
         UUID partner = s.other(p.getUniqueId()).profile;
-        gate.get().check(side.profile, partner, currency).whenCompleteAsync((check, error) -> {
+        gate.get().check(side.profile, partner, currency, amount).whenCompleteAsync((check, error) -> {
             if (!p.isOnline() || sessions.get(p.getUniqueId()) != s) {
                 return;
             }
@@ -706,6 +708,10 @@ public final class TradeModule implements SkyblockModule, Listener {
                 core.plugin().getLogger().log(Level.WARNING, "Trade: the send check for " + p.getName() + " failed", error);
                 send(p, "error");
                 sound(p, "error");
+                return;
+            }
+            if (!check.allowed() && check.kind() != net.skybornmc.skyblock.common.economy.SendGate.Kind.EARNED) {
+                gate.get().tell(p, check); // owner 6 Nov 2026: daily pay limit, island-only shards
                 return;
             }
             if (!check.allowed()) {

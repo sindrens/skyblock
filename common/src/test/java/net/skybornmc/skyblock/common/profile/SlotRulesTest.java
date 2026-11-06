@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SlotRulesTest {
 
     private static SlotRules.Unlock gems(int slot) {
-        return new SlotRules.Unlock(slot, SlotSource.GEMS, 0, 1L);
+        return new SlotRules.Unlock(slot, SlotSource.CREDITS, 0, 1L);
     }
 
     @Test
@@ -42,7 +42,7 @@ class SlotRulesTest {
 
     @Test
     void boughtSlotWinsOverRankAndStaysWhenTheRankIsLost() {
-        assertEquals(Optional.of(SlotSource.GEMS), SlotRules.source(2, List.of(gems(2)), s -> true));
+        assertEquals(Optional.of(SlotSource.CREDITS), SlotRules.source(2, List.of(gems(2)), s -> true));
         assertTrue(SlotRules.unlocked(2, List.of(gems(2)), s -> false));
     }
 

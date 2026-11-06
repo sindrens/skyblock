@@ -90,4 +90,24 @@ public interface SellService {
     default boolean openSellChest(Player player, net.skybornmc.skyblock.common.menu.Menu parent) {
         return false;
     }
+
+    /**
+     * Sellable items of this kind (same item, unique/flagged stacks excluded) in the storage slots 0-35 (hotbar
+     * included, never armor/offhand). Main thread. 0 when the economy does not implement it.
+     */
+    default long carried(Player player, ItemStack template) {
+        return 0;
+    }
+
+    /**
+     * Sells up to {@code amount} (0 = all) of {@code template} from the player's storage slots 0-35 through the same
+     * escrow, one ledger transaction (reason sell, key sell:&lt;sale id&gt;), give-back and /box rules as /sell. {@code done}
+     * runs on the main thread: the {@link SellResult}, or {@code null} when nothing was attempted (loading, frozen,
+     * switching, busy, not sellable, none carried). Main thread.
+     *
+     * @param source where the sale came from (sale record data, e.g. {@code shop}); not a ledger reason
+     */
+    default void sellItem(Player player, ItemStack template, int amount, String source, java.util.function.Consumer<SellResult> done) {
+        done.accept(null);
+    }
 }

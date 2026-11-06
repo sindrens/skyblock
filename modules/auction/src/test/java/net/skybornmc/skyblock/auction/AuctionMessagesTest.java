@@ -76,9 +76,6 @@ class AuctionMessagesTest {
         for (AuctionMenu.Sort s : AuctionMenu.Sort.values()) {
             keys.add("sort." + s.key());
         }
-        for (CollectionEntry.Source s : CollectionEntry.Source.values()) {
-            keys.add("collection.source." + s.key());
-        }
         for (String k : List.of("browse.category", "browse.sort")) {
             keys.add(k + ".name");
             keys.add(k + ".crumb");

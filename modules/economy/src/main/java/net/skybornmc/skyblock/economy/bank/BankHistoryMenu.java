@@ -79,7 +79,7 @@ final class BankHistoryMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (rows == null) {
             set(PagedMenu.SLOT_EMPTY, failed ? service.errorItem(viewer, null)
                     : service.loadingItem(viewer));
@@ -96,12 +96,10 @@ final class BankHistoryMenu extends Menu {
             set(PagedMenu.CONTENT_SLOTS[i], entry(rows.get(i), now));
         }
         if (page > 0) {
-            set(Menu.SLOT_PREVIOUS, service.navItem("previous", Material.ARROW, viewer, "frame.previous",
-                    Msg.p("page", page), Msg.p("pages", pages())), click -> turn(-1));
+            set(Menu.SLOT_PREVIOUS, service.pageItem(viewer, false, page, pages()), click -> turn(-1));
         }
         if (page + 1 < pages()) {
-            set(Menu.SLOT_NEXT, service.navItem("next", Material.ARROW, viewer, "frame.next",
-                    Msg.p("page", page + 2), Msg.p("pages", pages())), click -> turn(1));
+            set(Menu.SLOT_NEXT, service.pageItem(viewer, true, page + 2, pages()), click -> turn(1));
         }
     }
 

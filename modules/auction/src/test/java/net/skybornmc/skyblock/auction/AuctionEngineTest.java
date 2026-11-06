@@ -121,6 +121,23 @@ class AuctionEngineTest {
     }
 
     @Test
+    void aGatedBuyerPaysNothingAndTheListingStays() {
+        // ECON-SELL-SHOP-AH C4: under $10k earned and the seller not on the buyer's island.
+        Listing l = list(10_000);
+        net.skybornmc.skyblock.common.economy.SendGate.Check refused = new net.skybornmc.skyblock.common.economy.SendGate.Check(false, 2_500, 10_000);
+        AuctionEngine.BuyResult r = engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM, refused).join();
+        assertEquals(AuctionEngine.BuyOutcome.GATED, r.outcome());
+        assertEquals(7_500, refused.missing());
+        assertEquals(1_000_000, economy.get(buyer), "nothing taken");
+        assertEquals(ListingStatus.ACTIVE, status(l.id()));
+        assertEquals(0, economy.count(TxReason.AH_BUY));
+        assertEquals(AuctionEngine.BuyOutcome.GATED, engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM, null).join().outcome(),
+                "a missing gate fails closed");
+        assertEquals(AuctionEngine.BuyOutcome.SOLD, engine.buy(l.id(), buyer, "Buyer", Actor.SYSTEM,
+                net.skybornmc.skyblock.common.economy.SendGate.Check.OPEN).join().outcome());
+    }
+
+    @Test
     void sellerCannotBuyTheirOwnListing() {
         Listing l = list(500);
         assertEquals(AuctionEngine.BuyOutcome.OWN, engine.buy(l.id(), seller, "Seller", Actor.SYSTEM).join().outcome());
@@ -316,6 +333,7 @@ class AuctionEngineTest {
         assertEquals(ListingRules.Problem.COOLDOWN, cooling.rejection().problem());
         config.listingCooldownSeconds = 0;
 
+        config.relistMaxSameItem = 3; // off by default since ECON-SELL-SHOP-AH C2; the owner may set it
         for (int i = 0; i < 3; i++) {
             engine.create(seller, "Seller", item("same"), 100, HOUR, 10, Actor.SYSTEM).join();
         }

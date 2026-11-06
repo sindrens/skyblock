@@ -94,7 +94,7 @@ calculation:
 debugging:
   trace-unflushed-sessions: false
 
-wand-item: minecraft:wooden_axe
+wand-item: minecraft:warped_fungus_on_a_stick
 shell-save-type:
 no-double-slash: false
 no-op-permissions: false

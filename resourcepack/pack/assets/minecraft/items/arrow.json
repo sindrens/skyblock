@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/nav_back",
+     "type": "minecraft:model"
+    },
+    "when": "nav/back"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/arrow",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

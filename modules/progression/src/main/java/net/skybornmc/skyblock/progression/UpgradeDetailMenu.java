@@ -115,7 +115,7 @@ final class UpgradeDetailMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         UpgradeCatalog.Def def = def();
         if (def == null) {
             return;

@@ -1,0 +1,69 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_blaze",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_blaze"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_cinder",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_cinder"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_conqueror",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_conqueror"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_eclipse",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_eclipse"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_ember",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_ember"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_inferno",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_inferno"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_crate_key_phoenix",
+     "type": "minecraft:model"
+    },
+    "when": "item/crate_key_phoenix"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/travel_crate_yard",
+     "type": "minecraft:model"
+    },
+    "when": "travel/crate_yard"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/tripwire_hook",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

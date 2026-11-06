@@ -1,0 +1,353 @@
+# The guided tour /tutorial (docs/planning/PLAN_TUTORIAL_CHAT.md section 3, owner 4 Nov 2026). Settings (boss bar,
+# dialog speed, places ...) are added below by the plugin and can be edited in /admin. Reload: /skyblock reload tutorial
+#
+# chapters.<id>: name, icon (vanilla item id), rewards (once per account: "money <n>", "crystals <n>", "shards <n>"
+#   (Farming Shards), "mining_shards <n>", "key <crate> <n>", "tag <id>") and steps in order.
+# steps.<id>:
+#   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator
+#   target  npc: NPC role (npcs.yml) · menu: menu id(s) "hub|island" · place: id from places · grind: "farm" or
+#           "mine", optionally ":BLOCK|DROP" ("mine:COAL") · audit: "category:action[|action][:detail=value]" ·
+#           plant: blocks "WHEAT|CARROTS"
+#   amount  how many (default 1)
+#   text    the step, short (it is the boss bar and the scoreboard "Next" line)
+#   hint    one short line: where to go or what to do
+#   place   where a click on the step takes you: spawn | farm | mine | island (the normal command and its warmup)
+#   command the command the step teaches; when it does not exist on this server the step counts as done
+#   dialog  npc steps: 1-4 short lines the NPC says. "/word" and "{/two words}" become clickable in chat.
+#   icon    item shown for the step in the chest menu (Bedrock and /start)
+# A step whose NPC is not placed at spawn yet counts as done, so a missing NPC never blocks anyone.
+# Steps finish only from real events (a click, a menu, a sale ...), never from typing a command.
+
+chapters:
+  welcome:
+    name: "Welcome to Phoenix"
+    icon: nether_star
+    rewards: ["money 500"]
+    steps:
+      rowan:
+        type: npc
+        target: guide
+        text: "Talk to Rowan at spawn"
+        hint: "He stands near the spawn point."
+        place: spawn
+        command: start
+        icon: player_head
+        dialog:
+          - "Welcome to Phoenix Skyblock! I'm Rowan, and I'll show you around."
+          - "Everything you need is in /menu. Your book: /tutorial."
+          - "First stop: your own island. /is takes you there."
+      menu:
+        type: menu
+        target: hub
+        text: "Open /menu"
+        hint: "Use the Nether Star in your hotbar or type /menu."
+        command: menu
+        icon: nether_star
+      island:
+        type: island
+        text: "Go to your island"
+        hint: "Type /is to fly home."
+        place: island
+        command: is
+        icon: grass_block
+
+  island:
+    name: "Your Island"
+    icon: grass_block
+    rewards: ["money 1000"]
+    steps:
+      chest:
+        type: chest
+        text: "Open the starter chest"
+        hint: "It stands in front of your island home."
+        place: island
+        icon: chest
+      plant:
+        type: plant
+        target: "WHEAT|CARROTS|POTATOES|BEETROOTS"
+        text: "Plant some seeds"
+        hint: "Seeds from the chest go on the farmland."
+        place: island
+        icon: wheat_seeds
+      generator:
+        type: generator
+        text: "Build a cobble generator"
+        hint: "Lava next to ice or water makes cobblestone."
+        place: island
+        icon: cobblestone
+      kindle:
+        type: menu
+        target: guide
+        text: "Meet Kindle, your island guide"
+        hint: "Click him on your island, or /is guide."
+        place: island
+        icon: blaze_rod
+      level:
+        type: menu
+        target: level
+        text: "Check /is level"
+        hint: "Everything you build raises your island level."
+        icon: experience_bottle
+
+  farm:
+    name: "The Farm"
+    icon: wheat
+    rewards: ["shards 100"]
+    steps:
+      go:
+        type: place
+        target: farm
+        text: "Go to /farm"
+        hint: "The farm is open to everyone, always ripe."
+        place: farm
+        command: farm
+        icon: wheat
+      bramble:
+        type: npc
+        target: farm_merchant
+        text: "Meet Bramble at /farm"
+        hint: "The Farm Merchant buys every crop."
+        place: farm
+        icon: hay_block
+        dialog:
+          - "Howdy! I'm Bramble. Every crop you bring, I buy."
+          - "Harvest with your hoe, then sell it all with /sell."
+          - "Tinker at spawn knows everything about tools."
+      harvest:
+        type: grind
+        target: farm
+        amount: 50
+        text: "Harvest 50 crops at /farm"
+        hint: "Break ripe wheat with your harvester hoe."
+        place: farm
+        icon: iron_hoe
+      sell:
+        type: sell
+        text: "Sell your crops with /sell"
+        hint: "Bramble buys them too."
+        command: sell
+        icon: gold_nugget
+      hoe_menu:
+        type: menu
+        target: tool
+        text: "Open the hoe menu"
+        hint: "Hold the hoe and right-click in the air."
+        icon: golden_hoe
+      hoe_upgrade:
+        type: audit
+        target: "item:island_tool_upgrade:kind=hoe"
+        text: "Buy a hoe upgrade"
+        hint: "Upgrades cost Farming Shards from harvesting."
+        icon: emerald
+
+  mine:
+    name: "The Mine"
+    icon: iron_pickaxe
+    rewards: ["mining_shards 100"]
+    steps:
+      go:
+        type: place
+        target: mine
+        text: "Go to /mine"
+        hint: "Stone and ores that come back quickly."
+        place: mine
+        command: mine
+        icon: stone
+      flint:
+        type: npc
+        target: mine_merchant
+        text: "Meet Flint at /mine"
+        hint: "The Mine Merchant buys every ore."
+        place: mine
+        icon: coal_block
+        dialog:
+          - "Flint's the name. Ore, coal, cobble: I take it all."
+          - "Mine deeper and better ores show up for you."
+          - "Money piling up? Juniper's shop at spawn has what you need."
+      coal:
+        type: grind
+        target: "mine:COAL"
+        amount: 50
+        text: "Mine 50 coal at /mine"
+        hint: "Coal is the black-dotted ore."
+        place: mine
+        icon: coal
+      pick_menu:
+        type: menu
+        target: tool
+        text: "Open the pickaxe menu"
+        hint: "Hold the pickaxe and right-click in the air."
+        icon: golden_pickaxe
+      pick_upgrade:
+        type: audit
+        target: "item:island_tool_upgrade:kind=pickaxe"
+        text: "Buy a pickaxe upgrade"
+        hint: "Upgrades cost Mining Shards from mining."
+        icon: emerald
+
+  money:
+    name: "Money Matters"
+    icon: emerald
+    rewards: ["money 2500"]
+    steps:
+      juniper:
+        type: npc
+        target: shop
+        text: "Meet Juniper at spawn"
+        hint: "The Shopkeeper sells blocks and items."
+        place: spawn
+        command: shop
+        icon: chest
+        dialog:
+          - "Hi, I'm Juniper! Blocks, seeds, tools: it's all in /shop."
+          - "Buy anything you like. Got coins left? The Banker keeps them safe."
+      buy:
+        type: menu
+        target: buy
+        text: "Pick something to buy in /shop"
+        hint: "Click any item in the shop."
+        command: shop
+        icon: gold_ingot
+      banker:
+        type: npc
+        target: bank
+        text: "Meet the Banker at spawn"
+        hint: "Money in the bank earns interest."
+        place: spawn
+        command: bank
+        icon: gold_block
+        dialog:
+          - "Welcome to the bank. Money kept here is safe and grows."
+          - "Put some in with /bank. Then see Ollie at the auction house."
+      deposit:
+        type: bank
+        amount: 100
+        text: "Put $100 in the bank"
+        hint: "Open /bank and deposit."
+        command: bank
+        icon: gold_nugget
+      ollie:
+        type: npc
+        target: auction
+        text: "Meet Ollie at spawn"
+        hint: "The Auctioneer runs the auction house."
+        place: spawn
+        command: ah
+        icon: oak_sign
+        dialog:
+          - "Ollie here! Players buy and sell everything in /ah."
+          - "Have a look around. Good deals go fast."
+      ah:
+        type: menu
+        target: auction
+        text: "Open the auction house"
+        hint: "Type /ah or click Ollie."
+        command: ah
+        icon: oak_sign
+
+  together:
+    name: "Growing Together"
+    icon: player_head
+    rewards: ["key ember 1"]
+    steps:
+      upgrade:
+        type: audit
+        target: "island:upgrade_buy"
+        text: "Buy an island upgrade"
+        hint: "Open /is upgrade and pick one."
+        command: is
+        icon: anvil
+      invite:
+        type: audit
+        target: "island:island_invite|island_coop"
+        text: "Invite a friend to your island"
+        hint: "Use /is invite <name> or /is coop <name>."
+        command: is
+        icon: player_head
+      daily:
+        type: audit
+        target: "rewards:daily_claim"
+        text: "Claim your /daily reward"
+        hint: "A new reward every day."
+        command: daily
+        icon: sunflower
+      vote:
+        type: menu
+        target: vote
+        text: "Open /vote"
+        hint: "Vote every day for keys and credits."
+        command: vote
+        icon: paper
+      crates:
+        type: npc
+        target: crates
+        text: "Meet the Crate Keeper"
+        hint: "Your reward key opens a crate here."
+        place: spawn
+        command: crates
+        icon: tripwire_hook
+        dialog:
+          - "Keys, keys, keys! Every key opens one of my crates."
+          - "Finish this chapter for a key, then come back to me."
+
+  next:
+    name: "What's Next"
+    icon: experience_bottle
+    rewards: ["money 5000", "tag harvest"]
+    steps:
+      sage:
+        type: npc
+        target: sage
+        text: "Meet Sage at spawn"
+        hint: "Sage knows all about skills."
+        place: spawn
+        command: skills
+        icon: enchanted_book
+        dialog:
+          - "Every crop, ore and mob trains a skill. Look at them in /skills."
+          - "Higher skills mean more money and better drops."
+      skills:
+        type: menu
+        target: skills
+        text: "Open /skills"
+        hint: "See what every skill gives you."
+        command: skills
+        icon: enchanted_book
+      milestones:
+        type: menu
+        target: milestones
+        text: "Open /milestones"
+        hint: "Long goals with perks for your grind."
+        command: milestones
+        icon: golden_apple
+      carrots:
+        type: grind
+        target: "farm:CARROTS"
+        text: "Reach carrots at /farm"
+        hint: "Harvest 3,000 wheat at /farm to unlock carrots."
+        place: farm
+        command: farm
+        icon: carrot
+
+# What an NPC says when you click it outside a tutorial step (before its menu opens). One line per click, in turn.
+# Each line points to the next NPC, so they work together. Remove a role's lines to keep it quiet.
+idle:
+  guide:
+    - "Lost? /tutorial shows your next step."
+    - "Your island, the farm and the mine: /start."
+  farm_merchant:
+    - "Fresh crops? I'll buy them all. Flint at /mine buys ore."
+  mine_merchant:
+    - "Ore for sale? Sure. Bramble at /farm buys crops."
+  shop:
+    - "Need blocks? Have a look. The Banker keeps your coins safe."
+  bank:
+    - "Your money is safe here. Ollie runs the auction house."
+  auction:
+    - "Good deals today! Juniper's shop is right across."
+  crates:
+    - "Got a key? Pick a crate! /daily gives keys too."
+  tinker:
+    - "Your hoe and pickaxe grow with you. Right-click in the air for their menu."
+  sage:
+    - "Every skill level helps. Look at them in /skills."

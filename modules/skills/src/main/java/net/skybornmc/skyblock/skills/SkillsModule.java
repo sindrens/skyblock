@@ -48,7 +48,6 @@ public final class SkillsModule implements SkyblockModule {
     private final SkillsConfig config = new SkillsConfig();
     private ModuleMessages msg;
     private SkillManager manager;
-    private DepthsXpListener depthsListener;
 
     public SkillsModule(Core core) {
         this.core = core;
@@ -74,7 +73,6 @@ public final class SkillsModule implements SkyblockModule {
         manager.tables(loadTables());
         core.services().register(ID, SkillService.class, manager);
         Bukkit.getPluginManager().registerEvents(manager, core.plugin());
-        registerDepthsListener();
         registerPlaceholders();
         registerSetting();
         registerCommand();
@@ -95,10 +93,6 @@ public final class SkillsModule implements SkyblockModule {
             return;
         }
         HandlerList.unregisterAll(manager);
-        if (depthsListener != null) {
-            HandlerList.unregisterAll(depthsListener);
-            depthsListener = null;
-        }
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         manager.shutdown();
     }
@@ -112,17 +106,6 @@ public final class SkillsModule implements SkyblockModule {
     }
 
     // ------------------------------------------------------------------ setup
-
-    /** Depths XP only if the depths classes are in the jar (see {@link DepthsXpListener}). */
-    private void registerDepthsListener() {
-        try {
-            depthsListener = new DepthsXpListener(manager);
-            Bukkit.getPluginManager().registerEvents(depthsListener, core.plugin());
-        } catch (NoClassDefFoundError e) {
-            depthsListener = null;
-            core.plugin().getLogger().info("Skills: the depths module is not in this build; Mining/Foraging XP from The Depths is off.");
-        }
-    }
 
     private SkillTables loadTables() {
         File file = new File(core.plugin().getDataFolder(), config.fileName());

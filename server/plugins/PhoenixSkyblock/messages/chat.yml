@@ -2,18 +2,21 @@
 # MiniMessage + style tags. Player text is never parsed. Reload: /skyblock reload chat
 # Format (docs/UI_STYLE.md §3): success/error marks + gray text, values in <c:value>, clicks in <c:action>.
 
-# Hover card on a name in chat. Owner answer 302: only rank, island and playtime (join date, Discord and ping are hidden;
+# Hover card on a name in chat. Owner answer 302: only rank, title, island and playtime (join date, Discord and ping are hidden;
 # <first>, <discord> and <ping> still work if you want them back).
 hover:
   - "<name>"
   - ""
   - "<c:muted>Rank</c:muted> <c:value><rank_name>"
   - "<nick_line>"
+  - "<title_line>"
   - "<c:muted>Island</c:muted> <c:value><island>"
   - "<c:muted>Played</c:muted> <c:value><playtime>"
   - ""
   - "<bold><c:action>» CLICK</c:action></bold> <c:text>to message"
 hover-nick: "<c:muted>Real name</c:muted> <c:value><real_name>"
+# The title line of the hover card (owner 2 Nov 2026: titles show only here, never in the chat line). Empty without one.
+hover-title: "<c:muted>Title</c:muted> <title>"
 
 # Shown before chat lines for players who turned on "Chat timestamps" in /settings.
 timestamp: "<c:muted>[<time>]</c:muted> "
@@ -55,16 +58,24 @@ staffchat:
 # Tab list. Left line in the first letter's color (frost white), right line in the last letter's color (blue "MC"),
 # so the lines continue the SKYBORN gradient. Lines are strikethrough spaces (Bedrock shows blank space).
 tab:
+  # Owner 2 Nov 2026: a richer header and a personal "you" line. <online>, <max>, <season>.
   header:
     - ""
-    - "<c:sky_frost><st>            </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>            </st></c:sky_blue>"
-    - "<bold><grad:phoenix>Phoenix Skyblock</grad></bold>"
+    - "<c:sky_frost><st>          </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>          </st></c:sky_blue>"
+    - "<c:ember><bold>PHOENIX SKYBLOCK</bold></c:ember>"
+    - "<c:muted>Rise from the ashes</c:muted>"
     - ""
-    - "<c:value><online></c:value> <c:muted>online <sym:dot> <season>"
+    - "<c:success>●</c:success> <c:value><online></c:value><c:muted>/<max> online</c:muted>  <c:muted><sym:dot></c:muted>  <c:ember><season></c:ember>"
     - ""
   footer:
     - ""
+    - "<c:text>Need help? <c:value>/help</c:value>"
     - "<c:sky_blue>»</c:sky_blue> <grad:skyborn>play.skybornmc.net</grad> <c:sky_blue>«</c:sky_blue>"
+  # Under the footer, for each viewer: <rank> (badge), <name>, <money>, <crystals>, <level> (island level or -), <ping>.
+  # Owner 3 Nov 2026: no name/ping row here (the player list already shows both).
+  footer-you:
+    - ""
+    - "<cur:money><sym:money><money></cur:money>  <c:muted><sym:dot></c:muted>  <cur:crystals><sym:crystals> <crystals></cur:crystals>  <c:muted><sym:dot></c:muted>  <area:home>Island Lv <level></area:home>"
     - ""
   # Staff only (skyblock.staff.tab), under the footer. <tps> is one of tab.tps.* below.
   footer-staff: "<c:muted>TPS</c:muted> <tps>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping> ms</c:value>"
@@ -73,18 +84,9 @@ tab:
     ok: "<c:warning><value>"
     bad: "<c:error><value>"
 
-# /settings → Display: rank badges. Name, lore and (for the picker) one label per choice.
+# /settings → Display: the Immortal rank colour picker. Name, lore and one label per choice.
 settings:
   toggles:
-    reduced-motion:
-      name: "<c:value>Reduced motion"
-      lore: ["<c:text>Turns the moving shine on", "<c:text>rank badges off. They stay still."]
-    simple-badges:
-      name: "<c:value>Simple rank badges"
-      lore: ["<c:text>Ranks show as plain coloured", "<c:text>[Name] text instead of badges."]
-    large-badges:
-      name: "<c:value>Bigger rank text"
-      lore: ["<c:text>Taller letters on rank badges.", "<c:muted>Needs the resource pack."]
     rank-color:
       name: "<c:value>Rank colour"
       lore: ["<c:text>The colours of your Immortal", "<c:text>badge. Only approved looks."]
@@ -97,12 +99,12 @@ settings:
 
 # /rank preview <group> [name] (staff). <badge> is the badge exactly as that kind of player sees it.
 rank-preview:
-  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>Rank badges are off: the pack module isn't loaded."
   header: "<prefix><c:text>Rank badge <c:value><group></c:value> <c:muted>(name: <name>)"
-  shine: " <c:muted>Pack (shine)</c:muted>  <badge>"
-  still: " <c:muted>Pack (still)</c:muted>  <badge>"
-  large: " <c:muted>Pack (bigger)</c:muted>  <badge>"
   simple: " <c:muted>Simple</c:muted>  <badge>"
-  java: " <c:muted>Java, no pack</c:muted>  <badge>"
+  java: " <c:muted>Java</c:muted>  <badge>"
   bedrock: " <c:muted>Bedrock</c:muted>  <badge>"
-  no-pack: " <c:muted>You don't have the pack loaded, so the pack forms are hidden.</c:muted>"
+
+# /chat card <id> (staff): preview of a broadcast card. Card texts: messages/broadcasts.yml.
+broadcasts:
+  missing: "<prefix><c:error><sym:cross></c:error> <c:text>No card <c:value><card></c:value> in messages/broadcasts.yml. Press Tab to see them all."
+  not-in-rotation: "<prefix><c:warning><sym:cross></c:warning> <c:text>Card <c:value><card></c:value> is skipped in the rotation right now: its command does not exist on this server."

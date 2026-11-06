@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_bank",
+     "type": "minecraft:model"
+    },
+    "when": "feature/bank"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_bank",
+     "type": "minecraft:model"
+    },
+    "when": "island/bank"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:block/gold_block",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

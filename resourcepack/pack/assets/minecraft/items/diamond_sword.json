@@ -1,0 +1,34 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_frostbite_sword",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_frostbite_sword"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_phoenix_flame_sword",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_phoenix_flame_sword"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_royal_gold_sword",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_royal_gold_sword"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/diamond_sword",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

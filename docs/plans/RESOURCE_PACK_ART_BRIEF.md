@@ -1,5 +1,7 @@
 # Resource Pack Art Brief (ARTBRIEF)
 
+> **Superseded by feature card I7 v3 (31 Oct 2026): pack v1 was removed.** The server runs pure vanilla (no prompt, no download, no pack module). The old pack, its art and generators are kept in the git tag `pack-v1-final`. This file is history only.
+
 > **31 Oct 2026: the GUI part is done.** Menu backgrounds (§B), menu buttons (§C), feature icons (§D), the currency icons and glyphs (§J) and the rank badges and small logo (§N) are drawn: v1, generated cartoon art in `resourcepack/`. The ids and where each one shows are in **`docs/plans/RESOURCE_PACK_GUI.md`**. This brief stays the to-do list for everything else (tools, books, sets, keys, crates, notes, spawners, Depths drops, rarity tags, HUD, sounds, pack icons).
 
 > **31 Oct 2026, round 2 (owner):** the only custom in-game items are **the crate chests at /warp crates**, one per crate by rarity (done: `resourcepack/`, RESOURCE_PACK_GUI.md §7). §E tools, §F books, §G sets, §K notes, §L Depths drops and §M spawners are **dropped**: those items keep the vanilla look. Crate chests and matching keys are done (RESOURCE_PACK_GUI.md §7). Gems are renamed credits (§J).

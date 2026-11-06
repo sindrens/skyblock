@@ -10,4 +10,5 @@
 
 command-block-overrides: []
 ignore-vanilla-permissions: false
+# /shop is opened by the shop module itself as soon as it is typed (ShopModule.onShopCommand), so no alias here.
 aliases: {}

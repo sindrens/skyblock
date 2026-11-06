@@ -17,6 +17,18 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "scoreboard.max-lines", desc = "Maximum lines (Bedrock shows at most 15).", min = 1, max = 15)
     public int maxLines = 15;
 
+    @Setting(path = "scoreboard.section-rows", desc = "Most rows under each bold '| Header' section (G7: 3). Later rows of a full section are dropped, first in the layout win.", min = 1, max = 8)
+    public int sectionRows = 5; // 3 Nov 2026: Rank, Money, Shards, Crystals, Credits
+
+    @Setting(path = "scoreboard.blank-under-title-max-lines", desc = "The <soft-blank> line under the title shows only while the other lines are at most this many (8 = boards with 5 rows or fewer).", min = 0, max = 15)
+    public int blankUnderTitleMaxLines = 8;
+
+    @Setting(path = "scoreboard.section-gaps", desc = "A blank line between sections and above the footer (owner 3 Nov 2026). Dropped first when the board is full.")
+    public boolean sectionGaps = true;
+
+    @Setting(path = "scoreboard.progress-length", desc = "Dots in the progress line (<progress:key>).", min = 5, max = 20)
+    public int progressLength = 10;
+
     @Setting(path = "scoreboard.disabled-worlds", desc = "Worlds without a sidebar.")
     public List<String> disabledWorlds = List.of();
 
@@ -26,8 +38,8 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "values.crystals", desc = "Placeholder key for the formatted island crystals balance.")
     public String crystalsKey = "crystals_formatted";
 
-    @Setting(path = "values.gems", desc = "Placeholder key for the formatted gem balance.")
-    public String gemsKey = "gems_formatted";
+    @Setting(path = "values.credits", desc = "Placeholder key for the formatted credits (bought + earned, always exact; C1).")
+    public String creditsKey = "credits_formatted";
 
     @Setting(path = "values.island-level", desc = "Placeholder key for the island level.")
     public String islandLevelKey = "island_level";
@@ -49,17 +61,17 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "places.island.visit-layout", desc = "Layout on someone else's island (coop players count as visitors). Falls back to the own-island layout.")
     public String islandVisitLayout = "island-visit";
 
-    @Setting(path = "places.depths.worlds", desc = "Worlds of The Depths.")
-    public List<String> depthsWorlds = List.of("depths");
+    @Setting(path = "places.depths.worlds", desc = "Worlds of the grind place: /farm and /mine (owner 4 Nov 2026; the Depths are gone, the place kept its key).")
+    public List<String> depthsWorlds = List.of("grind");
 
     @Setting(path = "places.depths.layout", desc = "Layout in The Depths when no variant below matches.")
-    public String depthsLayout = "depths";
+    public String depthsLayout = "grind";
 
     @Setting(path = "places.depths.variant-placeholder", desc = "Placeholder whose plain text picks a Depths variant (depths_tier is 'Mine · Tier 3' in a zone, 'The Gate' at the hub).")
-    public String depthsVariantPlaceholder = "depths_tier";
+    public String depthsVariantPlaceholder = "grind_area";
 
     @Setting(path = "places.depths.variants", desc = "Depths variants as 'text=layout': the first whose text is in the placeholder value wins (ignoring case). Missing layouts fall back to places.depths.layout.")
-    public List<String> depthsVariants = List.of("The Gate=depths-gate", "Forest=depths-forest", "Combat=depths-combat");
+    public List<String> depthsVariants = List.of("Farm=grind-farm", "Mine=grind-mine");
 
     @Setting(path = "places.spawn.worlds", desc = "Spawn worlds.")
     public List<String> spawnWorlds = List.of("spawn");
@@ -73,15 +85,33 @@ public final class HudConfig extends ModuleConfig {
     @Setting(path = "places.warzone.layout", desc = "Layout in the warzone.")
     public String warzoneLayout = "warzone";
 
-    /** Version 2: tokens were replaced by island crystals (owner decision O8). */
+    /**
+     * Version 2: tokens were replaced by island crystals (owner decision O8).
+     * Version 3 (card C1): gems were renamed credits ({@code values.gems} → {@code values.credits}).
+     */
     @Override
     public int version() {
-        return 2;
+        return 6;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
-        return java.util.Map.of(2, java.util.Map.of("values.tokens", "values.crystals"));
+        return java.util.Map.of(2, java.util.Map.of("values.tokens", "values.crystals"),
+                3, java.util.Map.of("values.gems", "values.credits"));
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(3, java.util.Map.of("values.credits", ValueChange.of("gems_formatted", "credits_formatted")),
+                // Owner 2 Nov 2026: the You section got a Rank row, so a section holds 4 rows.
+                4, java.util.Map.of("scoreboard.section-rows", ValueChange.of(3, 4)),
+                5, java.util.Map.of("scoreboard.section-rows", ValueChange.of(4, 5)),
+                // Owner 4 Nov 2026 (plan A item 8): the Depths place became /farm and /mine with their own boards.
+                6, java.util.Map.of("places.depths.worlds", ValueChange.of(List.of("depths"), List.of("grind")),
+                        "places.depths.layout", ValueChange.of("depths", "grind"),
+                        "places.depths.variant-placeholder", ValueChange.of("depths_tier", "grind_area"),
+                        "places.depths.variants", ValueChange.of(List.of("The Gate=depths-gate", "Forest=depths-forest", "Combat=depths-combat"),
+                                List.of("Farm=grind-farm", "Mine=grind-mine"))));
     }
 
     @Override

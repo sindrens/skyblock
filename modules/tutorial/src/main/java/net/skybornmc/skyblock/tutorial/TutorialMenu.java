@@ -1,33 +1,39 @@
 package net.skybornmc.skyblock.tutorial;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.tutorial.TutorialService.State;
-import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
-import java.time.Duration;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
- * {@code /tutorial} (TUTORIAL.md §9.6): progress, Resume / Take me there, I'm stuck, the step list, Watch again and,
- * when allowed, Skip this step. Bedrock-safe: every choice is a button, nothing needs clickable chat.
- * <pre>
- *  . . . . P . . . .     13 progress
- *  . R S L W K . . .     20 resume, 21 stuck, 22 steps, 23 watch again, 24 skip/start
- *  . . . O U . . . .     30 optional steps, 31 what unlocks when
- * </pre>
+ * The tutorial as a chest menu: Bedrock's {@code /tutorial} (books can't be clicked there) and the pages of Rowan's
+ * {@code /start} (owner 4 Nov 2026: "/start has pages and shows what's next"). Row 1: the chapter and its reward. Row 2:
+ * its steps (✔ / ➤ / •, a click takes you there). Row 4: Island, Farm and Mine plus the book ({@code /start}) or every
+ * chapter ({@code /tutorial}). Plain vanilla items, Bedrock-safe.
  */
 final class TutorialMenu extends Menu {
 
-    private final TutorialModule module;
-    private final UUID player;
+    static final int SLOT_CHAPTER = 4;
+    static final int[] STEP_SLOTS = {10, 11, 12, 13, 14, 15, 16};
+    static final int[] CHAPTER_SLOTS = {28, 29, 30, 31, 32, 33, 34};
+    static final int SLOT_ISLAND = 29;
+    static final int SLOT_FARM = 31;
+    static final int SLOT_MINE = 33;
+    static final int SLOT_BOOK = 40;
 
-    TutorialMenu(TutorialModule module, UUID player) {
-        this.module = module;
-        this.player = player;
+    private final TutorialModule m;
+    private final boolean start;
+
+    TutorialMenu(TutorialModule m, boolean start) {
+        this.m = m;
+        this.start = start;
     }
 
     @Override
@@ -37,7 +43,8 @@ final class TutorialMenu extends Menu {
 
     @Override
     public Component title() {
-        return service.title(viewer, service.text(viewer, TutorialModule.ID, "menu.title"));
+        return service.title(viewer, m.msg().component(viewer, start ? "menu.start-title" : "menu.title",
+                Msg.mm("guide", guideName())));
     }
 
     @Override
@@ -46,107 +53,146 @@ final class TutorialMenu extends Menu {
     }
 
     @Override
-    public String infoKey() {
-        return "menu.info";
+    public String menuId() {
+        return start ? "start" : "tutorial";
     }
 
-    @Override
-    public String helpTopic() {
-        return TutorialModule.ID;
-    }
-
-    @Override
-    public int tickInterval() {
-        return 20;
-    }
-
-    @Override
-    protected void tick() {
-        refresh();
+    private String guideName() {
+        String raw = m.core().messages().raw("npcs", "roles.guide.name");
+        return raw == null || raw.isBlank() ? "Rowan" : raw;
     }
 
     @Override
     protected void build() {
-        frame();
-        Progress p = module.engine().progress(player);
-        if (p == null) {
-            set(22, service.item(Material.CLOCK, viewer, TutorialModule.ID, "menu.loading"));
+        navBar();
+        Player p = viewer;
+        Optional<Progress> pr = m.progress(p);
+        if (pr.isEmpty()) {
+            setLoading(SLOT_CHAPTER);
             return;
         }
-        TutorialFlow flow = module.engine().flow();
-        TutorialEngine engine = module.engine();
-        if (p.state == State.ACTIVE && p.step != null) {
-            long in = Math.max(0, System.currentTimeMillis() - (p.startedAt == null ? p.stepStartedAt : p.startedAt));
-            TagResolver[] ph = {Msg.number("number", flow.number(p.step)), Msg.number("total", flow.size()),
-                    Msg.c("step", engine.stepName(viewer, p.step)), Msg.c("objective", service.text(viewer, TutorialModule.ID, "steps." + p.step + ".objective")),
-                    Msg.c("hint", engine.hint(viewer, p.step)), Msg.p("time", Format.duration(Duration.ofMillis(Math.max(1000, in))))};
-            set(13, service.item(Material.WRITABLE_BOOK, viewer, TutorialModule.ID, "menu.progress", ph));
-            set(20, service.item(Material.ENDER_PEARL, viewer, TutorialModule.ID, "menu.resume", ph), click -> {
-                click.player().closeInventory();
-                module.targets().takeMeThere(click.player(), p, true);
-            });
-            set(21, service.item(Material.LANTERN, viewer, TutorialModule.ID, "menu.stuck", ph), click -> {
-                click.player().closeInventory();
-                engine.stuck(click.player());
-            });
-            if (engine.canSkip(p)) {
-                set(24, service.item(Material.FEATHER, viewer, TutorialModule.ID, "menu.skip", ph), click -> {
-                    click.player().closeInventory();
-                    engine.skipStuck(click.player());
-                });
-            }
-        } else if (p.state == State.NEW) {
-            set(13, service.item(Material.BOOK, viewer, TutorialModule.ID, "menu.not-started"));
-            if (module.config().enabled) {
-                set(24, service.item(Material.LIME_CONCRETE, viewer, TutorialModule.ID, "menu.start"), click -> {
-                    click.player().closeInventory();
-                    engine.start(click.player());
-                });
-            }
+        Catalog catalog = m.catalog();
+        Predicate<Catalog.Step> available = m.availability();
+        Optional<Catalog.Chapter> chapter = pr.get().current(catalog);
+        if (chapter.isEmpty()) {
+            set(SLOT_CHAPTER, service.item(Material.NETHER_STAR, line(pr.get().skipped() ? "menu.skipped.name" : "menu.finished.name"),
+                    List.of(line(pr.get().skipped() ? "menu.skipped.lore" : "menu.finished.lore"))));
         } else {
-            set(13, service.item(Material.ENCHANTED_BOOK, viewer, TutorialModule.ID, "menu.complete",
-                    Msg.c("state", service.text(viewer, TutorialModule.ID, "states." + TutorialStore.key(p.state)))));
-            set(24, service.item(Material.COMPASS, viewer, TutorialModule.ID, "menu.where-next"),
-                    click -> click.menu().openChild(new WhereNextMenu(module)));
-        }
-        set(22, service.item(Material.BOOKSHELF, viewer, TutorialModule.ID, "menu.steps", Msg.number("done", p.done.size()),
-                Msg.number("total", flow.size())), click -> click.menu().openChild(new StepsMenu(module, player)));
-        boolean replaying = module.replays().running(viewer.getUniqueId());
-        set(23, service.item(replaying ? Material.BARRIER : Material.SPYGLASS, viewer, TutorialModule.ID,
-                replaying ? "menu.replay-stop" : "menu.replay"), click -> {
-            click.player().closeInventory();
-            if (module.replays().running(click.player().getUniqueId())) {
-                module.replays().stop(click.player());
-            } else {
-                module.replays().start(click.player());
+            Catalog.Chapter c = chapter.get();
+            int done = pr.get().doneCount(c, available);
+            List<Component> lore = new ArrayList<>();
+            lore.add(line("menu.chapter.subtitle", Msg.p("number", catalog.index(c) + 1), Msg.p("total", catalog.chapters().size())));
+            lore.add(Component.empty());
+            lore.add(line("menu.chapter.progress", Msg.p("bar", TutorialBook.dots(done, c.steps().size())),
+                    Msg.p("done", done), Msg.p("total", c.steps().size())));
+            lore.add(Component.empty());
+            lore.add(line("menu.chapter.reward-head"));
+            lore.add(line("menu.chapter.reward", Msg.p("rewards", m.rewardText(c))));
+            set(SLOT_CHAPTER, service.item(material(c.icon(), Material.BOOK), line("menu.chapter.name", Msg.p("chapter", c.name())), lore));
+            Optional<Catalog.Step> next = pr.get().next(catalog, available);
+            int i = 0;
+            for (Catalog.Step s : c.steps()) {
+                if (i >= STEP_SLOTS.length) {
+                    break;
+                }
+                stepButton(STEP_SLOTS[i++], pr.get(), s, next.map(n -> n.key().equals(s.key())).orElse(false), available);
             }
-        });
-        if (module.config().optionalEnabled && !module.optional().visible().isEmpty()) {
-            set(30, service.item(Material.KNOWLEDGE_BOOK, viewer, TutorialModule.ID, "menu.optional",
-                    Msg.number("done", module.optional().doneCount(p)), Msg.number("total", module.optional().visible().size())),
-                    click -> click.menu().openChild(new OptionalMenu(module, player)));
         }
-        java.util.List<Component> lore = new java.util.ArrayList<>(service.lines(viewer, TutorialModule.ID, "menu.unlocks.lore"));
-        lore.addAll(unlocks(p));
-        set(31, service.item(Material.IRON_DOOR, service.text(viewer, TutorialModule.ID, "menu.unlocks.name"), lore));
+        if (start) {
+            place(SLOT_ISLAND, Material.GRASS_BLOCK, "island");
+            place(SLOT_FARM, Material.WHEAT, "farm");
+            place(SLOT_MINE, Material.IRON_PICKAXE, "mine");
+            set(SLOT_BOOK, service.item(Material.WRITABLE_BOOK, line("menu.book.name"),
+                    List.of(line("menu.book.lore"), Component.empty(), line("menu.click", Msg.p("action", plain("menu.book.action"))))),
+                    click -> {
+                        click.player().closeInventory();
+                        m.open(click.player());
+                    });
+        } else {
+            chapters(pr.get(), catalog);
+        }
     }
 
-    /** "Team features · step 4" lines for every locked feature, in the plan's order (lore). */
-    private java.util.List<Component> unlocks(Progress p) {
-        java.util.List<Component> out = new java.util.ArrayList<>();
-        var gates = module.engine().gates();
-        for (String gate : net.skybornmc.skyblock.common.tutorial.Gates.ALL) {
-            String step = gates.get(gate);
-            if (step == null) {
-                continue;
-            }
-            boolean open = GateRules.open(gate, gates, module.engine().flow(), p.state, p.doneSet(), false);
-            out.add(service.text(viewer, TutorialModule.ID, open ? "menu.unlock-open" : "menu.unlock-locked",
-                    Msg.c("feature", service.text(viewer, TutorialModule.ID, "gates." + gate)),
-                    Msg.c("when", step.equals(Steps.FINISH) ? service.text(viewer, TutorialModule.ID, "menu.unlock-at-finish")
-                            : service.text(viewer, TutorialModule.ID, "menu.unlock-at-step",
-                            Msg.number("number", module.engine().flow().number(step)), Msg.c("step", module.engine().stepName(viewer, step))))));
+    private void stepButton(int slot, Progress pr, Catalog.Step s, boolean isNext, Predicate<Catalog.Step> available) {
+        boolean open = pr.open(s, available);
+        String state = !open ? "done" : isNext ? "next" : "open";
+        List<Component> lore = new ArrayList<>();
+        lore.add(line("menu.step.state-" + state));
+        if (!s.hint().isEmpty()) {
+            lore.add(Component.empty());
+            lore.add(line("menu.step.hint", Msg.p("hint", s.hint())));
         }
-        return out;
+        if (open && s.amount() > 1) {
+            lore.add(line("menu.step.count", Msg.p("count", pr.counter(s)), Msg.p("amount", s.amount())));
+        }
+        String command = m.commandOf(s);
+        boolean clickable = open && !command.isEmpty() && m.commandExists(command);
+        if (clickable) {
+            lore.add(Component.empty());
+            lore.add(line("menu.click", Msg.p("action", plain("menu.step.action"))));
+        }
+        Material icon = !open ? Material.LIME_DYE : material(s.icon(), Material.PAPER);
+        Component name = line("menu.step.name-" + state, Msg.p("step", s.text()));
+        if (clickable) {
+            set(slot, service.item(icon, name, lore), click -> {
+                click.player().closeInventory();
+                click.player().performCommand(command);
+            });
+        } else {
+            set(slot, service.item(icon, name, lore));
+        }
+    }
+
+    private void place(int slot, Material icon, String id) {
+        Optional<Places.Place> place = m.places().get(id);
+        if (place.isEmpty() || !m.commandExists(place.get().command())) {
+            return;
+        }
+        String command = place.get().command();
+        set(slot, service.item(icon, line("menu.place." + id + ".name"),
+                List.of(line("menu.place." + id + ".lore"), Component.empty(), line("menu.click", Msg.p("action", plain("menu.place.action"))))),
+                click -> {
+                    click.player().closeInventory();
+                    click.player().performCommand(command);
+                });
+    }
+
+    private void chapters(Progress pr, Catalog catalog) {
+        int i = 0;
+        boolean blocked = false;
+        for (Catalog.Chapter c : catalog.chapters()) {
+            if (i >= CHAPTER_SLOTS.length) {
+                break;
+            }
+            String state;
+            if (pr.chapterDone(c)) {
+                state = "done";
+            } else if (!blocked) {
+                state = "current";
+                blocked = true;
+            } else {
+                state = "locked";
+            }
+            Material icon = state.equals("locked") ? Material.GRAY_DYE : material(c.icon(), Material.BOOK);
+            set(CHAPTER_SLOTS[i++], service.item(icon, line("menu.chapters.name-" + state, Msg.p("chapter", c.name())),
+                    List.of(line("menu.chapters.state-" + state), Component.empty(), line("menu.chapter.reward-head"),
+                            line("menu.chapter.reward", Msg.p("rewards", m.rewardText(c))))));
+        }
+    }
+
+    private Component line(String key, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver... tags) {
+        return m.msg().component(viewer, key, tags);
+    }
+
+    private String plain(String key) {
+        return TutorialModule.plain(line(key));
+    }
+
+    private static Material material(String id, Material fallback) {
+        if (id == null || id.isBlank()) {
+            return fallback;
+        }
+        Material mat = Material.matchMaterial(id.strip().toUpperCase(Locale.ROOT));
+        return mat == null || !mat.isItem() ? fallback : mat;
     }
 }

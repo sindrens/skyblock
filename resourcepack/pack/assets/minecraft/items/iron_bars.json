@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_visitors_locked",
+     "type": "minecraft:model"
+    },
+    "when": "island/visitors_locked"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_locked",
+     "type": "minecraft:model"
+    },
+    "when": "state/locked"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/iron_bars",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_titles",
+     "type": "minecraft:model"
+    },
+    "when": "feature/titles"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_tag_item",
+     "type": "minecraft:model"
+    },
+    "when": "item/tag_item"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/ui_type",
+     "type": "minecraft:model"
+    },
+    "when": "ui/type"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/name_tag",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -17,11 +17,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The bundled shop.yml (Shop v2), the parser and the one-time v1 → v2 catalog migration. */
+/** The bundled shop.yml (Shop v3), the parser and the one-time v1 → v2 catalog migration (against the frozen v2 file). */
 class ShopCatalogTest {
 
-    /** stacking.yml defaults: tier 1 and 2 spawner types (owner SK3/SK4). */
+    /** stacking.yml defaults: the spawner types of tiers 1 to 4 the shop sells (ECON-SPAWNERS / ECON-TABLES A). */
     static final Set<String> SPAWNER_TYPES = Set.of("pig", "cow", "chicken", "sheep", "rabbit",
+            "zombie", "skeleton", "spider", "cave_spider", "slime",
+            "creeper", "witch", "drowned", "husk", "stray",
+            "blaze", "enderman", "guardian", "hoglin", "zombified_piglin");
+    /** The spawner types of the frozen Shop v2 file (tier 1 and 2, owner SK3/SK4; squid left in ECON-SPAWNERS). */
+    static final Set<String> V2_SPAWNER_TYPES = Set.of("pig", "cow", "chicken", "sheep", "rabbit",
             "zombie", "skeleton", "spider", "cave_spider", "slime", "squid");
 
     static YamlConfiguration resource(String name) throws Exception {
@@ -40,8 +45,43 @@ class ShopCatalogTest {
         return resource(ShopModule.V1_DEFAULTS);
     }
 
+    static YamlConfiguration v2() throws Exception {
+        return resource(ShopModule.V2_DEFAULTS);
+    }
+
+    static YamlConfiguration v3() throws Exception {
+        return resource(ShopModule.V3_DEFAULTS);
+    }
+
+    static YamlConfiguration v4() throws Exception {
+        return resource(ShopModule.V4_DEFAULTS);
+    }
+
+    /** B1: {@code price: auto} from the real sell.yml (economy module, multiplier 1), markup 10, buy multiplier 1. */
+    static ShopCatalog.Pricing pricing() {
+        try {
+            net.skybornmc.skyblock.economy.sell.SellCatalog sell = BuySellInvariantTest.sellCatalog();
+            return new ShopCatalog.Pricing(id -> sell.get(id).map(e -> e.base()).orElse(Double.NaN), 10, 1.0);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** A catalog of {@code yaml} that must load without problems. */
+    static ShopCatalog catalogOf(YamlConfiguration yaml) {
+        List<String> problems = new ArrayList<>();
+        ShopCatalog c = load(yaml, problems);
+        assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
+        return c;
+    }
+
+    /** A file in the Shop v2 shape (v2 spawner types). */
+    static ShopCatalog loadV2(YamlConfiguration yaml, List<String> problems) {
+        return ShopCatalog.load(yaml, ShopCatalogTest::realItem, V2_SPAWNER_TYPES::contains, problems::add);
+    }
+
     static ShopCatalog load(YamlConfiguration yaml, List<String> problems) {
-        return ShopCatalog.load(yaml, ShopCatalogTest::realItem, SPAWNER_TYPES::contains, problems::add);
+        return ShopCatalog.load(yaml, ShopCatalogTest::realItem, SPAWNER_TYPES::contains, pricing(), problems::add);
     }
 
     static ShopCatalog catalog() throws Exception {
@@ -62,24 +102,27 @@ class ShopCatalogTest {
     @Test
     void nineTabsInTheDesignOrderOnTheTopRow() throws Exception {
         ShopCatalog c = catalog();
-        assertEquals(List.of("essentials", "farming", "wood", "stone-earth", "special", "colors", "decoration", "redstone", "spawners"),
+        // MENUS-V3 6.2: row 1 wood .. decoration, row 2 essentials .. spawners (5 + 4 on the category menu).
+        assertEquals(ShopCatalogGroupsTest.ORDER,
                 c.categories().stream().map(ShopCatalog.Category::id).toList());
         for (int i = 0; i < c.categories().size(); i++) {
             ShopCatalog.Category tab = c.categories().get(i);
             assertEquals(i, tab.slot(), "tab " + tab.id() + " sits in slot " + i);
             assertTrue(realItem(tab.icon()), tab.icon());
             assertFalse(tab.enabledItems().isEmpty(), tab.id());
-            int pages = tab.id().equals("colors") ? 2 : 1;
+            int pages = Set.of("colors", "building", "nature").contains(tab.id()) ? 3 : 2;
             assertTrue(tab.items().size() <= 28 * pages, tab.id() + " fits " + pages + " page(s)");
         }
         assertEquals(ShopCatalog.Kind.SPAWNER, c.category("spawners").orElseThrow().kind());
     }
 
     @Test
-    void about253ItemsWithTheDesignCounts() throws Exception {
+    void the255ItemsOfEconTablesD4() throws Exception {
         ShopCatalog c = catalog();
-        assertEquals(253, c.size());
-        int[] expected = {26, 27, 24, 28, 28, 53, 28, 28, 11};
+        // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
+        // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
+        assertEquals(293, c.size()); // + 19 workstations, storage and redstone parts (feedback 5 Nov 2026)
+        int[] expected = {57, 54, 20, 19, 52, 15, 28, 28, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -94,7 +137,7 @@ class ShopCatalogTest {
         assertEquals(150, c.item("fishing_rod").orElseThrow().price());
         assertEquals(60, c.item("shears").orElseThrow().price());
         assertEquals(15, c.item("bread").orElseThrow().price());
-        assertEquals(15, c.item("baked_potato").orElseThrow().price());
+        assertEquals(15, c.worth("baked_potato").orElseThrow(), "removed in Shop v4: its price is block worth only");
         assertEquals(4, c.item("dirt").orElseThrow().price(), "unchanged prices stay");
         assertEquals(1, c.item("stone").orElseThrow().contains().get("cobblestone"));
     }
@@ -103,7 +146,7 @@ class ShopCatalogTest {
     void cleanerCatalogLeavesOutWhatS3AndS6Remove() throws Exception {
         ShopCatalog c = catalog();
         for (String gone : List.of("ender_chest", "redstone_block", "stripped_oak_log", "red_dye", "red_wool", "red_carpet",
-                "loom", "lectern", "smithing_table", "cartography_table", "fletching_table", "blue_orchid", "sea_pickle")) {
+                "loom", "lectern", "smithing_table", "cartography_table", "fletching_table")) {
             assertTrue(c.item(gone).isEmpty(), gone + " is not sold");
         }
         assertTrue(c.item("white_wool").isPresent(), "white wool stays (Colors)");
@@ -121,24 +164,31 @@ class ShopCatalogTest {
             assertTrue(item.id().startsWith(ShopCatalog.SPAWNER_PREFIX));
             assertTrue(SPAWNER_TYPES.contains(item.mob()), item.mob());
         }
-        assertEquals(117_000, catalog().item("spawner_pig").orElseThrow().price());
-        assertEquals(213_000, catalog().item("spawner_zombie").orElseThrow().price());
-        assertEquals(11, tab.items().size());
+        assertEquals(100_000, catalog().item("spawner_pig").orElseThrow().price());
+        assertEquals(250_000, catalog().item("spawner_zombie").orElseThrow().price());
+        assertEquals(500_000, catalog().item("spawner_creeper").orElseThrow().price());
+        assertEquals(1_000_000, catalog().item("spawner_blaze").orElseThrow().price());
+        assertEquals(20, tab.items().size());
     }
 
     @Test
     void spawnersAreSkippedWithoutTheStackingModule() throws Exception {
         List<String> problems = new ArrayList<>();
-        ShopCatalog c = ShopCatalog.load(bundled(), ShopCatalogTest::realItem, problems::add);
+        ShopCatalog c = ShopCatalog.load(bundled(), ShopCatalogTest::realItem, type -> false, pricing(), problems::add);
         assertTrue(c.category("spawners").orElseThrow().items().isEmpty());
-        assertEquals(11, problems.size(), () -> String.join("\n", problems));
+        assertEquals(20, problems.size(), () -> String.join("\n", problems));
+        assertTrue(c.category("spawners").orElseThrow().groups().isEmpty(), "skipped spawners leave their groups silently");
     }
 
     @Test
     void bundledShopSaysTheOwnerApprovesPrices() throws Exception {
         String text = Files.readString(Path.of(ShopCatalogTest.class.getClassLoader().getResource("shop.yml").toURI()));
         assertTrue(text.contains("THE OWNER APPROVES THESE PRICES BEFORE LAUNCH"));
-        assertEquals(2, bundled().getInt("config-version"));
+        assertEquals(ShopCatalogMigration.VERSION, bundled().getInt("config-version"));
+        assertEquals(6, ShopCatalogMigration.VERSION);
+        assertEquals(4, v4().getInt("config-version"), "the frozen v4 file stays version 4");
+        assertEquals(2, v2().getInt("config-version"), "the frozen v2 file stays version 2");
+        assertEquals(3, v3().getInt("config-version"), "the frozen v3 file stays version 3");
     }
 
     @Test
@@ -225,7 +275,7 @@ class ShopCatalogTest {
                 """);
         assertTrue(ShopModule.addMissing(owner, bundled()));
         assertEquals(99, owner.getInt("categories.wood.items.oak_log"), "owner prices are kept");
-        assertTrue(owner.contains("categories.wood.items.spruce_log"));
+        assertTrue(owner.contains("categories.building.items.spruce_log"), "new items join the bundled tab");
         assertFalse(owner.contains("categories.stone-earth.items.dirt"), "moved items are not added back");
         assertFalse(owner.contains("categories.decoration.items.lantern"), "items parked under worth-only stay parked");
         assertTrue(owner.contains("categories.essentials"));
@@ -237,12 +287,14 @@ class ShopCatalogTest {
 
     @Test
     void untouchedV1FileBecomesTheBundledV2Catalog() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(v1(), bundled(), v1()).orElseThrow();
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(v1(), v2(), v1()).orElseThrow();
         assertEquals(2, r.yaml().getInt("config-version"));
         List<String> problems = new ArrayList<>();
-        ShopCatalog migrated = load(r.yaml(), problems);
+        ShopCatalog migrated = loadV2(r.yaml(), problems);
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
-        ShopCatalog expected = catalog();
+        List<String> v2Problems = new ArrayList<>();
+        ShopCatalog expected = loadV2(v2(), v2Problems);
+        assertTrue(v2Problems.isEmpty(), () -> String.join("\n", v2Problems));
         assertEquals(expected.items(), migrated.items(), "same tabs, items, order and prices as a fresh install");
         assertEquals(expected.worthOnly(), migrated.worthOnly());
         assertTrue(r.changes().contains("hopper: price $120 -> $2500 (Shop v2)"), () -> String.join("\n", r.changes()));
@@ -262,9 +314,9 @@ class ShopCatalogTest {
         live.set("categories.utility.items.ender_chest", 5_000);                   // removed by the design
         live.set("categories.farming.items.wheat_seeds", java.util.Map.of("price", 10, "requires", java.util.Map.of("farming", 4)));
         live.set("categories.decoration.items.jukebox", 900);                      // the owner's own item
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(live, bundled(), v1()).orElseThrow();
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(live, v2(), v1()).orElseThrow();
         List<String> problems = new ArrayList<>();
-        ShopCatalog c = load(r.yaml(), problems);
+        ShopCatalog c = loadV2(r.yaml(), problems);
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertEquals(999, c.item("hopper").orElseThrow().price(), "an owner-edited price is kept");
         assertTrue(r.changes().contains("hopper: kept your price $999 (Shop v2 default would be $2500)"));
@@ -284,11 +336,12 @@ class ShopCatalogTest {
 
     @Test
     void migrationRunsOnlyOnce() throws Exception {
-        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(v1(), bundled(), v1()).orElseThrow();
+        ShopCatalogMigration.Result r = ShopCatalogMigration.migrate(v1(), v2(), v1()).orElseThrow();
         YamlConfiguration again = new YamlConfiguration();
         again.loadFromString(r.yaml().saveToString());
-        assertTrue(ShopCatalogMigration.migrate(again, bundled(), v1()).isEmpty());
-        assertTrue(ShopCatalogMigration.migrate(bundled(), bundled(), v1()).isEmpty(), "a fresh v2 file is left alone");
+        assertTrue(ShopCatalogMigration.migrate(again, v2(), v1()).isEmpty());
+        assertTrue(ShopCatalogMigration.migrate(v2(), v2(), v1()).isEmpty(), "a fresh v2 file is left alone");
+        assertTrue(ShopCatalogMigration.migrate(bundled(), v2(), v1()).isEmpty(), "a v3 file is left alone");
     }
 
     @Test

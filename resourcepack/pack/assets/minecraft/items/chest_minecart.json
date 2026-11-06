@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_rewards",
+     "type": "minecraft:model"
+    },
+    "when": "feature/rewards"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/shop_fill",
+     "type": "minecraft:model"
+    },
+    "when": "shop/fill"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/chest_minecart",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

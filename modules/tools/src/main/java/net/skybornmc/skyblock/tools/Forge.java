@@ -10,7 +10,6 @@ import net.skybornmc.skyblock.common.economy.Transaction;
 import net.skybornmc.skyblock.common.economy.TxResult;
 import net.skybornmc.skyblock.common.item.ItemRegistry;
 import net.skybornmc.skyblock.common.profile.ProfileService;
-import net.skybornmc.skyblock.common.satchel.SatchelService;
 import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.tools.ToolKind;
@@ -93,49 +92,24 @@ final class Forge {
         return out;
     }
 
-    /**
-     * How many of each recipe material the player has: inventory plus the Depths satchel (M4.4; Forge materials are
-     * Depths drops, so they mostly sit in the satchel).
-     */
+    /** How many of each recipe material the player has in the inventory (the Depths satchel was removed). */
     Map<String, Integer> count(Player player, Set<String> ids) {
-        Map<String, Integer> out = count(player.getInventory(), ids);
-        Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
-        if (satchel.isPresent() && satchel.get().loaded(player)) {
-            for (String id : ids) {
-                long held = satchel.get().amount(player, id);
-                if (held > 0) {
-                    out.merge(id, (int) Math.min(Integer.MAX_VALUE, held), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
-                }
-            }
-        }
-        return out;
+        return count(player.getInventory(), ids);
     }
 
     /**
-     * Takes the recipe materials: from the inventory first, the rest from the satchel (all or nothing). Returns false and
-     * takes nothing if they are not all there any more (call it right after {@link #count(Player, Set)} in the same tick).
+     * Takes the recipe materials from the inventory (all or nothing). Returns false and takes nothing if they are not all
+     * there any more (call it right after {@link #count(Player, Set)} in the same tick).
      */
     boolean takeMaterials(Player player, Map<String, Integer> materials) {
         PlayerInventory inv = player.getInventory();
         Map<String, Integer> inInventory = count(inv, materials.keySet());
-        Map<String, Integer> fromInventory = new LinkedHashMap<>();
-        Map<String, Integer> fromSatchel = new LinkedHashMap<>();
-        materials.forEach((id, need) -> {
-            int inv0 = Math.min(need, inInventory.getOrDefault(id, 0));
-            if (inv0 > 0) {
-                fromInventory.put(id, inv0);
-            }
-            if (need - inv0 > 0) {
-                fromSatchel.put(id, need - inv0);
-            }
-        });
-        if (!fromSatchel.isEmpty()) {
-            Optional<SatchelService> satchel = module.core.services().optional(SatchelService.class);
-            if (satchel.isEmpty() || !satchel.get().consume(player, fromSatchel, "forge", Actor.player(player))) {
+        for (Map.Entry<String, Integer> e : materials.entrySet()) {
+            if (inInventory.getOrDefault(e.getKey(), 0) < e.getValue()) {
                 return false;
             }
         }
-        take(inv, fromInventory);
+        take(inv, new LinkedHashMap<>(materials));
         return true;
     }
 
@@ -278,7 +252,7 @@ final class Forge {
                     refund(playerId, name, def.recipe().money(), key, "offline");
                     return;
                 }
-                completeForge(p, def, toolId, key);
+                completeForge(p, def, toolId, key, false);
             } finally {
                 busy.remove(playerId);
                 payers.remove(key);
@@ -286,15 +260,22 @@ final class Forge {
         }));
     }
 
-    private void completeForge(Player player, ToolCatalog.TierDef def, UUID toolId, String key) {
+    private void completeForge(Player player, ToolCatalog.TierDef def, UUID toolId, String key, boolean free) {
         PlayerInventory inv = player.getInventory();
         int slot = ToolTracker.find(inv, toolId);
         ToolData tool = slot < 0 ? null : ToolItems.read(inv.getItem(slot)).orElse(null);
-        Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
-        if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty() || !takeMaterials(player, def.recipe().materials())) {
-            refund(player.getUniqueId(), player.getName(), def.recipe().money(), key, "items_moved");
-            fail(player, "forge.items-moved");
-            return;
+        if (free) {
+            if (tool == null || tool.tier() != def.tier() - 1) {
+                fail(player, "forge.items-moved");
+                return;
+            }
+        } else {
+            Map<String, Integer> missing = def.recipe().missing(count(player, def.recipe().materials().keySet()));
+            if (tool == null || tool.tier() != def.tier() - 1 || !missing.isEmpty() || !takeMaterials(player, def.recipe().materials())) {
+                refund(player.getUniqueId(), player.getName(), def.recipe().money(), key, "items_moved");
+                fail(player, "forge.items-moved");
+                return;
+            }
         }
         ToolData upgraded = ToolProgress.upgrade(tool, def.tier());
         ItemStack stack = module.items().apply(inv.getItem(slot), upgraded);
@@ -307,8 +288,8 @@ final class Forge {
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(player,
                 net.skybornmc.skyblock.common.quest.GameActionEvent.FORGE, 1));
         module.core.audit().log(AuditCategory.ITEM, "tool_forge", Actor.player(player), toolId.toString(), player.getName(),
-                def.recipe().money(), player.getLocation(), Map.of("kind", def.kind().id(), "from_tier", tool.tier(), "to_tier", def.tier(),
-                        "level", upgraded.level(), "materials", def.recipe().materials().toString()));
+                free ? 0 : def.recipe().money(), player.getLocation(), Map.of("kind", def.kind().id(), "from_tier", tool.tier(), "to_tier", def.tier(),
+                        "level", upgraded.level(), "materials", free ? "tutorial (free)" : def.recipe().materials().toString()));
         int season = module.config().seasonId;
         UUID holder = player.getUniqueId();
         String holderName = player.getName();
@@ -468,7 +449,24 @@ final class Forge {
 
     // ------------------------------------------------------------------ starter kit
 
+    /**
+     * First visit to the Depths (world inventory): the starter tool types the player's new Depths set is still missing,
+     * given right away. Once per profile because it only runs when the profile's Depths set is created. No claim row.
+     */
+    void giveDepthsStarter(Player player) {
+        List<ToolKind> missing = StarterKit.missing(module.config().depthsKinds(), kindsOwned(player)).stream()
+                .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
+        if (!missing.isEmpty()) {
+            giveStarter(player, missing, "starter.depths-given");
+        }
+    }
+
     void claimStarter(Player player) {
+        if (module.config().starterOnce) {
+            // Owner 3 Nov 2026 ("remove free kit starter"): the starter tools only come with the first Depths visit.
+            fail(player, "starter.depths-only");
+            return;
+        }
         List<ToolKind> missing = StarterKit.missing(module.config().starterKinds(), kindsOwned(player)).stream()
                 .filter(k -> module.catalog().tier(k, 1).isPresent()).toList();
         if (missing.isEmpty()) {
@@ -482,7 +480,8 @@ final class Forge {
         UUID playerId = player.getUniqueId();
         // Per profile: a new profile starts with an empty inventory, so it gets its own starter kit timer.
         UUID claimKey = ProfileService.of(module.core.services()).profileKey(player);
-        long cooldown = Duration.ofHours(module.config().starterCooldownHours).toMillis();
+        long cooldown = module.config().starterOnce ? Duration.ofDays(36_500).toMillis()
+                : Duration.ofHours(module.config().starterCooldownHours).toMillis();
         long now = System.currentTimeMillis();
         module.core.database().transaction(c -> {
             Long previous = module.repository().lastClaim(c, claimKey).orElse(null);
@@ -500,7 +499,11 @@ final class Forge {
                 }
                 if (res[0] > 0) {
                     if (p != null) {
-                        fail(p, "starter.cooldown", Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMillis(res[0]))));
+                        if (module.config().starterOnce) {
+                            fail(p, "starter.used");
+                        } else {
+                            fail(p, "starter.cooldown", Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMillis(res[0]))));
+                        }
                     }
                     return;
                 }
@@ -509,14 +512,14 @@ final class Forge {
                     module.core.database().run(c -> module.repository().unclaim(c, claimKey, previous));
                     return;
                 }
-                giveStarter(p, StarterKit.missing(missing, kindsOwned(p)));
+                giveStarter(p, StarterKit.missing(missing, kindsOwned(p)), "starter.claimed");
             } finally {
                 busy.remove(playerId);
             }
         }));
     }
 
-    private void giveStarter(Player player, List<ToolKind> kinds) {
+    private void giveStarter(Player player, List<ToolKind> kinds, String messageKey) {
         List<String> given = new ArrayList<>();
         int season = module.config().seasonId;
         for (ToolKind kind : kinds) {
@@ -532,7 +535,10 @@ final class Forge {
                         return null;
                     });
         }
-        module.msg().send(player, "starter.claimed", Msg.p("count", given.size()), Msg.p("hours", module.config().starterCooldownHours));
+        if (given.isEmpty()) {
+            return;
+        }
+        module.msg().send(player, messageKey, Msg.p("count", given.size()), Msg.p("hours", module.config().starterCooldownHours));
         sound(player, "success");
         module.core.audit().logPlayer(AuditCategory.ITEM, "starter_kit", Actor.player(player), player.getUniqueId(), player.getName(),
                 (long) given.size(), player.getLocation(), Map.of("pieces", given));

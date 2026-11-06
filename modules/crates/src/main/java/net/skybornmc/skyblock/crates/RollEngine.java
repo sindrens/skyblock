@@ -72,6 +72,40 @@ final class RollEngine {
         return new Batch(rolls, c);
     }
 
+    /**
+     * A tiered crate (Eclipse, owner V1-V3): every open draws {@code draw(band)} different rewards from common, mid and
+     * rare (evenly, no repeats inside one open) and then the jackpot by weight. No pity, no re-roll: a cosmetic the opener
+     * already owns (or won earlier in this batch) pays its fallback ({@link Roll#fallback}). {@code count} = opens; the
+     * batch holds {@code count × perOpen()} rolls, open by open.
+     */
+    static Batch rollTiered(CrateCatalog.Crate crate, int count, RandomGenerator rng, Predicate<String> owns) {
+        List<Roll> rolls = new ArrayList<>(Math.max(0, count) * crate.perOpen());
+        Set<String> won = new HashSet<>();
+        Predicate<String> owned = key -> won.contains(key) || owns.test(key);
+        for (int i = 0; i < count; i++) {
+            for (String band : CrateCatalog.Crate.BAND_ORDER) {
+                List<CrateCatalog.Reward> pool = new ArrayList<>(crate.inBand(band));
+                int n = crate.draw(band);
+                for (int k = 0; k < n && !pool.isEmpty(); k++) {
+                    CrateCatalog.Reward picked = band.equals("jackpot") ? pick(pool, rng) : pool.get(rng.nextInt(pool.size()));
+                    pool.remove(picked);
+                    Roll r;
+                    if (picked.type().cosmetic()) {
+                        String id = unowned(picked, rng, owned);
+                        r = id == null ? new Roll(picked, null, true, false) : new Roll(picked, id, false, false);
+                    } else {
+                        r = new Roll(picked, null, false, false);
+                    }
+                    if (r.cosmeticId() != null) {
+                        won.add(cosmeticKey(r.reward(), r.cosmeticId()));
+                    }
+                    rolls.add(r);
+                }
+            }
+        }
+        return new Batch(rolls, 0);
+    }
+
     static Roll rollOne(CrateCatalog.Crate crate, int counter, RandomGenerator rng, Predicate<String> owns) {
         boolean forced = forced(crate, counter);
         List<CrateCatalog.Reward> pool = forced ? crate.topRewards() : crate.rewards();

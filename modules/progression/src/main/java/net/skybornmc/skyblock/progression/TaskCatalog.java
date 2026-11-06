@@ -60,6 +60,15 @@ final class TaskCatalog {
     private final Map<Integer, List<TaskDef>> byTier;
     private final List<TaskDef> reach;
 
+    /** Depths delivery items → what /mine gives instead (owner 3 Nov 2026). */
+    static final java.util.Map<String, String> DEPTHS_ITEMS = java.util.Map.ofEntries(
+            java.util.Map.entry("custom:depths_coal", "coal"), java.util.Map.entry("custom:depths_copper", "raw_copper"),
+            java.util.Map.entry("custom:depths_iron", "raw_iron"), java.util.Map.entry("custom:depths_gold", "raw_gold"),
+            java.util.Map.entry("custom:depths_redstone", "redstone"), java.util.Map.entry("custom:depths_lapis", "lapis_lazuli"),
+            java.util.Map.entry("custom:depths_diamond", "diamond"), java.util.Map.entry("custom:depths_emerald", "emerald"),
+            java.util.Map.entry("custom:depths_amethyst", "diamond"), java.util.Map.entry("custom:depths_quartz", "emerald"),
+            java.util.Map.entry("custom:depths_netherite", "diamond"), java.util.Map.entry("custom:depths_voidstone", "emerald"));
+
     private TaskCatalog(Map<String, TaskDef> tasks) {
         List<TaskDef> list = new ArrayList<>(tasks.values());
         list.sort(Comparator.comparingInt(t -> t.info().tier())); // stable: file order inside a tier
@@ -188,6 +197,8 @@ final class TaskCatalog {
         if (target.startsWith("minecraft:")) {
             target = target.substring("minecraft:".length());
         }
+        // Owner 3 Nov 2026: the Depths are removed; their deliveries become the matching /mine items (also in a live file).
+        target = DEPTHS_ITEMS.getOrDefault(target, target);
         String targetError = checkTarget(type, target, checks);
         if (targetError != null) {
             errors.add(targetError);
@@ -231,6 +242,10 @@ final class TaskCatalog {
         if (!errors.isEmpty()) {
             return null;
         }
+        // Owner 3 Nov 2026 ("make rewards less weird, even numbers"): rewards are paid as nice numbers (27 → 25,
+        // 123 → 120), also for a live file written before. Targets stay as written (deliveries count exact stacks).
+        crystals = net.skybornmc.skyblock.common.util.NiceNumbers.nice(crystals);
+        pillarXp = net.skybornmc.skyblock.common.util.NiceNumbers.nice(pillarXp);
         TaskInfo info = new TaskInfo(id.toLowerCase(Locale.ROOT), type, target, amount, tier, unlocks, crystals, pillar, pillarXp);
         return new TaskDef(info, icon.isEmpty() ? null : icon, name.isEmpty() ? null : name);
     }

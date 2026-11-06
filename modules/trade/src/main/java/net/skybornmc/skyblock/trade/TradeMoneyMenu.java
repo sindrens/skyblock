@@ -49,7 +49,7 @@ final class TradeMoneyMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         List<Currency> list = module.currencies();
         TradeSession.Side me = session.side(viewer.getUniqueId());
         for (int i = 0; i < list.size() && i < SLOTS.length; i++) {

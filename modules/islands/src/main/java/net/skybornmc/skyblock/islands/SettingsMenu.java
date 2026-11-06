@@ -111,7 +111,7 @@ final class SettingsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         boolean editable = settings.canChange(island, viewer);
         set(SLOT_SUMMARY, service.item(new ItemStack(Material.REPEATER), text("flags.summary.name",
                 Msg.p("island", islands.displayName(island))), lines(editable ? "flags.summary.lore-edit" : "flags.summary.lore-view")));

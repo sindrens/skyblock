@@ -53,7 +53,7 @@ final class ProfileMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<Profile> found = profile();
         if (found.isEmpty()) {
             set(13, service.item(Material.BARRIER, viewer, ProfilesModule.ID, "menu.gone"));

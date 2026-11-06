@@ -11,6 +11,16 @@
   - **[§5]** plain click / Bedrock.
 - Most of the [§1.x] tags are fixed at once by the framework change (GUI_DESIGN §9 step 1).
 
+## I9 per-module pass (after GUI-P2, Nov 2026; not built yet)
+GUI-P2 changed the framework only: every menu lost the frame, the `?` (48) and the Main menu button (50); Back/Close/pages
+are the vanilla arrow, barrier and paper with our icons; content slots did **not** move. Left for the module-by-module pass:
+- compact each module's menus to 3/4/6 rows with `Centered` (no 5-row menus; small hubs centred, lists on the 7x4 grid);
+- delete the deprecated `infoKey()` / `helpTopic()` overrides and their `*.info` message keys (ignored by the framework);
+- replace the functional `filler()` dividers (sell chest, bank, trade window, pass, punish, trash) where a layout allows;
+- give every danger action (delete profile, reset, permanent ban, destroy items) the TNT corner tile (`MenuService#dangerItem`, slot 8) and its confirm;
+- swap the remaining `Material` icons for catalogue keys (`MenuService#icon`), one base item per screen;
+- the auction house gets `nav/search` on slot 51 (C6); the island menu compacts to 3-4 rows (B8); profiles GUI (B17), mastery tree (B14), staff screens last.
+
 ## GUI-1 handoff (framework done; left for GUI-4 because the menu is in another lane or needs a per-menu decision)
 **GUI-BUGS (31 Oct) did:** TransactionsMenu Refresh (now 6), moderation 3-row double Back, trade Cancel (now 53) and the
 money picker's own Back, WatchMenu (its `build()` now always draws the frame; the subclasses already did), hand-made

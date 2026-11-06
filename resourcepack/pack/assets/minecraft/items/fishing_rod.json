@@ -1,0 +1,42 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_frostbite_rod",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_frostbite_rod"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_phoenix_flame_rod",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_phoenix_flame_rod"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/item_skin_royal_gold_rod",
+     "type": "minecraft:model"
+    },
+    "when": "item/skin_royal_gold_rod"
+   }
+  ],
+  "fallback": {
+   "on_false": {
+    "model": "minecraft:item/fishing_rod",
+    "type": "minecraft:model"
+   },
+   "on_true": {
+    "model": "minecraft:item/fishing_rod_cast",
+    "type": "minecraft:model"
+   },
+   "property": "minecraft:fishing_rod/cast",
+   "type": "minecraft:condition"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

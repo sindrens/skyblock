@@ -138,11 +138,13 @@ public final class CratesModule implements SkyblockModule, Listener {
         keysService = new CrateKeysService(this);
         fragments = new Fragments(this);
         keyItems = new KeyItems(this);
+        eclipse = new EclipseFeature(this);
         keyItems.enable();
         // Published right away (keys only need the database): the AFK pool hands over its pending keys on its first check.
         core.services().register(ID, CrateKeys.class, keysService);
         registerCommand();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
+        Bukkit.getPluginManager().registerEvents(eclipse, core.plugin());
         Bukkit.getPluginManager().registerEvents(physical, core.plugin());
         Bukkit.getPluginManager().registerEvents(yard, core.plugin());
         registerSetting();
@@ -239,6 +241,14 @@ public final class CratesModule implements SkyblockModule, Listener {
                 }
                 yaml = bundled;
             } else {
+                migrateV2(file, yaml);
+                EclipseMigration.Result eclipse = EclipseMigration.migrate(yaml, bundled);
+                if (eclipse.changed()) {
+                    yaml.save(file);
+                    if (!eclipse.log().isEmpty()) {
+                        core.plugin().getLogger().info("crates.yml → " + eclipse.log());
+                    }
+                }
                 boolean added = CatalogMerge.addMissing(yaml, bundled);
                 boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
                 if (upgraded) {
@@ -257,6 +267,27 @@ public final class CratesModule implements SkyblockModule, Listener {
         return loaded;
     }
 
+    /**
+     * ECON-SHARDS step 16: upgrades a live crates.yml once (no shard rewards, premium spawners out, shard blocks in). The old
+     * file is kept as {@code crates.yml.before-v2}, every step is written to {@code crates-migration-v2.log}.
+     */
+    private void migrateV2(File file, YamlConfiguration yaml) throws IOException {
+        if (!CatalogMigration.needed(yaml)) {
+            return;
+        }
+        java.nio.file.Path backup = file.toPath().resolveSibling(CrateCatalog.FILE + ".before-v2");
+        if (!java.nio.file.Files.exists(backup)) {
+            java.nio.file.Files.copy(file.toPath(), backup);
+        }
+        CatalogMigration.Result result = CatalogMigration.migrate(yaml);
+        java.nio.file.Files.write(file.toPath().resolveSibling("crates-migration-v2.log"), result.log(), java.nio.charset.StandardCharsets.UTF_8);
+        yaml.save(file);
+        result.log().forEach(line -> core.plugin().getLogger().info("crates.yml v2 → " + line));
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "migrate",
+                net.skybornmc.skyblock.common.audit.Actor.system("crates-v2"), CrateCatalog.FILE, null, (long) result.log().size(),
+                null, java.util.Map.of("upgrade", "catalog-version 2 (ECON-SHARDS)", "steps", result.log()));
+    }
+
     private YamlConfiguration bundled() {
         YamlConfiguration yaml = new YamlConfiguration();
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(CrateCatalog.FILE)) {
@@ -267,6 +298,12 @@ public final class CratesModule implements SkyblockModule, Listener {
             core.plugin().getLogger().log(Level.SEVERE, "crates.yml in the jar is broken", e);
         }
         return yaml;
+    }
+
+    private EclipseFeature eclipse;
+
+    EclipseFeature eclipse() {
+        return eclipse;
     }
 
     CrateCatalog catalog() {
@@ -338,6 +375,55 @@ public final class CratesModule implements SkyblockModule, Listener {
                 .example("crates ember")
                 .executes(ctx -> open(ctx.player(), ctx.getOr(crate, null)))
                 .sub(new CratesAdmin(this).spec()));
+        core.commands().register(CommandSpec.command("keys")
+                .description("List your crate keys in chat")
+                .category("Rewards")
+                .permission(PERM_USE)
+                .playerOnly()
+                .aliases("key")
+                .example("keys")
+                .executes(ctx -> keys(ctx.player())));
+    }
+
+    /** {@code /keys} (feedback 31 Oct 2026): every visible crate you have keys for, in chat. */
+    void keys(Player player) {
+        Optional<String> problem = problem(player);
+        if (problem.isPresent()) {
+            throw new CommandFailure(ID, problem.get());
+        }
+        UUID profile = profiles().profileKey(player);
+        ProfileView cached = view(profile);
+        if (cached != null) {
+            printKeys(player, cached);
+            return;
+        }
+        UUID id = player.getUniqueId();
+        loadView(profile).whenComplete((v, e) -> {
+            Player p = org.bukkit.Bukkit.getPlayer(id);
+            if (p == null) {
+                return;
+            }
+            if (e != null || v == null) {
+                msg.send(p, "loading");
+                return;
+            }
+            printKeys(p, v);
+        });
+    }
+
+    private void printKeys(Player player, ProfileView view) {
+        msg.send(player, "keys.header");
+        int shown = 0;
+        for (CrateCatalog.Crate crate : catalog.visible()) {
+            CrateStore.Keys k = view.keys(crate.id());
+            if (k.total() <= 0) {
+                continue;
+            }
+            msg.send(player, k.tradeable() > 0 ? "keys.line-tradeable" : "keys.line", Msg.mm("key", keyMini(crate.id())),
+                    Msg.number("keys", k.total()), Msg.number("tradeable", k.tradeable()), Msg.p("crate", crate.id()));
+            shown++;
+        }
+        msg.send(player, shown == 0 ? "keys.none" : "keys.footer");
     }
 
     List<String> visibleIds() {
@@ -474,7 +560,6 @@ public final class CratesModule implements SkyblockModule, Listener {
         return switch (reward.type()) {
             case MONEY -> format(Currency.MONEY, CrateMath.money(reward.minutes(), tier, refPerMinute));
             case CRYSTALS -> format(Currency.CRYSTALS, CrateMath.crystals(reward.base(), tier, settings.crystalGrowth));
-            case SHARDS -> format(Currency.SHARDS, reward.amount());
             case FUEL -> durationText(reward.minutes());
             case COMING_SOON -> format(Currency.CRYSTALS, CrateMath.crystals(reward.fallback(), tier, settings.crystalGrowth));
             default -> String.valueOf(reward.amount());
@@ -512,7 +597,6 @@ public final class CratesModule implements SkyblockModule, Listener {
         return switch (reward.type()) {
             case MONEY -> Material.GOLD_NUGGET;
             case CRYSTALS -> Material.PRISMARINE_CRYSTALS;
-            case SHARDS -> Material.AMETHYST_SHARD;
             case KEY -> Material.TRIPWIRE_HOOK;
             case ENCHANT_BOOK -> Material.ENCHANTED_BOOK;
             case SCROLL -> Material.PAPER;

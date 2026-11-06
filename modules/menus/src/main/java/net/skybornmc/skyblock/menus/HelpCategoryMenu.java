@@ -10,6 +10,12 @@ import java.util.List;
 /** One help category: its topics as a paged list. */
 final class HelpCategoryMenu extends PagedMenu<HelpBook.Topic> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final Nav nav;
     private final HelpBook.Category category;
 

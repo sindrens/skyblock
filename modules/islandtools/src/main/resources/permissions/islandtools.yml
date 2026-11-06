@@ -1,0 +1,9 @@
+skyblock.islandtools.use:
+  description: Use the island hoe and pickaxe and open /is tools (levels, perks, prestige, hoe storage)
+  default: true
+skyblock.islandtools.tool:
+  description: /tool - the menu of the island tool in your hand (Bedrock-friendly; when the custom tools module owns /tool, its permission applies)
+  default: true
+skyblock.islandtools.admin:
+  description: Staff - /islandtools reset, resetisland, addxp and give
+  default: op

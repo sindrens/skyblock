@@ -7,8 +7,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
-import net.skybornmc.skyblock.common.text.LegacyColors;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.text.TextMemo;
 import org.bukkit.entity.Player;
@@ -37,13 +36,6 @@ final class Display {
         this.badges = badges;
     }
 
-    /** True when rank badges are drawn (the pack module is present); otherwise the LuckPerms prefix text is used. */
-    boolean badgesOn() {
-        return badges.enabled();
-    }
-
-    /** Parsed legacy prefixes ({@code "&c&lADMIN &c"} → Component); a handful of ranks, so this stays tiny. */
-    private final java.util.Map<String, Component> legacyPrefixes = new java.util.concurrent.ConcurrentHashMap<>();
     /**
      * Parsed fixed parts (PERF7): MiniMessage rank prefixes and the AFK marker. They only depend on the text and
      * Java/Bedrock, so they are parsed once per messages generation instead of on every tab rebuild and chat line.
@@ -77,51 +69,25 @@ final class Display {
                 core.ranks().groupDisplayName(player), badges.gradientChoice(group, player));
     }
 
-    /**
-     * The rank in front of a name for this viewer: the badge (pack font, simple or Bedrock text, from their /settings)
-     * plus a space, or the LuckPerms prefix when badges are off. Empty when the player has no rank text.
-     */
+    /** The rank in front of a name for this viewer: the badge ({@code [Name]} text, Java or Bedrock form) plus a space. */
     Component rank(Audience viewer, Player player) {
-        if (badges.enabled()) {
-            return badges.badge(player, viewer).append(Component.space());
-        }
-        return rankPrefix(viewer, core.ranks().prefix(player));
+        return badges.badge(player, viewer).append(Component.space());
     }
 
-    /** How a viewer sees badges (their pack and /settings); the plain form when badges are off. */
+    /** How a viewer sees badges (Java or Bedrock). */
     BadgeOptions viewerOptions(Audience viewer) {
         return badges.options(viewer).viewerOnly();
     }
 
-    /** The nametag rank for a team of {@code viewerOptions} from a snapshot (badge + space), or the text prefix. */
+    /** The nametag rank for a team of {@code viewerOptions} from a snapshot (badge + space). */
     Component rankFor(Audience viewer, RankView rank, BadgeOptions viewerOptions) {
-        if (badges.enabled()) {
-            List<TextColor> gradient = rank.gradient().isEmpty() ? List.of() : badges.gradientById(rank.gradient());
-            return badges.badge(rank.group(), rank.groupName(), viewerOptions.withGradient(gradient)).append(Component.space());
-        }
-        return rankPrefix(viewer, rank.prefix());
+        List<TextColor> gradient = rank.gradient().isEmpty() ? List.of() : badges.gradientById(rank.gradient());
+        return badges.badge(rank.group(), rank.groupName(), viewerOptions.withGradient(gradient)).append(Component.space());
     }
 
     /** The shared (viewer independent) rank for the tab list: plain {@code [Name]} text in the rank colour. */
     private Component tabRank(Audience viewer, RankView rank) {
-        if (badges.enabled()) {
-            return rankFor(viewer, rank, BadgeOptions.PLAIN);
-        }
-        return rankPrefix(viewer, rank.prefix());
-    }
-
-    /** {@link #rank(Audience, Player)} from an already-read prefix. */
-    Component rankPrefix(Audience viewer, String prefix) {
-        if (prefix == null || prefix.isBlank()) {
-            return Component.empty();
-        }
-        if (LegacyColors.hasCodes(prefix) || prefix.indexOf('<') < 0) {
-            if (legacyPrefixes.size() > 256) {
-                legacyPrefixes.clear();
-            }
-            return legacyPrefixes.computeIfAbsent(prefix, LegacyColors::toComponent);
-        }
-        return fixed(viewer, prefix);
+        return rankFor(viewer, rank, BadgeOptions.PLAIN);
     }
 
     /** {@code text} parsed for {@code viewer}, cached per messages generation unless it has player placeholders. */
@@ -145,7 +111,20 @@ final class Display {
     String key(Player player, RankView rank) {
         String nick = hasNick(player) ? PlainTextComponentSerializer.plainText().serialize(player.displayName())
                 + player.displayName().hashCode() : "";
-        return key(rank, nick, afk(player), hookText(player, "title"), hookText(player, "tag"));
+        return key(rank, nick, afk(player), hookText(player, "title"), hookText(player, "tag")) + '\u0000' + islandLevelHere(player);
+    }
+
+    /** The level of the island whose slot the player stands in (islands world), or -1 elsewhere / when off. Cheap (memory). */
+    int islandLevelHere(Player player) {
+        if (config.get().nametagIslandLevel == null || config.get().nametagIslandLevel.isBlank()) {
+            return -1;
+        }
+        var islands = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class);
+        var progression = core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class);
+        if (islands.isEmpty() || progression.isEmpty() || !player.getWorld().getName().equals(islands.get().worldName())) {
+            return -1;
+        }
+        return islands.get().islandInSlot(player.getLocation()).map(i -> progression.get().islandLevel(i.id())).orElse(-1);
     }
 
     /** The fingerprint itself (pure, unit-tested). */
@@ -161,14 +140,25 @@ final class Display {
 
     /** Forgets cached prefix components (reload / LuckPerms prefix edits). */
     void clearCache() {
-        legacyPrefixes.clear();
         parsed.clear();
     }
 
-    /** The rank's name color: hex {@code color} meta, else the prefix color, else gray. */
+    /**
+     * The colour of a player's NAME (Ranks V2, owner EP-Q14: white next to the coloured rank word): {@code ranks.name-color};
+     * blank = the rank colour as before (hex {@code color} meta, else the prefix color, else gray).
+     */
     TextColor color(Player player) {
+        TextColor fixed = nameColor(config.get().rankNameColor);
+        if (fixed != null) {
+            return fixed;
+        }
         TextColor color = core.ranks().rankColor(player);
         return color == null ? DEFAULT_NAME : color;
+    }
+
+    /** The configured name colour, or null when blank or not a #RRGGBB hex. */
+    static TextColor nameColor(String raw) {
+        return raw == null || raw.isBlank() ? null : TextColor.fromHexString(raw.strip());
     }
 
     /** Name in the rank color; a nickname (perks module) keeps its own colors on top of the rank color. */
@@ -241,6 +231,14 @@ final class Display {
 
     Component afkSuffix(Player player) {
         return afk(player) ? fixed(Audience.empty(), config.get().afkPart) : Component.empty();
+    }
+
+    /** The nametag suffix: the island level part (on an island), then the AFK marker. */
+    Component nametagSuffix(Player player) {
+        int level = islandLevelHere(player);
+        Component out = level < 0 ? Component.empty()
+                : core.messages().parse(Audience.empty(), config.get().nametagIslandLevel.replace("<level>", String.valueOf(level)));
+        return out.append(afkSuffix(player));
     }
 
     /** Chat-line placeholders for one viewer. */

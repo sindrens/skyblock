@@ -49,4 +49,14 @@ class HotItemTest {
         assertNull(HotItem.pick(day, ENTRIES, List.of("nothing"), 7));
         assertNull(HotItem.pick(day, List.of(), List.of(), 7));
     }
+
+    @Test
+    void minBaseKeepsCheapItemsOut() {
+        LocalDate day = LocalDate.of(2026, 10, 30);
+        for (int i = 0; i < 60; i++) {
+            assertEquals("bone", HotItem.pick(day.plusDays(i), ENTRIES, List.of(), 7, 15));
+        }
+        assertNull(HotItem.pick(day, ENTRIES, List.of(), 7, 1_000));
+        assertEquals(HotItem.pick(day, ENTRIES, List.of(), 7), HotItem.pick(day, ENTRIES, List.of(), 7, 0));
+    }
 }

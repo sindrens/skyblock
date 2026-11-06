@@ -257,4 +257,14 @@ class StackMathTest {
         assertEquals(45, StackMath.entityLimit(30, 50));
         assertEquals(20, StackMath.entityLimit(20, -10));
     }
+
+    @org.junit.jupiter.api.Test
+    void vanillaSpawnerLootScalesWithTheMobLootLevel() {
+        // Feedback 5 Nov 2026: a 7-cow stack dying at once = the dying cow's own drops + 6 more cows' loot.
+        org.junit.jupiter.api.Assertions.assertEquals(6, StackMath.withLoot(6, 1.0, true));
+        org.junit.jupiter.api.Assertions.assertEquals(13, StackMath.withLoot(6, 2.0, true), "x2 loot: 14 cows of loot");
+        org.junit.jupiter.api.Assertions.assertEquals(1, StackMath.withLoot(0, 2.0, true), "a lone spawner mob gets the bonus too");
+        org.junit.jupiter.api.Assertions.assertEquals(15, StackMath.withLoot(10, 1.5, false), "batch kills have no own drops");
+        org.junit.jupiter.api.Assertions.assertEquals(0, StackMath.withLoot(-3, 1.0, false));
+    }
 }

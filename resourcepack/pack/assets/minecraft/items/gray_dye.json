@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_chat_off",
+     "type": "minecraft:model"
+    },
+    "when": "island/chat_off"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/state_off",
+     "type": "minecraft:model"
+    },
+    "when": "state/off"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/gray_dye",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

@@ -17,6 +17,12 @@ import java.util.Optional;
  */
 final class MergePickMenu extends PagedMenu<WardrobeStore.Entry> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final WardrobeModule module;
     private final WardrobeStore.Entry first;
 

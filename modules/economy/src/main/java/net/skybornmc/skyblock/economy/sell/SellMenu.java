@@ -31,7 +31,8 @@ import java.util.Optional;
  * <pre>
  *  0 ..................................... 35   free space (4 rows)
  *  36 ─────────── divider ───────────── 44
- *  45 Back  46 Sell inventory  47 Total  48 Info  49 Close  50 Help  51 Your sell bonus  52/53 SELL
+ *  45 Back  46 Sell inventory  47 Total  49 Close  51 Your sell bonus  52 Tips  53 SELL
+ *  (owner 3 Nov 2026 "the /sell menu looks weird": one SELL button in the corner, the same three tiles on each side)
  * </pre>
  *
  * <p><b>Item safety.</b></p>
@@ -45,7 +46,7 @@ import java.util.Optional;
  *       is about to lose its item is removed from that copy <i>before</i> the move. Vanilla saves that copy in the same
  *       file as the inventory, so a crash can neither dupe nor lose chest items; the next join hands them back.</li>
  *   <li>Closing the chest for any reason (Close, Esc, logout, death, teleport, profile switch, shutdown) hands every
- *       item back: inventory, then ender chest, then the feet (with a message).</li>
+ *       item back: inventory, then /box (with a message).</li>
  *   <li>Selling takes the items out first (escrow) and goes through {@code SellService} as one transaction; while it
  *       runs the chest is locked, and closing it meanwhile is safe (the sale gives back what it could not sell).</li>
  * </ul>
@@ -58,9 +59,12 @@ final class SellMenu extends Menu {
     static final int FREE_SLOTS = 36;
     static final int SLOT_SELL_INVENTORY = 46;
     static final int SLOT_TOTAL = 47;
+    /** A4: Market Tips button. */
+    static final int SLOT_TIPS = 52;
     static final int SLOT_BONUS = 51;
-    static final int SLOT_SELL = 52;
-    static final int SLOT_SELL_2 = 53;
+    static final int SLOT_SELL = 53;
+    /** One SELL button now (was 52 and 53). */
+    static final int SLOT_SELL_2 = SLOT_SELL;
     static final int DIVIDER_FIRST = 36;
     static final int DIVIDER_LAST = 44;
 
@@ -81,6 +85,12 @@ final class SellMenu extends Menu {
     @Override
     public int rows() {
         return 6;
+    }
+
+    /** GUI-FONT 6.3: empty slots here are real drop slots, so this menu keeps the plain chest (no panel). */
+    @Override
+    public boolean panel() {
+        return false;
     }
 
     @Override
@@ -126,7 +136,7 @@ final class SellMenu extends Menu {
             feature.core.plugin().getLogger().severe("Sell chest of " + viewer.getName() + " was rebuilt; this must not happen");
         }
         built = true;
-        frame();
+        navBar();
         for (int slot = 0; slot < FREE_SLOTS; slot++) {
             set(slot, (MenuButton) null); // free space: no frame, no button
         }
@@ -151,6 +161,11 @@ final class SellMenu extends Menu {
                 click -> sellInventory());
         set(SLOT_TOTAL, totalItem(quote, unsellable));
         set(SLOT_BONUS, bonusItem(quote));
+        if (feature.config().marketTipsButton) {
+            // No parent: the tips menu's Back opens a new sell chest (this one is closed and its items went back).
+            set(SLOT_TIPS, service.item(Material.WRITABLE_BOOK, viewer, EconomyModule.ID, "sell.chest.tips"),
+                    click -> service.open(viewer, new MarketTipsMenu(feature, parent())));
+        }
         ItemStack sell = sellItem(quote);
         set(SLOT_SELL, sell, click -> sell());
         set(SLOT_SELL_2, sell, click -> sell());
@@ -548,7 +563,7 @@ final class SellMenu extends Menu {
 
     // ------------------------------------------------------------------ closing
 
-    /** Any close: every item goes back to the player (inventory, ender chest, feet). */
+    /** Any close: every item goes back to the player (inventory, the rest to /box). */
     @Override
     protected void onClose() {
         List<ItemStack> back = new ArrayList<>();

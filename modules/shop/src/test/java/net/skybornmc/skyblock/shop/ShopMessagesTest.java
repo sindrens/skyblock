@@ -64,7 +64,12 @@ class ShopMessagesTest {
         for (ShopCatalog.Category c : ShopCatalogTest.catalog().categories()) {
             keys.add("categories." + c.id() + ".name");
             keys.add("categories." + c.id() + ".lore");
+            keys.add("categories." + c.id() + ".short");
+            for (ShopCatalog.Group g : c.displayGroups()) {
+                keys.add("groups." + c.id() + "." + g.id());
+            }
         }
+        keys.addAll(List.of("menu.short", "buy.short", "sell.short", "tooltip.hint-sell", "tooltip.hint-stack"));
         for (String state : List.of("locked", "unavailable", "requires")) {
             keys.add("entry." + state);
         }
@@ -87,5 +92,13 @@ class ShopMessagesTest {
         }
         List<String> missing = keys.stream().filter(k -> !yml.contains(k)).toList();
         assertEquals(List.of(), missing);
+    }
+
+    @Test
+    void removedKeysAreGone() throws Exception {
+        YamlConfiguration yml = messages();
+        List<String> present = List.of("tooltip.buy-java", "tooltip.sell-java", "tooltip.hint-sell-all", "menu.balance")
+                .stream().filter(yml::contains).toList();
+        assertEquals(List.of(), present, "MENUS-V3 6.4 removed these");
     }
 }

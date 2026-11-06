@@ -1,10 +1,11 @@
 # Status (single source of truth for a fresh session)
 
-Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:55 (update104 live, REVIEW3 queued). History lives in CHANGELOG.md.
+Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-11-02 (release-v3 live, release-v4 built for review). History lives in CHANGELOG.md.
 
 **Releases:** the owner wants new things released **in batches** (S2), not after every single item. GitHub is not reachable from the cloud (gh 403); bundles go via the Mac.
 
 ## Where we are
+- **2026-11-02 branch state (read first):** live on the test server = `q/release-v3` (econ-v2 + gui-v3 + rewards-v2 + test fixes). Next release candidate = **`q/release-v4`** = release-v3 + `q/econ-sell` (ECON selling Part A: price knob, roots, derived prices, Hot Item announcement, Market Tips, /eco sell; Part B: Shop v4 lists, `price: auto`, `buy.price-multiplier`, /eco shop; shard, spawner and auction tests; shards only from shard blocks) + `q/milestones` (module behind `milestones.enabled: false`, action bar, /rewards card, tool XP targets). The owner builds on the Mac; the cloud cannot run Gradle (proxy). Waiting for the owner: `docs/OPEN_QUESTIONS.md` SHARDS-R1, ECON-B1, spawner stack max, island-drop bonuses (MILESTONES_BUILD_PLAN slice 6), merge of release-v3 into main. Blocked: milestones boards/resets and Eclipse/island tools/farming need §10-29 of the Complete Developer Spec in `docs/planning/`; CREDIT-SHOP beyond Tebex needs RANKS-V2 (F2 Locked). Design pass (icons, arrows, shop look like mchub) comes last, after everything else (owner 2 Nov).
 - **Phase 0 (foundation): done.** Config, style/messages, DB (MariaDB/H2 + migrations), player data, commands (enforced tab completion), menus (redesigned look), items (+dupe detection), audit log, services/placeholders (PlaceholderAPI optional), LuckPerms hooks, LegacyColors (`&` codes).
 - **Phase 1 (core experience): code done, owner testing.** Modules: worlds, motd, moderation (M1.8 punishments), essentials (M1.1 join/spawn + approved essentials), hud (M1.4 scoreboard), social, perks (nicks `~`), chat (M1.3 chat, M1.5 tab/nametags), menus (M1.6 /menu /help, M1.7 /settings, M1.12 /admin, /staff hub), staff (M1.9 staff mode `/staffmode`, freeze, inspect, reports), logs (M1.10 /logs), cosmetics (M1.11 tags & titles, /display).
 - **Phase 4 started:** M4.3 per-player blocks engine merged (modules/depths).
@@ -65,7 +66,8 @@ Read this file and `docs/QUEUE.md`, then continue. Last updated: 2026-10-30 23:5
 - Agents: max 3 at once, distinct lanes, merge each one as soon as it finishes, then start the next queue item (see QUEUE.md).
 
 ## Running agents (background workflows, each in /home/claude/wt/<item> on branch q/<item>)
-- NONE (update120 = pack v1 released on the owner's request; still paused otherwise).
+- NONE (update120 = pack v1 released on the owner's request; removed again in I7 phase 0, 31 Oct 2026: pure vanilla, tag `pack-v1-final`; still paused otherwise).
+- Branch `q/gui-phase1` (not merged): I7 pack v2 **phase 1 built** (icon catalogue + generator, `modules/pack`, prompt after join, friendly kick, fail-open host check, `/pack status|reload`) and **GUI-P2 menus built** (I9 framework, hub/You/Travel, island danger tile); GUI-P3 shop is next.
 - M7-5 collectors was stopped mid-work: WIP committed on branch q/M7-5 (worktree /home/claude/wt/M7-5), NOT merged; re-run its task to finish.
 - NOTE: a separate owner-started agent works on docs/planning/*.md and docs/design/; do not overwrite those files, merge carefully.
 

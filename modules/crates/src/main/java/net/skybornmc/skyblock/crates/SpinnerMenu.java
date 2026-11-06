@@ -76,7 +76,7 @@ final class SpinnerMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         if (strip == null) {
             openerName = viewer.getName();
             int frames = SpinnerMath.frames(m.bedrock(viewer), m.settings.spinnerFrames, m.settings.spinnerBedrockFrames);

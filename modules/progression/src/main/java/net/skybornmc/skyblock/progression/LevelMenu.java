@@ -94,7 +94,7 @@ final class LevelMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         LevelManager levels = menus.levels();
         LevelManager.State s = levels.view(islandId);
         set(SLOT_HEADER, MenuButton.display(header(s)));

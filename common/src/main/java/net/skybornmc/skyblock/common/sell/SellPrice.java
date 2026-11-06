@@ -11,7 +11,7 @@ package net.skybornmc.skyblock.common.sell;
  * @param hotFactor       the Hot Item factor applied on top (1.25 for +25%, 1.0 when not hot)
  * @param trend           how the multiplier moved over the last hour
  */
-public record SellPrice(String itemKey, String category, long base, double multiplier, boolean hot, double hotFactor,
+public record SellPrice(String itemKey, String category, double base, double multiplier, boolean hot, double hotFactor,
                         Trend trend) {
 
     /** The price of one item right now (fractional: cheap items like cobblestone are below $1 after a drop). */

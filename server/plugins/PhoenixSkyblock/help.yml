@@ -1,10 +1,85 @@
 # /help content: categories » topics » pages. MiniMessage + style tags (style.yml), Bedrock-safe symbols only.
-# Category: icon, status (active | coming-soon), slot (inner slot of the 6-row menu), name, lore, topics, all-commands.
+# Category: icon, status (active | coming-soon: hidden), name, lore, topics, all-commands. Open categories are centred
+#           in file order (owner 3 Nov 2026); "slot" is no longer used.
 # Topic: icon, name, summary (2-3 lines), pages (3-6 short pages: title + lines), take-me-there (command run by the
 #        "Take me there" button, without /), commands (command categories listed under "Commands"), aliases (other
 #        ids for /help <id>; menus open these with their "?" button).
 # Command lists are generated automatically from the commands each player may use; never list commands by hand.
 # Reload: /skyblock reload menus
+
+# /help start screen "What do you want to do?" (plan 4 Nov C §1): one card per goal (at most 6, in file order) with
+# 1-2 buttons next to it that DO the thing. A button whose command doesn't exist on this server is left out; a click on
+# the card does what its first button does. "All topics" (the categories below) is on the bottom row.
+# Goal: icon (vanilla item), name (bold, area colour), subtitle (muted), lore (at most 3 lines, mockup format:
+#       "| Header" then "| " rows; <next> = the shared next step), buttons, show (false hides it),
+#       fallback-command (what a next-step button runs while there is no next step).
+# Button: icon, name, action ("» CLICK to <action>"), command (without /; next-step = the shared next step, the same
+#         as Kindle and the scoreboard Next line).
+goals:
+  make-money:
+    icon: gold_ingot
+    name: "<area:money><bold>Make Money"
+    subtitle: "<c:muted>Farm, mine and sell"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Harvest at <c:value>/farm</c:value> or <c:value>/mine"
+      - "<c:bar>| </c:bar><c:text>Sell it all with <c:value>/sell"
+    buttons:
+      - {icon: wheat, name: "<c:action>Take Me There", action: "go to the farm", command: "farm"}
+      - {icon: emerald, name: "<c:action>Open the Shop", action: "open the shop", command: "shop"}
+  upgrade-tools:
+    icon: diamond_pickaxe
+    name: "<area:skills><bold>Upgrade My Tools"
+    subtitle: "<c:muted>Your island hoe and pickaxe"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Hold the tool to upgrade"
+      - "<c:bar>| </c:bar><c:text>Spend shards on its perks"
+    buttons:
+      - {icon: smithing_table, name: "<c:action>Tool Menu", action: "open the tool in your hand", command: "tool"}
+  grow-island:
+    icon: grass_block
+    name: "<area:home><bold>Grow My Island"
+    subtitle: "<c:muted>Level, upgrades and Kindle"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Buy upgrades: <c:value>/is upgrade"
+      - "<c:bar>| </c:bar><c:text>Ask <c:value>Kindle</c:value> what to do next"
+    buttons:
+      - {icon: anvil, name: "<c:action>Island Upgrades", action: "open the upgrades", command: "is upgrade"}
+      - {icon: blaze_powder, name: "<c:action>Talk to Kindle", action: "open Kindle", command: "is guide"}
+  play-with-friends:
+    icon: cake
+    name: "<area:people><bold>Play With Friends"
+    subtitle: "<c:muted>Team up or pay a visit"
+    lore:
+      - "<bold><c:header>| How</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Invite: <c:value>/is invite (name)"
+      - "<c:bar>| </c:bar><c:text>Visit any island: <c:value>/is visit"
+    buttons:
+      - {icon: armor_stand, name: "<c:action>Island Members", action: "see your members", command: "is members"}
+      - {icon: ender_pearl, name: "<c:action>Visit Islands", action: "browse islands", command: "is visit"}
+  find-my-way:
+    icon: compass
+    name: "<area:move><bold>Find My Way"
+    subtitle: "<c:muted>Your next step"
+    fallback-command: "menu"
+    lore:
+      - "<bold><c:header>| Next</c:header></bold>"
+      - "<c:bar>| </c:bar><c:value><next>"
+    buttons:
+      - {icon: filled_map, name: "<c:action>Do It Now", action: "do your next step", command: "next-step"}
+  rules-support:
+    icon: lectern
+    name: "<area:neutral><bold>Rules & Support"
+    subtitle: "<c:muted>Play fair, get help"
+    lore:
+      - "<bold><c:header>| Help</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Ask staff on <c:value>/discord"
+      - "<c:bar>| </c:bar><c:text>Report: <c:value>/report (name)"
+    buttons:
+      - {icon: book, name: "<c:action>Rules", action: "read the rules", command: "rules"}
+      - {icon: bell, name: "<c:action>Discord", action: "get the Discord link", command: "discord"}
 
 categories:
   getting-started:
@@ -13,7 +88,7 @@ categories:
     slot: 11
     name: "<c:flame><bold>Getting started"
     lore: ["<c:text>New here? Start with these."]
-    topics: [welcome, tutorial, menu, help, settings, rules, npcs]
+    topics: [welcome, start, menu, help, settings, rules, npcs]
   islands:
     icon: grass_block
     status: active
@@ -21,20 +96,20 @@ categories:
     name: "<c:flame><bold>Islands"
     lore: ["<c:text>Your own island in the sky:", "<c:text>build, grow and team up."]
     topics: [island, profiles, spawners, island-fuel]
-  depths:
+  grind:
     icon: iron_pickaxe
     status: active
     slot: 13
-    name: "<c:flame><bold>The Depths"
-    lore: ["<c:text>Mine, chop and fight through", "<c:text>tiers for loot and crystals."]
-    topics: [depths, satchel]
+    name: "<c:flame><bold>Farm & Mine"
+    lore: ["<c:text>Farm crops and mine ores", "<c:text>for money, XP and progress."]
+    topics: [grind]
   economy:
     icon: emerald
     status: active
     slot: 14
     name: "<c:flame><bold>Economy"
     lore: ["<c:text>Money, the shop, selling, the", "<c:text>auction house and trading."]
-    topics: [money, bank, shop, sell, notes, auction, trade, box]
+    topics: [money, bank, shop, sell, notes, auction, trade, box, shards]
   progression:
     icon: experience_bottle
     status: active
@@ -47,15 +122,8 @@ categories:
     status: active
     slot: 20
     name: "<c:flame><bold>Gear"
-    lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
+    lore: ["<c:text>Island tools, sets,", "<c:text>enchants and loadouts."]
     topics: [tools, enchants, wardrobe, loadout]
-  combat-events:
-    icon: clock
-    status: coming-soon
-    slot: 21
-    name: "<c:flame><bold>Combat & Events"
-    lore: ["<c:text>Bosses, KOTH, envoys and", "<c:text>seasonal events."]
-    topics: []
   rewards:
     icon: tripwire_hook
     status: active
@@ -146,8 +214,8 @@ topics:
       - title: "<c:value>Travel"
         lines:
           - "<c:text>The <c:success>Travel</c:success> <c:text>button takes you to spawn,"
-          - "<c:text>your island, the Depths Gate, the crates,"
-          - "<c:text>the market and the Forge in one click,"
+          - "<c:text>your island, /farm, /mine, the crates"
+          - "<c:text>and the market in one click,"
           - "<c:text>or lets you visit other islands."
 
   help:
@@ -191,125 +259,72 @@ topics:
           - "<c:text>every setting you can change."
       - title: "<c:value>Show players"
         lines:
-          - "<c:text>Pick who you see in The Depths and"
+          - "<c:text>Pick who you see at /farm, /mine and"
           - "<c:text>the AFK pool: everyone, friends +"
           - "<c:text>island, or nobody. Click to choose."
           - "<c:text>Staff always shows."
 
-  depths:
+  grind:
     icon: iron_pickaxe
-    aliases: [dungeon, tiers, tier]
-    name: "<c:flame>The Depths"
-    summary: ["<c:text>Tiered zones to mine, chop and", "<c:text>fight in. Skills open new tiers."]
-    take-me-there: "dungeon"
-    commands: [Depths]
+    aliases: [farm, mine, grind, ores, crops]
+    name: "<c:flame>Farm and Mine"
+    summary: ["<c:text>A big farm and a mine for", "<c:text>everyone. They pay a money bonus."]
+    take-me-there: "farm"
+    commands: [Teleport]
     pages:
-      - title: "<c:value>The wings"
+      - title: "<c:value>Getting there"
         lines:
-          - "<c:text>The Depths has three wings:"
-          - "<pillar:mining>Mine</pillar:mining><c:text>, <pillar:foraging>Forest</pillar:foraging> <c:text>and <pillar:combat>Combat</pillar:combat><c:text>."
-          - "<c:text>Each wing is a row of tiers, and"
-          - "<c:text>every tier is its own zone."
-      - title: "<c:value>Unlocking tiers"
+          - "<c:value>/farm</c:value> <c:text>takes you to the farm,"
+          - "<c:value>/mine</c:value> <c:text>to the mine. Stand still"
+          - "<c:text>for the countdown."
+      - title: "<c:value>The farm"
         lines:
-          - "<c:text>Tier 1 is open for everyone."
-          - "<c:text>Higher tiers need a skill level:"
-          - "<c:text>Mining for the Mine, Foraging for"
-          - "<c:text>the Forest, Combat for Combat."
-      - title: "<c:value>Locked gates"
+          - "<c:text>Harvest the ripe crops with a hoe."
+          - "<c:text>They grow back by themselves."
+          - "<c:text>Harvest more to unlock carrots,"
+          - "<c:text>potatoes and beetroot."
+      - title: "<c:value>The mine"
         lines:
-          - "<c:text>A locked tier shows bars in its"
-          - "<c:text>gate, only for you. Your action"
-          - "<c:text>bar says what it needs, e.g."
-          - "<c:error>Mining 15 needed (9/15)"
-      - title: "<c:value>Teleporting"
+          - "<c:text>Mine the stone and the ores."
+          - "<c:text>Blocks come back after a while."
+          - "<c:text>Mine more to unlock better ores:"
+          - "<c:text>iron, gold, diamond, emerald."
+      - title: "<c:value>Your own view"
         lines:
-          - "<c:value>/dungeon</c:value> <c:text>lists every tier. Click an"
-          - "<c:text>open one to teleport there."
-          - "<c:text>Locked ones show your progress."
-          - "<c:text>Stand still for the countdown."
-
-  satchel:
-    icon: bundle
-    aliases: [drops, drop, crystals, crystal, bag]
-    name: "<c:flame>Satchel and drops"
-    summary: ["<c:text>Depths drops land in your satchel.", "<c:text>Sell them, forge with them, or take them out."]
-    take-me-there: "dungeon"
-    commands: [Depths]
-    pages:
-      - title: "<c:value>Drops"
+          - "<c:text>Everyone sees their own crops"
+          - "<c:text>and ores, so nobody takes yours."
+      - title: "<c:value>Rewards"
         lines:
-          - "<c:text>Ore and logs you break in The"
-          - "<c:text>Depths go straight into your"
-          - "<c:text>satchel. Better tools give more."
-          - "<c:text>Each profile has its own satchel."
-      - title: "<c:value>Opening it"
-        lines:
-          - "<c:text>Open <c:value>/dungeon</c:value> <c:text>and click"
-          - "<c:value>Satchel</c:value><c:text>. The scoreboard shows how"
-          - "<c:text>full it is, e.g. Satchel 412 / 640."
-      - title: "<c:value>Selling"
-        lines:
-          - "<c:value>Sell all</c:value> <c:text>sells everything at today's"
-          - "<c:text>prices with your sell bonus. Click"
-          - "<c:text>an item to sell only that one or"
-          - "<c:text>to take it out into your inventory."
-      - title: "<c:value>When it's full"
-        lines:
-          - "<c:text>A full satchel stops your mining"
-          - "<c:text>(nothing is lost). Sell, or get"
-          - "<c:text>more space from Mining and Foraging"
-          - "<c:text>levels and the upgrades in the menu."
-      - title: "<c:value>Crystals and the Forge"
-        lines:
-          - "<c:text>Blocks can drop crystals: they go"
-          - "<c:text>to your balance every few seconds."
-          - "<c:text>The Forge takes its materials from"
-          - "<c:text>your inventory first, then the satchel."
+          - "<c:text>Every harvest and ore pays a"
+          - "<c:text>money bonus on top of the item."
+          - "<c:text>It also gives skill XP and counts"
+          - "<c:text>for island tasks and quests."
 
   tools:
     icon: iron_pickaxe
-    aliases: [tool, forge, blueprint, blueprints, skin, skins, starter, prestige]
-    name: "<c:flame>Tools and the Forge"
-    summary: ["<c:text>Custom tools that level up,", "<c:text>the Forge, blueprints and skins."]
-    take-me-there: "forge"
-    commands: [Tools]
+    aliases: [tool, hoe, pickaxe, prestige, perks, island-tools]
+    name: "<c:flame>Island tools"
+    summary: ["<c:text>Your hoe and pickaxe level up,", "<c:text>earn shards and prestige."]
+    take-me-there: "is tools"
+    commands: [Island]
     pages:
-      - title: "<c:value>Starter kit"
+      - title: "<c:value>Hoe and pickaxe"
         lines:
-          - "<c:text>Open <c:value>/forge</c:value> <c:text>and click Starter kit"
-          - "<c:text>for a free pickaxe, axe, hoe,"
-          - "<c:text>sword and rod. Lost one? Claim"
-          - "<c:text>the missing ones every 24 h."
-      - title: "<c:value>Living tools"
+          - "<c:text>Your island has a hoe and a"
+          - "<c:text>pickaxe. Use them at /farm, /mine"
+          - "<c:text>and on your island: they level up"
+          - "<c:text>and never break."
+      - title: "<c:value>Shards and perks"
         lines:
-          - "<c:text>Custom tools never break and"
-          - "<c:text>level up as you use them (1-50)."
-          - "<c:text>Levels give speed and open perk"
-          - "<c:text>slots at Lv 5, 15, 30 and 45."
-      - title: "<c:value>The Forge"
-        lines:
-          - "<c:text>Forge the next tier with money"
-          - "<c:text>and Depths materials. Your level,"
-          - "<c:text>perks and stats stay. Tiers follow"
-          - "<c:text>the Depths tiers of each wing."
+          - "<c:text>The hoe finds Farming Shards, the"
+          - "<c:text>pickaxe Mining Shards. Spend them"
+          - "<c:text>on perks in the tool menu: right-"
+          - "<c:text>click the tool or type /tool."
       - title: "<c:value>Prestige"
         lines:
-          - "<c:text>At Lv 50 a tool can prestige:"
-          - "<c:text>back to Lv 1, keeps perks and"
-          - "<c:text>stats, opens slot 5 and gets a"
-          - "<c:text>star. Once per tool per season."
-      - title: "<c:value>Blueprints and skins"
-        lines:
-          - "<c:text>Rare blueprints drop in The Depths."
-          - "<c:text>Craft them at the Forge for a"
-          - "<c:text>special tool. Skins change the"
-          - "<c:text>look and stay with you forever."
-      - title: "<c:value>Tips"
-        lines:
-          - "<c:text>Sneak and use a tool (or type"
-          - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
-          - "<c:text>stay with you when you die."
+          - "<c:text>At the top level a tool can"
+          - "<c:text>prestige: back to level 1 for a"
+          - "<c:text>lasting bonus to XP and shards."
 
   enchants:
     icon: enchanted_book
@@ -321,7 +336,7 @@ topics:
     pages:
       - title: "<c:value>Books"
         lines:
-          - "<c:text>Enchant books drop in The Depths"
+          - "<c:text>Enchant books come from crates"
           - "<c:text>or come from Book shop rolls."
           - "<c:text>Each book is one enchant at one"
           - "<c:text>level. You can trade and sell them."
@@ -362,7 +377,7 @@ topics:
         lines:
           - "<c:text>Open <c:value>/wardrobe</c:value><c:text> to see every set."
           - "<c:text>Buy a set once with money,"
-          - "<c:text>crystals or gems. It stays in"
+          - "<c:text>crystals or credits. It stays in"
           - "<c:text>your wardrobe on this profile."
       - title: "<c:value>Wearing"
         lines:
@@ -375,9 +390,9 @@ topics:
           - "<c:text>Worn pieces stay on: take them"
           - "<c:text>off in /wardrobe. You never lose"
           - "<c:text>a set, not even when you die."
-      - title: "<c:value>Gem sets and tokens"
+      - title: "<c:value>Credit sets and tokens"
         lines:
-          - "<c:text>A gem set is a Sigil: claim it"
+          - "<c:text>A credit set is a Sigil: claim it"
           - "<c:text>free on each profile once a"
           - "<c:text>season. Crate sets come as"
           - "<c:text>tokens: use one to redeem it."
@@ -442,14 +457,14 @@ topics:
           - "<c:text>Skills are yours alone and reset each season."
       - title: "<c:value>Earning XP"
         lines:
-          - "<c:text>Mine ore and chop logs in The Depths,"
-          - "<c:text>and defeat monsters yourself."
+          - "<c:text>Farm at /farm, mine at /mine and"
+          - "<c:text>work on your own island."
           - "<c:text>Higher tiers give much more XP."
           - "<c:text>Gains show above your hotbar."
       - title: "<c:value>Levels and unlocks"
         lines:
           - "<c:text>Each level needs a bit more XP."
-          - "<c:text>Levels open new Depths tiers: see"
+          - "<c:text>Levels give lasting bonuses: see"
           - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
       - title: "<c:value>Tips"
         lines:
@@ -473,8 +488,8 @@ topics:
       - title: "<c:value>Earning pillar XP"
         lines:
           - "<c:text>Skill XP members earn also goes"
-          - "<c:text>to the island: Depths ore, logs"
-          - "<c:text>and mobs. On your own island:"
+          - "<c:text>to the island: farm, mine and"
+          - "<c:text>mobs. On your own island:"
           - "<c:text>ripe crops, trees, spawner mobs."
       - title: "<c:value>Fair for everyone"
         lines:
@@ -512,7 +527,7 @@ topics:
         lines:
           - "<c:text>Island size up to <c:value>9x9</c:value>, up to 8"
           - "<c:text>members + leader, warps, bank,"
-          - "<c:text>sell bonus, Depths drops, spawners."
+          - "<c:text>sell bonus, crops, ores, spawners."
           - "<c:text>Every level adds island level points."
       - title: "<c:value>Masteries"
         lines:
@@ -532,12 +547,12 @@ topics:
         lines:
           - "<c:text>Pillars, upgrades, achievements,"
           - "<c:text>collections, members' skills,"
-          - "<c:text>Depths tiers, island bank and"
+          - "<c:text>upgrades, island bank and"
           - "<c:text>block worth. 10 points = 1 level."
       - title: "<c:value>Earned and live"
         lines:
           - "<c:text>Earned points never go down."
-          - "<c:text>Skills, Depths, bank and blocks"
+          - "<c:text>Skills, bank and blocks"
           - "<c:text>follow your island as it is now."
           - "<c:text>A member who leaves takes theirs."
       - title: "<c:value>Fair for everyone"
@@ -563,7 +578,7 @@ topics:
 
   rules:
     icon: lectern
-    aliases: [rule, appeal, appeals, punishments]
+    aliases: [rule, punishments]
     name: "<c:flame>Server rules"
     summary: ["<c:text>The short version, and where", "<c:text>to read the full rules."]
     take-me-there: "rules"
@@ -580,12 +595,10 @@ topics:
         lines:
           - "<c:text>Read them all with <c:value>/rules</c:value>."
           - "<c:text>Not knowing a rule is never an excuse."
-      - title: "<c:value>Punished? Your options"
+      - title: "<c:value>Punished?"
         lines:
           - "<c:text>See your mute, warnings and history"
           - "<c:text>with <c:value>/mypunishments</c:value>."
-          - "<c:text>Think it was a mistake? Send an"
-          - "<c:text>appeal with <c:value>/appeal</c:value>."
 
   chat:
     icon: oak_sign
@@ -664,7 +677,7 @@ topics:
     icon: armor_stand
     aliases: [npc, holograms, hologram, leaderboards, leaderboard]
     name: "<c:flame>NPCs and boards"
-    summary: ["<c:text>The people and signs at spawn", "<c:text>and in the Depths."]
+    summary: ["<c:text>The people and signs at spawn", "<c:text>and at /farm and /mine."]
     take-me-there: "spawn"
     pages:
       - title: "<c:value>NPCs"
@@ -724,7 +737,7 @@ topics:
       - title: "<c:value>Voting"
         lines:
           - "<c:value>/vote</c:value> <c:text>helps new players find us"
-          - "<c:text>and gives you keys and gems."
+          - "<c:text>and gives you keys and credits."
           - "<c:text>More:</c:text> <c:value>/help vote</c:value>"
       - title: "<c:value>Store & website"
         lines:
@@ -747,7 +760,7 @@ topics:
           - "<c:text>Locked ones show how to get them."
       - title: "<c:value>What counts"
         lines:
-          - "<c:text>Depths drops (mine, forest, mobs)"
+          - "<c:text>Crops, ores, mob drops"
           - "<c:text>and crate star rewards. Trades and"
           - "<c:text>auction buys never count, so the"
           - "<c:text>log can't be bought."
@@ -850,7 +863,7 @@ topics:
           - "<c:text>A profile is one island and everything"
           - "<c:text>on it: money, crystals, shards, items,"
           - "<c:text>ender chest, XP, skills and settings."
-          - "<c:text>Gems, rank, titles and cosmetics are shared."
+          - "<c:text>Credits, rank, titles and cosmetics are shared."
       - title: "<c:value>Switching"
         lines:
           - "<c:text>Open <c:value>/profiles</c:value>, pick a profile, click Switch."
@@ -858,8 +871,8 @@ topics:
           - "<c:text>profile's are loaded. Not in combat or frozen."
       - title: "<c:value>Slots"
         lines:
-          - "<c:text>Slot 1 is free. Slot 2: <c:value>500 gems</c:value> or Knight+."
-          - "<c:text>Slot 3: <c:value>1,500 gems</c:value> or Warlord+."
+          - "<c:text>Slot 1 is free. Slot 2: <c:value>500 credits</c:value> or Knight+."
+          - "<c:text>Slot 3: <c:value>1,500 credits</c:value> or Warlord+."
           - "<c:text>Bought slots stay, also after a season reset."
       - title: "<c:value>No sharing"
         lines:
@@ -1040,7 +1053,7 @@ topics:
           - "<c:text>change it) and <c:value>/is like Steve</c:value> <c:text>once a day."
   money:
     icon: gold_ingot
-    aliases: [economy, balance, bal, pay, baltop, transactions, currencies]
+    aliases: [economy, balance, bal, pay, baltop, transactions, currencies, credits, credit]
     name: "<c:flame>Money & currencies"
     summary: ["<c:text>Your balances, paying players", "<c:text>and your money history."]
     take-me-there: "transactions"
@@ -1048,10 +1061,16 @@ topics:
     pages:
       - title: "<c:value>Four currencies"
         lines:
-          - "<cur:money>Money</cur:money> <c:text>for almost everything,"
-          - "<cur:crystals>Crystals</cur:crystals> <c:text>for your island, <cur:gems>Gems</cur:gems>"
-          - "<c:text>for premium items and <cur:shards>Shards</cur:shards> <c:text>for"
+          - "<cur:money>Money</cur:money> <c:text>for everyday buying and selling,"
+          - "<cur:crystals>Crystals</cur:crystals> <c:text>for the Black Market, <cur:credits>Credits</cur:credits>"
+          - "<c:text>for the credit shop and <cur:shards>Shards</cur:shards> <c:text>for"
           - "<c:text>the Black Market. See them: <c:value>/bal</c:value>"
+      - title: "<c:value>Credits"
+        lines:
+          - "<c:text>Bought in the store, or earned with"
+          - "<c:text>votes, streaks and thanks. Earned ones"
+          - "<c:text>are spent first and stay yours."
+          - "<c:text>See both: <c:value>/credit bal</c:value>"
       - title: "<c:value>Paying players"
         lines:
           - "<c:value>/pay Steve 1.5k</c:value> <c:text>works even when"
@@ -1061,7 +1080,7 @@ topics:
       - title: "<c:value>What can be paid"
         lines:
           - "<c:text>Money and shards can be paid."
-          - "<c:text>Gems and crystals stay with you."
+          - "<c:text>Credits and crystals stay with you."
           - "<c:text>Payments can't be undone, so check"
           - "<c:text>the name before you confirm."
       - title: "<c:value>Your history"
@@ -1093,8 +1112,8 @@ topics:
           - "<c:text>to earn it. Each payout has a cap."
       - title: "<c:value>Taking money out"
         lines:
-          - "<c:text>A withdrawal costs a small fee (2%)."
-          - "<c:text>You always see the fee before you"
+          - "<c:text>Take money out any time, free."
+          - "<c:text>You always see the amount before you"
           - "<c:text>confirm."
       - title: "<c:value>Tiers and roles"
         lines:
@@ -1106,37 +1125,50 @@ topics:
   shop:
     icon: emerald
     aliases: [builder-shop, buy, blocks, store-blocks]
-    name: "<c:flame>Builder shop"
-    summary: ["<c:text>Buy blocks, decoration, seeds", "<c:text>and spawners for your island."]
+    name: "<c:flame>Shop"
+    summary: ["<c:text>Buy and sell blocks, decoration,", "<c:text>seeds and spawners."]
     take-me-there: "shop"
     commands: [Economy]
     pages:
-      - title: "<c:value>Buying"
+      - title: "<c:value>Categories"
         lines:
-          - "<c:value>/shop</c:value> <c:text>has 9 tabs at the top. Click"
-          - "<c:text>an item, then Buy 1, 16, 64, Fill"
-          - "<c:text>inventory or Type an amount."
-          - "<c:text>Java: shift-click buys a stack."
+          - "<c:value>/shop</c:value> <c:text>shows 9 categories. Pick"
+          - "<c:text>one to see its items."
+          - "<c:value>/shop wood</c:value> <c:text>opens one directly."
+          - "<c:text>Back returns to the categories."
+      - title: "<c:value>Clicks on an item"
+        lines:
+          - "<c:text>Left click: buy (1, 16, 64, fill"
+          - "<c:text>your inventory or type an amount)."
+          - "<c:text>Right-click: sell that item."
+          - "<c:text>Shift-click: buy a stack."
+          - "<c:text>Middle click or Shift + Right-click:"
+          - "<c:text>sell every one you carry."
+      - title: "<c:value>On a phone"
+        lines:
+          - "<c:text>Tap an item to buy. The Sell button"
+          - "<c:text>in the buy menu opens selling, with"
+          - "<c:text>Sell 1, 16, 64 and Sell all."
+          - "<c:text>Type an amount uses tap buttons."
       - title: "<c:value>Room and money"
         lines:
           - "<c:text>Items go into your inventory. If not"
           - "<c:text>all fit, you pay only for what fits."
           - "<c:text>Buys over half your money need a"
-          - "<c:text>second click. <c:value>/shop wood</c:value> <c:text>opens a tab."
+          - "<c:text>second click. Sales pay like /sell."
       - title: "<c:value>Undo last buy"
         lines:
           - "<c:text>Bought the wrong thing? Click Undo"
-          - "<c:text>(bottom bar) within 15 seconds to"
+          - "<c:text>(the clock) within 15 seconds to"
           - "<c:text>get all your money back, while the"
           - "<c:text>items are still in your inventory."
-          - "<c:text>Both helpers can be turned off in"
-          - "<c:value>/settings</c:value><c:text>."
+          - "<c:text>Sales can't be undone."
       - title: "<c:value>Why some prices are high"
         lines:
-          - "<c:text>Crops and redstone also sell with"
-          - "<c:value>/sell</c:value><c:text>, so the shop asks more for"
-          - "<c:text>them. Buy one, grow the rest. The shop"
-          - "<c:text>never buys items back: use /sell."
+          - "<c:text>Crops and redstone also sell, so"
+          - "<c:text>the shop asks more for them. Buy"
+          - "<c:text>one, grow the rest. A red Not"
+          - "<c:text>sellable means nobody buys it back."
 
   sell:
     icon: gold_nugget
@@ -1170,6 +1202,12 @@ topics:
           - "<c:text>and boosters add up to your sell bonus,"
           - "<c:text>up to +300%. Tools, enchant books,"
           - "<c:text>notes and set pieces can't be sold."
+      - title: "<c:value>Sell without a trip"
+        lines:
+          - "<c:value>Sell Wand</c:value><c:text>: right-click a chest"
+          - "<c:text>on your island to sell it all."
+          - "<c:value>Auto-Sell Chest</c:value><c:text> and</c:text> <c:value>Chunk</c:value>"
+          - "<c:value>Collector</c:value><c:text>: Black Market items."
 
   notes:
     icon: paper
@@ -1204,7 +1242,7 @@ topics:
 
   auction:
     icon: gold_block
-    aliases: [ah, auctions, auction-house, sell-items, collection-bin]
+    aliases: [ah, auctions, auction-house, sell-items]
     name: "<c:flame>Auction house"
     summary: ["<c:text>Buy and sell items with other", "<c:text>players, even when they're offline."]
     take-me-there: "ah"
@@ -1225,9 +1263,9 @@ topics:
       - title: "<c:value>Getting items back"
         lines:
           - "<c:text>Unsold, cancelled and bought items that"
-          - "<c:text>don't fit wait in your <c:value>Collection bin</c:value><c:text>."
+          - "<c:text>don't fit go to your <c:value>/box</c:value><c:text>."
           - "<c:text>Cancel a listing in <c:value>My listings</c:value><c:text>."
-          - "<c:text>You can have 5 listings at once."
+          - "<c:text>Better ranks give more listing slots."
       - title: "<c:value>Rules"
         lines:
           - "<c:text>Starter kit items and money notes"
@@ -1268,44 +1306,37 @@ topics:
           - "<c:text>moving away cancels it and gives"
           - "<c:text>everything back. Crystals can't be traded."
 
-  tutorial:
+  start:
     icon: written_book
-    aliases: [guide, start, locks, starter-chest]
-    name: "<c:flame>Tutorial"
-    summary: ["<c:text>A short guided start: your island,", "<c:text>the Depths, selling, Forge and bank."]
-    take-me-there: "tutorial"
+    aliases: [tutorial, rowan, starter-chest, new]
+    name: "<c:flame>Getting started"
+    summary: ["<c:text>Your island is made when you join.", "<c:text>Rowan at spawn shows you the rest."]
+    take-me-there: "start"
     commands: [Info]
     pages:
-      - title: "<c:value>How it works"
+      - title: "<c:value>Your island"
         lines:
-          - "<c:text>Walk into the Island portal at"
-          - "<c:text>spawn. A boss bar, flames and"
-          - "<c:text>holograms show you the way, one"
-          - "<c:text>short step at a time (about 3 min)."
-      - title: "<c:value>Features unlock"
+          - "<c:text>When you join for the first time"
+          - "<c:text>your island is made right away."
+          - "<c:text>Open the starter chest: seeds,"
+          - "<c:text>a sapling, bread, water and lava."
+      - title: "<c:value>Rowan"
         lines:
-          - "<c:text>Some features open as you go: team"
-          - "<c:text>features, the Depths, the auction"
-          - "<c:text>house, /pay and /withdraw, then"
-          - "<c:text>/trade, warzone and new profiles."
-      - title: "<c:value>Lost?"
+          - "<c:text>Go to spawn and talk to Rowan."
+          - "<c:text>The boss bar shows it until then."
+          - "<c:value>/start</c:value> <c:text>opens Rowan's menu"
+          - "<c:text>from anywhere."
+      - title: "<c:value>Where to go"
         lines:
-          - "<c:value>/tutorial</c:value> <c:text>shows your step, takes"
-          - "<c:text>you there and repeats the hint."
-          - "<c:text>Your progress is saved, even if you"
-          - "<c:text>leave. Watch it again any time."
-      - title: "<c:value>Pip and extras"
-        lines:
-          - "<c:text>Pip, a small parrot only you see,"
-          - "<c:text>flies with you. Sneak to skip a"
-          - "<c:text>camera. Later, optional steps in"
-          - "<c:text>/tutorial pay a few crystals each."
+          - "<c:text>Island: grow and build."
+          - "<c:value>/farm</c:value> <c:text>and</c:text> <c:value>/mine</c:value><c:text>: earn money and XP."
+          - "<c:text>Everything else: <c:value>/menu</c:value><c:text>."
 
   blackmarket:
     icon: amethyst_shard
-    aliases: [black-market, bm, shards-shop, island-charter, charter]
+    aliases: [black-market, bm, island-charter, charter]
     name: "<c:flame>Black Market"
-    summary: ["<c:text>Rare things for shards.", "<c:text>The stock changes twice a day."]
+    summary: ["<c:text>Rare things for crystals.", "<c:text>The stock changes twice a day."]
     take-me-there: "blackmarket"
     commands: [Rewards]
     pages:
@@ -1313,8 +1344,8 @@ topics:
         lines:
           - "<c:value>/blackmarket</c:value> <c:text>or the trader in the"
           - "<c:text>Market Square alley. Pay with"
-          - "<c:text>shards from bosses, events and"
-          - "<c:text>the deepest Depths tiers."
+          - "<c:text>crystals from quests, contracts"
+          - "<c:text>and the challenge book."
       - title: "<c:value>The stock"
         lines:
           - "<c:text>New offers at 00:00 and 12:00:"
@@ -1330,9 +1361,36 @@ topics:
       - title: "<c:value>Island Charter"
         lines:
           - "<c:text>Grow your island past 9x9, one"
-          - "<c:text>step at a time, with shards or"
-          - "<c:text>gems. It lasts this season only:"
+          - "<c:text>step at a time, with crystals or"
+          - "<c:text>credits. It lasts this season only:"
           - "<c:text>islands are wiped at the reset."
+
+  shards:
+    icon: amethyst_shard
+    aliases: [shard, shard-block, shard-blocks, shardblock]
+    name: "<c:flame>Shards and shard blocks"
+    summary: ["<c:text>Shards buy rare things at the", "<c:text>Black Market. Shard blocks make them."]
+    take-me-there: "blackmarket"
+    commands: [Rewards]
+    pages:
+      - title: "<c:value>What a shard is"
+        lines:
+          - "<cur:shards>Shards</cur:shards> <c:text>are a rare currency for"
+          - "<c:text>the <c:value>Black Market</c:value><c:text>. You can pay"
+          - "<c:text>them to friends. The only way to"
+          - "<c:text>get new ones: shard blocks."
+      - title: "<c:value>The shard block"
+        lines:
+          - "<c:text>Place it on your island and break"
+          - "<c:text>it for a shard. It turns to bedrock"
+          - "<c:text>and regrows. Up to 4 per island,"
+          - "<c:text>up to 100 shards per day."
+      - title: "<c:value>Upgrades"
+        lines:
+          - "<c:text>Right-click the block: crystals make"
+          - "<c:text>it regrow faster, shards give a"
+          - "<c:text>chance of 2 shards. Pick it up and"
+          - "<c:text>the levels stay on the block."
 
   crates:
     icon: tripwire_hook
@@ -1363,7 +1421,7 @@ topics:
       - title: "<c:value>Good to know"
         lines:
           - "<c:text>Money and crystal pouches grow with"
-          - "<c:text>your Depths tier. Items that don't"
+          - "<c:text>your progress. Items that don't"
           - "<c:text>fit go to your</c:text> <c:value>/box</c:value><c:text>. Rewards"
           - "<c:text>not live yet pay crystals for now."
 
@@ -1386,7 +1444,7 @@ topics:
           - "<c:text>The calendar only moves when you"
           - "<c:text>claim, so you never lose a day."
           - "<c:text>Your streak starts over, though."
-          - "<c:text>Every 7 streak days: 10 gems."
+          - "<c:text>Every 7 streak days: 10 credits."
       - title: "<c:value>Playtime"
         lines:
           - "<c:text>Every hour of active play gives"
@@ -1404,7 +1462,7 @@ topics:
     icon: paper
     aliases: [voting, votes, vote-party, voteparty, vote-streak]
     name: "<c:flame>Voting"
-    summary: ["<c:text>Vote every day for keys,", "<c:text>gems and the vote party."]
+    summary: ["<c:text>Vote every day for keys,", "<c:text>credits and the vote party."]
     take-me-there: "vote"
     commands: [Rewards]
     pages:
@@ -1413,7 +1471,7 @@ topics:
           - "<c:value>/vote</c:value> <c:text>or the Voting NPC in the"
           - "<c:text>Tavern: click a site to get its link."
           - "<c:text>Each site gives a reward once every"
-          - "<c:text>24 hours: a key, gems and pass XP."
+          - "<c:text>24 hours: a key, credits and pass XP."
       - title: "<c:value>Offline?"
         lines:
           - "<c:text>Votes wait for you and are paid"
@@ -1457,7 +1515,7 @@ topics:
         lines:
           - "<c:text>A global booster helps everyone"
           - "<c:text>online. Say thanks or type"
-          - "<c:value>/thanks</c:value><c:text>: the starter gets a gem"
+          - "<c:value>/thanks</c:value><c:text>: the starter gets a credit"
           - "<c:text>(once per booster from each player)."
       - title: "<c:value>Good to know"
         lines:
@@ -1471,12 +1529,12 @@ topics:
     aliases: [quest, daily-quests, weekly-quests, missions, island-missions, quest-master]
     name: "<c:flame>Quests"
     summary: ["<c:text>Daily, weekly and island", "<c:text>goals that pay by themselves."]
-    take-me-there: "quests"
+    take-me-there: "contracts"
     commands: [Rewards]
     pages:
       - title: "<c:value>Daily quests"
         lines:
-          - "<c:value>/quests</c:value> <c:text>or the Quest Master in the"
+          - "<c:value>/contracts</c:value> <c:text>or the Contract Board in the"
           - "<c:text>Tavern: 3 quests a day, sized to"
           - "<c:text>your tier. New ones at 00:00 Oslo"
           - "<c:text>time. All 3 done: a Cinder key."

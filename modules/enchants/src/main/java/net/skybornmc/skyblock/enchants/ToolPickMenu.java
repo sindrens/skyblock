@@ -16,6 +16,12 @@ import java.util.List;
  */
 final class ToolPickMenu extends PagedMenu<EnchantOps.HeldTool> {
 
+    /** Menu layout pass: the window fits its entries (3-6 rows). */
+    @Override
+    protected boolean compact() {
+        return true;
+    }
+
     private final EnchantsModule module;
     private final SlotMenu.Mode mode;
 

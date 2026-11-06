@@ -21,7 +21,7 @@ enum MasteryEffect {
     SWIFT_HANDS("swift-hands", false, BonusFamily.SPEED, null),
     /** MA3 +% damage to mobs (MOB_DAMAGE). The enchants module applies the family to mobs only, never to players. */
     WARRIOR("warrior", true, BonusFamily.MOB_DAMAGE, null),
-    /** MA4 +% satchel size ({@code SatchelService#capacityBonus}). */
+    /** MA4 +% satchel size: no effect since the Depths satchel was removed (owner 3 Nov 2026; kept for stored rows). */
     DEEP_POCKETS("deep-pockets", true, null, null),
     /** MA6 +% crystals (CRYSTALS: Depths blocks and combat). */
     CRYSTAL_RUSH("crystal-rush", true, BonusFamily.CRYSTALS, null),

@@ -30,8 +30,11 @@ vanish:
   # Give vanished staff night vision.
   night-vision: true
 join:
-  # Teleport every player to spawn when they join (until islands exist).
-  teleport-to-spawn: true
+  # Where a returning player appears when they join (owner 4 Nov 2026): island = their island home (safe spot; spawn when they have no island), last = where they logged out, spawn = spawn. New players always start at spawn (the start flow then brings them to their new island).
+  location: island
+  # Ticks after joining before the island teleport (join.location: island), so the profile and island data are loaded (20 = 1 second).
+  # Allowed: 1 to 200
+  island-delay-ticks: 10
   # Announce new players to everyone with their join number.
   first-join-broadcast: true
   # Show a short 'Welcome back' title to returning players.

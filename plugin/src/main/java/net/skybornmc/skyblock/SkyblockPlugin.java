@@ -93,6 +93,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
     private net.skybornmc.skyblock.common.teleport.CoreTeleportService teleports;
     private final net.skybornmc.skyblock.common.visibility.VisibilityConfig visibilityConfig = new net.skybornmc.skyblock.common.visibility.VisibilityConfig();
     private net.skybornmc.skyblock.common.visibility.CoreVisibilityService visibility;
+    private net.skybornmc.skyblock.common.nextstep.DefaultNextStepService nextSteps;
 
     @Override
     public void onEnable() {
@@ -135,10 +136,11 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         configs.load(itemsConfig);                                                                    // M0.7
         messages.load("items");
         ItemRegistry items = new ItemRegistry(messages);
+        items.textures(key -> { var c = menus.icons().catalog(); return c != null && c.isCustom(key); }); // icons v4: item textures
         DupeDetector dupes = new DupeDetector(this, itemsConfig, messages.of("items"));
 
         ServiceRegistry services = new ServiceRegistry(getLogger());                                  // M0.9
-        // RP3: the pack module (if loaded) registers PackService; menus render backgrounds and icons for pack viewers only.
+        // I7 pack v2: menu icons get our model only for viewers whose PackService status is LOADED (no service = none).
         menus.packs(() -> services.optional(net.skybornmc.skyblock.common.pack.PackService.class).orElse(null));
         // ENCHANTS §8.1: bonus families + caps for every module; the sell cap is always the economy's (+300%, #46).
         services.register("core", net.skybornmc.skyblock.common.bonus.BonusService.class,
@@ -159,6 +161,15 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         BuiltinPlaceholders.register(placeholders, getServer(), ranks, bedrock,
                 uuid -> players.get(uuid).map(PlayerData::playtimeMillis).orElse(0L));
         messages.placeholders(placeholders);
+        // Plan 4 Nov C §2: one shared next step (Kindle, /help Find my way, the scoreboard Next line); the start flow's
+        // objective is the fallback until a module (the tutorial) registers a better provider.
+        nextSteps = new net.skybornmc.skyblock.common.nextstep.DefaultNextStepService(
+                new net.skybornmc.skyblock.common.nextstep.ObjectiveNextStep(
+                        player -> placeholders.text(player, coreConfig.nextStepPlaceholder),
+                        () -> coreConfig.nextStepCommand), getLogger());
+        services.register("core", net.skybornmc.skyblock.common.nextstep.NextStepService.class, nextSteps);
+        placeholders.registerText("core", "next_step", player -> nextSteps.current(player)
+                .map(net.skybornmc.skyblock.common.nextstep.NextStep::text).orElse(""));
 
         core = new Core(this, coreConfig, configs, style, messages, sounds, database, players, commands, menus, items, dupes,
                 audit, services, placeholders, ranks, bedrockInfo, scheduler);
@@ -189,6 +200,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.afterFailedEnable(permissions::unregister);
         modules.afterDisable(id -> {
             visibility.removeAll(id);
+            nextSteps.unregisterAll(id);
             core.services().unregisterAll(id);
             core.placeholders().unregisterAll(id);
             permissions.unregister(id);
@@ -268,8 +280,6 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         worlds = new WorldsModule(core);
         modules.register(worlds);
         modules.register(new MotdModule(core));
-        // Resource pack (RP1-RP3): sent in the configuration phase; publishes PackService for the menu/badge/sound renderers.
-        modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new ModerationModule(core));
         // Profiles early: other modules read the active profile key in their own join handlers.
         modules.register(new net.skybornmc.skyblock.profiles.ProfilesModule(core));
@@ -282,9 +292,10 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.perks.PerksModule(core));
         modules.register(new net.skybornmc.skyblock.chat.ChatModule(core));
         modules.register(new net.skybornmc.skyblock.menus.MenusModule(core));
+        // Icon pack v2 (I7): status, prompt after join, host; publishes PackService for MenuService#icon (no dependencies).
+        modules.register(new net.skybornmc.skyblock.pack.PackModule(core));
         modules.register(new net.skybornmc.skyblock.logs.LogsModule(core));
         modules.register(new net.skybornmc.skyblock.cosmetics.CosmeticsModule(core));
-        modules.register(new net.skybornmc.skyblock.depths.DepthsModule(core));
         modules.register(new net.skybornmc.skyblock.islands.IslandsModule(core));
         modules.register(new net.skybornmc.skyblock.economy.EconomyModule(core));
         modules.register(new net.skybornmc.skyblock.skills.SkillsModule(core));
@@ -303,7 +314,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         modules.register(new net.skybornmc.skyblock.production.ProductionModule(core));
         // Last: reads skills, islands, wardrobe, tools, economy and cosmetics services (all optional).
         modules.register(new net.skybornmc.skyblock.achievements.AchievementsModule(core));
-        // Boosters (PHASE-10 M10.2): needs economy (thanks gems); publishes BoosterService and a BonusService source. Before the
+        // Boosters (PHASE-10 M10.2): needs economy (thanks credits); publishes BoosterService and a BonusService source. Before the
         // AFK pool, which banks its sell boosters through BoosterService and holds them while a player is in the pool.
         modules.register(new net.skybornmc.skyblock.boosters.BoostersModule(core));
         // AFK pool (O10, RW3): reads economy, islands, skills, profiles, builds and boosters services (all optional).
@@ -311,17 +322,14 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // NPCs + holograms + leaderboards at the applied builds' points (NPCHOLO); needs the worlds module's BuildPoints.
         npcs = new net.skybornmc.skyblock.npcs.NpcsModule(core);
         modules.register(npcs);
-        // Join tutorial (TUTORIAL.md TU1-TU4): reads islands, depths, tools, economy, npcs, cosmetics services (all optional);
-        // publishes TutorialGate (feature locks), TutorialService and StarterContents (the islands module asks it at paste time).
-        modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core));
         // Crates core (PHASE-10 M10.1): needs economy; reads box, enchants, wardrobe, stacking, cosmetics, islands, skills and
         // builds services (optional). Publishes CrateKeys once ready (the AFK pool then hands over its pending keys).
         modules.register(new net.skybornmc.skyblock.crates.CratesModule(core));
         // Rewards (PHASE-10 M10.6 daily calendar + playtime, M10.5 voting): needs economy; hands keys out through
         // CrateKeys (crates, above) and reads box, boosters, enchants, cosmetics, islands, skills, afk, profiles (optional).
         modules.register(new net.skybornmc.skyblock.rewards.RewardsModule(core));
-        // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads depths (events),
-        // islands, skills, tools, enchants, sell, tutorial and profiles services (all optional).
+        // Quests (PHASE-10 M10.7): needs economy; keys through CrateKeys, pass XP through PassXp; reads islands, skills,
+        // tools, enchants, sell and profiles services (all optional).
         modules.register(new net.skybornmc.skyblock.quests.QuestsModule(core));
         // Collection log (PHASE-10 M10.10, /collection): after crates (its Crates page reads CrateKeys) and progression (the
         // "Collections" island level source). Hooks Depths drop/kill events; reads cosmetics, islands, wardrobe (optional).
@@ -329,10 +337,18 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
         // Battle pass (PHASE-10 M10.8): publishes PassXp (quests, votes, calendar, playtime) and PassRewards (/menu Rewards);
         // needs economy for money/crystals; keys through CrateKeys, boosters, cosmetics, box, skills, profiles (optional).
         modules.register(new net.skybornmc.skyblock.pass.PassModule(core));
-        // Black Market (PHASE-10 M10.11, /blackmarket): needs economy (shards, gems for the Island Charter); hands out through
+        // Black Market (PHASE-10 M10.11, /blackmarket): needs economy (shards, credits for the Island Charter); hands out through
         // crates (keys), wardrobe (set tokens), enchants (books, scrolls), stacking (spawners), cosmetics (tag), islands
         // (charter sizes) and box (overflow), all optional. Answers the Black Market NPC's click.
         modules.register(new net.skybornmc.skyblock.blackmarket.BlackMarketModule(core));
+        // Milestones (Complete Developer Spec §7-9): counts player actions toward island and personal chains; off until
+        // milestones-settings.yml enabled: true. Needs islands (island chains) and profiles (personal chains).
+        modules.register(new net.skybornmc.skyblock.milestones.MilestonesModule(core));
+        modules.register(new net.skybornmc.skyblock.guide.GuideModule(core));
+        modules.register(new net.skybornmc.skyblock.islandtools.IslandToolsModule(core));
+        modules.register(new net.skybornmc.skyblock.tutorial.TutorialModule(core)); // the guided tour (owner 4 Nov 2026)
+        // Shard block (ECON-SHARDS): the only source of shards; needs economy, islands and profiles (registered above).
+        modules.register(new net.skybornmc.skyblock.shardblock.ShardBlockModule(core));
     }
 
     public ModuleRegistry modules() {

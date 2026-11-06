@@ -48,6 +48,17 @@ final class OfferMenu extends Menu {
         return 3;
     }
 
+    /** GUI-FONT step 2: the plaque noun (framework texts, {@code messages/menus.yml}). */
+    @Override
+    public String plaqueKey() {
+        return "plaque.offer";
+    }
+
+    @Override
+    public String plaqueModule() {
+        return MenuService.MODULE;
+    }
+
     @Override
     public String messageModule() {
         return offer.module();
@@ -78,7 +89,7 @@ final class OfferMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         TagResolver[] tags = tags();
         boolean expired = offer.expired(System.currentTimeMillis());
         shownExpired = expired;

@@ -60,7 +60,7 @@ final class ShopMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         List<Pool> pools = module.config().rollPools();
         for (int i = 0; i < Math.min(4, pools.size()); i++) {
             Pool pool = pools.get(i);

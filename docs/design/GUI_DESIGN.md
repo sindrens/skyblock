@@ -1,5 +1,9 @@
 # Phoenix GUI design: one system for every menu
 
+> **Superseded by I9 v2 (GUI and menu standard, built in GUI-P2, Nov 2026):** no frame, no filler panes, no `?` or Main menu button, centred 3/4/6-row menus, icons from `resourcepack/icons.json`. Where this file differs, `docs/UI_STYLE.md` §5 and card I9 win.
+
+> **Note (31 Oct 2026):** resource pack v1 was removed (pure vanilla, I7 phase 0). Anything here about pack backgrounds, pack icons or custom fonts is superseded; see feature cards I7 (resource pack v2, vanilla+) and I9 (GUI redesign).
+
 **Status:** draft v1 for the owner (31 Oct 2026). **Nothing here is built yet.** The owner reviews it first; then the developer implements it in the order of §9.
 
 **Inputs:**

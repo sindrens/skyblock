@@ -168,7 +168,7 @@ final class SetRegistry {
         }
         Optional<SetDef.SourceType> type = SetDef.SourceType.byKey(s.getString("type"));
         if (type.isEmpty()) {
-            errors.add("source.type must be money, crystals, gems or crate");
+            errors.add("source.type must be money, crystals, credits or crate");
             return null;
         }
         long price = s.getLong("price", 0);

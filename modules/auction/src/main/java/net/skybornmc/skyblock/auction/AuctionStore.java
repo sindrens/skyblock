@@ -275,6 +275,56 @@ final class AuctionStore {
         });
     }
 
+    /**
+     * ECON-SELL-SHOP-AH C3: takes every waiting row of one owner for the /box. Each row is deleted on its own with
+     * {@code DELETE ... WHERE id = ? AND owner = ?}; only rows whose delete hit exactly one row are returned, so two
+     * drains (or a drain and a claim) never both get the same item. One transaction.
+     */
+    CompletableFuture<List<CollectionEntry>> takeAll(UUID owner) {
+        return db.transaction(c -> {
+            List<CollectionEntry> rows = Sql.query(c, "SELECT id, owner, listing_id, source, item, material, amount, item_name, "
+                    + "created_at FROM ah_collection WHERE owner = ? ORDER BY id", AuctionStore::entry, owner);
+            List<CollectionEntry> taken = new java.util.ArrayList<>();
+            for (CollectionEntry e : rows) {
+                if (Sql.update(c, "DELETE FROM ah_collection WHERE id = ? AND owner = ?", e.id(), owner) == 1) {
+                    taken.add(e);
+                }
+            }
+            return List.copyOf(taken);
+        });
+    }
+
+    /** Owners with rows waiting in the old collection table (drained to /box at enable and every few minutes). */
+    CompletableFuture<List<UUID>> collectionOwners(int limit) {
+        return db.async(c -> Sql.query(c, "SELECT DISTINCT owner FROM ah_collection LIMIT " + Math.max(1, limit), rs -> Sql.uuid(rs, "owner")));
+    }
+
+    // ================================================================== price hints (C5)
+
+    /** One sold listing for the typical-price job: item key, price per item, seller and buyer. */
+    record Sale(String itemKey, double unitPrice, UUID seller, UUID buyer) {
+    }
+
+    /** Sold listings that ended at or after {@code since} (async job only). */
+    CompletableFuture<List<Sale>> salesSince(long since) {
+        return db.async(c -> Sql.query(c, "SELECT item_key, price, amount, seller, buyer FROM ah_listings WHERE status = 'sold' "
+                + "AND ended_at >= ?", rs -> new Sale(rs.getString("item_key"), rs.getLong("price") / (double) Math.max(1, rs.getInt("amount")),
+                Sql.uuid(rs, "seller"), Sql.uuid(rs, "buyer")), since));
+    }
+
+    /** Replaces the whole ah_price_stats table with {@code stats} (one transaction). */
+    CompletableFuture<Void> writeStats(java.util.Map<String, PriceStats.Stat> stats, long now) {
+        return db.transaction(c -> {
+            Sql.update(c, "DELETE FROM ah_price_stats");
+            for (var e : stats.entrySet()) {
+                PriceStats.Stat st = e.getValue();
+                Sql.update(c, "INSERT INTO ah_price_stats (item_key, median_price, sales, sellers, buyers, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        e.getKey(), Math.round(st.median()), st.sales(), st.sellers(), st.buyers(), now);
+            }
+            return null;
+        });
+    }
+
     /** Puts an item (back) into the bin, e.g. what did not fit after a delivery. */
     CompletableFuture<Long> put(UUID owner, CollectionEntry.Source source, byte[] bytes, String material, int amount, String name,
                                 long now) {

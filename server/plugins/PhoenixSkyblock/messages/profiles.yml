@@ -26,7 +26,6 @@ menu:
   rank-3: "<c:value>Warlord</c:value>"
   status-active: "<c:success><sym:check> Playing now"
   status-switch: "<bold><c:action>» CLICK</c:action></bold> <c:text>to manage"
-  status-locked: "<c:error>Slot locked: you can't switch to it"
   # A profile in a slot. <profile> <slot> <island> <level> <created> <playtime> <status>
   profile:
     name: "<c:flame><profile>"
@@ -45,14 +44,14 @@ menu:
       - "<c:muted>Slot <slot>"
       - "<c:text>A fresh start: new island,"
       - "<c:text>empty inventory, start money."
-      - "<c:text>Gems, rank and titles are shared."
+      - "<c:text>Credits, rank and titles are shared."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"
   # Locked slot that can be bought. <slot> <price> <rank>
   locked:
     name: "<c:muted>Locked slot <slot>"
     lore:
-      - "<c:text>Unlock with <c:value><price> gems</c:value>"
+      - "<c:text>Unlock with <c:value><price> credits</c:value>"
       - "<c:text>or rank <rank><c:text>+."
       - "<c:muted>Bought slots are kept forever."
       - ""
@@ -109,9 +108,8 @@ switch:
   same: "<prefix><c:error><sym:cross> You are already on that profile."
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
   changed: "<prefix><c:error><sym:cross> Your profiles changed. Open <c:action>/profiles</c:action> again."
-  locked: "<prefix><c:error><sym:cross> That slot is locked, so you can't switch to it. You can still delete it."
   cooldown: "<prefix><c:error><sym:cross> Wait <c:value><time></c:value> before you switch again."
-  blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here."
+  blocked-world: "<prefix><c:error><sym:cross> You can't switch profiles here. Leave the Depths first (it has its own inventory)."
   dead: "<prefix><c:error><sym:cross> Respawn first."
   cursor: "<prefix><c:error><sym:cross> Put the item on your cursor away first."
   refused: "<prefix><c:error><sym:cross> You can't switch profiles right now."
@@ -154,7 +152,7 @@ delete:
     - "<c:error>items, money, crystals, shards, skills,"
     - "<c:error>auction listings and their items."
     - "<c:error>This can't be undone."
-    - "<c:text>Gems, rank and titles stay."
+    - "<c:text>Credits, rank and titles stay."
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
   active: "<prefix><c:error><sym:cross> You are playing on it. Switch to another profile first."
   refused: "<prefix><c:error><sym:cross> This profile can't be deleted right now."
@@ -166,14 +164,84 @@ slots:
   not-for-sale: "<prefix><c:error><sym:cross> That slot can't be bought. It comes with a rank."
   invalid: "<prefix><c:error><sym:cross> That slot can't be bought."
   unavailable: "<prefix><c:error><sym:cross> Slots can't be bought right now. Try again later."
-  not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> gems</c:value>. You have <c:value><have></c:value>."
-  bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> gems</c:value>. Create a profile in it!"
+  not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> credits</c:value>. You have <c:value><have></c:value>."
+  bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> credits</c:value>. Create a profile in it!"
   confirm:
     crumb: "Buy slot"
     shown:
       name: "<c:value>Profile slot <slot>"
-      lore: ["<c:text>Costs <c:value><price> gems</c:value>."]
+      lore: ["<c:text>Costs <c:value><price> credits</c:value>."]
     details:
       - "<c:text>Unlocks profile slot <c:value><slot></c:value> for"
-      - "<c:value><price> gems</c:value><c:text>. Yours forever,"
+      - "<c:value><price> credits</c:value><c:text>. Yours forever,"
       - "<c:text>also after a season reset."
+
+# Staff: /profiles info and /profiles reset (feedback 31 Oct 2026). <player> <slot> <profile> <island> <playtime> <count> <online>
+staff:
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player named <c:value><player></c:value> <c:text>has joined before."
+  info:
+    header: "<c:header><bold>| Profiles of <player></bold></c:header> <c:muted>(<count>, <online>)"
+    line: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:muted>· island <island> · <playtime>"
+    line-active: "<c:bar>|</c:bar> <c:text>Slot <c:value><slot></c:value>: <c:value><profile></c:value> <c:success>(active)</c:success> <c:muted>· island <island> · <playtime>"
+  reset:
+    online: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is online. Kick them first (/kick), then reset."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't reset your own profile. Ask another admin or use the console."
+    no-profile: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no profile in slot <c:value><slot></c:value><c:text>. See /profiles info <player>."
+    team-leader: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>leads a team island. Give it to another member first (/isadmin setowner)."
+    done: "<prefix><c:success><sym:check></c:success> <c:text>Wiped <c:value><player></c:value><c:text>'s profile <c:value><profile></c:value> <c:text>(slot <slot>) into snapshot <c:value>#<snapshot></c:value><c:text>. Undo within <days> days: <c:value>/profiles restore <player> <slot> <snapshot>"
+    busy: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is switching profiles right now. Try again in a moment."
+
+# Owner 4 Nov 2026 (island = profile): leaving an island in any way wipes the profile. A snapshot is kept for
+# wipe.snapshot-days (profiles.yml) so staff can put it back.
+wipe:
+  # Chat summary right after the wipe (or on the next join when it happened while offline).
+  # <why> (from wipe.reason, may hold <island>), <money> <shards> <items> <days>
+  summary:
+    text:
+      - "<c:header><bold>| Profile wiped</bold></c:header> <c:muted>(<why>)"
+      - "<c:bar>|</c:bar> <c:text>Gone: <c:error><money></c:error> <c:text>money, <c:error><shards></c:error> <c:text>shards, <c:error><items></c:error> <c:text>items,"
+      - "<c:bar>|</c:bar> <c:text>all tools, skills, quests, collection and milestones."
+      - "<c:bar>|</c:bar> <c:text>Kept: <c:success>credits, rank, achievements and cosmetics</c:success><c:text>."
+      - "<c:bar>|</c:bar> <c:text>You start again on a new island. <c:muted>Got an invite? Accept it instead:</c:muted> <click:run_command:'/is invites'><hover:show_text:'<c:text>Your island invites'><c:action>[Invites]</c:action></hover></click>"
+      - "<c:bar>|</c:bar> <c:muted>A mistake? Staff can restore it for <days> days.</c:muted>"
+    no-island: "your island"
+    unknown: "?"
+  # Why the profile was wiped (in the summary). <island>
+  reason:
+    leave: "you left <island>"
+    kick: "you were kicked from <island>"
+    removed: "staff removed you from <island>"
+    disband: "<island> was disbanded"
+    island_deleted: "staff deleted <island>"
+    island_reset: "staff reset <island>"
+    replace: "you replaced <island> to join another island"
+    staff: "staff reset this profile"
+    restore_replaced: "staff restored an older profile into this slot"
+
+# /profiles snapshots <player> (staff). <id> <slot> <reason> <island> <money> <items> <ago> <by> <status> <player>
+snapshots:
+  none: "<prefix><c:text><c:value><player></c:value> <c:text>has no wiped profiles."
+  header: "<c:header><bold>| Snapshots of <player></bold></c:header> <c:muted>(<count>, kept <days> days)"
+  line: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status>"
+  line-open: "<c:bar>|</c:bar> <c:value>#<id></c:value> <c:text>slot <slot> · <reason> · <island> · <money> · <items> items · <ago> ago by <by> · <status> <click:suggest_command:'/profiles restore <player> <slot> <id>'><hover:show_text:'<c:text>Put this profile back'><c:action>[Restore]</c:action></hover></click>"
+  # <time> = time left, <by> = who restored it
+  status:
+    open: "<c:success>open (<time> left)</c:success>"
+    restored: "<c:muted>restored by <by></c:muted>"
+    expired: "<c:muted>expired</c:muted>"
+    purged: "<c:muted>deleted</c:muted>"
+
+# /profiles restore <player> <slot> [snapshot] (staff). <player> <slot> <snapshot> <profile> <replaced> <island>
+restore:
+  none: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>has no open snapshot in slot <c:value><slot></c:value><c:text>. See /profiles snapshots <player>."
+  unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No snapshot <c:value>#<snapshot></c:value> <c:text>of <c:value><player></c:value><c:text>. See /profiles snapshots <player>."
+  other-slot: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>is for slot <c:value><slot></c:value><c:text>. Use /profiles restore <player> <slot> <snapshot>."
+  busy: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is switching or loading right now. Try again in a moment."
+  refused:
+    restored: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>was restored already."
+    expired: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>expired; it can't be restored any more."
+    live: "<prefix><c:error><sym:cross></c:error> <c:text>That profile is in use already."
+    gone: "<prefix><c:error><sym:cross></c:error> <c:text>Snapshot <c:value>#<snapshot></c:value> <c:text>is gone. See /profiles snapshots <player>."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s <c:value><profile></c:value> <c:text>(slot <slot>, snapshot #<snapshot>). The profile that was there is snapshot <c:value>#<replaced></c:value> <c:muted>(0 = the slot was empty)</c:muted><c:text>."
+  island-hint: "<prefix><c:muted>Island membership doesn't come back by itself. If <player> was kicked from <island>, use</c:muted> <click:suggest_command:'/isadmin restore <player>'><hover:show_text:'<c:text>Open the kick backups'><c:action>[/isadmin restore]</c:action></hover></click>"
+  you: "<prefix><c:success><sym:check></c:success> <c:text>Staff restored your profile <c:value><profile></c:value> <c:text>(slot <slot>)."

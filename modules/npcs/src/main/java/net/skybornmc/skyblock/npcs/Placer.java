@@ -1,6 +1,5 @@
 package net.skybornmc.skyblock.npcs;
 
-import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.util.SpawnQueue;
 import org.bukkit.Bukkit;
@@ -404,7 +403,8 @@ final class Placer implements Listener {
                     m.setDescription(Component.empty());
                 }
                 if (skin != null) {
-                    m.setProfile(ResolvableProfile.resolvableProfile().name(skin).build());
+                    // Owner 4 Nov 2026: a vanilla default skin, a Mojang texture or a player's skin (NpcSkin).
+                    net.skybornmc.skyblock.common.npc.NpcSkin.profileOf(skin).ifPresent(m::setProfile);
                 }
                 if (held != null) {
                     m.getEquipment().setItemInMainHand(new ItemStack(held));

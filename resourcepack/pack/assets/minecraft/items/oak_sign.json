@@ -1,0 +1,27 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/island_chat_on",
+     "type": "minecraft:model"
+    },
+    "when": "island/chat_on"
+   },
+   {
+    "model": {
+     "model": "phoenix:item/icon/ui_info",
+     "type": "minecraft:model"
+    },
+    "when": "ui/info"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/oak_sign",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

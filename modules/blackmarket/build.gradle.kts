@@ -1,4 +1,4 @@
-// Black Market (PHASE-10 M10.11, /blackmarket): rotating rare offers paid in shards (Island Charter also in gems, REVIEW3
+// Black Market (PHASE-10 M10.11, /blackmarket): rotating rare offers paid in shards (Island Charter also in credits, REVIEW3
 // F6). Each buy is one database transaction: currency out, limit and stock counted, a buy row written; the hand-out
 // follows (pending -> sending -> delivered, crash -> review), so an item can be lost but never doubled.
 dependencies {

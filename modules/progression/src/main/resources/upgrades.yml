@@ -11,8 +11,8 @@
 #   tab:      island | economy | depths | production
 #   icon:     item id; order: position in its tab (lower first)
 #   effect:   what the value does (fixed per upgrade, see below); effects whose feature does not exist yet show
-#             "Coming soon" and can't be bought: island-vault, mob-loot, crop-growth, harvest-yield, and
-#             mine-fortune / lumberjack / xp-boost until the Depths roll and skill XP read them; fuel-tank while
+#             "Coming soon" and can't be bought: island-vault, mob-loot, lumberjack and xp-boost (crop-growth,
+#             harvest-yield and mine-fortune are live: the island hoe and pickaxe read them, owner 4 Nov 2026); fuel-tank while
 #             Island Fuel is off (production.yml), generator while custom generators are off (generators.yml)
 #   enabled:  false = not shown, not bought (bought levels keep working)
 #   levels:   one entry per level, in order:
@@ -238,48 +238,49 @@ upgrades:
         cost: 1660000000
         value: 60
   mine_fortune:
-    tab: depths
+    # Owner 4 Nov 2026: the island's mine boost for the island pickaxe (on the island and at /mine), way above its own perks.
+    tab: production
     icon: "iron_pickaxe"
-    order: 1
+    order: 8
     effect: mine-fortune
     enabled: true
     levels:
       - tier: 1
         cost: 4690
-        value: 2
+        value: 12
       - tier: 2
         cost: 12300
-        value: 4
+        value: 24
       - tier: 3
         cost: 32100
-        value: 6
+        value: 36
       - tier: 4
         cost: 83900
-        value: 8
+        value: 48
       - tier: 5
         cost: 219000
-        value: 10
+        value: 60
       - tier: 6
         cost: 573000
-        value: 12
+        value: 72
       - tier: 7
         cost: 1500000
-        value: 14
+        value: 84
       - tier: 8
         cost: 3920000
-        value: 16
+        value: 96
       - tier: 9
         cost: 16700000
-        value: 18
+        value: 108
       - tier: 10
         cost: 71200000
-        value: 20
+        value: 120
       - tier: 11
         cost: 303000000
-        value: 22
+        value: 132
       - tier: 12
         cost: 1290000000
-        value: 24
+        value: 144
   lumberjack:
     tab: depths
     icon: "iron_axe"

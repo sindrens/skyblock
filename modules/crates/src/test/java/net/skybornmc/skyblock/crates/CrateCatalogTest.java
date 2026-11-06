@@ -22,6 +22,9 @@ class CrateCatalogTest {
     @Test
     void everyBundledTableAddsUpTo100() {
         for (CrateCatalog.Crate crate : Fixtures.bundled().crates()) {
+            if (crate.tiered()) {
+                continue; // Eclipse: see EclipseTieredTest
+            }
             assertEquals(100.0, crate.totalChance(), 1e-9, crate.id());
             double shares = crate.rewards().stream().mapToDouble(crate::percent).sum();
             assertEquals(100.0, shares, 1e-9, crate.id());
@@ -33,9 +36,15 @@ class CrateCatalogTest {
     @Test
     void topBandsAndPityMatchThePlanOverview() {
         CrateCatalog c = Fixtures.bundled();
-        double[][] expected = {{8, 30}, {9, 28}, {11, 23}, {14, 18}, {14, 18}, {8, 10}, {12, 20}};
+        // ECON-SHARDS / ECON-SPAWNERS: spawner_t5 (inferno 2, phoenix 6 top) and the conqueror shards row left; the shard
+        // block is a top reward in inferno 1, phoenix 2, eclipse 3, conqueror 2 (blaze 0.5 is a plain reward).
+        double[][] expected = {{8, 30}, {9, 28}, {11, 23}, {13, 18}, {10, 18}, {-1, 0}, {14, 20}};
         List<CrateCatalog.Crate> crates = c.crates();
         for (int i = 0; i < crates.size(); i++) {
+            if (crates.get(i).tiered()) {
+                assertEquals(0, crates.get(i).pity(), "Eclipse has no pity (owner V2)");
+                continue;
+            }
             assertEquals(expected[i][0], crates.get(i).topPercent(), 1e-9, crates.get(i).id() + " top band");
             assertEquals((int) expected[i][1], crates.get(i).pity(), crates.get(i).id() + " pity");
         }

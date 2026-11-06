@@ -33,10 +33,14 @@ public final class MenusModule implements SkyblockModule {
     static final String ID = "menus";
     static final String PERM_MENU = "skyblock.menu";
     static final String PERM_HELP = "skyblock.help";
+    /** {@code /help topics}: the guide categories (All topics) instead of the goals. */
+    static final String ALL_TOPICS = "topics";
     static final String PERM_SETTINGS = "skyblock.settings";
     static final String PERM_STAFF = "skyblock.staff.menu";
     /** Shared sound groups (common Sounds): owned here because every module's menus and events use them. */
     static final String SETTING_UI_SOUNDS = "ui-sounds";
+    /** GUI-FONT 6.7 (owner V3-Q5 a): the normal Minecraft chest look in menus (Java only; Bedrock always has it). */
+    static final String SETTING_PLAIN_MENUS = "plain-menus";
     static final String SETTING_EVENT_SOUNDS = "event-sounds";
 
     private final Core core;
@@ -59,6 +63,7 @@ public final class MenusModule implements SkyblockModule {
     @Override
     public void enable() {
         core.configs().load(config);
+        HelpCommandsMenu.hidden(config.helpHidden);
         core.messages().retire(Nav.TEXTS, RetiredTexts.all());
         core.messages().load(Nav.TEXTS);
         loadFiles();
@@ -68,14 +73,67 @@ public final class MenusModule implements SkyblockModule {
         menuItem = new MenuItem(nav, config);
         Bukkit.getPluginManager().registerEvents(menuItem, core.plugin());
         settings.onChange(MenuItem.SETTING, (player, value) -> menuItem.apply(player));
+        core.menus().plainMenus(player -> settings.get(player, SETTING_PLAIN_MENUS));
+        settings.onChange(SETTING_PLAIN_MENUS, (player, value) -> core.menus().retitle(player));
         menuItem.applyAll();
         menuItem.start();
         registerCommands();
     }
 
+    /** Names /warp accepts: aliases and place ids of places that work on this server. */
+    private java.util.List<String> warpNames() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String a : config.warpAliases) {
+            int i = a.indexOf(':');
+            if (i > 0 && findWarp(a.substring(i + 1).trim()) != null) {
+                out.add(a.substring(0, i).trim());
+            }
+        }
+        for (WarpLayout.Warp w : nav.travel.warps()) {
+            out.add(w.id());
+        }
+        return out;
+    }
+
+    private WarpLayout.Warp findWarp(String name) {
+        if (name == null) {
+            return null;
+        }
+        String n = name.toLowerCase(java.util.Locale.ROOT);
+        for (String a : config.warpAliases) {
+            int i = a.indexOf(':');
+            if (i > 0 && a.substring(0, i).trim().equalsIgnoreCase(n)) {
+                n = a.substring(i + 1).trim();
+                break;
+            }
+        }
+        for (WarpLayout.Warp w : nav.travel.warps()) {
+            if (w.id().equals(n) || w.id().replace("-", "").equals(n.replace("-", ""))) {
+                return w;
+            }
+        }
+        return null;
+    }
+
+    private void warp(org.bukkit.entity.Player player, String name) {
+        if (name == null || name.isBlank()) {
+            core.menus().open(player, new TravelMenu(nav));
+            return;
+        }
+        WarpLayout.Warp w = findWarp(name);
+        if (w == null || !TravelMenu.available(nav, w)) {
+            throw new net.skybornmc.skyblock.common.command.CommandFailure(Nav.TEXTS, "travel.unknown", Nav.pre("name", name));
+        }
+        if (w.permission() != null && !w.permission().isBlank() && !player.hasPermission(w.permission())) {
+            throw new net.skybornmc.skyblock.common.command.CommandFailure(Nav.TEXTS, "travel.locked-warp");
+        }
+        TravelMenu.travel(nav, player, w, TravelMenu.name(nav, player, w));
+    }
+
     @Override
     public void reload() {
         core.configs().load(config);
+        HelpCommandsMenu.hidden(config.helpHidden);
         core.messages().load(Nav.TEXTS);
         loadFiles();
         installSoundFilters();
@@ -87,6 +145,7 @@ public final class MenusModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        core.menus().plainMenus(null);
         if (menuItem != null) {
             menuItem.stop();
             HandlerList.unregisterAll(menuItem);
@@ -110,10 +169,15 @@ public final class MenusModule implements SkyblockModule {
         YamlConfiguration hub = YamlFiles.load(core.plugin(), "menu.yml", this::problem);
         if (hub != null) {
             migrateHub(hub);
-            nav.hub = ButtonLayout.hub(hub, this::problem);
-            nav.you = ButtonLayout.you(hub, this::problem);
+            migrateIcons(hub);
+            // I9: an icon is a vanilla item id (plain for everyone) or an icon catalogue key (our picture with the pack).
+            java.util.function.Predicate<String> icons = s -> ButtonLayout.isItem(s) || core.menus().icons().has(s);
+            Set<String> areas = core.style().colors().getOrDefault("area", java.util.Map.of()).keySet();
+            nav.hub = ButtonLayout.hub(hub, icons, areas.isEmpty() ? ButtonLayout.AREAS : areas, this::problem);
+            nav.you = ButtonLayout.you(hub, icons, this::problem);
             nav.staff = HubLayout.parse(hub, "staff-entries", this::problem);
-            nav.travel = WarpLayout.parse(hub, this::problem);
+            nav.travel = WarpLayout.parse(hub, icons, this::problem);
+            nav.highlights = Highlights.parse(hub.getConfigurationSection("highlights"), core.menus().icons()::has, this::problem);
         }
         YamlConfiguration help = YamlFiles.load(core.plugin(), "help.yml", this::problem);
         if (help != null) {
@@ -147,6 +211,34 @@ public final class MenusModule implements SkyblockModule {
         }
     }
 
+    /** GUI-P2: icon keys, area colours instead of marker panes, centred You/Travel, the Staff tile (once; backup kept). */
+    private void migrateIcons(YamlConfiguration hub) {
+        if (!MenuV3Migration.needed(hub)) {
+            return;
+        }
+        java.io.File file = new java.io.File(core.plugin().getDataFolder(), "menu.yml");
+        java.io.File backup = new java.io.File(core.plugin().getDataFolder(), MenuV3Migration.BACKUP);
+        try {
+            if (file.exists() && !backup.exists()) {
+                java.nio.file.Files.copy(file.toPath(), backup.toPath());
+            }
+        } catch (java.io.IOException e) {
+            problem("menu.yml: could not keep a backup before the I9 menu update, the old layout stays for now: " + e.getMessage());
+            return;
+        }
+        if (MenuV3Migration.apply(hub)) {
+            try {
+                hub.save(file);
+                core.plugin().getLogger().info("menu.yml: switched to icon keys, area colours and centred You/Travel menus "
+                        + "(GUI-P2, I9); the old file is kept as " + MenuV3Migration.BACKUP);
+                core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.CONFIG, "menu_yml_p2_migrate",
+                        net.skybornmc.skyblock.common.audit.Actor.system(ID), java.util.Map.of("backup", MenuV3Migration.BACKUP));
+            } catch (java.io.IOException e) {
+                problem("menu.yml: could not save the I9 menu update (it is active until the next restart): " + e.getMessage());
+            }
+        }
+    }
+
     private void problem(String text) {
         core.plugin().getLogger().warning(text);
     }
@@ -158,8 +250,8 @@ public final class MenusModule implements SkyblockModule {
      * {@code Sounds#playUi}/{@code Sounds#playEvent}) are implemented here; the others are placeholders shown as
      * "Coming soon" until the module that owns the feature registers the same id (social: private-messages,
      * afk-broadcast; chat: mentions-sound, chat-colors, chat-timestamps; essentials: join-messages, tpa-requests; hud:
-     * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles). Still placeholders (no feature
-     * yet): tips. The old "depths-visibility" placeholder became the core's {@code show-players} choice (VIS).
+     * scoreboard; islands: island-invites; trade: trade-requests; wardrobe: particles; chat: tips, the broadcast cards).
+     * The old "depths-visibility" placeholder became the core's {@code show-players} choice (VIS).
      */
     private void registerBuiltinSettings() {
         placeholder("private-messages", SettingCategory.CHAT, Material.WRITABLE_BOOK, true);
@@ -178,6 +270,7 @@ public final class MenusModule implements SkyblockModule {
         placeholder("particles", SettingCategory.DISPLAY, Material.BLAZE_POWDER, true);
         active(SETTING_UI_SOUNDS, SettingCategory.SOUNDS, Material.NOTE_BLOCK, true);
         active(SETTING_EVENT_SOUNDS, SettingCategory.SOUNDS, Material.GOAT_HORN, true);
+        active(SETTING_PLAIN_MENUS, SettingCategory.DISPLAY, Material.PAINTING, false);
     }
 
     private void placeholder(String id, SettingCategory category, Material icon, boolean defaultValue) {
@@ -201,6 +294,15 @@ public final class MenusModule implements SkyblockModule {
                 .permission(PERM_MENU).playerOnly().aliases("gui")
                 .executes(ctx -> core.menus().open(ctx.player(), new HubMenu(nav))));
 
+        // Owner 2 Nov 2026 ("/warp crates"): the Travel places by name; no name opens the Travel menu.
+        net.skybornmc.skyblock.common.command.Arg<String> place = net.skybornmc.skyblock.common.command.Arg.word("place",
+                (sender, raw) -> raw.toLowerCase(java.util.Locale.ROOT),
+                net.skybornmc.skyblock.common.command.Suggest.of(this::warpNames));
+        commands.register(CommandSpec.command("warp")
+                .description("Travel to a place: /warp crates, /warp market ... (no name: the Travel menu)").category("Info")
+                .permission(PERM_MENU).playerOnly().aliases("warps").optional(place).example("warp crates")
+                .executes(ctx -> warp(ctx.player(), ctx.getOr(place, null))));
+
         commands.register(CommandSpec.command("staff")
                 .description("Staff hub: display editor, config editor and staff tools").category("Staff")
                 .permission(PERM_STAFF).playerOnly().aliases("staffmenu")
@@ -214,10 +316,11 @@ public final class MenusModule implements SkyblockModule {
         Arg<String> topic = Args.word("topic", Suggest.bySender(sender -> {
             List<String> ids = new ArrayList<>(nav.help.ids());
             ids.add("commands");
+            ids.add(ALL_TOPICS);
             return ids;
         }));
         commands.register(CommandSpec.command("help")
-                .description("Help menu: guides for every feature and all your commands").category("Info")
+                .description("Help: what do you want to do? (one click does it), all guides and your commands").category("Info")
                 .permission(PERM_HELP).aliases("guide")
                 .optional(topic).example("help settings")
                 .executes(ctx -> help(ctx.sender(), ctx.has(topic) ? ctx.get(topic) : null)));
@@ -245,6 +348,14 @@ public final class MenusModule implements SkyblockModule {
             return;
         }
         String key = id.toLowerCase(Locale.ROOT);
+        if (key.equals(ALL_TOPICS) && nav.help.topic(key).isEmpty() && nav.help.category(key).isEmpty()) {
+            if (player != null) {
+                core.menus().open(player, new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
+            } else {
+                HelpChat.categories(nav, sender);
+            }
+            return;
+        }
         if (key.equals("commands")) {
             if (player != null) {
                 openUnderHelp(player, new HelpCommandsMenu(nav, List.of(), nav.text(player, "help.all-commands")));
@@ -279,17 +390,17 @@ public final class MenusModule implements SkyblockModule {
         }
         nav.msg.send(sender, "help.unknown", Msg.p("topic", id));
         if (player != null) {
-            core.menus().open(player, new HelpMenu(nav));
+            core.menus().open(player, new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
         }
     }
 
     /**
      * Opens a help screen. From a menu (its "?" button) Back returns to that menu (GUI-1); typed in chat, Back leads to
-     * the help categories.
+     * All topics, and from there to "What do you want to do?".
      */
     private void openUnderHelp(Player player, Menu menu) {
         if (core.menus().openMenu(player) == null) {
-            menu.parent(new HelpMenu(nav));
+            menu.parent(new HelpTopicsMenu(nav).parent(new HelpMenu(nav)));
         }
         core.menus().open(player, menu);
     }

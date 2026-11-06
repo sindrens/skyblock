@@ -2,6 +2,7 @@ package net.skybornmc.skyblock.progression;
 
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.economy.BankDepositEvent;
+import net.skybornmc.skyblock.common.grind.GrindBreakEvent;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.progression.TaskType;
@@ -40,7 +41,7 @@ import java.util.UUID;
  * Task progress from normal play (PHASE-5 M5.3). Anti-abuse is the same as the pillars: only counting members (never coop
  * players or visitors), never in creative/spectator, on islands only on their <b>own</b> island, blocks placed by players
  * count nothing ({@link PlacedBlocks}), kills only by the player's own hit or arrow (fall, lava and stack kills count 0).
- * Depths blocks come from {@link DepthsTaskListener}. Every handler is O(1) and runs at MONITOR after protection, so
+ * {@code /farm} and {@code /mine} blocks come from {@link GrindBreakEvent}. Every handler is O(1) and runs at MONITOR after protection, so
  * cancelled actions never count; untracked targets return before any lookup.
  */
 final class TaskSources implements Listener {
@@ -122,9 +123,14 @@ final class TaskSources implements Listener {
         }
     }
 
-    /** A Depths resource break (DepthsTaskListener): per-player blocks, never placed by players. */
-    void countDepths(Player player, Location where, TaskType type, String object) {
-        count(player, where, type, object, 1);
+    /**
+     * A {@code /farm} harvest or {@code /mine} break (essentials grind areas, replaces the Depths): per-player blocks, never
+     * placed by players. Counts as farm or mine with the block the player saw ({@code carrots}, {@code iron_ore}).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGrindBreak(GrindBreakEvent event) {
+        TaskType kind = event.farm() ? TaskType.FARM : TaskType.MINE;
+        count(event.getPlayer(), event.location(), kind, id(event.block()), 1);
     }
 
     private static String id(Material m) {
@@ -188,7 +194,7 @@ final class TaskSources implements Listener {
         }
         IslandService islands = islands();
         if (islands == null || !islands.isIslandWorld(block.getWorld())) {
-            return; // Depths blocks: DepthsTaskListener
+            return; // grind blocks: onGrindBreak
         }
         UUID slot = islands.islandInSlot(block.getLocation()).map(IslandService.IslandInfo::id).orElse(null);
         boolean wasPlaced = slot != null && placed(slot).brokePlaced(block.getX(), block.getY(), block.getZ());

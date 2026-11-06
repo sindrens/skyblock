@@ -138,6 +138,8 @@ final class TradeEngine {
             if (amount <= 0) {
                 continue;
             }
+            // Crystals and earned credits can't be offered; if one ever got into a snapshot its leg stays in the batch and
+            // Transaction#problem refuses the whole swap (INVALID: nothing moves), it is never silently dropped.
             UUID from = fromA ? s.profileA() : s.profileB();
             UUID to = fromA ? s.profileB() : s.profileA();
             out.add(Transaction.transfer(AccountRef.player(from), AccountRef.player(to), currency, amount, TxReason.TRADE)

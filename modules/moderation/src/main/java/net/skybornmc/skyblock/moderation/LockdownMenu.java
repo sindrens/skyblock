@@ -65,7 +65,7 @@ final class LockdownMenu extends net.skybornmc.skyblock.common.menu.Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         long now = System.currentTimeMillis();
         button(SLOT_CHAT, Lockdown.Kind.CHAT, now);
         button(SLOT_JOIN, Lockdown.Kind.JOIN, now);

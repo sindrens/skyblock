@@ -16,15 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AchievementRegistryTest {
 
     @Test
-    void bundledFileHas30AchievementsInSixCategories() {
+    void bundledFileHas39AchievementsInSixCategories() {
         AchievementRegistry r = Fixtures.registry();
-        assertEquals(30, r.size());
+        assertEquals(26, r.size(), "30 starters + 8 added 2 Nov 2026 - 13 retired 5 Nov + Harvester on");
         assertEquals(List.of("skills", "island", "combat", "economy", "gear", "social"),
                 r.categories().stream().map(Category::id).toList());
         for (Category c : r.categories()) {
             assertFalse(r.inCategory(c.id()).isEmpty(), c.id() + " has achievements");
         }
-        assertTrue(r.get("harvester").isEmpty(), "farming waits for Phase 7 (enabled: false)");
+        assertTrue(r.get("harvester").isPresent(), "feedback 5 Nov 2026: farming is the core of the game, Harvester is on");
         assertTrue(r.get("angler").isEmpty(), "fishing waits for Phase 7 (enabled: false)");
     }
 
@@ -46,22 +46,22 @@ class AchievementRegistryTest {
             }
             assertTrue(AchievementRegistry.visible(def.name()).length() <= AchievementRegistry.MAX_NAME, def.id());
         }
-        assertTrue(hidden >= 4, "a few secret achievements (DESIGN: fun/secret ones)");
+        assertTrue(hidden >= 2, "a few secret achievements (DESIGN: fun/secret ones)");
         // Titles already in tags-titles.yml are referenced by id (no display), new ones bring a display.
-        assertNull(r.get("tycoon").orElseThrow().title().display());
-        assertEquals("deep_diver", r.get("into_the_void").orElseThrow().title().id());
-        assertEquals("phoenix_reborn", r.get("reborn").orElseThrow().title().id());
+        // Feedback 5 Nov 2026: duplicates and Depths/Forge leftovers are switched off.
+        for (String gone : AchievementRegistry.RETIRED_5NOV) {
+            assertTrue(r.get(gone).isEmpty(), gone + " is off");
+        }
         assertEquals("<pillar:mining>Prospector", r.get("prospector").orElseThrow().title().display());
     }
 
     @Test
     void metricLookupFindsEveryUser() {
         AchievementRegistry r = Fixtures.registry();
-        assertEquals(List.of("prospector", "into_the_void"), r.byMetric(Metric.SKILL_MINING).stream().map(AchievementDef::id).toList());
+        assertEquals(List.of("prospector"), r.byMetric(Metric.SKILL_MINING).stream().map(AchievementDef::id).toList());
         assertEquals(List.of("first_sale", "merchant"), r.byMetric(Metric.ITEMS_SOLD).stream().map(AchievementDef::id).toList());
         assertTrue(r.usedMetrics().contains(Metric.PLAYTIME_MINUTES));
-        assertFalse(r.usedMetrics().contains(Metric.SKILL_FARMING), "only used by a disabled achievement");
-        assertTrue(r.byMetric(Metric.SKILL_FARMING).isEmpty());
+        assertEquals(List.of("harvester"), r.byMetric(Metric.SKILL_FARMING).stream().map(AchievementDef::id).toList());
     }
 
     @Test

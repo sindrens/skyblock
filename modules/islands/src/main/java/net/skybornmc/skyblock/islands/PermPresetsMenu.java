@@ -73,7 +73,7 @@ final class PermPresetsMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         Optional<PermPresets.Preset> active = presets().active(island.perms(), islands.rolePermissions());
         Component current = active.map(p -> text("perms.presets." + p.key() + ".word")).orElse(text("perms.presets.custom"));
         boolean canEdit = canEditAny();

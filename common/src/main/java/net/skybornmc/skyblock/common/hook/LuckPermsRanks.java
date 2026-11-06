@@ -155,6 +155,19 @@ final class LuckPermsRanks implements RankProvider {
     }
 
     @Override
+    public CompletableFuture<Boolean> removeGroup(UUID player, String group) {
+        return lp.getGroupManager().loadGroup(group).thenCompose(found -> {
+            if (found.isEmpty()) {
+                return CompletableFuture.completedFuture(false);
+            }
+            boolean[] removed = {false};
+            return lp.getUserManager().modifyUser(player,
+                            user -> removed[0] = user.data().remove(InheritanceNode.builder(found.get()).build()).wasSuccessful())
+                    .thenApply(done -> removed[0]);
+        });
+    }
+
+    @Override
     public String groupDisplayName(Player player) {
         String id = primaryGroup(player);
         Group group = lp.getGroupManager().getGroup(id);

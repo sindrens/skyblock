@@ -42,6 +42,10 @@ final class ItemCodec {
         if (pdc.has(ItemKeys.DUPE_FLAG)) {
             return Optional.of("dupe-flagged");
         }
+        // AH-1 / owner D7: the hotbar menu item (Nether Star) and menu buttons are controls, never auctionable.
+        if (pdc.has(ItemKeys.HOTBAR_MENU_ITEM) || pdc.has(ItemKeys.MENU_BUTTON)) {
+            return Optional.of("menu-item");
+        }
         // Owner answer 332: items made by staff (/give, /i, creative) never change hands, also not inside a container.
         if (net.skybornmc.skyblock.common.item.StaffItems.containsMarked(stack)) {
             return Optional.of("staff-item");
@@ -97,13 +101,18 @@ final class ItemCodec {
         return false;
     }
 
+    /** The key listings of this item share (custom item id, else the vanilla id): the typical-price key (C5). */
+    static String itemKey(ItemStack stack) {
+        return ItemRegistry.idOf(stack).orElse(stack.getType().getKey().getKey());
+    }
+
     /** Serializes the stack and reads the facts the database keeps next to it. */
     ItemSnapshot snapshot(ItemStack stack) {
         Optional<String> id = ItemRegistry.idOf(stack);
         Optional<ItemDefinition> def = items.definitionOf(stack);
         Material type = stack.getType();
         Category category = Category.categorize(type.name(), def.map(d -> d.type().id()).orElse(null), type.isBlock(), type.isEdible());
-        String key = id.orElse(type.getKey().getKey());
+        String key = itemKey(stack);
         return new ItemSnapshot(stack.serializeAsBytes(), key, ItemRegistry.uuidOf(stack).map(Object::toString).orElse(null),
                 type.name(), stack.getAmount(), plainName(stack), category);
     }

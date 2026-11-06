@@ -93,6 +93,33 @@ public final class CommandService {
         }
     }
 
+    /** True when a module already registered the top-level command {@code name} (two modules may offer the same one). */
+    public boolean registered(String name) {
+        return specs.containsKey(name);
+    }
+
+    /**
+     * Adds {@code sub} under a command another module registered ({@code /eco shop} from the shop module under the economy
+     * module's {@code /eco}). Call it in {@code enable()}, after the owner module enabled (module dependencies): the command
+     * tree is built when the server registers commands, after every module enabled. A sub-command of the same name is
+     * replaced. False (and a warning) when the parent is not registered.
+     */
+    public boolean extend(String parent, CommandSpec sub) {
+        CommandSpec owner = specs.get(parent);
+        if (owner == null) {
+            plugin.getLogger().warning("Command '/" + parent + " " + sub.name() + "' not added: /" + parent + " is not registered");
+            return false;
+        }
+        try {
+            sub.validate(parent + " " + sub.name());
+        } catch (IllegalStateException e) {
+            plugin.getLogger().severe("Command not registered: " + e.getMessage());
+            return false;
+        }
+        owner.replaceSub(sub);
+        return true;
+    }
+
     /** Re-reads {@code commands.yml} (cooldowns apply now, aliases after a restart) and the framework messages. */
     public List<String> reload() {
         messages.load(MESSAGES);
@@ -216,10 +243,57 @@ public final class CommandService {
             }
             event.setCancelled(true);
             Node node = new Node(problem.spec(), problem.path(), top, permissions(List.of(), problem.spec()));
-            messages.send(player, MESSAGES, "unknown-input", Msg.p("input", problem.input()), Msg.p("usage", usageText(player, node)),
-                    Msg.p("example", example(node)), Msg.p("description", problem.spec().description()));
+            // FX-16 (6 Nov 2026): a mistyped sub-command gets "Did you mean /is go?" instead of the full option list.
+            String suggestion = closest(problem.input(), problem.spec().children().stream()
+                    .filter(c -> c.permission() == null || c.permission().isBlank() || player.hasPermission(c.permission()))
+                    .map(CommandSpec::name).toList());
+            if (suggestion != null) {
+                messages.send(player, MESSAGES, "did-you-mean", Msg.p("input", problem.input()),
+                        Msg.p("suggestion", "/" + node.path() + " " + suggestion), Msg.p("command", node.path()));
+            } else {
+                messages.send(player, MESSAGES, "unknown-input", Msg.p("input", problem.input()), Msg.p("usage", usageText(player, node)),
+                        Msg.p("example", example(node)), Msg.p("description", problem.spec().description()));
+            }
             playError(player);
         }
+    }
+
+    /** The option closest to a typo (edit distance at most 2, or a prefix), or null. Pure. */
+    static String closest(String typed, List<String> options) {
+        if (typed == null || typed.isBlank() || options.isEmpty()) {
+            return null;
+        }
+        String t = typed.toLowerCase(java.util.Locale.ROOT);
+        String best = null;
+        int bestDistance = Integer.MAX_VALUE;
+        for (String o : options) {
+            String option = o.toLowerCase(java.util.Locale.ROOT);
+            int d = option.startsWith(t) || t.startsWith(option) ? 1 : distance(t, option);
+            if (d < bestDistance) {
+                bestDistance = d;
+                best = o;
+            }
+        }
+        return bestDistance <= 2 ? best : null;
+    }
+
+    private static int distance(String a, String b) {
+        int[] prev = new int[b.length() + 1];
+        int[] cur = new int[b.length() + 1];
+        for (int j = 0; j <= b.length(); j++) {
+            prev[j] = j;
+        }
+        for (int i = 1; i <= a.length(); i++) {
+            cur[0] = i;
+            for (int j = 1; j <= b.length(); j++) {
+                int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                cur[j] = Math.min(Math.min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost);
+            }
+            int[] swap = prev;
+            prev = cur;
+            cur = swap;
+        }
+        return prev[b.length()];
     }
 
     /** Our top-level command for a typed label (name or alias, with or without the plugin namespace), or null. */

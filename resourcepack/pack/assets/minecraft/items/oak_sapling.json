@@ -1,0 +1,20 @@
+{
+ "model": {
+  "cases": [
+   {
+    "model": {
+     "model": "phoenix:item/icon/feature_island",
+     "type": "minecraft:model"
+    },
+    "when": "feature/island"
+   }
+  ],
+  "fallback": {
+   "model": "minecraft:item/oak_sapling",
+   "type": "minecraft:model"
+  },
+  "index": 0,
+  "property": "minecraft:custom_model_data",
+  "type": "minecraft:select"
+ }
+}

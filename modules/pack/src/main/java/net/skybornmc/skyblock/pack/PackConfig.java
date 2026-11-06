@@ -3,41 +3,51 @@ package net.skybornmc.skyblock.pack;
 import net.skybornmc.skyblock.common.config.ModuleConfig;
 import net.skybornmc.skyblock.common.config.Setting;
 
-/** Typed settings of {@code pack.yml}. Texts that players see on a kick are in {@code messages/pack.yml}. */
+import java.util.Map;
+
+/** Typed settings of {@code pack.yml} (GUI-P1-PACK 5.1). Kick and staff texts are in {@code messages/pack.yml}. */
 public final class PackConfig extends ModuleConfig {
 
-    /** Which bundled zip is sent. */
-    public enum Variant { SAFE, SHINE }
-
-    @Setting(desc = "Send the Phoenix resource pack to Java players. Off = nobody gets it (menus and badges fall back to plain text).")
+    @Setting(desc = "Send the icon pack to Java players. false = nothing is sent, nobody is kicked, every icon is its plain base item.")
     public boolean enabled = true;
 
-    @Setting(desc = "safe = badges shine as still sparkles; shine = adds the moving-shine shader (26.3 clients only). Switch with /pack reload.")
-    public Variant variant = Variant.SAFE;
+    @Setting(desc = "A Java player who declines the pack (or whose download fails) is kicked with a friendly text. false = offer only, never kick.")
+    public boolean required = true;
 
-    @Setting(desc = "Full download URL of the zip when it is hosted elsewhere (its SHA-1 must match the bundled pack). Empty = this server hosts it.")
+    @Setting(desc = "Full download URL of the zip when it is hosted elsewhere (its content must equal the bundled pack; the health check verifies it). "
+            + "<file> is replaced by the current file name (phoenix-icons-<hash>.zip). Empty = this server hosts it.")
     public String url = "";
 
     @Setting(path = "host.bind", desc = "Address the built-in pack web server listens on. Empty = all addresses.", restart = true)
     public String hostBind = "";
 
-    @Setting(path = "host.port", desc = "TCP port of the built-in pack web server. Open it in the firewall.", min = 1, max = 65535, restart = true)
+    @Setting(path = "host.port", desc = "TCP port of the built-in pack web server. Open it in the firewall: ufw allow 25580/tcp.",
+            min = 1, max = 65535, restart = true)
     public int hostPort = 25580;
 
-    @Setting(path = "host.public-host", desc = "Host name (or IP) players download the pack from, used to build the URL when 'url' is empty.")
+    @Setting(path = "host.public-host", desc = "Host name (or IP) players download the pack from; builds the URL when 'url' is empty.")
     public String hostPublicHost = "play.skybornmc.net";
 
+    @Setting(path = "host.check-url", desc = "URL the self-check downloads. Empty = the URL players use. Set http://127.0.0.1:25580/<file> "
+            + "if the server cannot reach its own public address (hairpin NAT); <file> is replaced by the current file name.")
+    public String hostCheckUrl = "";
+
+    @Setting(path = "host.check-seconds", desc = "Seconds between two self-checks of the pack host.", min = 10, max = 600)
+    public int hostCheckSeconds = 60;
+
+    @Setting(path = "host.check-failures", desc = "Failed self-checks in a row before the host counts as down (then the pack is not required and staff get one alert).",
+            min = 1, max = 10)
+    public int hostCheckFailures = 2;
+
     @Setting(desc = "Prompt shown on the client's resource pack screen (MiniMessage).")
-    public String prompt = "<gradient:#ff9a3c:#ff3d2e><bold>Phoenix Skyblock</bold></gradient> <gray>needs its resource pack for menus, badges and sounds.";
+    public String prompt = "<gradient:#ff9a3c:#ff3d2e><bold>Phoenix Skyblock</bold></gradient> <gray>A small pack (about 150 KB): menu icons and a new menu look.";
 
-    @Setting(desc = "The client must accept the pack to join. A player who declines is kicked with the 'kick.declined' message.")
-    public boolean required = true;
-
-    @Setting(path = "kick-on-fail", desc = "Kick a player whose pack download or loading failed (they are asked to rejoin). Off = they play with the text fallback.")
-    public boolean kickOnFail = true;
-
-    @Setting(path = "timeout-seconds", desc = "Seconds to wait for the client to load the pack before counting it as failed.", min = 5, max = 600)
+    @Setting(path = "timeout-seconds", desc = "Seconds to wait for the client's final answer before counting the pack as failed.", min = 5, max = 600)
     public int timeoutSeconds = 60;
+
+    @Setting(path = "join.wait-seconds", desc = "The welcome and the tutorial camera wait at most this long for the pack answer (0 = never wait).",
+            min = 0, max = 60)
+    public int joinWaitSeconds = 15;
 
     @Override
     public String fileName() {
@@ -46,6 +56,12 @@ public final class PackConfig extends ModuleConfig {
 
     @Override
     public String header() {
-        return "Phoenix resource pack. Reload with /pack reload (resends the pack to everyone online).";
+        return "Phoenix icon pack (I7 v3). Reload: /pack reload";
+    }
+
+    @Override
+    public Map<String, String> removedKeys() {
+        return Map.of("variant", "pack v1 (safe/shine) was removed; v2 has one icon pack",
+                "kick-on-fail", "v2: a failed download is handled like a decline (see 'required')");
     }
 }

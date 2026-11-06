@@ -72,6 +72,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandProtection protection;
     private BorderProtection borderProtection;
     private IslandLifecycle lifecycle;
+    private WipeLosses wipeLosses;
     private VisitManager visits;
     private IslandHomes homes;
     private WarpManager warps;
@@ -84,6 +85,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandEnvironment environment;
     private IslandFly fly;
     private IslandAutoPickup autoPickup;
+    private ObsidianBucket obsidianBucket;
     private IslandAdmin admin;
     private IslandNotes notes;
     private IslandChat chat;
@@ -136,6 +138,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         environment = new IslandEnvironment(this, manager);
         fly = new IslandFly(this, manager);
         autoPickup = new IslandAutoPickup(this, manager);
+        obsidianBucket = new ObsidianBucket(this, manager);
         notes = new IslandNotes(this, manager, new IslandNoteStore(core.database()), name -> admin == null ? null : admin.find(name));
         chat = new IslandChat(this, manager, new IslandChatStore(core.database()));
         chat.loadConfig();
@@ -160,6 +163,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Bukkit.getPluginManager().registerEvents(environment, core.plugin());
         Bukkit.getPluginManager().registerEvents(fly, core.plugin());
         Bukkit.getPluginManager().registerEvents(autoPickup, core.plugin());
+        Bukkit.getPluginManager().registerEvents(obsidianBucket, core.plugin());
         Bukkit.getPluginManager().registerEvents(homes, core.plugin());
         environment.start();
         fly.start();
@@ -185,6 +189,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         visits.onVisit(island -> stats.tracker().recordIsland(island.id(), net.skybornmc.skyblock.common.island.IslandStat.VISITORS, 1));
         // M2.5: island chat as a chat channel (the chat module routes toggled chat here and checks one-shots)
         core.services().register(ID, ChatChannel.class, chat);
+        // Feedback 4 Nov 2026 (E17): /fly for players with the fly rank perk is island fly (essentials asks this).
+        core.services().register(ID, net.skybornmc.skyblock.common.flight.PlayerFlight.class, fly::toggle);
         registerPlaceholders();
         registerCommands();
         admin = new IslandAdmin(this, manager, lifecycle, protection);
@@ -267,6 +273,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
         }
         if (members != null) {
             members.stopSweep();
+        }
+        if (obsidianBucket != null) {
+            HandlerList.unregisterAll(obsidianBucket);
         }
         if (protection != null) {
             protection.clearBypass();
@@ -384,6 +393,24 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** Kick backups (owner answer 251), or null before enable. */
     KickBackups kickBackups() {
         return kickBackups;
+    }
+
+    /**
+     * Owner 4 Nov 2026 (island = profile): true when leaving an island wipes the profile ({@code lifecycle.wipe-profile} and
+     * the profiles module is on). Then the old profile reset of disband/reset/join is not used.
+     */
+    boolean wipesProfiles() {
+        return config.wipeProfile && net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).supportsWipe();
+    }
+
+    /** The amounts a profile wipe takes, for confirm screens. */
+    WipeLosses wipeLosses() {
+        WipeLosses losses = wipeLosses;
+        if (losses == null) {
+            losses = new WipeLosses(this);
+            wipeLosses = losses;
+        }
+        return losses;
     }
 
     /** The island notes (NOTES), or null before enable / after disable. */
@@ -511,6 +538,24 @@ public final class IslandsModule implements SkyblockModule, Listener {
         // Position on the island's own board (solo or team); empty while unranked, so the scoreboard shows no "#".
         core.placeholders().registerText(ID, "island_rank", p -> p == null ? "" : manager.islandOfPlayer(manager.key(p))
                 .flatMap(i -> progression().map(pr -> pr.islandRank(i.id()))).filter(r -> r > 0).map(String::valueOf).orElse(""));
+        // G7-R1-01: owner of the island whose slot the player stands in (the visiting board's "Owner:" row); empty when
+        // there is none or the name is not loaded yet, so the row hides. Map reads only.
+        core.placeholders().registerText(ID, "island_here_owner", p -> {
+            if (p == null || !manager.isIslandWorld(p.getWorld())) {
+                return "";
+            }
+            org.bukkit.Location at = p.getLocation();
+            return ownerText(manager.islandInSlotAt(at.getBlockX(), at.getBlockZ()));
+        });
+    }
+
+    /** Pure: the plain owner name of an island for {@code island_here_owner}; empty for no island or no loaded name. */
+    static String ownerText(Island island) {
+        if (island == null) {
+            return "";
+        }
+        String name = island.ownerName();
+        return name == null || name.isBlank() ? "" : name;
     }
 
     private void registerCommands() {
@@ -554,6 +599,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .description("Your island: create it, or open the island menu").category("Island")
                 .permission(PERM_USE).playerOnly().aliases("island")
                 .executes(ctx -> manager.openOrCreate(ctx.player()))
+                .sub(CommandSpec.sub("create").description("Create your island (if you don't have one yet)").permission(PERM_USE)
+                        .playerOnly().cooldown(Duration.ofSeconds(2)).example("is create")
+                        .executes(ctx -> manager.createCommand(ctx.player())))
                 .sub(CommandSpec.sub("home").description("Teleport to your island home, or to a shared island home by name").permission(PERM_USE)
                         .playerOnly().cooldown(Duration.ofSeconds(3)).optional(homeName).example("is home farm")
                         .executes(ctx -> homes.go(ctx.player(), ctx.getOr(homeName, null))))
@@ -702,7 +750,11 @@ public final class IslandsModule implements SkyblockModule, Listener {
     /** A deleted profile's solo island is removed; as a member it leaves the island; coop trust ends. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
-        UUID key = event.profile().id();
+        dropProfile(event.profile().id());
+    }
+
+    /** A deleted or retired profile key leaves every island (coop ends; a solo island is removed). */
+    private void dropProfile(UUID key) {
         Actor actor = Actor.system("profiles");
         for (Island island : List.copyOf(manager.islands())) {
             if (island.coops().contains(key)) {
@@ -718,6 +770,17 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 manager.removeMember(island.id(), key, "profile deleted", actor);
             }
         });
+    }
+
+    /**
+     * Owner 4 Nov 2026: a wiped profile's key is retired. Pending invites follow the person to the fresh profile (so "leave
+     * first, then accept" works); a key that is somehow still on an island (a staff profile reset) leaves it like a deleted
+     * profile.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileWiped(net.skybornmc.skyblock.common.profile.ProfileWipedEvent event) {
+        members.profileWiped(event.gone().id(), event.fresh().id());
+        dropProfile(event.gone().id());
     }
 
     /** After a switch the old profile is "offline": its island's coop trust ends when no manager is left online. */

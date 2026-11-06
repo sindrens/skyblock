@@ -85,7 +85,11 @@ final class StaffMode extends StaffFeature implements Listener {
         }
     }
 
-    private record Session(byte[] contents, GameMode gameMode, boolean allowFlight, boolean flying, boolean wasVanished) {
+    /** Scoreboard tag while in staff mode (read by other modules, e.g. achievements playtime). */
+    static final String SCOREBOARD_TAG = "staff_mode";
+
+    private record Session(byte[] contents, GameMode gameMode, boolean allowFlight, boolean flying, boolean wasVanished,
+                           int xpLevel, float xpProgress) {
     }
 
     private final FreezeService freeze;
@@ -141,13 +145,16 @@ final class StaffMode extends StaffFeature implements Listener {
     private void enter(Player player) {
         PlayerInventory inv = player.getInventory();
         byte[] contents = ItemStack.serializeItemsAsBytes(inv.getContents());
-        Session session = new Session(contents, player.getGameMode(), player.getAllowFlight(), player.isFlying(), vanished(player));
+        Session session = new Session(contents, player.getGameMode(), player.getAllowFlight(), player.isFlying(), vanished(player),
+                player.getLevel(), player.getExp());
         sessions.put(player.getUniqueId(), session);
         inv.clear();
+        // Owner 2 Nov 2026: no XP in staff mode (given back on exit; saved in the snapshot for crashes).
+        setXp(player, 0, 0f);
         player.setItemOnCursor(null);
         // Saved before anything else changes; if the database refuses, staff mode is cancelled and everything restored.
         store.saveSnapshot(new StaffStore.Snapshot(player.getUniqueId(), contents, session.gameMode().name(),
-                session.allowFlight(), session.flying(), session.wasVanished())).exceptionally(e -> {
+                session.allowFlight(), session.flying(), session.wasVanished(), session.xpLevel(), session.xpProgress())).exceptionally(e -> {
             Bukkit.getScheduler().runTask(core.plugin(), () -> {
                 core.plugin().getLogger().severe("Could not save staff-mode inventory of " + player.getName() + ": " + e.getMessage());
                 if (player.isOnline() && inStaffMode(player)) {
@@ -175,6 +182,7 @@ final class StaffMode extends StaffFeature implements Listener {
         core.sounds().play(player, "unlock");
         notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-on", Msg.p("staff", player.getName()));
         audit("staff_mode_on", player, null, null, Map.of());
+        player.addScoreboardTag(SCOREBOARD_TAG); // other modules (achievements) see staff mode without a dependency
         // F15: islands turns the protection bypass on for owner/admin (and off again on exit).
         Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, true));
     }
@@ -191,6 +199,7 @@ final class StaffMode extends StaffFeature implements Listener {
             player.setGameMode(GameMode.SURVIVAL);
         }
         restore(player, session.contents(), session.gameMode(), session.allowFlight(), session.flying());
+        setXp(player, session.xpLevel(), session.xpProgress());
         if (config.modeNightVision) {
             PotionEffect nv = player.getPotionEffect(PotionEffectType.NIGHT_VISION);
             if (nv != null && nv.isInfinite()) {
@@ -207,6 +216,7 @@ final class StaffMode extends StaffFeature implements Listener {
             notifyStaff(StaffPerms.NOTIFY, player, "mode.staff-off", Msg.p("staff", player.getName()));
         }
         audit("staff_mode_off", player, null, null, Map.of());
+        player.removeScoreboardTag(SCOREBOARD_TAG);
         Bukkit.getPluginManager().callEvent(new StaffModeEvent(player, false));
     }
 
@@ -229,6 +239,20 @@ final class StaffMode extends StaffFeature implements Listener {
             player.setFlying(others && flying);
         }
         player.setCanPickupItems(true);
+    }
+
+    /** Sets level and bar progress (progress clamped to 0..1 as Bukkit requires). */
+    static void setXp(Player player, int level, float progress) {
+        player.setLevel(Math.max(0, level));
+        player.setExp(Math.max(0f, Math.min(0.9999f, progress)));
+    }
+
+    /** No XP is picked up while in staff mode (it would be lost on exit). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onExp(org.bukkit.event.player.PlayerExpChangeEvent event) {
+        if (inStaffMode(event.getPlayer())) {
+            event.setAmount(0);
+        }
     }
 
     private void giveKit(Player player) {
@@ -544,6 +568,7 @@ final class StaffMode extends StaffFeature implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.removeScoreboardTag(SCOREBOARD_TAG); // a crash in staff mode leaves the tag on the saved player
         purge(player);
         if (!player.hasPermission(StaffPerms.MODE)) {
             return;
@@ -569,6 +594,9 @@ final class StaffMode extends StaffFeature implements Listener {
                     mode = GameMode.SURVIVAL;
                 }
                 restore(player, s.contents(), mode, s.allowFlight(), s.flying());
+                if (s.xpLevel() > 0 || s.xpProgress() > 0f) {
+                    setXp(player, s.xpLevel(), s.xpProgress());
+                }
                 store.deleteSnapshot(player.getUniqueId());
                 msg.send(player, "mode.recovered");
                 core.plugin().getLogger().info("Restored the staff-mode inventory of " + player.getName() + " after a crash.");

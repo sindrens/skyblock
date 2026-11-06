@@ -13,8 +13,7 @@ enum RewardType {
     MONEY("money", true),
     /** Crystal pouch: {@code base} x growth^(tier-1). In the transaction. */
     CRYSTALS("crystals", true),
-    /** Shards ({@code amount}). In the transaction. */
-    SHARDS("shards", true),
+    // ECON-SHARDS: there is no shard reward. Shards come only from shard blocks; a "type: shards" line is skipped with a warning.
     /** Keys of another crate ({@code crate}, {@code amount}). In the transaction. */
     KEY("key", true),
     /** A random enchant book of a rarity ({@code pool}, {@code level}). Item, handed out after the commit. */

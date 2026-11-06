@@ -4,6 +4,9 @@
 skyblock.island:
   description: Use /is (create your island, home, go, sethome, invite, invites, accept, deny, kick, leave, promote, demote, transfer, coop, uncoop, members, settings, notes, chat, info, disband, visit, lock, unlock, expel, ban, unban, setwarp, delwarp, warp, rate, like)
   default: true
+skyblock.island.obsidianbucket:
+  description: Right-click obsidian on an island with an empty bucket to get a lava bucket back
+  default: true
 skyblock.island.stats:
   description: Use /is stats and the Stats button of the island menu (M2.6) - your island's stats and each member's part
   default: true

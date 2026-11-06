@@ -1,0 +1,15 @@
+# Permissions of the shardblock module (ECON-SHARDS). Registered when the module enables, removed when it disables.
+# Format: the permissions section of a plugin.yml (description, default: true|false|op|not op; missing = op).
+# LuckPerms grants for these nodes: server/permissions/shardblock.txt. Commands: docs/commands/shardblock.md.
+skyblock.shardblock.use:
+  description: Place, break, upgrade and pick up shard blocks (island roles still decide, key shard-blocks)
+  default: true
+skyblock.staff.shardblock.view:
+  description: /shardblock info and stats (the block you look at, totals and today's shards)
+  default: op
+skyblock.staff.shardblock.give:
+  description: /shardblock give <player> [amount] (audited shard_block_give)
+  default: op
+skyblock.staff.shardblock.remove:
+  description: /shardblock remove (the block you look at goes back to the placer's /box; audited shard_block_remove)
+  default: op

@@ -72,7 +72,7 @@ final class ArmorEnchantMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         WardrobeService w = module.wardrobe();
         Optional<SetEntryView> entry = w == null ? Optional.empty() : w.entry(viewer, entryId);
         Optional<ToolPerk> perk = entry.flatMap(e -> PieceEnchants.find(e.enchants(piece), enchant));

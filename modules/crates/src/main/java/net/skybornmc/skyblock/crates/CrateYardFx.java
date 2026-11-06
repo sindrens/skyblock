@@ -1,7 +1,6 @@
 package net.skybornmc.skyblock.crates;
 
 import net.kyori.adventure.sound.Sound;
-import net.skybornmc.skyblock.common.pack.PackService;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -21,30 +20,26 @@ import java.util.function.Supplier;
 
 /**
  * The ambience of the crate yard, one repeating task for all crates: rarity dust above the rarer crates while a player is
- * near, and the quiet approach chime (once per approach, with a cooldown, only for that player). The same task keeps the
- * crate models in step with each viewer's pack status. Settings are read when it starts (a reload restarts it).
+ * near, and the quiet approach chime (once per approach, with a cooldown, only for that player; a vanilla sound).
+ * Settings are read when it starts (a reload restarts it).
  */
 final class CrateYardFx {
 
     private final CratesModule m;
     private final Supplier<List<Pedestals.Pedestal>> pedestals;
     private final Function<String, Color> colors;
-    private final CrateDisplays displays;
     private Scheduler.Task task = Scheduler.Task.NONE;
     private CrateAmbient.Approach approach = new CrateAmbient.Approach(1, 1, 0);
     private final Map<String, Particle.DustOptions> dust = new HashMap<>();
-    private Optional<Sound> packSound = Optional.empty();
     private Optional<Sound> fallbackSound = Optional.empty();
     private boolean particles;
     private boolean chime;
     private double particleRangeSq;
 
-    CrateYardFx(CratesModule module, Supplier<List<Pedestals.Pedestal>> pedestals, Function<String, Color> colors,
-                CrateDisplays displays) {
+    CrateYardFx(CratesModule module, Supplier<List<Pedestals.Pedestal>> pedestals, Function<String, Color> colors) {
         this.m = module;
         this.pedestals = pedestals;
         this.colors = colors;
-        this.displays = displays;
     }
 
     void start() {
@@ -57,7 +52,6 @@ final class CrateYardFx {
         chime = c.approachEnabled;
         particleRangeSq = c.ambientParticleRange * c.ambientParticleRange;
         approach = new CrateAmbient.Approach(c.approachRange, c.approachResetRange, c.approachCooldownSeconds * 1000L);
-        packSound = CrateShow.sound(c.approachPackSound);
         fallbackSound = CrateShow.sound(c.approachFallbackSound);
         dust.clear();
         task = m.core.scheduler().repeat("crates:yard-ambient", c.ambientInterval, c.ambientInterval, this::tick);
@@ -74,14 +68,12 @@ final class CrateYardFx {
     }
 
     private void tick() {
-        displays.syncAll();
         List<Pedestals.Pedestal> list = pedestals.get();
         if (list.isEmpty() || Bukkit.getOnlinePlayers().isEmpty() || !(particles || chime)) {
             return;
         }
         long now = System.currentTimeMillis();
         boolean[] near = new boolean[list.size()];
-        PackService pack = m.core.services().optional(PackService.class).orElse(null);
         for (Player player : Bukkit.getOnlinePlayers()) {
             Location loc = player.getLocation();
             String world = loc.getWorld().getName();
@@ -100,8 +92,7 @@ final class CrateYardFx {
                     near[i] = true;
                 }
                 if (chime && !spectator && approach.update(id, p.crateId(), d2, now) && visible(p.crateId())) {
-                    Optional<Sound> sound = pack != null && pack.hasPack(player) ? packSound : fallbackSound;
-                    sound.ifPresent(s -> player.playSound(s, p.x() + 0.5, p.y() + 0.5, p.z() + 0.5));
+                    fallbackSound.ifPresent(s -> player.playSound(s, p.x() + 0.5, p.y() + 0.5, p.z() + 0.5));
                 }
             }
         }

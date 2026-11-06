@@ -86,9 +86,9 @@ public final class VotesSettings extends ModuleConfig {
     @Setting(path = "rewards.keys", desc = "Keys every vote gives (P10-13: 1).", min = 0, max = 64, level = Setting.Level.OWNER)
     public int keys = 1;
 
-    @Setting(path = "rewards.gems", desc = "Gems every vote gives (P10-13, ECONOMY_BALANCE §9.2: 3).", min = 0, max = 1_000,
+    @Setting(path = "rewards.credits", desc = "Earned credits every vote gives (P10-13, ECONOMY_BALANCE §9.2: 3).", min = 0, max = 1_000,
             level = Setting.Level.OWNER)
-    public long gems = 3;
+    public long credits = 3;
 
     @Setting(path = "rewards.pass-xp", desc = "Battle pass XP every vote gives (P10-13: 25). Only once the pass exists.", min = 0,
             max = 100_000, level = Setting.Level.OWNER)
@@ -147,6 +147,17 @@ public final class VotesSettings extends ModuleConfig {
 
     @Setting(path = "party.hologram-seconds", desc = "At most one hologram update per this many seconds.", min = 1, max = 600)
     public int hologramSeconds = 10;
+
+    /** Version 2 (card C1): gems were renamed credits (earned credits); the gem keys are moved. */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(2, java.util.Map.of("rewards.gems", "rewards.credits"));
+    }
 
     @Override
     public String fileName() {

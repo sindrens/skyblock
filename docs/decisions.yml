@@ -46,6 +46,8 @@ decisions:
     answer: "Full satchel: drops go to the inventory, then /box; the warning shows at most every 3 s"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: satchel.full-warning-ms
     value: 3000
     migrate-from: 1500
@@ -135,11 +137,13 @@ decisions:
     module: economy
     file: economy.yml
     path: send-gate.required
-    value: 10000
+    value: 0   # owner 6 Nov 2026: replaced by the playtime pay limit (pay-limit.tiers)
   - id: "R3-10a"
     answer: "Mini-boss health +25% per extra eligible player"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: combat.mini-boss.health-per-extra-player
     value: 25.0
 
@@ -147,6 +151,8 @@ decisions:
     answer: "Mini-boss scaling counts up to 10 extra players"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: combat.mini-boss.max-extra-players
     value: 10
 
@@ -154,6 +160,8 @@ decisions:
     answer: "Mini-boss rewards: at least 10% of the damage (every eligible player gets the full reward)"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: combat.mini-boss.min-damage-share
     value: 0.1
 
@@ -161,6 +169,8 @@ decisions:
     answer: "Mini-boss rewards and scaling: hit within the last 90 s"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: combat.mini-boss.recent-hit-seconds
     value: 90
 
@@ -168,6 +178,8 @@ decisions:
     answer: "Mini-boss rewards and scaling: max 3 accounts per IP"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: combat.mini-boss.max-accounts-per-ip
     value: 3
 
@@ -189,6 +201,8 @@ decisions:
     answer: "Fragments drop from mine and forest tiers 11+ (drop chance: open question, default 1 in 18,000 per block)"
     module: depths
     file: depths.yml
+    check: false
+    note: "The Depths module was removed (owner 3 Nov 2026); kept as history."
     path: fragments.min-tier
     value: 11
 

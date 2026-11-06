@@ -3,8 +3,11 @@ package net.skybornmc.skyblock.essentials;
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.Core;
 import net.skybornmc.skyblock.common.db.Sql;
+import net.skybornmc.skyblock.common.island.IslandService;
+import net.skybornmc.skyblock.common.profile.ProfileService;
 import net.skybornmc.skyblock.common.player.PlayerData;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
+import net.skybornmc.skyblock.common.pack.PackWait;
 import net.skybornmc.skyblock.common.text.Msg;
 import net.skybornmc.skyblock.common.util.Format;
 import org.bukkit.Bukkit;
@@ -23,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * M1.1 join flow: spawn on join, first-join welcome (title, sound, clickable chat, server-wide broadcast with the
+ * M1.1 join flow: the join location ({@code join.location}: island home by default, owner 4 Nov 2026; new players at
+ * spawn), first-join welcome (title, sound, clickable chat, server-wide broadcast with the
  * unique join number), welcome-back title, join/quit messages only for players with the join-message permission
  * (ranks + staff, owner decision), respawn at spawn.
  *
@@ -73,8 +77,11 @@ final class JoinFlow implements Listener {
         Player player = event.getPlayer();
         boolean first = core.players().get(player.getUniqueId()).map(PlayerData::isNew).orElse(!player.hasPlayedBefore());
 
-        if (first || config.joinTeleportToSpawn) {
-            spawn().ifPresent(loc -> player.teleportAsync(loc));
+        switch (JoinRules.where(config.joinLocation, first)) {
+            case SPAWN -> spawn().ifPresent(player::teleportAsync);
+            case ISLAND -> core.scheduler().later("essentials:join-island", config.joinIslandDelayTicks, () -> toIsland(player));
+            case LAST -> {
+            }
         }
 
         if (first) {
@@ -86,28 +93,57 @@ final class JoinFlow implements Listener {
                 ? msg.component(player, "join.message", Msg.c("player", name(player)), Msg.p("rank", core.ranks().groupDisplayName(player)))
                 : null);
         if (config.welcomeBackTitle) {
-            Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
+            // I7 pack v2: the title waits for the icon pack answer (at most pack.yml join.wait-seconds).
+            Bukkit.getScheduler().runTaskLater(core.plugin(), () -> PackWait.run(core.services(), player, () -> {
                 if (player.isOnline()) {
                     msg.title(player, "join.welcome-back", Msg.p("player", player.getName()));
                 }
-            }, 10L);
+            }), 10L);
+        }
+    }
+
+    /**
+     * Owner 4 Nov 2026: a returning player appears on their island (the instant, safe home teleport of the island
+     * portal); without an island (or while a profile switch runs) they go to spawn, where the start flow takes over.
+     * Someone already standing on their own island stays where they are.
+     */
+    private void toIsland(Player player) {
+        if (!player.isOnline()) {
+            return;
+        }
+        Optional<IslandService> islands = core.services().optional(IslandService.class);
+        boolean switching = ProfileService.of(core.services()).isSwitching(player.getUniqueId());
+        Optional<IslandService.IslandInfo> own = islands.flatMap(i -> i.islandOf(player.getUniqueId()));
+        if (switching) {
+            return; // the profile switch places the player itself
+        }
+        if (islands.isEmpty() || own.isEmpty()) {
+            spawn().ifPresent(player::teleportAsync);
+            return;
+        }
+        boolean onIt = islands.get().islandAt(player.getLocation()).map(i -> i.id().equals(own.get().id())).orElse(false);
+        if (!onIt) {
+            islands.get().enterFromPortal(player, arrived -> { });
         }
     }
 
     private void firstJoin(Player player) {
-        Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
+        // I7 pack v2: the welcome waits for the icon pack answer (at most pack.yml join.wait-seconds), so the prompt
+        // never sits over it.
+        Bukkit.getScheduler().runTaskLater(core.plugin(), () -> PackWait.run(core.services(), player, () -> {
             if (!player.isOnline()) {
                 return;
             }
             core.sounds().play(player, "unlock");
-            // U2 one welcome: the tutorial's title + chat block are the welcome when it runs; only otherwise ours.
-            boolean tutorial = core.services().optional(net.skybornmc.skyblock.common.tutorial.TutorialService.class)
-                    .map(t -> t.welcomes(player)).orElse(false);
-            if (!tutorial) {
+            // U2 one welcome: when the start guide creates the island right away, the island's own title and chat are
+            // the welcome (owner 3 Nov 2026); only otherwise ours.
+            boolean islandWelcome = config.startIslandOnFirstJoin
+                    && core.services().has(net.skybornmc.skyblock.common.island.IslandService.class);
+            if (!islandWelcome) {
                 msg.title(player, "join.first-title", Msg.p("player", player.getName()));
-                msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
             }
-        }, 20L);
+            msg.send(player, "join.first-welcome", Msg.p("player", player.getName()));
+        }), 20L);
         // The privacy line comes a little later, not on the first screen (owner answers 319/532 keep it on the first join).
         Bukkit.getScheduler().runTaskLater(core.plugin(), () -> {
             if (player.isOnline()) {

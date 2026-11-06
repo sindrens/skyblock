@@ -1,9 +1,9 @@
 package net.skybornmc.skyblock.common.menu;
 
 /**
- * The state of one confirm screen (GUI_DESIGN §4, §7.7). Pure, unit-tested.
+ * The state of one confirm screen (I9 section 5). Pure, unit-tested.
  * <ul>
- *   <li>One step: Confirm 10-12 (green), details 13, Cancel 14-16 (red).</li>
+ *   <li>One step: Confirm tile 11 (lime concrete), details 13, Cancel tile 15 (red concrete).</li>
  *   <li>Two steps (things that can't be undone: disband, delete profile, permanent ban): the first Confirm opens a
  *       second check in place with the sides swapped, so a double click can never confirm twice by accident.</li>
  *   <li>One-shot: after the action ran or was cancelled every further click is ignored.</li>
@@ -24,8 +24,9 @@ public final class ConfirmFlow {
     }
 
     public static final int DETAILS_SLOT = 13;
-    private static final int[] LEFT = {10, 11, 12};
-    private static final int[] RIGHT = {14, 15, 16};
+    /** The two tile slots; one constant each, so wider targets are a one-line change (GUI-P2 risk table). */
+    private static final int[] LEFT = {11};
+    private static final int[] RIGHT = {15};
 
     private final boolean twoStep;
     private int step = 1;
@@ -83,10 +84,5 @@ public final class ConfirmFlow {
 
     public int[] cancelSlots() {
         return (swapped() ? LEFT : RIGHT).clone();
-    }
-
-    /** The big (concrete) button in the middle of a side. */
-    public static boolean bigButton(int slot) {
-        return slot == 11 || slot == 15;
     }
 }

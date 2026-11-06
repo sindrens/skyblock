@@ -1,79 +1,99 @@
-# Phoenix Skyblock menus: the /menu hub, You and Travel (GUI-2), and the /staff hub.
+# Phoenix Skyblock menus: the /menu hub, You and Travel (G9 v3, I9 v2), and the /staff hub.
 # Texts (names and descriptions) are in messages/navigation.yml. Reload: /skyblock reload menus
 
-# /menu: the clean hub (GUI_DESIGN §7.1, owner G1). Your head on 4, then 4 groups with space between them.
-# Texts: messages/navigation.yml → hub.buttons.<id>.
-# slot:       4 (your head) or an inner slot of the 6-row menu (10-16, 19-25, 28-34, 37-43)
-# group:      one of hub-groups below (its colored mark goes on the left edge of the row)
-# icon:       item id (docs/UI_STYLE.md §5.5: the same icon everywhere for the same feature)
-# action:     command (default: runs `command` as the player) or a built-in screen:
-#             you (the You menu), travel (the Travel menu), rewards (claims everything ready; with nothing ready it
-#             runs `command`), settings, help (Help & guides is already on slot 50, so don't add it twice),
-#             top (the Top screen: solo/team islands, this week, richest players, top skills; /is top is one click away)
-# service:    the service the feature provides (e.g. SellService). Owner G2: a feature that is not built (service
-#             missing, module off, command missing) is HIDDEN. Test server: navigation.yml → hub.show-unbuilt: true
-#             shows them in the "Coming soon" look.
-# show:       false hides the button everywhere (also on the test server). Use this instead of deleting a button:
-#             deleted buttons come back from the defaults on the next start.
-# permission: optional; players without it see the button locked.
-# model:      optional pack icon id (e.g. menu/icon/home) that pack viewers see instead of the item; without it the button's id
-#             decides (hub, you and travel entries have built-in icons). Entries with no icon keep the item for everyone.
+# /menu: the hub (G9 v3, I9 v2). Your head on 4, the Staff tile on 8, then 4 rows with space between them. No frame,
+# no filler panes: empty slots stay empty. Close (49) and Help (50) are drawn by the hub itself.
+# Texts: messages/navigation.yml → hub.buttons.<id> (name in the row's area colour, one sentence, optional action).
+# slot:        4 (your head), 8 (the Staff tile) or a slot of the 7x4 grid (10-16, 19-25, 28-34, 37-43)
+# group:       one of hub-groups below (fallback names take its colour)
+# icon:        an icon key of the icon catalogue (resourcepack/icons.json, e.g. feature/home: our picture for Java players
+#              with the pack, its vanilla base item for everyone else) or a vanilla item id (that plain item for everyone)
+# action:      command (default: runs `command` as the player) or a built-in screen:
+#              you (the You menu), travel (the Travel menu), rewards (claims everything ready; with nothing ready it
+#              runs `command`), settings, help (Help is already on slot 50, so don't add it twice), staff (opens /staff),
+#              top (the Top screen: solo/team islands, this week, richest players, top skills; /is top is one click away)
+# service:     the service the feature provides (e.g. SellService). Owner G2: a feature that is not built (service
+#              missing, module off, command missing) is HIDDEN. Test server: navigation.yml → hub.show-unbuilt: true
+#              shows them in the "Coming soon" look.
+# show:        false hides the button everywhere (also on the test server). Use this instead of deleting a button:
+#              deleted buttons come back from the defaults on the next start.
+# permission:  optional; players without it see the button locked.
+# show-locked: false = players without the permission do not see the button at all (the Staff tile).
 # One button per action: a second button that does the same thing is skipped (with a warning).
 hub:
   you:       {slot: 4,  action: you,      icon: player_head}
-  # Play (green)
-  home:      {slot: 10, group: play,  icon: red_bed,            command: "is home",   service: IslandService}
-  island:    {slot: 12, group: play,  icon: grass_block,        command: "is",        service: IslandService}
-  depths:    {slot: 14, group: play,  icon: iron_pickaxe,       command: "dungeon",   service: Depths}
-  travel:    {slot: 16, group: play,  icon: ender_pearl,        action: travel}
-  # Money (gold)
-  sell:      {slot: 19, group: money, icon: gold_nugget,        command: "sell",      service: SellService}
-  shop:      {slot: 21, group: money, icon: emerald,            command: "shop",      service: ShopPrices}
-  bank:      {slot: 23, group: money, icon: barrel,             command: "bank",      service: BankService}
-  auction:   {slot: 25, group: money, icon: gold_block,         command: "ah"}
-  # Power (violet)
-  forge:     {slot: 28, group: power, icon: smithing_table,     command: "forge",     service: ToolService}
-  skills:    {slot: 30, group: power, icon: experience_bottle,  command: "skills",    service: SkillService}
-  enchanter: {slot: 32, group: power, icon: enchanting_table,   command: "enchanter", service: EnchantService}
-  wardrobe:  {slot: 34, group: power, icon: leather_chestplate, command: "wardrobe",  service: WardrobeService}
-  # More (ember)
-  rewards:   {slot: 39, group: more,  icon: chest,              action: rewards, command: "daily", service: RewardsService}
-  top:       {slot: 41, group: more,  icon: golden_helmet,      action: top,          service: IslandService}
+  # Plan 4 Nov C §3: vanilla items that match their meaning, at most 4 per row with an empty column between them.
+  # Play (lime): your island and the two grind areas
+  home:      {slot: 10, group: play,  icon: red_bed,           command: "is home",   service: IslandService}
+  island:    {slot: 12, group: play,  icon: grass_block,       command: "is",        service: IslandService}
+  farm:      {slot: 14, group: play,  icon: wheat,             command: "farm"}
+  mine:      {slot: 16, group: play,  icon: iron_pickaxe,      command: "mine"}
+  # Money (green)
+  sell:      {slot: 19, group: money, icon: gold_nugget,       command: "sell",      service: SellService}
+  shop:      {slot: 21, group: money, icon: emerald,           command: "shop",      service: ShopPrices}
+  bank:      {slot: 23, group: money, icon: barrel,            command: "bank",      service: BankService}
+  auction:   {slot: 25, group: money, icon: gold_block,        command: "ah"}
+  # Power (violet): the island tools replace the retired Forge
+  tools:     {slot: 28, group: power, icon: smithing_table,    command: "tool"}
+  skills:    {slot: 30, group: power, icon: experience_bottle, command: "skills",    service: SkillService}
+  enchanter: {slot: 32, group: power, icon: enchanting_table,  command: "enchanter", service: EnchantService}
+  wardrobe:  {slot: 34, group: power, icon: leather_chestplate, command: "wardrobe", service: WardrobeService}
+  # More (flame gold), centred: Rewards, Travel, Top
+  rewards:   {slot: 38, group: more,  icon: chest,             action: rewards, command: "daily", service: RewardsService}
+  travel:    {slot: 40, group: more,  icon: compass,           action: travel}
+  top:       {slot: 42, group: more,  icon: golden_helmet,     action: top,      service: IslandService}
+  # Staff tile (G9): only players with the permission see it (hidden, not locked)
+  staff:     {slot: 8, icon: shield, action: staff, command: "staff", permission: "skyblock.staff.hub", show-locked: false}
 
-# The four hub groups, in order: the pane that marks each group's row. Texts: hub.groups.<id>.
+# The four hub groups, in order. A row is a group by its spacing; `color` = the area colour (style.yml → area) its
+# fallback names take (G9). The old marker panes (`mark`) are gone.
 hub-groups:
-  play:  {mark: lime_stained_glass_pane}
-  money: {mark: yellow_stained_glass_pane}
-  power: {mark: purple_stained_glass_pane}
-  more:  {mark: orange_stained_glass_pane}
+  play:  {color: home}
+  money: {color: money}
+  power: {color: skills}
+  more:  {color: reward}
 
-# /menu → You (GUI_DESIGN §7.2, owner G6: the store lives here; M10.7: Quests on 16; M10.10: Collection on 24). 3 rows, slots 10-16, plus 20 and 24 on the bottom row. Same keys as the hub (no group).
+# /menu → You (G9 v3). No slots: the entries are placed by Centered in file order (up to 8 in one row of a 3-row menu,
+# 9 to 14 in two rows of a 4-row menu; nine = 5 + 4). Hidden entries leave no hole. Same keys as the hub (no group, no slot).
 # Texts: messages/navigation.yml → you.buttons.<id>.
 you:
-  profiles:     {slot: 10, icon: armor_stand,       command: "profiles",     service: ProfileService}
-  titles:       {slot: 11, icon: name_tag,          command: "tags",         service: Cosmetics}
-  achievements: {slot: 12, icon: totem_of_undying,  command: "achievements", service: AchievementService}
-  settings:     {slot: 13, icon: comparator,        action: settings}
-  store:        {slot: 14, icon: diamond,           command: "store"}
-  rules:        {slot: 15, icon: lectern,           command: "rules"}
-  quests:       {slot: 16, icon: writable_book,     command: "quests",       service: QuestService}
-  collection:   {slot: 24, icon: bookshelf,         command: "collection",   service: CollectionLog}
+  profiles:     {icon: armor_stand,     command: "profiles",     service: ProfileService}
+  titles:       {icon: paper,       command: "tags",         service: Cosmetics}
+  achievements: {icon: nether_star, command: "achievements", service: AchievementService}
+  quests:       {icon: map,       command: "contracts",    service: QuestService}
+  collection:   {icon: bundle,   command: "collection",   service: CollectionLog}
+  settings:     {icon: repeater,     action: settings}
+  rules:        {icon: book,        command: "rules"}
+  # Ranks V2: donor ranks only (a player without the node never sees it).
+  rank-rewards: {icon: chest,                command: "rankrewards",  permission: "skyblock.rank.kit", show-locked: false}
+  store:        {icon: emerald_block,        command: "store"}
+  # Card C1: your credits, bought and earned (/credit bal). Same base item as the Store (diamond, I9 section 9).
+  credits:      {icon: sunflower,     command: "credit bal",   service: EconomyService}
 
-# /menu → Travel (GUI_DESIGN §7.3; replaces the UX3 warps menu). 3 rows, slots 10-16. One click teleports with the /spawn
-# warmup (reason: dungeon = the /dungeon warmup); locked places explain why (e.g. Depths tiers). A place that does not
-# exist on this server is hidden (build not applied, world not loaded, command missing).
+# /menu → Travel (G9 v3; replaces the UX3 warps menu). 3 rows, up to 7 places centred on the middle row in file order
+# (no slots). One click teleports with the /spawn warmup (reason: dungeon = the /dungeon warmup); locked places explain
+# why (e.g. Depths tiers). A place that does not exist on this server is hidden (build not applied, world not loaded,
+# command missing) and the others re-centre.
 # Texts: messages/navigation.yml → travel.places.<id> (name, lore, optional action). permission: optional.
 # target: "command <cmd>"                              runs a command as the player (e.g. spawn, is home)
 #         "point <category> <id>"                      a spot of the applied builds (build-points.yml), e.g. road entries
 #         "location <world> <x> <y> <z> [yaw] [pitch]" a fixed position (feet)
 travel:
-  spawn:         {slot: 10, icon: campfire,       target: "command spawn"}
-  my-island:     {slot: 11, icon: grass_block,    target: "command is home"}
-  depths-gate:   {slot: 12, icon: iron_pickaxe,   target: "location depths 7.5 100 14.5 165 0", reason: dungeon}
-  crate-yard:    {slot: 13, icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
-  market:        {slot: 14, icon: emerald,        target: "location spawn 0.5 99 33.5 0 0"}
-  forge-quarter: {slot: 15, icon: smithing_table, target: "point entries forge_road"}
-  visit-islands: {slot: 16, icon: compass,        target: "command is visit"}
+  spawn:         {icon: lodestone,       target: "command spawn"}
+  my-island:     {icon: grass_block,     target: "command is home"}
+  depths-gate:   {icon: wheat,              target: "command farm", reason: dungeon}   # 3 Nov 2026: the Farm replaces the Depths Gate
+  crate-yard:    {icon: tripwire_hook,  target: "location spawn 46.5 100 -35.5 -90 0"}
+  market:        {icon: barrel,      target: "location spawn 0.5 99 33.5 0 0"}
+  forge-quarter: {icon: iron_pickaxe,       target: "command mine"}   # 3 Nov 2026: the Mine (the Depths Forge is retired)
+  visit-islands: {icon: ender_pearl,       target: "command is visit"}
+
+# Tutorial highlights (GUI-ICONS-FINAL): while the tutorial's current step is `step`, the tile `target` (hub.<button id>
+# or travel.<place id>) glints, shows "● Start here" (messages/navigation.yml → hub.highlight) and uses `icon` (an icon
+# catalogue key: our lit picture for Java with the pack, its base item for everyone else). Clicks do the same as always.
+# To switch a rule off set its step to none (deleted rules come back from the defaults on the next start).
+highlights:
+  hub-farm:    {target: "hub.farm",           step: none, icon: wheat}
+  gate-depths: {target: "travel.depths-gate", step: none, icon: wheat}
 
 # /staff hub (staff only). Rules: slot (inner slot), icon, command, status (auto | coming-soon | active), optional permission; texts in messages/navigation.yml → staff.entries.<id>.
 staff-entries:
@@ -89,4 +109,4 @@ staff-entries:
   worlds:       {slot: 33, icon: grass_block,      command: "skyblock worlds",  status: auto, permission: "skyblock.admin.worlds"}
   islands:      {slot: 34, icon: filled_map,       command: "isadmin slots",    status: auto, permission: "skyblock.island.admin.slots"}
   npcs:         {slot: 25, icon: armor_stand,      command: "skyblock npcs",    status: auto, permission: "skyblock.admin.npcs"}
-  tutorial:     {slot: 40, icon: spyglass,         command: "tutorial admin stats", status: auto, permission: "skyblock.tutorial.stats"}
+  tutorial:     {slot: 28, icon: writable_book,    command: "tutorial admin stats", status: auto, permission: "skyblock.tutorial.admin"}

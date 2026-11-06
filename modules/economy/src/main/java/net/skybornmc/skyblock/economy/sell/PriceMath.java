@@ -62,7 +62,7 @@ public final class PriceMath {
     }
 
     /** Money for a sale line: {@code base × hotFactor × saleFactor}, in money (fractional; round the subtotal once). */
-    public static double lineValue(long base, double hotFactor, double m, double impact, long amount, double floor) {
+    public static double lineValue(double base, double hotFactor, double m, double impact, long amount, double floor) {
         if (base <= 0 || amount <= 0) {
             return 0;
         }

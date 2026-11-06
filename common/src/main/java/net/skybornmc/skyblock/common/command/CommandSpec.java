@@ -183,6 +183,12 @@ public final class CommandSpec {
         return this;
     }
 
+    /** {@link #sub} that replaces a sub-command of the same name (a module that enables again). */
+    synchronized void replaceSub(CommandSpec child) {
+        children.removeIf(c -> c.name.equals(child.name));
+        children.add(child);
+    }
+
     public CommandSpec executes(Executor executor) {
         this.executor = Objects.requireNonNull(executor);
         return this;

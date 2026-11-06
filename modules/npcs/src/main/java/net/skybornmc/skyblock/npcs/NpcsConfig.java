@@ -23,6 +23,9 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "npcs.body", desc = "NPC body: mannequin (player-shaped, Paper 26.3) or villager (no AI). Use villager if Bedrock players can't see mannequins.")
     public Body body = Body.MANNEQUIN;
 
+    @Setting(path = "npcs.command-line", desc = "Show the command an NPC runs under its name ([ Banker ] / /bank / Click me, A5-R1-01).")
+    public boolean commandLine = true;
+
     @Setting(path = "npcs.name-height", desc = "Height of the name text above the NPC's feet (blocks).", min = 1.0, max = 4.0)
     public double nameHeight = 2.05;
 
@@ -60,6 +63,71 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Setting(path = "npcs.actions", desc = "Role -> what a click does, as 'role: command <command>' (runs the command as the player, help on sneak-click) or 'role: help [command]' (help text, with an [Open] button for the command). Roles without a line show their help.")
     public List<String> roleActions = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command tool",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "crates: command crates",
+            "dungeon: help",
+            "foreman: help",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
+            "sage: command skills");
+
+    /** {@code npcs.actions} before v9 (the Forge and the Depths are gone, 4-6 Nov 2026). */
+    static final List<String> ACTIONS_V8 = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command forge",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "dungeon: command dungeon",
+            "foreman: help dungeon",
+            "crates: command crates",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
+            "sage: command skills");
+
+    /** {@code npcs.actions} v6 to v7 (before the tutorial's spawn NPCs, owner 4 Nov 2026). */
+    static final List<String> ACTIONS_V6 = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command forge",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "dungeon: command dungeon",
+            "foreman: help dungeon",
+            "crates: command crates",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help");
+
+    /** {@code npcs.actions} v3 to v5: the spawn guide showed help with a [menu] button (before the start guide, owner 3 Nov 2026). */
+    static final List<String> ACTIONS_V5 = List.of(
             "guide: help menu",
             "info: help help",
             "forge: command forge",
@@ -100,8 +168,10 @@ public final class NpcsConfig extends ModuleConfig {
             + "prints the NPC's short help in chat (owner U5: one click talks; no sneak-click needed). Off: help only on sneak-click.")
     public boolean helpOnce = true;
 
-    @Setting(path = "npcs.skins", desc = "NPC id or role -> Minecraft name whose skin the mannequin wears, as 'id: name' lines. Empty = default skins (no skin lookups).")
-    public List<String> skins = List.of();
+    @Setting(path = "npcs.skins", desc = "NPC id or role -> the skin its mannequin wears, as 'id: skin' lines. A skin is a "
+            + "vanilla default (steve, alex, ari, efe, kai, makena, noor, sunny, zuri; slim:/wide: picks the arms; no lookup), "
+            + "texture:<value>[:<signature>] (a Mojang texture) or a player name (player:<name>). Missing = Steve.")
+    public List<String> skins = SKINS_V8;
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
     public List<String> heldItems = List.of(
@@ -172,8 +242,25 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "leaderboards.size", desc = "Players listed per board.", min = 3, max = 15)
     public int size = 10;
 
-    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or crystals, shards, gems), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team) or 'id: none' (shows Coming soon).")
+    @Setting(path = "leaderboards.sources", desc = "Leaderboard id -> data, as 'id: money' (or shards, credits; crystals are never on a public list, C1-R1-28), 'id: skill <mining|foraging|combat|farming|fishing>', 'id: island <stat> [all_time|this_week|last_week|today] [all|solo|team]', 'id: island_level [all|solo|team]', 'id: island_value [all|solo|team]', 'id: island_gain this_week [all|solo|team|cycle]', 'id: pillar_gain this_week [all|solo|team|cycle]' (weekly boards; cycle switches Solo/Team), 'id: milestones <island|personal>' (most completed milestone tiers) or 'id: none' (shows Coming soon).")
     public List<String> sources = List.of(
+            "island_top_solo: island_level solo",
+            "island_top_team: island_level team",
+            "weekly_island_gain: island_gain this_week cycle",
+            "weekly_pillar_gain: pillar_gain this_week cycle",
+            "boss_damage: none",
+            "mining: skill mining",
+            "foraging: skill foraging",
+            "combat: skill combat",
+            "farming: skill farming",
+            "fishing: skill fishing",
+            "baltop: money",
+            "money: money",
+            "milestones_island: milestones island",
+            "milestones_personal: milestones personal");
+
+    /** The default from PHASE-5 M5.7 until F13a (version 4): no milestone boards yet. */
+    static final List<String> SOURCES_V4 = List.of(
             "island_top_solo: island_level solo",
             "island_top_team: island_level team",
             "weekly_island_gain: island_gain this_week cycle",
@@ -217,21 +304,56 @@ public final class NpcsConfig extends ModuleConfig {
             "baltop: money",
             "money: money");
 
+    /** v7 (owner 4 Nov 2026): every spawn NPC wears a different vanilla skin until the owner picks real ones. */
+    static final List<String> SKINS_V7 = List.of(
+            "guide: kai",
+            "info: ari",
+            "shop: alex",
+            "bank: noor",
+            "sell: efe",
+            "auction: sunny",
+            "crates: zuri",
+            "enchanter: makena",
+            "foreman: steve",
+            "forge: steve",
+            "wardrobe: slim:ari",
+            "black_market: wide:efe",
+            "quests: wide:makena",
+            "daily: slim:sunny",
+            "vote: slim:kai");
+
+    /** v8 (tutorial, owner 4 Nov 2026): the new spawn NPCs Bramble, Flint, Tinker and Sage get their own skins. */
+    static final List<String> SKINS_V8 = java.util.stream.Stream.concat(SKINS_V7.stream(), java.util.stream.Stream.of(
+            "farm_merchant: wide:noor",
+            "mine_merchant: wide:steve",
+            "tinker: wide:zuri",
+            "sage: slim:makena")).toList();
+
     @Override
     public int version() {
-        return 4;
+        return 9;
     }
 
     /**
      * v2 (PHASE-5 M5.2): the island top boards show island levels. v3 (GUI-BUGS): the Crate Keeper and Daily Rewards NPCs
      * open /crates and /daily (they exist now). v4 (PHASE-5 M5.7): the two weekly Hall of Heroes boards show the weekly
-     * island and pillar gain, switching Solo/Team. An owner-edited list is kept.
+     * island and pillar gain, switching Solo/Team. v5 (F13a): the two milestone boards (milestones_island,
+     * milestones_personal; they show once a build has leaderboard points with those ids). v6 (owner 3 Nov 2026): the spawn
+     * guide (Rowan) runs /start, the start guide menu. v7: skins. v8 (tutorial, owner 4 Nov 2026): the spawn NPCs Bramble
+     * (farm_merchant), Flint (mine_merchant), Tinker and Sage. v9 (6 Nov 2026, FX-11): no NPC runs /dungeon or /forge
+     * any more (the Forge NPC opens the tool menu, the old Depths roles only show help). An owner-edited list is kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V1, sources())),
                 3, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V2, new NpcsConfig().roleActions)),
-                4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, sources())));
+                4, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V2, SOURCES_V4)),
+                5, java.util.Map.of("leaderboards.sources", ValueChange.of(SOURCES_V4, sources())),
+                6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)),
+                7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)),
+                8, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V6, new NpcsConfig().roleActions),
+                        "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)),
+                9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, new NpcsConfig().roleActions)));
     }
 
     private static List<String> sources() {

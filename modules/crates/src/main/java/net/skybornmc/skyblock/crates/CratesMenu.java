@@ -57,7 +57,7 @@ final class CratesMenu extends Menu {
 
     @Override
     protected void build() {
-        frame();
+        navBar();
         UUID profile = m.profiles().profileKey(viewer);
         CratesModule.ProfileView view = m.view(profile);
         if (view == null) {

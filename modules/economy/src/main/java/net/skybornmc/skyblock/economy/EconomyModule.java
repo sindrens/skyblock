@@ -56,6 +56,7 @@ import java.util.concurrent.Executor;
  * Selling (M3.4): {@code /sell}, dynamic prices and {@code SellService} (package {@code sell}).
  * Banks (M3.3): {@code /bank}, personal and island banks with interest and {@code BankService} (package {@code bank}).
  * Economy dashboard + anomaly alerts (M3.8): {@code /eco admin [alert]} (package {@code admin}).
+ * Credits (card C1): {@code /credit bal}; bought and earned ledgers, {@link net.skybornmc.skyblock.common.economy.CreditSpend}.
  * Settings: {@code economy.yml}; texts: {@code messages/economy.yml}; data: {@code db/economy}.
  */
 public final class EconomyModule implements SkyblockModule, Listener {
@@ -65,8 +66,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_BALANCE = "skyblock.economy.balance";
     static final String PERM_BALANCE_OTHERS = "skyblock.economy.balance.others";
     static final String PERM_BALTOP = "skyblock.economy.baltop";
-    /** How often the background task checks whether a /baltop list is older than refresh-seconds (5 s). */
-    private static final long BALTOP_CHECK_TICKS = 100L;
     static final String PERM_PAY = "skyblock.economy.pay";
     static final String PERM_TRANSACTIONS = "skyblock.economy.transactions";
     /** {@code /eco give|take|set|reset|note}: admins and the owner (owner decision #47). */
@@ -75,20 +74,32 @@ public final class EconomyModule implements SkyblockModule, Listener {
     /** Owner R3-6: allow /eco changes above the limit (owner and admin; never your own request). */
     static final String PERM_APPROVE = "skyblock.admin.economy.approve";
     static final String PERM_APPROVE_OWN = "skyblock.admin.economy.approve-own";
-
-    /** Tab hints for the reason of {@code /eco note}. */
-    private static final List<String> NOTE_REASONS = List.of("Event prize", "Compensation for a bug", "Giveaway", "Refund",
-            "Testing");
-
-    private static final List<String> STAFF_REASONS = List.of("Compensation for a bug", "Event prize", "Refund", "Dupe removal",
-            "Testing");
+    /** {@code /credit bal [player]}: everyone (card C1). */
+    static final String PERM_CREDIT_BAL = "skyblock.credit.bal";
+    /**
+     * Creating or setting <b>bought</b> credits by hand ({@code /eco give|set|reset credits}, reason {@code admin_buy}): the
+     * owner only (C1-R1-18; explicit false for admins in server/permissions/economy.txt).
+     */
+    static final String PERM_CREDITS_GRANT = "skyblock.economy.credits.grant";
+    /** CREDIT-SHOP 5.2: declared default false and never granted; /credit grant runs from the console only. */
+    static final String PERM_CREDIT_GRANT = "skyblock.credit.grant";
+    /** CREDIT-SHOP 5.3: staff (admin) and the console may run /credit chargeback. */
+    static final String PERM_CREDIT_CHARGEBACK = "skyblock.credit.chargeback";
+    /**
+     * Owner 31 Oct 2026: use {@code /eco give|take|set|reset|note} on your <b>own</b> account (admin and owner; lifts only
+     * the R3-39 self refusal, switch: {@code eco.allow-self}).
+     */
+    static final String PERM_ECO_SELF = "skyblock.economy.eco.self";
 
     final Core core;
     final ModuleMessages msg;
     final EconomyConfig config = new EconomyConfig();
+    private net.skybornmc.skyblock.economy.store.StoreGrants storeGrants;
     private EconomyServiceImpl service;
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
+    private net.skybornmc.skyblock.economy.sell.SellWandListener sellWand;
+    private net.skybornmc.skyblock.economy.sell.AutoSellChests autoSell;
     private net.skybornmc.skyblock.economy.bank.BankFeature bank;
     private net.skybornmc.skyblock.economy.admin.EconomyWatch watch;
     private Baltop baltop;
@@ -98,6 +109,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private Scheduler.Task approvalTask;
     private Executor main;
     private Scheduler.Task baltopTask;
+    private EconomyStore store;
 
     public EconomyModule(Core core) {
         this.core = core;
@@ -115,8 +127,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.configs().load(config);
         main = new MainThread(core.plugin());
         // Season id: 0 until the season service exists (Phase 10); the ledger and start-balance keys already carry it.
-        EconomyStore store = new EconomyStore(core.database(), () -> 0, System::currentTimeMillis);
+        store = new EconomyStore(core.database(), () -> 0, System::currentTimeMillis);
         store.owners(key -> profiles().ownerOf(key));
+        applyConfig();
         service = new EconomyServiceImpl(store, new BalanceCache(), core.audit(), () -> config,
                 uuid -> core.players().get(uuid).map(PlayerData::name).orElse(null),
                 currency -> core.style().symbol(currency.key()), () -> 0, core.plugin().getLogger(), this::profiles);
@@ -127,7 +140,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
         service.sanctions(() -> core.services().optional(net.skybornmc.skyblock.common.moderation.SanctionService.class).orElse(null));
         core.services().register(ID, EconomyService.class, service);
         // Owner F1: money can be sent away only after the profile earned send-gate.required itself (island members excepted).
-        sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis);
+        // Owner 6 Nov 2026: the daily pay limit by playtime and island-only shards ride on the same gate.
+        sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis, this::islandMates,
+                profile -> {
+                    UUID account = profiles().ownerOf(profile);
+                    return account == null || Bukkit.getPlayer(account) == null ? -1L
+                            : core.players().get(account).map(d -> d.playtimeMillis()).orElse(-1L);
+                }, profile -> {
+                    UUID account = profiles().ownerOf(profile);
+                    return account == null ? profile : account;
+                }, this::tellSendGate);
         core.services().register(ID, net.skybornmc.skyblock.common.economy.SendGate.class, sendGate);
         ecoTargets = new EcoTargets(core.database());
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
@@ -142,31 +164,58 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // M3.8 economy watch: summary tables, anomaly alerts, /eco admin.
         watch = new net.skybornmc.skyblock.economy.admin.EconomyWatch(this, core, msg);
         watch.enable();
+        storeGrants = new net.skybornmc.skyblock.economy.store.StoreGrants(service, core.database(), System::currentTimeMillis);
+        creditPackages(true);
+        storeGrants.loadRecent().whenCompleteAsync((ids, error) -> {
+            if (error == null) {
+                storeGrants.remember(ids);
+            }
+        }, main);
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
+        sellWand = new net.skybornmc.skyblock.economy.sell.SellWandListener(core, msg); // owner 4 Nov 2026: the Sell Wand
+        core.plugin().getServer().getPluginManager().registerEvents(sellWand, core.plugin());
+        autoSell = new net.skybornmc.skyblock.economy.sell.AutoSellChests(core, msg, config.autosellIntervalSeconds, config.autosellMaxPerIsland);
+        core.plugin().getServer().getPluginManager().registerEvents(autoSell, core.plugin());
+        autoSell.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }
-        baltop.refreshIfOlder(0, config.baltopSize);
+        baltop.refreshIfOlder(0, config.baltopSize, publicCurrencies());
         // R3-6: waiting /eco changes are dropped after eco.pending-minutes (memory only, every 10 s).
         approvalTask = core.scheduler().repeat("economy:eco-pending", 200L, 200L, this::expireApprovals);
         // Checks every 5 s (a timestamp compare); a list is only read again once it is older than refresh-seconds.
         // SMALL2: off the main thread ('economy:baltop' was logged at 5.3 ms): it only compares times and hands queries to
         // the database executor (one per currency), Baltop is thread-safe and nothing here touches the world.
-        baltopTask = core.scheduler().asyncRepeat(BALTOP_CHECK_TICKS, BALTOP_CHECK_TICKS,
+        baltopTask = core.scheduler().asyncRepeat(config.baltopCheckTicks, config.baltopCheckTicks,
                 () -> {
                     try {
-                        baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize);
+                        baltop.refreshIfOlder(baltopMaxAge(), config.baltopSize, publicCurrencies());
                     } catch (RuntimeException e) {
                         core.plugin().getLogger().log(java.util.logging.Level.WARNING, "Baltop refresh could not start; trying again in 5 s", e);
                     }
                 });
     }
 
+    /** Values other classes read statically or per call (C1-R3-03): gems alias end, exact display, retries. */
+    private void applyConfig() {
+        Currency.legacyGemsAliasUntil(config.legacyGemsAliasUntilMillis());
+        Amounts.exactBelow(config.displayExactBelow);
+        if (store != null) {
+            store.retries(config.dbRetryAttempts, config.dbRetryStepMs, config.dbRetryJitterMs);
+        }
+    }
+
+    /** The currencies with a public /baltop list (baltop.currencies; never crystals or the earned-credits half). */
+    List<Currency> publicCurrencies() {
+        return Currency.listedValues().stream().filter(config::baltopPublic).toList();
+    }
+
     @Override
     public void reload() {
         core.configs().load(config);
+        applyConfig();
         core.messages().load(ID);
         if (sell != null) {
             sell.reload();
@@ -181,6 +230,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        if (autoSell != null) {
+            autoSell.stop();
+        }
         if (baltopTask != null) {
             baltopTask.cancel();
         }
@@ -206,7 +258,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         return service;
     }
 
-    /** Island profiles (PROF): money, crystals and shards are per profile; gems per player. */
+    /** Island profiles (PROF): money, crystals and shards are per profile; credits per player. */
     public ProfileService profiles() {
         return ProfileService.of(core.services());
     }
@@ -244,15 +296,79 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     /** Tells a player the F1 rule blocked a send: how much more they must earn. {@code key}: pay.send-gate / note.send-gate. */
     void tellSendGate(Player player, net.skybornmc.skyblock.common.economy.SendGate.Check check, String key) {
-        msg.send(player, key, exactAmountTag("required", player, Currency.MONEY, check.required()),
-                exactAmountTag("earned", player, Currency.MONEY, check.earned()),
-                exactAmountTag("missing", player, Currency.MONEY, check.missing()));
+        switch (check.kind()) {
+            case DAILY_LIMIT, ISLAND_ONLY -> tellSendGate(player, check);
+            default -> {
+                msg.send(player, key, exactAmountTag("required", player, Currency.MONEY, check.required()),
+                        exactAmountTag("earned", player, Currency.MONEY, check.earned()),
+                        exactAmountTag("missing", player, Currency.MONEY, check.missing()));
+                sound(player, "error");
+            }
+        }
+    }
+
+    /** Owner 6 Nov 2026: why a send was refused (daily pay limit, island-only shards, the F1 rule), for every module. */
+    void tellSendGate(Player player, net.skybornmc.skyblock.common.economy.SendGate.Check check) {
+        switch (check.kind()) {
+            case ISLAND_ONLY -> msg.send(player, "pay-limit.shards-island");
+            case DAILY_LIMIT -> {
+                if (check.nextHours() > 0) {
+                    msg.send(player, "pay-limit.reached", exactAmountTag("left", player, Currency.MONEY, check.left()),
+                            Msg.number("hours", check.nextHours()), exactAmountTag("next", player, Currency.MONEY, check.nextLimit()));
+                } else {
+                    msg.send(player, "pay-limit.reached-top", exactAmountTag("left", player, Currency.MONEY, check.left()));
+                }
+            }
+            default -> {
+                tellSendGate(player, check, "pay.send-gate");
+                return;
+            }
+        }
         sound(player, "error");
+    }
+
+    /** Owner 6 Nov 2026: the pay limit ladder in chat. Main thread. */
+    private void showPayLimit(Player player) {
+        UUID profile = profiles().profileKey(player);
+        java.util.List<SendGateImpl.Tier> tiers = SendGateImpl.tiers(config.payLimitTiers);
+        if (tiers.isEmpty()) {
+            msg.send(player, "pay-limit.reached-top", exactAmountTag("left", player, Currency.MONEY, Long.MAX_VALUE));
+            return;
+        }
+        then(player, sendGate.status(profile), status -> {
+            long minutes = status[0];
+            long sent = status[1];
+            SendGateImpl.Tier at = SendGateImpl.tierFor(tiers, minutes / 60);
+            msg.send(player, "pay-limit.header");
+            for (SendGateImpl.Tier t : tiers) {
+                TagResolver limit = t.limit() < 0 ? net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component("limit",
+                        msg.component(player, "pay-limit.unlimited"))
+                        : exactAmountTag("limit", player, Currency.MONEY, t.limit());
+                if (t.equals(at)) {
+                    msg.send(player, "pay-limit.tier-here", limit, Msg.number("hours", t.hours()),
+                            exactAmountTag("sent", player, Currency.MONEY, sent));
+                } else if (t.hours() < at.hours()) {
+                    msg.send(player, "pay-limit.tier-done", limit, Msg.number("hours", t.hours()));
+                } else {
+                    msg.send(player, "pay-limit.tier-locked", limit,
+                            Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMinutes(t.hours() * 60 - minutes))));
+                }
+            }
+        });
+    }
+
+    /** Island member profiles of the island {@code profile} is on (coop excluded). Main thread. */
+    private java.util.Set<UUID> islandMates(UUID profile) {
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class).flatMap(is -> is.islandOfProfile(profile)
+                .map(island -> is.members(island.id()).entrySet().stream()
+                        .filter(e -> e.getValue() != net.skybornmc.skyblock.common.island.IslandService.Role.COOP)
+                        .map(java.util.Map.Entry::getKey).collect(java.util.stream.Collectors.toSet())))
+                .orElse(java.util.Set.of());
     }
 
     /**
      * Opens a profile's full ledger (the players' own {@code /transactions} view) for staff, as a child of {@code from}
-     * (M3.8 dashboard: top earners, alert evidence). Gem rows come from the profile's player.
+     * (M3.8 dashboard: top earners, alert evidence). Credit rows come from the profile's player.
      */
     public void openHistory(net.skybornmc.skyblock.common.menu.Menu from, UUID profileKey) {
         from.openChild(new TransactionsMenu(this, AccountRef.player(profileKey), AccountRef.player(profiles().ownerOf(profileKey))));
@@ -284,7 +400,46 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
-    /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); gems stay on the player. */
+    /**
+     * Owner 4 Nov 2026 (island = profile), anti-abuse: a wiped profile that sent a lot with /pay in the minutes before
+     * (moving money out before leaving) is flagged in the audit log ({@code profile_wipe_pay_flag}, category economy).
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onProfileWiped(net.skybornmc.skyblock.common.profile.ProfileWipedEvent event) {
+        long threshold = config.leavePayFlagAmount;
+        if (threshold <= 0) {
+            return;
+        }
+        UUID from = event.gone().id();
+        long since = System.currentTimeMillis() - config.leavePayFlagMinutes * 60_000L;
+        String reason = event.reason().key();
+        core.database().async(c -> net.skybornmc.skyblock.common.db.Sql.query(c,
+                        "SELECT to_id, COALESCE(SUM(amount), 0) AS total, COUNT(*) AS n FROM eco_ledger WHERE from_id = ? AND reason = ? "
+                                + "AND currency = ? AND created_at >= ? GROUP BY to_id",
+                        rs -> new Object[]{net.skybornmc.skyblock.common.db.Sql.uuid(rs, "to_id"), rs.getLong("total"), rs.getLong("n")},
+                        from, TxReason.PAY, Currency.MONEY.key(), since))
+                .whenComplete((rows, error) -> core.scheduler().main("economy:leave-pay-flag", () -> {
+                    if (error != null) {
+                        core.plugin().getLogger().warning("Economy: the /pay check before a profile wipe failed: " + error.getMessage());
+                        return;
+                    }
+                    long total = 0;
+                    List<String> receivers = new ArrayList<>();
+                    for (Object[] row : rows) {
+                        total += (Long) row[1];
+                        receivers.add(row[0] + ":" + row[1] + "x" + row[2]);
+                    }
+                    if (total < threshold) {
+                        return;
+                    }
+                    core.audit().logPlayer(AuditCategory.ECONOMY, "profile_wipe_pay_flag", Actor.system(ID), event.gone().owner(),
+                            core.players().get(event.gone().owner()).map(PlayerData::name).orElse(null), total, null,
+                            Map.of("profile", from.toString(), "reason", reason, "minutes", config.leavePayFlagMinutes,
+                                    "threshold", threshold, "receivers", receivers));
+                }));
+    }
+
+    /** A deleted profile's money, crystals, shards and personal bank are gone with it (owner P9); credits stay on the player. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onProfileDeleted(ProfileDeletedEvent event) {
         if (sendGate != null) {
@@ -303,8 +458,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
         AccountRef account = AccountRef.player(event.profile().id());
         for (Currency currency : Currency.values()) {
-            if (currency == Currency.GEMS) {
-                continue;
+            if (currency.accountWide()) {
+                continue; // credits belong to the player and are never lost (C1-R1-12b)
             }
             service.balance(account, currency).thenAccept(balance -> {
                 if (balance > 0) {
@@ -334,7 +489,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private void registerPlaceholders() {
         core.placeholders().registerText(ID, "balance", p -> raw(p, Currency.MONEY));
         core.placeholders().registerText(ID, "balance_formatted", p -> formatted(p, Currency.MONEY));
-        for (Currency currency : List.of(Currency.CRYSTALS, Currency.GEMS, Currency.SHARDS)) {
+        // Credits: the total of bought and earned (C1-R1-08), always exact (C1-R2-22).
+        for (Currency currency : List.of(Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS, Currency.MINING_SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
             // GUI-4 (owner U4): empty while the balance is 0, so a scoreboard "if:crystals_owned|" line only shows once you have some.
@@ -343,13 +499,22 @@ public final class EconomyModule implements SkyblockModule, Listener {
         // Deprecated aliases: tokens were replaced by crystals (O8); old formats keep showing the crystals balance.
         core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY, p -> raw(p, Currency.CRYSTALS));
         core.placeholders().registerText(ID, Currency.LEGACY_TOKENS_KEY + "_formatted", p -> formatted(p, Currency.CRYSTALS));
+        // Deprecated aliases (C1-R1-03): gems were renamed credits; old scoreboard layouts show the credits total.
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY, p -> raw(p, Currency.CREDITS));
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY + "_formatted", p -> formatted(p, Currency.CREDITS));
+        core.placeholders().registerText(ID, Currency.LEGACY_GEMS_KEY + "_owned", p -> owned(p, Currency.CREDITS));
+    }
+
+    /** The balance a player sees (credits: the total of both halves), or empty while not loaded. */
+    private OptionalLong shown(Player p, Currency currency) {
+        return net.skybornmc.skyblock.common.economy.CreditView.cachedShown(service, p.getUniqueId(), currency);
     }
 
     private String raw(Player p, Currency currency) {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
+        var value = shown(p, currency);
         return value.isPresent() ? String.valueOf(value.getAsLong()) : "";
     }
 
@@ -357,28 +522,33 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
-        return ownedText(value.isPresent() ? value.getAsLong() : null);
+        var value = shown(p, currency);
+        return ownedText(currency, value.isPresent() ? value.getAsLong() : null);
     }
 
     /** The {@code <currency>_owned} placeholder: the plain amount, or empty for no balance (0 or not loaded). Pure. */
     static String ownedText(Long balance) {
-        return balance == null || balance <= 0 ? "" : Amounts.plain(balance);
+        return ownedText(Currency.MONEY, balance);
+    }
+
+    /** {@link #ownedText(Long)} in a currency's number style (credits always exact). Pure. */
+    static String ownedText(Currency currency, Long balance) {
+        return balance == null || balance <= 0 ? "" : Amounts.plain(currency, balance);
     }
 
     private String formatted(Player p, Currency currency) {
         if (p == null) {
             return "";
         }
-        var value = service.cached(p.getUniqueId(), currency);
-        return value.isPresent() ? Amounts.plain(value.getAsLong()) : core.messages().raw(ID, "placeholder.loading");
+        var value = shown(p, currency);
+        return value.isPresent() ? Amounts.plain(currency, value.getAsLong()) : core.messages().raw(ID, "placeholder.loading");
     }
 
     // ================================================================== text helpers
 
     /** An amount in its currency's color and symbol ({@code format.<currency>}). */
     public Component amount(CommandSender viewer, Currency currency, long value) {
-        return msg.component(viewer, "format." + currency.key(), Msg.p("value", Amounts.plain(value)),
+        return msg.component(viewer, "format." + currency.key(), Msg.p("value", Amounts.plain(currency, value)),
                 Msg.p("exact", Format.number(value)));
     }
 
@@ -454,7 +624,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .example("bal Steve")
                 .executes(ctx -> balance(ctx.sender(), ctx.getOr(balTarget, null))));
 
-        Arg<Currency> topCurrency = Args.choice("currency", Currency.class);
+        Arg<Currency> topCurrency = currencyArg("currency", this::publicCurrencies);
         core.commands().register(CommandSpec.command("baltop")
                 .description("The richest players")
                 .category("Economy")
@@ -466,6 +636,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
         Arg<String> payTarget = Args.offlinePlayer("player");
         Arg<Long> payAmount = Args.amount("amount");
+        // Credits parse (so /pay can explain /credit pay) but are never suggested: /pay never sends credits (C1-R1-26).
         Arg<Currency> payCurrency = Arg.word("currency", (sender, raw) -> Currency.byKey(raw).orElseThrow(() ->
                         CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", tradeableKeys())))),
                 Suggest.of(this::tradeableKeys));
@@ -490,6 +661,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .example("pay Steve 1.5k")
                 .executes(ctx -> pay(ctx.player(), ctx.get(payTarget), ctx.get(payAmount), ctx.getOr(payCurrency, Currency.MONEY))));
 
+        // Owner 6 Nov 2026: the daily pay limit by playtime, as a ladder (passed, you are here, unlocks in ...).
+        core.commands().register(CommandSpec.command("paylimit")
+                .description("How much money you may send to other players per day, by playtime")
+                .category("Economy")
+                .permission(PERM_PAY)
+                .playerOnly()
+                .aliases("paylimits")
+                .example("paylimit")
+                .executes(ctx -> showPayLimit(ctx.player())));
+
         core.commands().register(CommandSpec.command("transactions")
                 .description("Your money history: payments, sales, purchases")
                 .category("Economy")
@@ -502,15 +683,38 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.commands().register(notes.withdrawCommand());
 
         registerEco();
+        registerCredit();
     }
 
+    /** Currencies /pay suggests: tradeable and never credits (they move with /credit pay, C1-R1-26). */
     private List<String> tradeableKeys() {
-        return Arrays.stream(Currency.values()).filter(config::tradeable).map(Currency::key).toList();
+        return Arrays.stream(Currency.values()).filter(c -> !c.isCredits() && config.tradeable(c)).map(Currency::key).toList();
+    }
+
+    /**
+     * A currency typed by its key ({@code money}, {@code credits_earned}; the old {@code gems} while its alias lasts),
+     * limited to {@code allowed}, with tab completion of those keys.
+     */
+    private Arg<Currency> currencyArg(String name, java.util.function.Supplier<List<Currency>> allowed) {
+        java.util.function.Supplier<List<String>> keys = () -> allowed.get().stream().map(Currency::key).toList();
+        return Arg.word(name, (sender, raw) -> Currency.byKey(raw).filter(c -> allowed.get().contains(c)).orElseThrow(() ->
+                CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", keys.get())))),
+                Suggest.of(keys));
+    }
+
+    /** Tab hints from messages/economy.yml (a list; C1-R3-03), or {@code fallback} when the key is missing. */
+    List<String> hints(String key, String fallback) {
+        String raw = core.messages().raw(ID, key);
+        if (raw == null || raw.isBlank()) {
+            return List.of(fallback);
+        }
+        List<String> out = Arrays.stream(raw.split("<newline>")).map(String::strip).filter(t -> !t.isEmpty()).toList();
+        return out.isEmpty() ? List.of(fallback) : out;
     }
 
     private void registerEco() {
         Arg<String> player = Args.offlinePlayer("player");
-        Arg<Currency> currency = Args.choice("currency", Currency.class);
+        Arg<Currency> currency = currencyArg("currency", () -> List.of(Currency.values()));
         Arg<Long> amount = Args.amount("amount");
         Arg<Long> setAmount = Arg.word("amount", (sender, raw) -> {
             if (raw.trim().equals("0")) {
@@ -522,17 +726,19 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 throw CommandFailure.of("invalid-amount", Msg.p("input", raw));
             }
         }, Suggest.hint("amount"));
-        Arg<String> resetCurrency = Args.oneOf("currency", () -> {
-            List<String> values = new ArrayList<>(Arrays.stream(Currency.values()).map(Currency::key).toList());
-            values.add("all");
-            return values;
-        });
-        String[] reasons = STAFF_REASONS.toArray(String[]::new);
-        Arg<String> reasonGive = Args.text("reason", reasons);
-        Arg<String> reasonTake = Args.text("reason", reasons);
-        Arg<String> reasonSet = Args.text("reason", reasons);
-        Arg<String> reasonReset = Args.text("reason", reasons);
-        String[] noteReasons = NOTE_REASONS.toArray(String[]::new);
+        Arg<String> resetCurrency = Arg.word("currency", (sender, raw) -> {
+            if (raw.equalsIgnoreCase("all") || Currency.byKey(raw).isPresent()) {
+                return raw;
+            }
+            throw CommandFailure.of("invalid-choice", Msg.p("input", raw), Msg.p("choices", String.join(", ", resetKeys())));
+        }, Suggest.of(this::resetKeys));
+        // C1-R3-03: the English tab hints live in messages/economy.yml (tab-hints.*), read live.
+        java.util.function.Supplier<List<String>> reasons = () -> hints("tab-hints.eco-reasons", "Testing");
+        Arg<String> reasonGive = reasonArg(reasons);
+        Arg<String> reasonTake = reasonArg(reasons);
+        Arg<String> reasonSet = reasonArg(reasons);
+        Arg<String> reasonReset = reasonArg(reasons);
+        java.util.function.Supplier<List<String>> noteReasons = () -> hints("tab-hints.note-reasons", "Event prize");
         Arg<Integer> pendingId = Arg.word("id", (sender, raw) -> {
             try {
                 return Integer.parseInt(raw.trim().startsWith("#") ? raw.trim().substring(1) : raw.trim());
@@ -549,6 +755,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 .permission(net.skybornmc.skyblock.economy.admin.EconomyWatch.PERM_DASHBOARD)
                 .aliases("economy")
                 .sub(watch.adminCommand())
+                .sub(sell.ecoSellCommand())
                 .sub(CommandSpec.sub("give")
                         .description("Give a player currency")
                         .permission(PERM_ECO)
@@ -577,7 +784,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .example("eco reset Steve all Testing")
                         .executes(ctx -> {
                             String which = ctx.get(resetCurrency);
-                            List<Currency> list = which.equalsIgnoreCase("all") ? List.of(Currency.values())
+                            List<Currency> list = which.equalsIgnoreCase("all") ? resetAll(ctx.sender())
                                     : List.of(Currency.byKey(which).orElseThrow());
                             eco(ctx.sender(), EcoAction.RESET, ctx.get(player), list, 0, ctx.get(reasonReset));
                         }))
@@ -594,6 +801,272 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .arg(pendingId)
                         .example("eco deny 3")
                         .executes(ctx -> decide(ctx.sender(), ctx.get(pendingId), false))));
+    }
+
+    private static Arg<String> reasonArg(java.util.function.Supplier<List<String>> hints) {
+        return Arg.greedy("reason", (sender, raw) -> raw.strip(), Suggest.of(hints));
+    }
+
+    private List<String> resetKeys() {
+        List<String> values = new ArrayList<>(Arrays.stream(Currency.values()).map(Currency::key).toList());
+        values.add("all");
+        return values;
+    }
+
+    /**
+     * What {@code /eco reset <player> all} resets: every currency, except bought credits for staff without
+     * {@link #PERM_CREDITS_GRANT} (they are told). Credits start at 0, so a reset of credits empties them.
+     */
+    private List<Currency> resetAll(CommandSender sender) {
+        if (sender.hasPermission(PERM_CREDITS_GRANT)) {
+            return List.of(Currency.values());
+        }
+        msg.send(sender, "eco.credits-skipped");
+        return Arrays.stream(Currency.values()).filter(c -> c != Currency.CREDITS).toList();
+    }
+
+    /**
+     * C1-R1-18: creating or setting bought credits by hand is the owner's ({@link #PERM_CREDITS_GRANT}); taking them away
+     * stays with /eco (nothing is created). True when {@code sender} may run {@code action} on {@code currency}.
+     */
+    static boolean mayChange(EcoAction action, Currency currency, boolean hasGrant) {
+        return currency != Currency.CREDITS || action == EcoAction.TAKE || hasGrant;
+    }
+
+    // ================================================================== /credit (card C1)
+
+    private void registerCredit() {
+        Arg<String> target = Args.offlinePlayer("player");
+        core.commands().register(CommandSpec.command("credit")
+                .description("Your credits: bought and earned (store, votes, streaks, thanks)")
+                .category("Economy")
+                .permission(PERM_CREDIT_BAL)
+                .aliases("credits")
+                .executes(ctx -> creditBalance(ctx.sender(), null))
+                .sub(CommandSpec.sub("bal")
+                        .description("See your credits (bought and earned) or another player's total")
+                        .permission(PERM_CREDIT_BAL)
+                        .optional(target)
+                        .example("credit bal Steve")
+                        .executes(ctx -> creditBalance(ctx.sender(), ctx.getOr(target, null))))
+                .sub(storeGrantSpec(CommandSpec.sub("grant")))
+                .sub(chargebackSpec()));
+        // Hidden alias of the old C1 name (/storegrant), same handler and arguments (CREDIT-SHOP 5.2).
+        core.commands().register(storeGrantSpec(CommandSpec.command("storegrant")).hidden());
+    }
+
+    // ================================================================== Tebex store (CREDIT-SHOP 5.2, 5.3)
+
+    /** The configured packages; {@code warn} logs every bad line (enable). Parsed per use so a reload applies at once. */
+    private net.skybornmc.skyblock.economy.store.CreditPackages creditPackages(boolean warn) {
+        return net.skybornmc.skyblock.economy.store.CreditPackages.parse(config.creditStorePackages,
+                warn ? problem -> core.plugin().getLogger().warning(problem) : problem -> { });
+    }
+
+    /** Player argument of the store commands: a UUID, an XUID or a known name (Tebex sends {id}). */
+    private Arg<String> storePlayerArg() {
+        return Args.word("player", Suggest.bySender(sender -> {
+            List<String> names = new ArrayList<>(net.skybornmc.skyblock.common.command.OfflineNames.names());
+            names.add("<uuid>");
+            return names;
+        }));
+    }
+
+    private CommandSpec storeGrantSpec(CommandSpec spec) {
+        Arg<String> player = storePlayerArg();
+        Arg<String> pack = Args.word("package", Suggest.of(() -> creditPackages(false).ids()));
+        Arg<String> tx = Args.word("transaction", Suggest.hint("transaction"));
+        return spec.description("Console only (Tebex): give a bought credit package once per transaction")
+                .category("Economy")
+                .permission(PERM_CREDIT_GRANT)
+                .arg(player).arg(pack).arg(tx)
+                .example("credit grant 069a79f4-44e9-4726-a5be-fca90e38aaf5 c2700 tbx-1234")
+                .executes(ctx -> storeGrant(ctx.sender(), ctx.get(player), ctx.get(pack), ctx.get(tx)));
+    }
+
+    private CommandSpec chargebackSpec() {
+        Arg<String> player = storePlayerArg();
+        Arg<String> tx = Args.word("transaction", Suggest.of(() -> storeGrants == null ? List.of() : storeGrants.recent()));
+        return CommandSpec.sub("chargeback")
+                .description("Tebex chargeback or refund: take back the bought credits of a transaction")
+                .permission(PERM_CREDIT_CHARGEBACK)
+                .arg(player).arg(tx)
+                .example("credit chargeback Steve tbx-1234")
+                .executes(ctx -> storeChargeback(ctx.sender(), ctx.get(player), ctx.get(tx)));
+    }
+
+    /** UUID / XUID / known name → the player's UUID, or empty. */
+    private CompletableFuture<Optional<Found>> storeTarget(String raw) {
+        Optional<UUID> id = net.skybornmc.skyblock.economy.store.StoreGrants.parseId(raw);
+        if (id.isPresent()) {
+            Player online = Bukkit.getPlayer(id.get());
+            return CompletableFuture.completedFuture(Optional.of(new Found(id.get(), online != null ? online.getName() : raw)));
+        }
+        return resolve(raw);
+    }
+
+    private void storeGrant(CommandSender sender, String rawPlayer, String packageId, String tx) {
+        if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
+            Map<String, Object> details = new java.util.LinkedHashMap<>();
+            details.put("package", packageId);
+            details.put("tx", tx);
+            core.audit().log(AuditCategory.ECONOMY, "store_grant_refused", Actor.of(sender), rawPlayer, null, null,
+                    sender instanceof Player p ? p.getLocation() : null, details);
+            msg.send(sender, "credit.grant.console-only");
+            sound(sender, "error");
+            return;
+        }
+        var packs = creditPackages(false);
+        var pack = packs.get(packageId);
+        if (pack.isEmpty()) {
+            msg.send(sender, "credit.grant.unknown-package", Msg.p("package", packageId), Msg.p("list", String.join(", ", packs.ids())));
+            storeAlert(rawPlayer, packageId, tx, "unknown package");
+            return;
+        }
+        if (!net.skybornmc.skyblock.economy.store.StoreGrants.validTx(tx)) {
+            msg.send(sender, "credit.grant.bad-tx", Msg.p("tx", tx));
+            storeAlert(rawPlayer, packageId, tx, "bad transaction id");
+            return;
+        }
+        if (pack.get().credits() > config.creditStoreMaxGrant) {
+            msg.send(sender, "credit.grant.too-big", Msg.p("package", packageId), Msg.number("credits", pack.get().credits()),
+                    Msg.number("max", config.creditStoreMaxGrant));
+            storeAlert(rawPlayer, packageId, tx, "above max-grant");
+            return;
+        }
+        then(sender, storeTarget(rawPlayer), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "credit.grant.unknown-player", Msg.p("player", rawPlayer));
+                storeAlert(rawPlayer, packageId, tx, "unknown player");
+                return;
+            }
+            UUID uuid = found.get().uuid();
+            String name = found.get().name();
+            then(sender, storeGrants.grant(uuid, pack.get(), tx), grant -> {
+                switch (grant.outcome()) {
+                    case GRANTED -> {
+                        storeGrants.remember(tx);
+                        msg.send(sender, "credit.grant.ok", Msg.p("player", name), Msg.number("credits", pack.get().credits()),
+                                Msg.p("package", pack.get().id()), Msg.p("tx", tx));
+                        Map<String, Object> details = new java.util.LinkedHashMap<>();
+                        details.put("tx", tx);
+                        details.put("package", pack.get().id());
+                        details.put("usd_cents", pack.get().usdCents());
+                        details.put("balance_after", grant.balanceAfter());
+                        core.audit().log(AuditCategory.ECONOMY, "store_grant", Actor.system("tebex"), uuid.toString(), name,
+                                pack.get().credits(), null, details);
+                        Player online = Bukkit.getPlayer(uuid);
+                        if (online != null) {
+                            refreshCredits(uuid);
+                            msg.send(online, "credit.grant.thanks", Msg.number("credits", pack.get().credits()));
+                            core.sounds().play(online, "success");
+                        }
+                    }
+                    case DUPLICATE -> msg.send(sender, "credit.grant.duplicate", Msg.p("tx", tx), Msg.p("package", pack.get().id()));
+                    default -> {
+                        msg.send(sender, "credit.grant.failed", Msg.p("player", name), Msg.p("package", pack.get().id()), Msg.p("tx", tx));
+                        storeAlert(name, pack.get().id(), tx, "database error");
+                    }
+                }
+            });
+        });
+    }
+
+    /** Updates the cached credits of an online player after a store change (display only). */
+    private void refreshCredits(UUID uuid) {
+        service.credits(uuid).thenAcceptAsync(view -> service.refreshCached(uuid,
+                Map.of(Currency.CREDITS, view.bought(), Currency.CREDITS_EARNED, view.earned())), main);
+    }
+
+    /** CREDIT-SHOP 5.2: a failed grant tells online staff, the console (already told) and Discord 'alerts'. */
+    private void storeAlert(String player, String packageId, String tx, String reason) {
+        if (!config.creditStoreAlertFailures) {
+            return;
+        }
+        TagResolver[] tags = {Msg.p("player", player), Msg.p("package", packageId), Msg.p("tx", tx), Msg.p("reason", reason)};
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (staff.hasPermission(net.skybornmc.skyblock.economy.admin.EconomyWatch.PERM_ANOMALIES)) {
+                msg.send(staff, "credit.alert.failed-grant", tags);
+                core.sounds().play(staff, "notify");
+            }
+        }
+        core.services().optional(net.skybornmc.skyblock.common.discord.DiscordSink.class)
+                .filter(sink -> sink.enabled("alerts"))
+                .ifPresent(sink -> sink.post("alerts", new net.skybornmc.skyblock.common.discord.DiscordSink.Embed(
+                        "Store grant failed", 0xFF5C5C, List.of(
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Player", player, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Package", packageId, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Transaction", tx, true),
+                        new net.skybornmc.skyblock.common.discord.DiscordSink.Field("Reason", reason, false)),
+                        "Phoenix Skyblock", System.currentTimeMillis())));
+    }
+
+    private void storeChargeback(CommandSender sender, String rawPlayer, String tx) {
+        then(sender, storeTarget(rawPlayer), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "credit.grant.unknown-player", Msg.p("player", rawPlayer));
+                sound(sender, "error");
+                return;
+            }
+            UUID uuid = found.get().uuid();
+            String name = found.get().name();
+            then(sender, storeGrants.chargeback(uuid, tx), result -> {
+                if (result.failed()) {
+                    msg.send(sender, "credit.chargeback.failed", Msg.p("player", name), Msg.p("tx", tx));
+                    sound(sender, "error");
+                    return;
+                }
+                if (result.rows() == 0) {
+                    msg.send(sender, "credit.chargeback.none", Msg.p("player", name), Msg.p("tx", tx));
+                    return;
+                }
+                msg.send(sender, "credit.chargeback.done", Msg.p("player", name), Msg.p("tx", tx),
+                        Msg.number("taken", result.taken()), Msg.number("owed", result.owed()));
+                Map<String, Object> details = new java.util.LinkedHashMap<>();
+                details.put("tx", tx);
+                details.put("taken", result.taken());
+                details.put("owed", result.owed());
+                core.audit().log(AuditCategory.ECONOMY, "chargeback", Actor.of(sender), uuid.toString(), name, result.taken(), null, details);
+                if (Bukkit.getPlayer(uuid) != null) {
+                    refreshCredits(uuid);
+                }
+                if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
+                    msg.send(Bukkit.getConsoleSender(), "credit.chargeback.done", Msg.p("player", name), Msg.p("tx", tx),
+                            Msg.number("taken", result.taken()), Msg.number("owed", result.owed()));
+                }
+                storeAlert(name, "-", tx, "chargeback: took " + result.taken() + ", owed " + result.owed());
+                Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.economy.StoreChargebackEvent(
+                        uuid, tx, result.taken(), result.owed()));
+            });
+        });
+    }
+
+    /**
+     * {@code /credit bal [player]}: your own credits with the split (bought, earned); another player's total only
+     * (C1-R1-08: everyone sees the total, only the owner sees the split).
+     */
+    private void creditBalance(CommandSender sender, String name) {
+        if (name == null || (sender instanceof Player p && name.equalsIgnoreCase(p.getName()))) {
+            if (!(sender instanceof Player p)) {
+                throw CommandFailure.of("players-only");
+            }
+            then(sender, service.credits(p.getUniqueId()), view -> {
+                service.refreshCached(p.getUniqueId(), Map.of(Currency.CREDITS, view.bought(), Currency.CREDITS_EARNED, view.earned()));
+                msg.send(sender, "credit.bal.self", exactAmountTag("total", sender, Currency.CREDITS, view.total()),
+                        exactAmountTag("bought", sender, Currency.CREDITS, view.bought()),
+                        exactAmountTag("earned", sender, Currency.CREDITS_EARNED, view.earned()));
+            });
+            return;
+        }
+        then(sender, resolve(name), found -> {
+            if (found.isEmpty()) {
+                msg.send(sender, "unknown-player", Msg.p("player", name));
+                sound(sender, "error");
+                return;
+            }
+            then(sender, service.credits(found.get().uuid()), view -> msg.send(sender, "credit.bal.other",
+                    Msg.p("player", found.get().name()), exactAmountTag("total", sender, Currency.CREDITS, view.total())));
+        });
     }
 
     // ================================================================== /bal
@@ -623,10 +1096,12 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
+    /** One line per currency players see; credits as their total (C1-R1-13, C1-R1-08). */
     private void sendBalances(CommandSender sender, String other, Map<Currency, Long> balances) {
         msg.send(sender, other == null ? "bal.header-self" : "bal.header-other", Msg.p("player", other == null ? "" : other));
-        for (Currency currency : Currency.values()) {
-            long value = balances.getOrDefault(currency, 0L);
+        for (Currency currency : Currency.listedValues()) {
+            long value = currency == Currency.CREDITS ? net.skybornmc.skyblock.common.economy.CreditView.of(balances).total()
+                    : balances.getOrDefault(currency, 0L);
             msg.send(sender, "bal.line", Msg.c("currency", currencyName(sender, currency)), amountTag("amount", sender, currency, value),
                     Msg.p("exact", Format.number(value)));
         }
@@ -663,11 +1138,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
         Baltop.Snapshot top = cached;
         OptionalLong mine = OptionalLong.empty();
         if (sender instanceof Player p) {
-            mine = service.cached(p.getUniqueId(), currency);
+            mine = shown(p, currency);
             // P7: the list shows each player's best profile; the live balance only replaces it when it is higher.
             long listed = cached.entries().stream().filter(e -> e.player().equals(p.getUniqueId()))
                     .mapToLong(EconomyStore.TopEntry::balance).findFirst().orElse(-1L);
-            if (mine.isPresent() && (currency == Currency.GEMS || mine.getAsLong() > listed)) {
+            if (mine.isPresent() && (currency.accountWide() || mine.getAsLong() > listed)) {
                 top = cached.withLive(p.getUniqueId(), p.getName(), mine.getAsLong(), config.baltopSize);
             }
         }
@@ -697,9 +1172,6 @@ public final class EconomyModule implements SkyblockModule, Listener {
     private void pay(Player payer, String targetName, long amount, Currency currency) {
         if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), payer, net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
             return; // P7: frozen balance or blocked trading
-        }
-        if (net.skybornmc.skyblock.common.tutorial.TutorialGate.denied(core.services(), payer, net.skybornmc.skyblock.common.tutorial.Gates.PAY)) {
-            return; // TUTORIAL §4: /pay opens after the bank step
         }
         Optional<PayRules.Problem> problem = PayRules.check(config, payer.getName(), targetName, amount, currency, frozen(payer));
         if (problem.isPresent()) {
@@ -731,7 +1203,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     return;
                 }
                 // Owner F1: only after this profile earned send-gate.required itself, unless the receiver is on its island.
-                then(payer, sendGate.check(from, to, currency), check -> {
+                then(payer, sendGate.check(from, to, currency, amount), check -> {
                     if (!check.allowed()) {
                         tellSendGate(payer, check, "pay.send-gate");
                         return;
@@ -776,11 +1248,17 @@ public final class EconomyModule implements SkyblockModule, Listener {
     // ================================================================== /eco
 
     /**
-     * {@code /eco give|take|set|reset}. R3-39: never your own account or one that shares an address with yours. R3-6:
+     * {@code /eco give|take|set|reset}. R3-39: never another account that shares an address with yours, and your own only
+     * with {@link #PERM_ECO_SELF} and {@code eco.allow-self} (owner 31 Oct 2026). R3-6:
      * a change up to {@code eco.approve-above} applies at once (flagged: staff alert, audit, Discord when set up); a bigger
      * one waits for an owner/admin's Allow. The console is trusted and never waits.
      */
     private void eco(CommandSender sender, EcoAction action, String name, List<Currency> currencies, long amount, String note) {
+        for (Currency currency : currencies) {
+            if (!mayChange(action, currency, sender.hasPermission(PERM_CREDITS_GRANT))) {
+                throw fail("eco.credits-owner-only", Msg.p("action", action.key()));
+            }
+        }
         then(sender, resolve(name), found -> {
             if (found.isEmpty()) {
                 msg.send(sender, "unknown-player", Msg.p("player", name));
@@ -788,7 +1266,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 return;
             }
             Found target = found.get();
-            then(sender, targetProblem(sender, target.uuid()), problem -> {
+            then(sender, targetProblem(sender, target.uuid(), mayEcoSelf(sender)), problem -> {
                 if (problem != null) {
                     refuseTarget(sender, target, problem, action, currencies, amount, note);
                     return;
@@ -802,17 +1280,32 @@ public final class EconomyModule implements SkyblockModule, Listener {
         });
     }
 
-    /** R3-39: why {@code sender} may not change {@code target} (null = fine; the console is never refused). */
-    CompletableFuture<EcoTargets.Problem> targetProblem(CommandSender sender, UUID target) {
+    /** True if {@code sender} may use /eco on their own account (owner 31 Oct 2026: the node and {@code eco.allow-self}). */
+    boolean mayEcoSelf(CommandSender sender) {
+        return EcoTargets.selfAllowed(config.ecoAllowSelf, sender.hasPermission(PERM_ECO_SELF));
+    }
+
+    /** True if a player {@code sender} targets their own account. */
+    static boolean isSelf(CommandSender sender, UUID target) {
+        return sender instanceof Player p && p.getUniqueId().equals(target);
+    }
+
+    /**
+     * R3-39: why {@code sender} may not change {@code target} (null = fine; the console is never refused). {@code selfAllowed}:
+     * the sender's own account is fine (see {@link #mayEcoSelf}); other accounts on the same address are still refused.
+     */
+    CompletableFuture<EcoTargets.Problem> targetProblem(CommandSender sender, UUID target, boolean selfAllowed) {
         if (!(sender instanceof Player staff)) {
             return CompletableFuture.completedFuture(null);
         }
         Player online = Bukkit.getPlayer(target);
-        EcoTargets.Problem quick = EcoTargets.quick(staff.getUniqueId(), target, ip(staff), online == null ? null : ip(online));
+        boolean self = staff.getUniqueId().equals(target);
+        EcoTargets.Problem quick = EcoTargets.quick(staff.getUniqueId(), target, ip(staff), online == null ? null : ip(online),
+                selfAllowed);
         if (quick == EcoTargets.Problem.SELF || (quick != null && config.ecoBlockSameIp)) {
             return CompletableFuture.completedFuture(quick);
         }
-        if (!config.ecoBlockSameIp) {
+        if (self || !config.ecoBlockSameIp) {
             return CompletableFuture.completedFuture(null);
         }
         return ecoTargets.sharedAddress(staff.getUniqueId(), target).thenApply(shared -> shared ? EcoTargets.Problem.SAME_IP : null);
@@ -865,6 +1358,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
             Map<String, Object> details = pendingDetails(p);
             core.audit().log(AuditCategory.ECONOMY, "eco_pending", Actor.player(staff), target.uuid().toString(), target.name(),
                     change, staff.getLocation(), details);
+            if (p.self()) {
+                core.audit().log(AuditCategory.ECONOMY, "eco_self", Actor.player(staff), target.uuid().toString(), target.name(),
+                        change, staff.getLocation(), details);
+            }
             msg.send(sender, "eco.approve.waiting", pendingTags(sender, p));
             sound(sender, "notify");
             int told = 0;
@@ -886,17 +1383,27 @@ public final class EconomyModule implements SkyblockModule, Listener {
                             .button(net.skybornmc.skyblock.common.menu.Offer.Button.deny("eco deny " + id))
                             .chat(viewer -> msg.send(viewer, "eco.approve.alert", tags))
                             .build());
+                    if (p.self()) {
+                        msg.send(other, "eco.approve.alert-self", tags);
+                    }
                     core.sounds().play(other, "notify");
                     told++;
                 } else if (other.hasPermission(PERM_ALERTS)) {
                     msg.send(other, "eco.approve.alert-info", pendingTags(other, p));
+                    if (p.self()) {
+                        msg.send(other, "eco.approve.alert-self", pendingTags(other, p));
+                    }
                 }
             }
             msg.send(Bukkit.getConsoleSender(), "eco.approve.alert-info", pendingTags(Bukkit.getConsoleSender(), p));
+            if (p.self()) {
+                msg.send(Bukkit.getConsoleSender(), "eco.approve.alert-self", pendingTags(Bukkit.getConsoleSender(), p));
+            }
             if (told == 0) {
                 msg.send(sender, "eco.approve.nobody-online", pendingTags(sender, p));
             }
-            discord("eco_pending", p.staffName(), p.targetName(), p.currency(), p.change(), p.note(), null);
+            discord(p.self() ? "eco_pending (own account)" : "eco_pending", p.staffName(), p.targetName(), p.currency(), p.change(),
+                    p.note(), null);
         });
     }
 
@@ -910,6 +1417,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         details.put("note", p.note());
         details.put("profile", p.profileKey().toString());
         details.put("requested_by", p.staffName());
+        if (p.self()) {
+            details.put("self", true);
+        }
         return details;
     }
 
@@ -937,6 +1447,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
             return;
         }
         EcoApprovals.Pending p = found.get();
+        if (allow && !mayChange(p.action(), p.currency(), sender.hasPermission(PERM_CREDITS_GRANT))) {
+            msg.send(sender, "eco.credits-owner-only", Msg.p("action", p.action().key()));
+            sound(sender, "error");
+            return;
+        }
         if (!allow) {
             if (approvals.take(id, now).isEmpty()) {
                 msg.send(sender, "eco.approve.unknown", Msg.number("id", id));
@@ -954,7 +1469,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
             sound(sender, "success");
             return;
         }
-        then(sender, targetProblem(sender, p.target()), targetProblem -> {
+        // An approver never allows a change to their own account (EcoApprovals.OWN_ACCOUNT), so no self exception here.
+        then(sender, targetProblem(sender, p.target(), false), targetProblem -> {
             if (targetProblem != null) {
                 msg.send(sender, "eco.target." + targetProblem.key, Msg.p("player", p.targetName()));
                 sound(sender, "error");
@@ -1029,21 +1545,27 @@ public final class EconomyModule implements SkyblockModule, Listener {
     }
 
     /**
-     * Applies one change. {@code key}: the player's profile (money, crystals, shards); gems go to the player account
-     * automatically. {@code actor}/{@code staffName}: who asked for it; {@code approvedBy}: who allowed it (R3-6), or null.
+     * Applies one change. {@code key}: the player's profile (money, crystals, shards); credits go to the player account
+     * automatically. Bought credits are created with reason {@code admin_buy} (C1-R2-02), earned ones with {@code admin_give}. {@code actor}/{@code staffName}: who asked for it; {@code approvedBy}: who allowed it (R3-6), or null.
      */
     private void ecoOne(CommandSender sender, Actor actor, String staffName, EcoAction action, Found target, UUID profileKey,
                         Currency currency, long amount, String note, String approvedBy) {
         AccountRef account = AccountRef.player(profileKey);
         String reference = note.length() > 64 ? note.substring(0, 64) : note;
+        // Owner 31 Oct 2026: a change to the requester's own account is marked (ledger and audit "self", eco_self row, alert).
+        boolean self = actor.uuid() != null && actor.uuid().equals(target.uuid());
         Map<String, Object> details = new java.util.LinkedHashMap<>();
         details.put("note", note);
         details.put("target_name", target.name());
+        if (self) {
+            details.put("self", true);
+        }
         if (approvedBy != null) {
             details.put("approved_by", approvedBy);
         }
         Transaction base = switch (action) {
-            case GIVE -> Transaction.deposit(account, currency, amount, TxReason.ADMIN_GIVE);
+            case GIVE -> Transaction.deposit(account, currency, amount,
+                    currency == Currency.CREDITS ? TxReason.ADMIN_BUY : TxReason.ADMIN_GIVE);
             case TAKE -> Transaction.withdraw(account, currency, amount, TxReason.ADMIN_TAKE);
             default -> null;
         };
@@ -1055,8 +1577,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
             }
             future = service.execute(tx);
         } else {
-            future = service.set(account, currency, amount, action == EcoAction.SET ? TxReason.ADMIN_SET : TxReason.ADMIN_RESET, actor,
-                    details);
+            String setReason = currency == Currency.CREDITS && action == EcoAction.SET ? TxReason.ADMIN_BUY
+                    : action == EcoAction.SET ? TxReason.ADMIN_SET : TxReason.ADMIN_RESET;
+            future = service.set(account, currency, amount, setReason, actor, details);
         }
         String key = action.key();
         then(sender, future, result -> {
@@ -1081,7 +1604,12 @@ public final class EconomyModule implements SkyblockModule, Listener {
             flag.put("ledger_id", result.ledgerId());
             flag.put("requested_by", staffName);
             core.audit().log(AuditCategory.ECONOMY, "eco_flagged", actor, target.uuid().toString(), target.name(), amount, null, flag);
-            discord("eco_" + key, staffName, target.name(), currency, amount, note, approvedBy);
+            if (self) {
+                core.audit().log(AuditCategory.ECONOMY, "eco_self", actor, target.uuid().toString(), target.name(), amount, null, flag);
+            }
+            discord(self ? "eco_" + key + " (own account)" : "eco_" + key, staffName, target.name(), currency, amount, note,
+                    approvedBy);
+            String alertKey = self ? "eco.alert-self-" + key : "eco.alert-" + key;
             TagResolver[] p = {Msg.p("player", target.name()), Msg.p("staff", staffName), Msg.p("action", key),
                     amountTag("amount", sender, currency, amount), amountTag("balance", sender, currency, now),
                     Msg.c("currency", currencyName(sender, currency)), Msg.p("reason", note)};
@@ -1089,7 +1617,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
             sound(sender, "success");
             for (Player staff : Bukkit.getOnlinePlayers()) {
                 if (!staff.equals(sender) && staff.hasPermission(PERM_ALERTS)) {
-                    msg.send(staff, "eco.alert-" + key, Msg.p("player", target.name()), Msg.p("staff", staffName),
+                    msg.send(staff, alertKey, Msg.p("player", target.name()), Msg.p("staff", staffName),
                             amountTag("amount", staff, currency, amount), amountTag("balance", staff, currency, now),
                             Msg.c("currency", currencyName(staff, currency)), Msg.p("reason", note));
                     if (approvedBy != null) {
@@ -1098,7 +1626,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 }
             }
             if (!(sender instanceof org.bukkit.command.ConsoleCommandSender)) {
-                msg.send(Bukkit.getConsoleSender(), "eco.alert-" + key, p);
+                msg.send(Bukkit.getConsoleSender(), alertKey, p);
             }
             Player online = Bukkit.getPlayer(target.uuid());
             if (online != null && !online.equals(sender) && result.ledgerId() > 0) {

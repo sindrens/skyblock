@@ -1,5 +1,6 @@
 package net.skybornmc.skyblock.quests;
 
+import net.skybornmc.skyblock.common.grind.GrindBreakEvent;
 import net.skybornmc.skyblock.common.quest.GameActionEvent;
 import net.skybornmc.skyblock.common.sell.ItemsSoldEvent;
 import net.skybornmc.skyblock.common.tools.ToolLevelUpEvent;
@@ -21,7 +22,7 @@ import java.util.Locale;
  *   <li>harvest: {@link GameActionEvent#HARVEST_CROP} from the production module, ripe crops on the own island only (members,
  *       never bone-mealed or placed blocks).</li>
  * </ul>
- * Depths blocks and kills come from {@link DepthsQuestListener}.
+ * {@code /farm} harvests count as harvest quests through {@link GrindBreakEvent} (owner 3 Nov 2026).
  */
 final class QuestSources implements Listener {
 
@@ -58,6 +59,14 @@ final class QuestSources implements Listener {
         };
         if (type != null) {
             m.engine().count(event.getPlayer(), type, 0, event.amount());
+        }
+    }
+
+    /** A crop harvested at {@code /farm} counts like a ripe island harvest (harvest quests are offered while farming is on). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGrindBreak(GrindBreakEvent event) {
+        if (event.farm()) {
+            m.engine().count(event.getPlayer(), QuestType.HARVEST, 0, event.amount());
         }
     }
 }

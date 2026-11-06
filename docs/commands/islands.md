@@ -9,6 +9,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | Command | Description | Permission | Status |
 |---|---|---|---|
 | `/is` (`/island`) | No island yet: "Create your island" confirm menu, then the starter islet is built (FAWE async or placeholder), the starter chest filled and you are teleported with a title, sound and your first objective. Has an island: the **island menu** (M2.5, see below; `/is home` teleports) | `skyblock.island` (everyone) | ✅ |
+| `/is create` | Same as `/is` when you have no island (the create confirm menu); with an island it says so and links the island menu (feedback 31 Oct 2026) | `skyblock.island` | ✅ |
 | `/is home [name]` | Teleport to your island home (safe-spot check: unsafe homes move to the nearest safe spot; warmup `teleport.yml → island-home.warmup-seconds`). With a name: one of the island's **shared homes** (M5.5 Homestead, owner P5-21 / R3-17), for every member. Tab: the island's home names. Personal member homes and `/is setmyhome` stay removed (owner answer 247) | `skyblock.island` | ✅ |
 | `/home [name]` · `/sethome [name]` | Owner answer 347: same as `/is home [name]` and `/is sethome [name]` (staff homes are `/shome`). Tab: home names | `skyblock.island` | ✅ |
 | `/is go` | Same as `/is home` (your island is the one you're a member of; visiting others is `/is visit`) | `skyblock.island` | ✅ |
@@ -18,7 +19,7 @@ Grid, creation, home and per-player borders. Config `islands.yml`, texts `messag
 | `/is accept [player]` | Accept your newest invite, or the one from that player's island (inviter or any member). Checks join limits, member slots, F10 slot locks and the target having no island, all in one transaction | `skyblock.island` | ✅ |
 | `/is deny [player]` | Decline your newest invite, or the one from that player's island; the inviter is told | `skyblock.island` | ✅ |
 | `/is kick <player>` | Only a higher role kicks: Leader kicks admins/mods/members, Admin mods/members, Mod members (confirm screen). Kicked players are sent to spawn if they stand on the island. Locks the freed slot 48 h (F10), unless the member was offline 21+ days (`members.slot-lock-inactive-days`) | `skyblock.island` | ✅ |
-| `/is leave` | Leave your island (confirm screen). The leader must `/is transfer` first, or `/is disband`. No loss for the island; the freed slot is locked 48 h before a new invite (F10) | `skyblock.island` | ✅ |
+| `/is leave` | Leave your island. Owner 4 Nov 2026 (island = profile): **leaving wipes this profile** (`lifecycle.wipe-profile`), so the confirm screen (asked twice) lists the real losses (money, shards, items, tools, skill levels; quests, collection, milestones, storages, personal bank) and what stays (credits, rank, achievements, cosmetics); staff can restore it for 14 days (`/profiles restore`). The leader must `/is transfer` first, or `/is disband`. No loss for the island; the freed slot is locked 48 h before a new invite (F10) | `skyblock.island` | ✅ |
 | `/is promote <player>` | Leader: Member → Mod, Mod → Admin. Admin: Member → Mod | `skyblock.island` | ✅ |
 | `/is demote <player>` | Leader: Admin → Mod, Mod → Member. Admin: Mod → Member | `skyblock.island` | ✅ |
 | `/is transfer <player>` | Leader only: hand the island to a member (two confirm screens); the old leader becomes an **Admin** (ISL2, owner #23) | `skyblock.island` | ✅ |
@@ -53,7 +54,7 @@ load). Owner F10: a leave or kick locks the freed member slot for `members.slot-
 `island_slot_locks`, V016); staff removals (`/isadmin kick`, punishments, deleted profiles) and kicks of members offline
 `members.slot-lock-inactive-days` (21) days don't lock; `/is members` shows locked slots; staff `/isadmin addmember`
 ignores locks, start size 3x3 chunks (48x48). Normal Island Size upgrades reach
-`size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with gems or from the
+`size.normal-max-chunks` (9x9, owner answer 157); bigger sizes up to `size.max-chunks` (15) only with credits or from the
 black market (hook for Phase 5; `/isadmin setsize` can set up to `size.max-chunks`). Upgrades are paid from the island
 bank only (`upgrades.island-bank-only`, owner answer 169; `/is upgrade`, PHASE-5 M5.4, raises size, member slots and
 warp slots through `IslandService#setSize`, `#setMemberSlots` and `#setWarpSlots`, logged `island_size`,
@@ -354,7 +355,7 @@ days in `island-stats.yml → timezone` (Europe/Oslo: 23/25-hour days on DST cha
 - Audit: only staff actions (`isadmin_stats_view`, `isadmin_stats_reset`); counting itself is not logged.
 
 ## Profiles (PROF)
-Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island, also not one after the other (P3): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.
+Island membership, ownership, roles, coop trust, invites and personal homes belong to the active **profile** (stored under the profile key; profile 1 = the player UUID, so all existing islands are profile 1's). Join limits and the join cooldown stay **per player** (owner P11): `player_island_joins` is per player and remembers the profile (`profile_id`, migration V007; old rows = profile 1). Two profiles of one player are never on the same island at the same time (P3; since 4 Nov 2026, A7, one after the other is fine: a profile that left no longer blocks the others): invite, accept, coop and `/isadmin addmember` are refused (`*.own-profile`, audited `profile_transfer_blocked`). An island of your other profile can't be visited or entered (not even with the staff bypass) and nothing can be done on it (`protection.own-profile`), so no item can move between your profiles. Bans, likes and ratings are per player; an island any of your profiles belongs to counts as your own for ratings/likes. Deleting a profile: refused while it leads a team island with other members; otherwise its solo island is removed and its memberships/coops end. `IslandService#islandOf/role/isCoop` take an online player's UUID (active profile) or a profile key; `islandOfProfile(key)` never resolves.
 
 ## Island bank rights (M3.3)
 Three rows in the permission matrix (own defaults, never part of `*`, management rights: stored members only, never coop
@@ -365,3 +366,5 @@ daily limit per role in `bank.yml`) and **Bank history** (`bank-history`: Admin,
 never coop players or visitors; everyone can look at `/is upgrade` and hand in task items. The island menu's **Bank** button opens `/bank`
 (economy module, `docs/commands/economy.md`). When an island is disbanded, what is left in its bank is deleted (owner
 answer 263: the money belongs to the island); a staff delete or reset keeps it in the closed bank.
+
+**Shard blocks** (`shard-blocks`, ECON-SHARDS H5): place, break, upgrade and pick up shard blocks (see `docs/commands/shardblock.md`). Own defaults, management right: Admin, Mod, Member (`permissions.role-defaults.shard-blocks`); never coop players or visitors. Picking up a block someone else placed also needs **Island settings**.

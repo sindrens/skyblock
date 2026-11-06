@@ -5,10 +5,15 @@
 # Reload (respawns everything): /skyblock reload npcs
 
 # ------------------------------------------------------------------ NPC name text (above the NPC)
+# A5-R1-01: "[ Banker ]" bold flame, then the command it runs in white (npc.command, only when the role runs one and
+# npcs.yml npcs.command-line is on), then "Click me" muted. One action word: Click.
 npc:
-  # <name> NPC name (npc-names.<id>, else roles.<role>.name), <hint> one of the hints below
-  label: "<c:flame><bold><name></bold><newline><hint>"
-  hint-action: "<c:muted>Click"
+  # <name> NPC name (npc-names.<id>, else roles.<role>.name), <command> npc.command plus a line break (or nothing),
+  # <hint> one of the hints below
+  label: "<c:flame><bold>[ <name> ]</bold></c:flame><newline><command><hint>"
+  # <command> the command without the slash
+  command: "<c:value>/<command>"
+  hint-action: "<c:muted>Click me"
   hint-help: "<c:muted>Click for help"
 
 # Names per NPC id (when it differs from the role name).
@@ -25,12 +30,13 @@ npc-names:
 # Action NPCs: one plain click runs the action and, the first time each session, prints this help (npcs.yml npcs.help-once).
 # Help-only NPCs show it on every click; sneak-click always shows it.
 roles:
+  # The spawn guide (start flow, owner 3 Nov 2026): this name is also used in the start boss bar and /start.
   guide:
-    name: "Guide"
+    name: "Rowan"
     help:
-      - "<c:text>Welcome to Phoenix Skyblock!"
-      - "<c:text>Everything is in the main menu: <c:value>/menu</c:value>"
-      - "<c:text>Get an island: <c:value>/is</c:value> <c:muted>·</c:muted> <c:text>help: <c:value>/help"
+      - "<c:text>Welcome to Phoenix Skyblock! I'm Rowan."
+      - "<c:text>Your island, the farm and the mine: <c:value>/start</c:value>"
+      - "<c:text>Everything else: <c:value>/menu</c:value> <c:muted>·</c:muted> <c:text>help: <c:value>/help"
   info:
     name: "Info"
     help:
@@ -52,12 +58,12 @@ roles:
     help:
       - "<c:text>Save and swap armor sets: <c:value>/wardrobe"
   bank:
-    name: "Banker"
+    name: "The Banker"
     help:
       - "<c:text>Keep money safe and earn interest."
       - "<c:text>Open it any time: <c:value>/bank"
   shop:
-    name: "Builder Shop"
+    name: "Juniper"
     help:
       - "<c:text>Buy blocks and items: <c:value>/shop"
   sell:
@@ -65,7 +71,7 @@ roles:
     help:
       - "<c:text>Sell your loot for money: <c:value>/sell"
   auction:
-    name: "Auctioneer"
+    name: "Ollie"
     help:
       - "<c:text>Buy and sell with other players."
       - "<c:text>Open it any time: <c:value>/ah"
@@ -91,9 +97,9 @@ roles:
       - "<c:text>Rare goods. The stock changes at every restock."
       - "<c:text>Open it any time: <c:value>/blackmarket"
   quests:
-    name: "Quest Master"
+    name: "Contract Board"
     help:
-      - "<c:text>Daily, weekly and island quests: <c:value>/quests"
+      - "<c:text>Daily and weekly contracts: <c:value>/contracts"
       - "<c:text>Finish all your dailies for a key."
   daily:
     name: "Daily Rewards"
@@ -103,8 +109,30 @@ roles:
   vote:
     name: "Voting"
     help:
-      - "<c:text>Vote for us every day for keys and gems: <c:value>/vote"
+      - "<c:text>Vote for us every day for keys and credits: <c:value>/vote"
       - "<c:text>Votes fill the vote party on the board."
+
+  # Tutorial spawn NPCs (owner 4 Nov 2026): friendly names, each points to the next one in the tour.
+  farm_merchant:
+    name: "Bramble"
+    help:
+      - "<c:text>I buy every crop you harvest: <c:value>/sell"
+      - "<c:text>The farm is always ripe: <c:value>/farm"
+  mine_merchant:
+    name: "Flint"
+    help:
+      - "<c:text>I buy every ore you mine: <c:value>/sell"
+      - "<c:text>Better ores show up as you mine: <c:value>/mine"
+  tinker:
+    name: "Tinker"
+    help:
+      - "<c:text>Your island hoe and pickaxe level up as you use them."
+      - "<c:text>Upgrades and storage: <c:value>/tool"
+  sage:
+    name: "Sage"
+    help:
+      - "<c:text>Every skill grows as you play: <c:value>/skills"
+      - "<c:text>Higher skills give more crops and ores."
 
 # ------------------------------------------------------------------ help dialog
 help:
@@ -159,8 +187,8 @@ holograms:
     - "<c:text>All rules: <c:value>/rules"
   spawn_map:
     - "<c:flame><bold>Spawn"
-    - "<c:text>N <c:muted>·</c:muted> <c:text>Gatehouse  <c:text>S <c:muted>·</c:muted> <c:text>Market"
-    - "<c:text>E <c:muted>·</c:muted> <c:text>Forge, Crates  <c:text>W <c:muted>·</c:muted> <c:text>Tavern, Heroes"
+    - "<c:text>N <c:muted>·</c:muted> <c:text>Gatehouse <c:text>S <c:muted>·</c:muted> <c:text>Market"
+    - "<c:text>E <c:muted>·</c:muted> <c:text>Forge, Crates <c:text>W <c:muted>·</c:muted> <c:text>Tavern, Heroes"
   ah_board:
     - "<c:flame><bold>Auction House"
     - "<c:text>Buy and sell with players"
@@ -168,7 +196,7 @@ holograms:
   quest_board:
     - "<c:flame><bold>Quests"
     - "<c:text>Daily, weekly and island quests"
-    - "<c:value>/quests"
+    - "<c:value>/contracts"
   vote_party:
     - "<c:flame><bold>Vote Party"
     - "<c:text>Vote every day: <c:value>/vote"
@@ -183,6 +211,10 @@ holograms:
 
 # Format of a build's own text (ids without a text above). <text> the builder's text, never parsed.
 hologram-fallback: "<c:flame><bold><text>"
+
+# Last line of every hologram you can click (it has a hologram-help text below), A5-R1-01. Boards, portals and signs
+# without a click never get it.
+hologram-click: "<c:muted>Click me"
 
 # Help shown when a hologram is clicked (gets an invisible click box). Title: hologram-names.<id>, else the id.
 hologram-names:
@@ -256,6 +288,8 @@ leaderboard:
     # Boards set to 'cycle' switch Solo/Team every few seconds; this tag says which one is shown. <value> the line above
     cycle-solo: "<value> <c:muted>Solo"
     cycle-team: "<value> <c:muted>Team"
+    # F13a milestone boards. <points> completed milestone tiers
+    milestones: "<c:value><points> pts"
   titles:
     island_top_solo: "Top Islands <c:muted>· Solo"
     island_top_team: "Top Islands <c:muted>· Team"
@@ -269,6 +303,8 @@ leaderboard:
     fishing: "Top Fishing"
     baltop: "Richest Players"
     money: "Richest Players"
+    milestones_island: "Island Milestones"
+    milestones_personal: "Personal Milestones"
 
 # ------------------------------------------------------------------ staff tools (/skyblock npcs)
 admin:

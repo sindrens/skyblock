@@ -1,7 +1,6 @@
 package net.skybornmc.skyblock.crates;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.skybornmc.skyblock.common.audit.Actor;
 import net.skybornmc.skyblock.common.box.BoxSource;
 import net.skybornmc.skyblock.common.box.ItemBox;
@@ -180,15 +179,8 @@ final class KeyItems implements Listener {
             pdc.set(CRATE, PersistentDataType.STRING, crate);
             pdc.set(WITHDRAWN_BY, PersistentDataType.STRING, withdrawnBy);
         });
-        // The pack draws the matching key (crate/key/<crate> on tripwire_hook); without the pack it stays the vanilla
-        // item, so this is safe for every viewer and never sets item_model (PACK_BUILD must-have 4).
-        key.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString(keyModel(crate)).build());
+        m.core.items().texture(key, "item/crate_key_" + crate); // one picture per crate (owner 2 Nov 2026)
         return key;
-    }
-
-    /** The pack model id of a crate's key. Pure. */
-    static String keyModel(String crate) {
-        return "crate/key/" + crate.toLowerCase(Locale.ROOT);
     }
 
     // ================================================================== withdraw

@@ -65,9 +65,16 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "earnings.ignore-reasons", desc = "Reasons that are not earnings or spending of a profile (moving "
             + "money to the own bank, staff changes, the start balance). Used for top earners and the earn-rate alert.",
             level = Setting.Level.OWNER)
-    public List<String> ignoreReasons = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
+    public List<String> ignoreReasons = IGNORE_REASONS_V6;
+
+    /** {@code earnings.ignore-reasons} default up to version 5. */
+    static final List<String> IGNORE_REASONS_V5 = List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance",
             "admin_give", "admin_take", "admin_set", "admin_reset", "sanction_remove", "sanction_restore", "profile_delete",
             "island_kick_restore", "island_profile_reset", "island_bank_restore");
+
+    /** CREDIT-SHOP 5.1: a Tebex purchase or chargeback never counts as earning (no earn-rate or big-transfer alert). */
+    static final List<String> IGNORE_REASONS_V6 = java.util.stream.Stream.concat(IGNORE_REASONS_V5.stream(),
+            java.util.stream.Stream.of("store_grant", "store_chargeback")).toList();
 
     @Setting(path = "baseline-days", desc = "Days the baselines look back (BAL2: the dashboard uses the 14-day average).",
             min = 1, max = 60, level = Setting.Level.OWNER)
@@ -105,9 +112,9 @@ public final class WatchConfig extends ModuleConfig {
             + "rows (first start, after a downtime) the sums are filled but old hours make no alerts.", min = 1, max = 168)
     public int alertMaxAgeHours = 2;
 
-    @Setting(path = "alerts.currencies", desc = "Currencies the profile alerts look at (money, crystals, gems, shards).",
+    @Setting(path = "alerts.currencies", desc = "Currencies the profile alerts look at (money, crystals, credits, credits_earned, shards).",
             level = Setting.Level.OWNER)
-    public List<String> alertCurrencies = List.of("money", "crystals", "shards");
+    public List<String> alertCurrencies = List.of("money", "crystals", "credits", "shards");
 
     @Setting(path = "alerts.suggest-reason", desc = "Reason id of punishments.yml used when staff press 'Suggest punishment' "
             + "on an alert (a suggestion never applies by itself).")
@@ -141,8 +148,12 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.earn-rate.min.crystals", desc = "Never alert below this many crystals earned in one hour.", min = 0)
     public long earnMinCrystals = 50_000;
 
-    @Setting(path = "rules.earn-rate.min.gems", desc = "Never alert below this many gems earned in one hour.", min = 0)
-    public long earnMinGems = 1_000;
+    @Setting(path = "rules.earn-rate.min.credits", desc = "Never alert below this many bought credits gained in one hour.", min = 0)
+    public long earnMinCredits = 1_000;
+
+    @Setting(path = "rules.earn-rate.min.credits_earned", desc = "Never alert below this many earned credits gained in one hour "
+            + "(votes, thanks, streak, pass).", min = 0)
+    public long earnMinCreditsEarned = 1_000;
 
     @Setting(path = "rules.earn-rate.min.shards", desc = "Never alert below this many shards earned in one hour.", min = 0)
     public long earnMinShards = 5_000;
@@ -163,8 +174,13 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.big-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long bigMinCrystals = 500_000;
 
-    @Setting(path = "rules.big-transfer.min.gems", desc = "Never alert below this many gems.", min = 1)
-    public long bigMinGems = 10_000;
+    @Setting(path = "rules.big-transfer.min.credits", desc = "Never alert below this many bought credits (card C1-R1-10: "
+            + "1,000 for one transfer).", min = 1)
+    public long bigMinCredits = 1_000;
+
+    @Setting(path = "rules.big-transfer.min.credits_earned", desc = "Never alert below this many earned credits created at once.",
+            min = 1)
+    public long bigMinCreditsEarned = 10_000;
 
     @Setting(path = "rules.big-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
     public long bigMinShards = 50_000;
@@ -186,8 +202,8 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "rules.staff-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long staffMinCrystals = 100_000;
 
-    @Setting(path = "rules.staff-transfer.min.gems", desc = "Never alert below this many gems.", min = 1)
-    public long staffMinGems = 1_000;
+    @Setting(path = "rules.staff-transfer.min.credits", desc = "Never alert below this many bought credits.", min = 1)
+    public long staffMinCredits = 1_000;
 
     @Setting(path = "rules.staff-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
     public long staffMinShards = 10_000;
@@ -216,6 +232,14 @@ public final class WatchConfig extends ModuleConfig {
     public long repeatMinAmount = 10_000;
 
     // ------------------------------------------------------------------ rule: note redemptions
+
+    @Setting(path = "rules.shard-block.enabled", desc = "ECON-SHARDS: alert when one profile gets many shards from shard blocks "
+            + "in one hour (auto-clicker pattern; the daily cap still applies).")
+    public boolean shardBlockEnabled = true;
+
+    @Setting(path = "rules.shard-block.amount", desc = "Shards from shard blocks in one hour that make an alert (default half the "
+            + "daily cap of 100).", min = 1, max = 1_000_000)
+    public long shardBlockAmount = 50;
 
     @Setting(path = "rules.note-redeem.enabled", desc = "Alert when one profile cashes many money notes in one hour.")
     public boolean noteEnabled = true;
@@ -270,10 +294,20 @@ public final class WatchConfig extends ModuleConfig {
     /**
      * Version 2 (owner answer 591): the profile-reset and bank-restore reasons join the untouched default ignore list.
      * Version 3 (GUI-4c): the top earners and biggest lists page (52/53), so an untouched 28 becomes 84 (3 pages).
+     * Version 4 (card C1): gems were renamed credits; old gems are earned credits.
+     * Version 5 (card C1-R1-10): an untouched big-transfer credits minimum of 10,000 becomes 1,000.
      */
     @Override
     public int version() {
-        return 3;
+        return 6;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
+        return java.util.Map.of(4, java.util.Map.of(
+                "rules.earn-rate.min.gems", "rules.earn-rate.min.credits_earned",
+                "rules.big-transfer.min.gems", "rules.big-transfer.min.credits",
+                "rules.staff-transfer.min.gems", "rules.staff-transfer.min.credits"));
     }
 
     @Override
@@ -281,8 +315,14 @@ public final class WatchConfig extends ModuleConfig {
         return java.util.Map.of(2, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(
                 List.of("bank_deposit", "bank_withdraw", "bank_payout", "start_balance", "admin_give", "admin_take", "admin_set",
                         "admin_reset", "sanction_remove", "sanction_restore", "profile_delete", "island_kick_restore"),
-                ignoreReasons)),
-                3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)));
+                IGNORE_REASONS_V5)),
+                3, java.util.Map.of("dashboard.top-size", ValueChange.of(28, 84), "dashboard.big-size", ValueChange.of(28, 84)),
+                // Card C1: bought credits can be traded now, so the profile alerts watch them too (untouched lists only).
+                4, java.util.Map.of("alerts.currencies", ValueChange.of(List.of("money", "crystals", "shards"),
+                        List.of("money", "crystals", "credits", "shards"))),
+                // Card C1-R1-10: alert on one credit transfer from 1,000 (owner-edited values stay).
+                5, java.util.Map.of("rules.big-transfer.min.credits", ValueChange.of(10_000L, 1_000L)),
+                6, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(IGNORE_REASONS_V5, IGNORE_REASONS_V6)));
     }
 
     @Override
@@ -298,8 +338,9 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> earnMinMoney;
             case CRYSTALS -> earnMinCrystals;
-            case GEMS -> earnMinGems;
-            case SHARDS -> earnMinShards;
+            case CREDITS -> earnMinCredits;
+            case CREDITS_EARNED -> earnMinCreditsEarned;
+            case SHARDS, MINING_SHARDS -> earnMinShards;
         };
     }
 
@@ -308,8 +349,9 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> bigMinMoney;
             case CRYSTALS -> bigMinCrystals;
-            case GEMS -> bigMinGems;
-            case SHARDS -> bigMinShards;
+            case CREDITS -> bigMinCredits;
+            case CREDITS_EARNED -> bigMinCreditsEarned;
+            case SHARDS, MINING_SHARDS -> bigMinShards;
         };
     }
 
@@ -318,8 +360,8 @@ public final class WatchConfig extends ModuleConfig {
         return switch (currency) {
             case MONEY -> staffMinMoney;
             case CRYSTALS -> staffMinCrystals;
-            case GEMS -> staffMinGems;
-            case SHARDS -> staffMinShards;
+            case CREDITS, CREDITS_EARNED -> staffMinCredits; // earned credits never move between players
+            case SHARDS, MINING_SHARDS -> staffMinShards;
         };
     }
 

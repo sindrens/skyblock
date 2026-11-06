@@ -8,6 +8,8 @@ import java.util.Locale;
 final class Perms {
 
     static final String SPAWN = "skyblock.player.spawn";
+    /** {@code /start}: the guide menu (Island, Farm, Mine). */
+    static final String START = "skyblock.start";
     static final String TPA = "skyblock.player.tpa";
 
     static final String TELEPORT_BYPASS = "skyblock.staff.teleport.bypass";
@@ -23,6 +25,8 @@ final class Perms {
     static final String GAMEMODE_OTHERS = "skyblock.staff.gamemode.others";
     static final String FLY = "skyblock.staff.fly";
     static final String FLY_OTHERS = "skyblock.staff.fly.others";
+    /** Feedback 4 Nov 2026 (E17): rank perk, /fly = island fly (islands module); staff fly includes it. */
+    static final String PLAYER_FLY = "skyblock.fly";
     static final String SPEED = "skyblock.staff.speed";
     static final String GOD = "skyblock.staff.god";
     static final String GOD_OTHERS = "skyblock.staff.god.others";

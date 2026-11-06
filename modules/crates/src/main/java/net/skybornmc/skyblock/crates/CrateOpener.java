@@ -232,7 +232,7 @@ final class CrateOpener {
                     case ENCHANT_BOOK, SCROLL -> enchants.isPresent();
                     case SET_TOKEN -> wardrobe;
                     case SPAWNER -> stacking.isPresent();
-                    case ITEM -> validItem(r.material());
+                    case ITEM -> validItem(r.material(), id -> m.core.items().get(id).isPresent());
                     case TAG, TITLE -> cosmetics.isPresent();
                     case FUEL -> fuel;
                     // M10.2: booster items when the boosters module runs and the numbers are inside its limits.
@@ -244,9 +244,20 @@ final class CrateOpener {
                 pool -> books.getOrDefault(pool, List.of()), t -> spawners.getOrDefault(t, List.of()));
     }
 
+    /** Prefix of a custom item in {@code material:} (ECON-SHARDS step 15), e.g. {@code custom:shard_block}. */
+    static final String CUSTOM = "custom:";
+
     static boolean validItem(String material) {
         Material mat = material == null ? null : Material.matchMaterial(material);
         return mat != null && mat.isItem() && !mat.isAir();
+    }
+
+    /** A vanilla material, or {@code custom:<id>} of a registered custom item. */
+    static boolean validItem(String material, java.util.function.Predicate<String> customExists) {
+        if (material != null && material.toLowerCase(java.util.Locale.ROOT).startsWith(CUSTOM)) {
+            return customExists.test(material.substring(CUSTOM.length()).trim().toLowerCase(java.util.Locale.ROOT));
+        }
+        return validItem(material);
     }
 
     /**
@@ -307,7 +318,6 @@ final class CrateOpener {
         d.put("top", plan.topCount());
         d.put("money", plan.total(Currency.MONEY));
         d.put("crystals", plan.total(Currency.CRYSTALS));
-        d.put("shards", plan.total(Currency.SHARDS));
         d.put("rewards", summaryText(plan));
         m.audit("crate_open", actor, player, name, (long) plan.grants().size(), d);
     }
@@ -382,6 +392,19 @@ final class CrateOpener {
                     yield CompletableFuture.completedFuture(s.createSpawner(g.ref(), amount, origin).map(List::of).orElse(List.of()));
                 }
                 case ITEM -> {
+                    if (g.ref() != null && g.ref().toLowerCase(java.util.Locale.ROOT).startsWith(CUSTOM)) {
+                        String id = g.ref().substring(CUSTOM.length()).trim().toLowerCase(java.util.Locale.ROOT);
+                        if (m.core.items().get(id).isEmpty()) {
+                            yield CompletableFuture.completedFuture(List.of());
+                        }
+                        ItemStack proto = m.core.items().create(id, 1, origin, null);
+                        int max = Math.max(1, proto.getMaxStackSize());
+                        List<ItemStack> stacks = new ArrayList<>();
+                        for (int left = amount; left > 0; left -= max) {
+                            stacks.add(m.core.items().create(id, Math.min(max, left), origin, null));
+                        }
+                        yield CompletableFuture.completedFuture(stacks);
+                    }
                     Material mat = Material.matchMaterial(g.ref());
                     if (mat == null || !mat.isItem() || mat.isAir()) {
                         yield CompletableFuture.completedFuture(List.of());
@@ -593,7 +616,6 @@ final class CrateOpener {
         String amount = switch (type) {
             case MONEY -> m.format(Currency.MONEY, g.amount());
             case CRYSTALS -> m.format(Currency.CRYSTALS, g.amount());
-            case SHARDS -> m.format(Currency.SHARDS, g.amount());
             case FUEL -> CratesModule.durationText((int) g.amount());
             default -> String.valueOf(g.amount());
         };

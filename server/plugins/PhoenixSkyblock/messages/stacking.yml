@@ -5,6 +5,7 @@
 # Names above stacks (owner S8, S15: white name + gold count). <name> <count>
 mob-name: "<c:value><name></c:value> <c:ember>x<count>"
 item-name: "<c:value><name></c:value> <c:ember>x<count>"
+spawner-label: "<c:ember><bold><count>x</bold></c:ember> <c:value><name></c:value> <c:text>Spawner"
 
 # Things you can't do with a stack of mobs.
 stack:
@@ -59,6 +60,8 @@ spawner:
   disabled-type: "<prefix><c:error><sym:cross></c:error> <c:text>This spawner type is turned off. Ask staff."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, this spawner is being saved."
   error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your spawners are safe; try again."
+  # ECON-SPAWNERS step 7: the island already has the most tier <tier> spawners allowed. <max> <tier>
+  cap-reached: "<prefix><c:error><sym:cross></c:error> <c:text>This island holds <c:value><max></c:value> <c:text>tier <tier> spawners."
   # The spawner item (custom item, lore built by the item framework). {mob} {tier} {rarity}
   item:
     name: "<rarity:{rarity}>{mob} Spawner"
@@ -71,6 +74,34 @@ spawner:
     action-place: "on your island"
     action-menu-input: "USE"
     action-menu: "the block with an empty hand to manage it"
+
+# ECON-SPAWNERS step 8 / ECON-TABLES A: the custom drop of every spawner mob (placeholder names; the pack gives icons later).
+drops:
+  subtitle: "<c:muted>Spawner drop"
+  description: "Dropped by spawner mobs. Sell it in /sell."
+  mobdrop_pig: "Pig Bristle"
+  mobdrop_cow: "Cow Tuft"
+  mobdrop_chicken: "Chicken Plume"
+  mobdrop_sheep: "Wool Lint"
+  mobdrop_rabbit: "Rabbit Fluff"
+  mobdrop_zombie: "Rotten Sinew"
+  mobdrop_skeleton: "Bone Splinter"
+  mobdrop_spider: "Silk Gland"
+  mobdrop_cave_spider: "Venom Sac"
+  mobdrop_slime: "Gel Glob"
+  mobdrop_creeper: "Blast Powder"
+  mobdrop_witch: "Brew Residue"
+  mobdrop_drowned: "Barnacle Shell"
+  mobdrop_husk: "Dust Rag"
+  mobdrop_stray: "Frost Splinter"
+  mobdrop_blaze: "Ember Core"
+  mobdrop_enderman: "Void Mote"
+  mobdrop_guardian: "Guardian Scale"
+  mobdrop_hoglin: "Hoglin Tusk"
+  mobdrop_zombified_piglin: "Gilded Scrap"
+  mobdrop_iron_golem: "Golem Plate"
+  mobdrop_wither_skeleton: "Cursed Rib"
+  mobdrop_evoker: "Spell Fang"
 
 # /spawner give (staff). <player> <amount> <mob> <tier>
 give:
@@ -107,6 +138,8 @@ frozen:
 # Spawner menu (owner S28). <mob> <tier> <count> <max> <rate> <multiplier> <next> <carried> <range> <absolute-max> <status>
 menu:
   title: "Spawner"
+  # ECON-SPAWNERS step 10: <cap> when the island has no cap per tier.
+  no-cap: "no limit"
   info: ["<c:text>Manage this stacked spawner:", "<c:text>add or take spawners and see", "<c:text>how fast it spawns."]
   status:
     active: "<c:success>Running"
@@ -117,11 +150,14 @@ menu:
     lore:
       - "<c:text>Tier <c:value><tier>"
       - "<c:text>Stacked <c:value><count>/<max>"
+      - "<c:text>Every <c:value><seconds> s"
+      - "<c:text>Mobs per spawn <c:value><mobs>"
+      - "<c:text>Loot <c:value>x<loot>"
       - "<c:text>Output <c:value><rate></c:value> <c:text>mobs/min"
       - "<c:text>Next spawn in <c:value><next>s"
       - "<c:text>Status <status>"
       - ""
-      - "<c:text>Tier <tier> on this island: <c:value><tier-count>"
+      - "<c:text>On this island <c:value><owned>/<cap>"
       - "<c:text>= <c:value><effective></c:value> <c:text>at full output."
       - "<c:text>Next one works at <c:value><next-percent>%</c:value><c:text>."
       - ""
@@ -144,7 +180,18 @@ menu:
     crumb: "Take all spawners?"
     details: ["<c:text>Put all <c:value><count></c:value> <c:text>spawners in your", "<c:text>inventory. The block disappears."]
   upgrades:
-    name: "<c:ember>Limit <max> <sym:dot> Speed x<multiplier>"
+    name: "<c:ember>Limit <max> <sym:dot> Every <seconds> s"
     lore:
       - "<c:text>Limit <c:value><max></c:value> <c:muted>(up to <absolute-max>)"
-      - "<c:text>Speed <c:value>x<multiplier>"
+      - "<c:text>Every <c:value><seconds> s"
+
+collector:
+  item:
+    name: "<rarity:epic>Chunk Collector"
+    subtitle: "<c:muted>Island item"
+    about: "<c:text>Catches every item that drops in its chunk (farms, spawners) and passes it on like a hopper."
+    action: "<c:action>Place it on your island <sym:dot> chest under it"
+  placed: "<prefix><c:success><sym:check></c:success> <c:text>Chunk Collector placed. It catches every drop in this chunk."
+  not-island: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Chunk Collector on an island you are a member of."
+  one-per-chunk: "<prefix><c:error><sym:cross></c:error> <c:text>This chunk already has a Chunk Collector. Use another chunk."
+  limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has the most Chunk Collectors (<c:value><max></c:value>). Break one to move it."

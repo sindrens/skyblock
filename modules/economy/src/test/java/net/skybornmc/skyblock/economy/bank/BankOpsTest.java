@@ -70,6 +70,9 @@ class BankOpsTest {
         profiles.add(alex, alex);
         economy = TestEconomy.create(db, dir.toFile(), clock::get, profiles);
         config.activityMinutes = 0;
+        // The fee maths is tested with the old 2% fee and its mastery steps (the shipped default is 0 since 4 Nov 2026).
+        config.withdrawFeePercent = BankConfig.FEE_PERCENT_V3;
+        config.masteryFeePercent = BankConfig.MASTERY_FEE_PERCENT_V3;
         BankTiers tiers = BankTiers.parse(config);
         ops = ops(P);
         give(steve, 1_000_000);

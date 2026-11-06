@@ -186,7 +186,7 @@ final class AppealMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             Appeal a = view.appeal();
             Punishment p = view.punishment();
             boolean active = p != null && p.active(System.currentTimeMillis()) && a.open();
@@ -361,7 +361,7 @@ final class AppealMenus {
 
         @Override
         protected void build() {
-            frame();
+            navBar();
             TagResolver parts = appeals.parts(viewer, appeal);
             List<String> reasons = appeals.cfg().denyReasons();
             for (int i = 0; i < reasons.size() && i < SLOTS.length; i++) {

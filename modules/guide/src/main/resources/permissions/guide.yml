@@ -1,0 +1,6 @@
+skyblock.island.guide:
+  description: Talk to your island guide Kindle and open him anywhere with /is guide
+  default: true
+skyblock.island.guide.move:
+  description: Move your island's guide with /is guide move (island leader and admins only)
+  default: true

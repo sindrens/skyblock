@@ -4,8 +4,99 @@
 skyblock.staff.logs:
   description: Open the staff log viewer (/logs); which categories show depends on skyblock.staff.logs.category.*
   default: op
+# One node per audit category (AuditCategory key; checked in code as skyblock.staff.logs.category.<key>).
+# A new AuditCategory needs a node here too (LogsPermissionsTest). Grants per rank: server/permissions/logs.txt.
 skyblock.staff.logs.category.*:
   description: See every log category in /logs
+  default: op
+  children:
+    skyblock.staff.logs.category.economy: true
+    skyblock.staff.logs.category.trade: true
+    skyblock.staff.logs.category.auction: true
+    skyblock.staff.logs.category.island: true
+    skyblock.staff.logs.category.punishment: true
+    skyblock.staff.logs.category.staff: true
+    skyblock.staff.logs.category.config: true
+    skyblock.staff.logs.category.command: true
+    skyblock.staff.logs.category.chat: true
+    skyblock.staff.logs.category.dm: true
+    skyblock.staff.logs.category.item: true
+    skyblock.staff.logs.category.auth: true
+    skyblock.staff.logs.category.world: true
+    skyblock.staff.logs.category.tutorial: true
+    skyblock.staff.logs.category.crates: true
+    skyblock.staff.logs.category.boosters: true
+    skyblock.staff.logs.category.rewards: true
+    skyblock.staff.logs.category.quests: true
+    skyblock.staff.logs.category.collection: true
+    skyblock.staff.logs.category.pass: true
+    skyblock.staff.logs.category.blackmarket: true
+    skyblock.staff.logs.category.production: true
+skyblock.staff.logs.category.economy:
+  description: See money between players (pay, bank, sell) in /logs
+  default: op
+skyblock.staff.logs.category.trade:
+  description: See trades in /logs
+  default: op
+skyblock.staff.logs.category.auction:
+  description: See auction house in /logs
+  default: op
+skyblock.staff.logs.category.island:
+  description: See island actions in /logs
+  default: op
+skyblock.staff.logs.category.punishment:
+  description: See punishments in /logs
+  default: op
+skyblock.staff.logs.category.staff:
+  description: See staff actions in /logs
+  default: op
+skyblock.staff.logs.category.config:
+  description: See config changes in /logs
+  default: op
+skyblock.staff.logs.category.command:
+  description: See commands players ran in /logs
+  default: op
+skyblock.staff.logs.category.chat:
+  description: See public chat in /logs
+  default: op
+skyblock.staff.logs.category.dm:
+  description: See private messages (/msg, /r); also DM evidence in reports in /logs
+  default: op
+skyblock.staff.logs.category.item:
+  description: See item changes in /logs
+  default: op
+skyblock.staff.logs.category.auth:
+  description: See joins, quits and logins in /logs
+  default: op
+skyblock.staff.logs.category.world:
+  description: See world events in /logs
+  default: op
+skyblock.staff.logs.category.tutorial:
+  description: See the join tutorial in /logs
+  default: op
+skyblock.staff.logs.category.crates:
+  description: See crates and keys in /logs
+  default: op
+skyblock.staff.logs.category.boosters:
+  description: See boosters in /logs
+  default: op
+skyblock.staff.logs.category.rewards:
+  description: See daily, streak and playtime rewards in /logs
+  default: op
+skyblock.staff.logs.category.quests:
+  description: See quests and island missions in /logs
+  default: op
+skyblock.staff.logs.category.collection:
+  description: See the collection log in /logs
+  default: op
+skyblock.staff.logs.category.pass:
+  description: See the battle pass in /logs
+  default: op
+skyblock.staff.logs.category.blackmarket:
+  description: See the Black Market in /logs
+  default: op
+skyblock.staff.logs.category.production:
+  description: See island production and fuel in /logs
   default: op
 skyblock.staff.logs.staff:
   description: Search what staff members did (/logs staff)

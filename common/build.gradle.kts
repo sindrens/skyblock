@@ -11,3 +11,19 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
 }
+
+// Icon pack v2 (I7, GUI-P1-PACK D2): the one catalogue resourcepack/icons.json is bundled as icons/icons.json, so the
+// runtime (IconCatalog), the unit tests and tools/build_icons.py all read the same file.
+tasks.processResources {
+    from(rootProject.layout.projectDirectory.file("resourcepack/icons.json")) {
+        into("icons")
+    }
+}
+
+// Frame layer (GUI-FONT 4.3): the generated metrics (tools/build_panels.py pack) are bundled as frame/frame-metrics.json,
+// so the Java title builder never hard-codes a pixel.
+tasks.processResources {
+    from(rootProject.layout.projectDirectory.file("resourcepack/frame/frame-metrics.json")) {
+        into("frame")
+    }
+}

@@ -108,7 +108,31 @@ class BoardSourceTest {
 
     @Test
     void m57MigrationOnlyReplacesTheUntouchedOldDefault() {
-        assertEquals(4, new NpcsConfig().version());
-        assertEquals(NpcsConfig.SOURCES_V2.size(), new NpcsConfig().sources.size());
+        var change = new NpcsConfig().valueChanges().get(4).get("leaderboards.sources");
+        assertTrue(change.matches(new ArrayList<>(NpcsConfig.SOURCES_V2)));
+        assertEquals(NpcsConfig.SOURCES_V4, change.to());
+    }
+
+    @Test
+    void milestoneSources() {
+        assertEquals(Optional.of(new BoardSource.Milestones(true)), BoardSource.parse("milestones island"));
+        assertEquals(Optional.of(new BoardSource.Milestones(false)), BoardSource.parse(" Milestones PERSONAL "));
+        assertEquals("milestones:island", BoardSource.parse("milestones island").orElseThrow().key());
+        assertTrue(BoardSource.parse("milestones").isEmpty());
+        assertTrue(BoardSource.parse("milestones team").isEmpty());
+        assertTrue(BoardSource.parse("milestones island extra").isEmpty());
+    }
+
+    @Test
+    void f13aMigrationAddsTheMilestoneBoardsToTheUntouchedDefault() {
+        assertTrue(new NpcsConfig().version() >= 5, "v5 step stays; v6 is the start guide action");
+        var change = new NpcsConfig().valueChanges().get(5).get("leaderboards.sources");
+        assertTrue(change.matches(new ArrayList<>(NpcsConfig.SOURCES_V4)));
+        assertFalse(change.matches(List.of("money: money")));
+        assertEquals(NpcsConfig.SOURCES_V4.size() + 2, new NpcsConfig().sources.size());
+        assertTrue(new NpcsConfig().sources.contains("milestones_personal: milestones personal"));
+        List<String> problems = new ArrayList<>();
+        BoardSource.parseAll(new NpcsConfig().sources, problems);
+        assertTrue(problems.isEmpty(), problems.toString());
     }
 }

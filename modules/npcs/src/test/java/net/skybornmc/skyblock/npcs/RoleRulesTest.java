@@ -90,4 +90,14 @@ class RoleRulesTest {
         assertTrue(change.matches(new java.util.ArrayList<>(NpcsConfig.ACTIONS_V2)), "an untouched live list is upgraded");
         assertEquals(new NpcsConfig().roleActions, change.to());
     }
+
+    @Test
+    void spawnGuideRunsTheStartMenu() {
+        RoleRules rules = RoleRules.parse(new NpcsConfig().npcRoles, new NpcsConfig().roleActions);
+        assertEquals(RoleRules.Type.COMMAND, rules.actionOf("guide").type());
+        assertEquals("start", rules.actionOf("guide").command());
+        var change = new NpcsConfig().valueChanges().get(6).get("npcs.actions");
+        assertTrue(change.matches(new java.util.ArrayList<>(NpcsConfig.ACTIONS_V5)), "an untouched live list is upgraded");
+        assertEquals(new NpcsConfig().roleActions, change.to());
+    }
 }

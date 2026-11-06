@@ -4,13 +4,12 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.skybornmc.skyblock.common.Core;
-import net.skybornmc.skyblock.common.pack.BadgeGradients;
-import net.skybornmc.skyblock.common.pack.BadgeOptions;
-import net.skybornmc.skyblock.common.pack.BadgeService;
-import net.skybornmc.skyblock.common.pack.BadgeSettings;
-import net.skybornmc.skyblock.common.pack.Badges;
-import net.skybornmc.skyblock.common.pack.PackIds;
-import net.skybornmc.skyblock.common.pack.PackService;
+import net.skybornmc.skyblock.common.rank.BadgeGradients;
+import net.skybornmc.skyblock.common.rank.BadgeOptions;
+import net.skybornmc.skyblock.common.rank.BadgeService;
+import net.skybornmc.skyblock.common.rank.BadgeSettings;
+import net.skybornmc.skyblock.common.rank.Badges;
+import net.skybornmc.skyblock.common.rank.RankLooks;
 import net.skybornmc.skyblock.common.settings.PlayerSettings;
 import org.bukkit.entity.Player;
 
@@ -21,9 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
- * The {@link BadgeService}: rank badges per viewer from the pack's {@code pack-ids.yml}, the viewer's /settings and the
- * wearer's Immortal colour. Without the pack module ({@link PackService}) it is switched off and every surface keeps
- * the LuckPerms prefix text.
+ * The {@link BadgeService}: rank badges per viewer as plain coloured {@code [Name]} text, from chat.yml
+ * {@code ranks.looks} ({@link RankLooks}), the viewer's client (Java or Bedrock) and the wearer's Immortal colour.
  */
 final class RankBadges implements BadgeService {
 
@@ -33,6 +31,7 @@ final class RankBadges implements BadgeService {
     private final Supplier<ChatConfig> config;
     private final Map<String, Component> cache = new ConcurrentHashMap<>();
     private volatile Map<String, List<TextColor>> gradients = Map.of();
+    private volatile RankLooks looks = RankLooks.defaults();
 
     RankBadges(Core core, Supplier<ChatConfig> config) {
         this.core = core;
@@ -43,11 +42,8 @@ final class RankBadges implements BadgeService {
     /** Re-reads the approved gradients (chat.yml) and drops cached badges. */
     void reload() {
         gradients = BadgeGradients.parse(config.get().immortalGradients);
+        looks = RankLooks.parse(config.get().rankLooks, problem -> core.plugin().getLogger().warning("chat.yml " + problem));
         cache.clear();
-    }
-
-    private PackService pack() {
-        return core.services().optional(PackService.class).orElse(null);
     }
 
     private PlayerSettings settings() {
@@ -55,31 +51,11 @@ final class RankBadges implements BadgeService {
     }
 
     @Override
-    public boolean enabled() {
-        return pack() != null;
-    }
-
-    @Override
-    public PackIds ids() {
-        PackService p = pack();
-        return p == null ? null : p.ids();
-    }
-
-    @Override
     public BadgeOptions options(Audience viewer) {
         if (!(viewer instanceof Player p)) {
             return BadgeOptions.PLAIN;
         }
-        boolean bedrock = core.bedrock().isBedrock(p.getUniqueId());
-        if (bedrock) {
-            return new BadgeOptions(false, true, false, false, false, List.of());
-        }
-        PackService pack = pack();
-        PlayerSettings s = settings();
-        return new BadgeOptions(pack != null && pack.hasPack(p), false,
-                s != null && s.get(p.getUniqueId(), BadgeSettings.REDUCED_MOTION),
-                s != null && s.get(p.getUniqueId(), BadgeSettings.SIMPLE_BADGES),
-                s != null && s.get(p.getUniqueId(), BadgeSettings.LARGE_BADGES), List.of());
+        return core.bedrock().isBedrock(p.getUniqueId()) ? BadgeOptions.BEDROCK : BadgeOptions.PLAIN;
     }
 
     @Override
@@ -90,10 +66,6 @@ final class RankBadges implements BadgeService {
 
     @Override
     public Component badge(String group, String displayName, BadgeOptions options) {
-        PackIds ids = ids();
-        if (ids == null) {
-            return Component.empty();
-        }
         String key = group + '\u0000' + displayName + '\u0000' + options.key();
         Component cached = cache.get(key);
         if (cached != null) {
@@ -102,7 +74,7 @@ final class RankBadges implements BadgeService {
         if (cache.size() > CACHE_MAX) {
             cache.clear();
         }
-        Component built = Badges.render(ids, group, displayName, options);
+        Component built = Badges.render(looks, group, displayName, options);
         cache.put(key, built);
         return built;
     }
@@ -129,12 +101,14 @@ final class RankBadges implements BadgeService {
 
     @Override
     public Optional<TextColor> color(Player player) {
-        PackIds ids = ids();
-        if (ids == null) {
-            return Optional.empty();
-        }
         String group = core.ranks().primaryGroup(player);
-        return Optional.of(Badges.nameColor(ids, group, BadgeOptions.PLAIN.withGradient(gradient(group, player))));
+        return Optional.of(Badges.nameColor(looks, group, BadgeOptions.PLAIN.withGradient(gradient(group, player))));
+    }
+
+    @Override
+    public Optional<TextColor> nameColor(Player player) {
+        TextColor fixed = Display.nameColor(config.get().rankNameColor);
+        return fixed != null ? Optional.of(fixed) : color(player);
     }
 
     @Override
@@ -142,7 +116,12 @@ final class RankBadges implements BadgeService {
         return List.copyOf(gradients.keySet());
     }
 
-    /** The rank colour used by the rank provider; null while badges are off (the provider's own color applies). */
+    /** The rank looks from chat.yml {@code ranks.looks}. */
+    RankLooks looks() {
+        return looks;
+    }
+
+    /** The rank colour used by the rank provider (every group has a look: its own line or the {@code default} line). */
     TextColor colorOrNull(Player player) {
         return color(player).orElse(null);
     }
