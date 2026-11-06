@@ -1234,3 +1234,15 @@ autosell:
   limit: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has <c:value><max></c:value> <c:text>Auto-Sell Chest(s), the most allowed."
   not-double: "<prefix><c:error><sym:cross></c:error> <c:text>Place the Auto-Sell Chest away from other chests (it can't be a double chest)."
   sold: "<c:success>Auto-Sell Chest</c:success> <c:text>+<amount> <c:muted>(<items> items)"
+
+# Owner 6 Nov 2026: the daily pay limit by playtime (anti-boost) and island-only shards. /paylimit shows the ladder.
+pay-limit:
+  reached: "<prefix><c:error><sym:cross></c:error> <c:text>You can send <left> <c:text>more today. After <c:value><hours> h</c:value> <c:text>of playtime the limit is <next><c:text>. <c:muted>/paylimit"
+  reached-top: "<prefix><c:error><sym:cross></c:error> <c:text>You can send <left> <c:text>more today. The limit resets at midnight. <c:muted>/paylimit"
+  shards-island: "<prefix><c:error><sym:cross></c:error> <c:text>Shards can only be paid to members of your island."
+  title: "<c:value><bold>Pay limit"
+  header: "<prefix><c:text>What you may send to other players per day (/pay, trades, auction buys, notes). <c:muted>Island members never count."
+  tier-done: "<c:success><sym:check></c:success> <c:text><limit> <c:muted>a day <c:muted>· from <hours> h <c:muted>(passed)"
+  tier-here: "<c:action><sym:arrow></c:action> <c:value><limit> <c:text>a day <c:muted>· from <hours> h <c:action>· you are here <c:muted>(sent today: <sent>)"
+  tier-locked: "<c:muted><sym:dot> <limit> a day · unlocks in <time> of playtime"
+  unlimited: "no limit"

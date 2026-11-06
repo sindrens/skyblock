@@ -157,19 +157,49 @@ public final class AutoSellChests implements Listener {
         if (placed == null) {
             return;
         }
-        event.setDropItems(false); // the chest itself comes back as the Auto-Sell Chest item; the contents drop as usual
+        event.setDropItems(false); // the chest comes back as the Auto-Sell Chest item, with its contents, to the breaker
         Block b = event.getBlock();
+        List<ItemStack> back = new ArrayList<>();
         if (b.getState() instanceof Chest chest) {
             for (ItemStack item : chest.getBlockInventory().getContents()) {
                 if (item != null && !item.isEmpty()) {
-                    b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 0.5, 0.5), item);
+                    back.add(item.clone());
                 }
             }
             chest.getBlockInventory().clear();
         }
-        b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 0.5, 0.5), create(core));
+        back.add(create(core));
+        // Inventory first, then the mailbox: nothing lies on the ground for others to grab.
+        net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), event.getPlayer(), net.skybornmc.skyblock.common.box.BoxSource.SELL, back);
         core.database().transaction(c -> Sql.update(c, "DELETE FROM economy_autosell_chests WHERE world = ? AND x = ? AND y = ? AND z = ?",
                 pos.world(), pos.x(), pos.y(), pos.z()));
+    }
+
+    // ------------------------------------------------------------------ explosions and island removal (FX-02)
+
+    private void forget(Placed p) {
+        chests.remove(p.pos(), p);
+        core.database().transaction(c -> Sql.update(c, "DELETE FROM economy_autosell_chests WHERE world = ? AND x = ? AND y = ? AND z = ?",
+                p.pos().world(), p.pos().x(), p.pos().y(), p.pos().z()));
+    }
+
+    /** Explosions never destroy an Auto-Sell Chest (the item and its island slot would be lost). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityExplode(org.bukkit.event.entity.EntityExplodeEvent event) {
+        event.blockList().removeIf(b -> chests.containsKey(Pos.of(b)));
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockExplode(org.bukkit.event.block.BlockExplodeEvent event) {
+        event.blockList().removeIf(b -> chests.containsKey(Pos.of(b)));
+    }
+
+    /** A removed island takes its chests with it. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandRemoved(net.skybornmc.skyblock.common.island.IslandRemovedEvent event) {
+        java.util.UUID island = event.islandId();
+        chests.values().removeIf(p -> p.island().equals(island));
+        core.database().transaction(c -> Sql.update(c, "DELETE FROM economy_autosell_chests WHERE island_id = ?", Sql.toBytes(island)));
     }
 
     // ------------------------------------------------------------------ the timer
@@ -186,7 +216,8 @@ public final class AutoSellChests implements Listener {
             }
             Block b = world.getBlockAt(placed.pos().x(), placed.pos().y(), placed.pos().z());
             if (!(b.getState() instanceof Chest chest)) {
-                continue; // gone some other way (explosion, staff): nothing to sell
+                forget(placed); // FX-02: gone some other way (staff edit, reset): free the island's slot
+                continue;
             }
             Inventory inv = chest.getBlockInventory();
             List<ItemStack> taken = new ArrayList<>();
@@ -207,9 +238,15 @@ public final class AutoSellChests implements Listener {
                 List<ItemStack> back = error != null || result == null ? taken : result.giveBack();
                 Block now = at.getBlock();
                 Inventory target = now.getState() instanceof Chest c ? c.getBlockInventory() : null;
+                List<ItemStack> overflow = new ArrayList<>();
                 for (ItemStack item : back) {
                     Map<Integer, ItemStack> rest = target == null ? Map.of(0, item) : target.addItem(item);
-                    rest.values().forEach(r -> at.getWorld().dropItemNaturally(at.clone().add(0.5, 1, 0.5), r));
+                    overflow.addAll(rest.values());
+                }
+                if (!overflow.isEmpty()) {
+                    // Never dropped: the owner's mailbox.
+                    net.skybornmc.skyblock.common.box.ItemBox.of(core.services()).ifPresent(box -> box.deliver(placed.profile(), overflow,
+                            net.skybornmc.skyblock.common.box.BoxSource.SELL, Actor.system("autosell_chest")));
                 }
                 if (result != null && result.status() == SellResult.Status.SOLD) {
                     Player owner = Bukkit.getPlayer(placed.player());

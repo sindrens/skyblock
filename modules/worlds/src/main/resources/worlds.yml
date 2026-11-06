@@ -14,6 +14,7 @@ defaults:
     show_advancement_messages: false   # vanilla advancements are disabled; we have custom achievements
     show_death_messages: false         # custom death messages
     keep_inventory: true               # death rules are handled by the plugin (docs/REVIEW.md B7)
+    fall_damage: false                 # owner 3 Nov 2026: no fall damage in any world
     immediate_respawn: true
     spawn_phantoms: false
     spawn_patrols: false
@@ -111,6 +112,20 @@ worlds:
       spawn_monsters: false
       pvp: true
       random_tick_speed: 0
+  grind:                       # temporary /farm, /mine, /dungeon areas (essentials GrindAreas, owner 3 Nov 2026)
+    create: true
+    biome: plains
+    difficulty: normal
+    spawn: { x: 0.5, y: 100, z: -33.5, yaw: 0 }   # on the Farm landing pad
+    border: 6000
+    time: 6000
+    gamerules:
+      advance_time: false
+      advance_weather: false
+      spawn_mobs: false
+      spawn_monsters: false
+      random_tick_speed: 0
+      pvp: false
 
 # Finished builds (/skyblock builds, owner/admin): .schem + .yml per build from the builders (BUILDER_BRIEF §3.5/3.6).
 builds:
@@ -151,7 +166,7 @@ portals:
   # portal=target entries replacing the metadata target (targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>).
   target-overrides: []
   # target=world entries: which world a target name leads to.
-  world-targets: [spawn=spawn, depths=depths, warzone=warzone]
+  world-targets: [spawn=spawn, depths=grind, warzone=warzone]   # 3 Nov 2026: Depths portals lead to the farm and mine world
   # Worlds whose portals open only once a build of that world is applied.
   need-build: [warzone]
   # After a portal teleport, portals ignore the player this long (no bouncing back).

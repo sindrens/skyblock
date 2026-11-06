@@ -106,6 +106,7 @@ public final class EssentialsModule implements SkyblockModule {
         views.shutdown();
         vanish.shutdown();
         start.shutdown();
+        grind.flush(); // FX-08: bonus money still waiting is paid before the stop
         for (Listener listener : listeners()) {
             HandlerList.unregisterAll(listener);
         }

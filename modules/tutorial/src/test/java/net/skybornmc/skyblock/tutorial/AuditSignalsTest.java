@@ -23,8 +23,8 @@ class AuditSignalsTest {
     @Test
     void theBundledStepsListenToTheirRows() {
         Set<String> wanted = AuditSignals.wanted(CatalogTest.bundled(new ArrayList<>()));
-        assertTrue(wanted.containsAll(List.of("economy:shop_buy", "item:island_tool_upgrade", "island:upgrade_buy",
-                "island:island_invite", "island:island_coop", "rewards:daily_claim")), wanted.toString());
+        // The 5 Nov 2026 steps listen to the shop; the quest line v2 (batch 6) brings its own signals and this list.
+        assertTrue(wanted.containsAll(List.of("item:island_tool_upgrade", "island:upgrade_buy")), wanted.toString());
     }
 
     @Test

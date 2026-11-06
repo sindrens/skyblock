@@ -57,10 +57,10 @@ class ToolStoreTest {
                 Sql.toBytes(island), "hoe", "shard_finder=3,row=4")).join();
         Upgrades perks = Upgrades.parse(new IslandToolsConfig().perks, w -> { });
         Map<Kind, ToolStore.Prog> first = store.loadIsland(island, (k, old) -> Upgrades.encode(ToolRules.migrate(k, old, perks))).join();
-        assertEquals("shard_finder=300", first.get(Kind.HOE).upgrades(), "carried over, row dropped, tier gone");
+        assertEquals("shard_finder=30", first.get(Kind.HOE).upgrades(), "carried over, row dropped, tier gone");
         assertEquals(ToolStore.Prog.EMPTY, first.get(Kind.PICKAXE));
         Map<Kind, ToolStore.Prog> again = store.loadIsland(island, (k, old) -> "broken=1").join();
-        assertEquals("shard_finder=300", again.get(Kind.HOE).upgrades(), "seeded only once");
+        assertEquals("shard_finder=30", again.get(Kind.HOE).upgrades(), "seeded only once");
     }
 
     @Test

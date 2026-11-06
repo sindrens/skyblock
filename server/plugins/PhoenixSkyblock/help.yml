@@ -122,15 +122,8 @@ categories:
     status: active
     slot: 20
     name: "<c:flame><bold>Gear"
-    lore: ["<c:text>Tools, the Forge, sets,", "<c:text>enchants and blueprints."]
+    lore: ["<c:text>Island tools, sets,", "<c:text>enchants and loadouts."]
     topics: [tools, enchants, wardrobe, loadout]
-  combat-events:
-    icon: clock
-    status: coming-soon
-    slot: 21
-    name: "<c:flame><bold>Combat & Events"
-    lore: ["<c:text>Bosses, KOTH, envoys and", "<c:text>seasonal events."]
-    topics: []
   rewards:
     icon: tripwire_hook
     status: active
@@ -221,8 +214,8 @@ topics:
       - title: "<c:value>Travel"
         lines:
           - "<c:text>The <c:success>Travel</c:success> <c:text>button takes you to spawn,"
-          - "<c:text>your island, the Depths Gate, the crates,"
-          - "<c:text>the market and the Forge in one click,"
+          - "<c:text>your island, /farm, /mine, the crates"
+          - "<c:text>and the market in one click,"
           - "<c:text>or lets you visit other islands."
 
   help:
@@ -266,14 +259,14 @@ topics:
           - "<c:text>every setting you can change."
       - title: "<c:value>Show players"
         lines:
-          - "<c:text>Pick who you see in The Depths and"
+          - "<c:text>Pick who you see at /farm, /mine and"
           - "<c:text>the AFK pool: everyone, friends +"
           - "<c:text>island, or nobody. Click to choose."
           - "<c:text>Staff always shows."
 
   grind:
     icon: iron_pickaxe
-    aliases: [farm, mine, depths, dungeon, grind, ores, crops]
+    aliases: [farm, mine, grind, ores, crops]
     name: "<c:flame>Farm and Mine"
     summary: ["<c:text>A big farm and a mine for", "<c:text>everyone. They pay a money bonus."]
     take-me-there: "farm"
@@ -309,47 +302,29 @@ topics:
 
   tools:
     icon: iron_pickaxe
-    aliases: [tool, forge, blueprint, blueprints, skin, skins, starter, prestige]
-    name: "<c:flame>Tools and the Forge"
-    summary: ["<c:text>Custom tools that level up,", "<c:text>the Forge, blueprints and skins."]
-    take-me-there: "forge"
-    commands: [Tools]
+    aliases: [tool, hoe, pickaxe, prestige, perks, island-tools]
+    name: "<c:flame>Island tools"
+    summary: ["<c:text>Your hoe and pickaxe level up,", "<c:text>earn shards and prestige."]
+    take-me-there: "is tools"
+    commands: [Island]
     pages:
-      - title: "<c:value>Starter kit"
+      - title: "<c:value>Hoe and pickaxe"
         lines:
-          - "<c:text>Open <c:value>/forge</c:value> <c:text>and click Starter kit"
-          - "<c:text>for a free pickaxe, axe, hoe,"
-          - "<c:text>sword and rod. Lost one? Claim"
-          - "<c:text>the missing ones every 24 h."
-      - title: "<c:value>Living tools"
+          - "<c:text>Your island has a hoe and a"
+          - "<c:text>pickaxe. Use them at /farm, /mine"
+          - "<c:text>and on your island: they level up"
+          - "<c:text>and never break."
+      - title: "<c:value>Shards and perks"
         lines:
-          - "<c:text>Custom tools never break and"
-          - "<c:text>level up as you use them (1-50)."
-          - "<c:text>Levels give speed and open perk"
-          - "<c:text>slots at Lv 5, 15, 30 and 45."
-      - title: "<c:value>The Forge"
-        lines:
-          - "<c:text>Forge the next tier with money"
-          - "<c:text>and Depths materials. Your level,"
-          - "<c:text>perks and stats stay. Tiers follow"
-          - "<c:text>the Depths tiers of each wing."
+          - "<c:text>The hoe finds Farming Shards, the"
+          - "<c:text>pickaxe Mining Shards. Spend them"
+          - "<c:text>on perks in the tool menu: right-"
+          - "<c:text>click the tool or type /tool."
       - title: "<c:value>Prestige"
         lines:
-          - "<c:text>At Lv 50 a tool can prestige:"
-          - "<c:text>back to Lv 1, keeps perks and"
-          - "<c:text>stats, opens slot 5 and gets a"
-          - "<c:text>star. Once per tool per season."
-      - title: "<c:value>Blueprints and skins"
-        lines:
-          - "<c:text>Rare blueprints drop in The Depths."
-          - "<c:text>Craft them at the Forge for a"
-          - "<c:text>special tool. Skins change the"
-          - "<c:text>look and stay with you forever."
-      - title: "<c:value>Tips"
-        lines:
-          - "<c:text>Sneak and use a tool (or type"
-          - "<c:value>/tool</c:value><c:text>) for its menu. Custom tools"
-          - "<c:text>stay with you when you die."
+          - "<c:text>At the top level a tool can"
+          - "<c:text>prestige: back to level 1 for a"
+          - "<c:text>lasting bonus to XP and shards."
 
   enchants:
     icon: enchanted_book
@@ -361,7 +336,7 @@ topics:
     pages:
       - title: "<c:value>Books"
         lines:
-          - "<c:text>Enchant books drop in The Depths"
+          - "<c:text>Enchant books come from crates"
           - "<c:text>or come from Book shop rolls."
           - "<c:text>Each book is one enchant at one"
           - "<c:text>level. You can trade and sell them."
@@ -482,14 +457,14 @@ topics:
           - "<c:text>Skills are yours alone and reset each season."
       - title: "<c:value>Earning XP"
         lines:
-          - "<c:text>Mine ore and chop logs in The Depths,"
-          - "<c:text>and defeat monsters yourself."
+          - "<c:text>Farm at /farm, mine at /mine and"
+          - "<c:text>work on your own island."
           - "<c:text>Higher tiers give much more XP."
           - "<c:text>Gains show above your hotbar."
       - title: "<c:value>Levels and unlocks"
         lines:
           - "<c:text>Each level needs a bit more XP."
-          - "<c:text>Levels open new Depths tiers: see"
+          - "<c:text>Levels give lasting bonuses: see"
           - "<c:text>'Next unlock' in <c:value>/skills</c:value>."
       - title: "<c:value>Tips"
         lines:
@@ -513,8 +488,8 @@ topics:
       - title: "<c:value>Earning pillar XP"
         lines:
           - "<c:text>Skill XP members earn also goes"
-          - "<c:text>to the island: Depths ore, logs"
-          - "<c:text>and mobs. On your own island:"
+          - "<c:text>to the island: farm, mine and"
+          - "<c:text>mobs. On your own island:"
           - "<c:text>ripe crops, trees, spawner mobs."
       - title: "<c:value>Fair for everyone"
         lines:
@@ -552,7 +527,7 @@ topics:
         lines:
           - "<c:text>Island size up to <c:value>9x9</c:value>, up to 8"
           - "<c:text>members + leader, warps, bank,"
-          - "<c:text>sell bonus, Depths drops, spawners."
+          - "<c:text>sell bonus, crops, ores, spawners."
           - "<c:text>Every level adds island level points."
       - title: "<c:value>Masteries"
         lines:
@@ -572,12 +547,12 @@ topics:
         lines:
           - "<c:text>Pillars, upgrades, achievements,"
           - "<c:text>collections, members' skills,"
-          - "<c:text>Depths tiers, island bank and"
+          - "<c:text>upgrades, island bank and"
           - "<c:text>block worth. 10 points = 1 level."
       - title: "<c:value>Earned and live"
         lines:
           - "<c:text>Earned points never go down."
-          - "<c:text>Skills, Depths, bank and blocks"
+          - "<c:text>Skills, bank and blocks"
           - "<c:text>follow your island as it is now."
           - "<c:text>A member who leaves takes theirs."
       - title: "<c:value>Fair for everyone"
@@ -702,7 +677,7 @@ topics:
     icon: armor_stand
     aliases: [npc, holograms, hologram, leaderboards, leaderboard]
     name: "<c:flame>NPCs and boards"
-    summary: ["<c:text>The people and signs at spawn", "<c:text>and in the Depths."]
+    summary: ["<c:text>The people and signs at spawn", "<c:text>and at /farm and /mine."]
     take-me-there: "spawn"
     pages:
       - title: "<c:value>NPCs"
@@ -785,7 +760,7 @@ topics:
           - "<c:text>Locked ones show how to get them."
       - title: "<c:value>What counts"
         lines:
-          - "<c:text>Depths drops (mine, forest, mobs)"
+          - "<c:text>Crops, ores, mob drops"
           - "<c:text>and crate star rewards. Trades and"
           - "<c:text>auction buys never count, so the"
           - "<c:text>log can't be bought."
@@ -1087,7 +1062,7 @@ topics:
       - title: "<c:value>Four currencies"
         lines:
           - "<cur:money>Money</cur:money> <c:text>for everyday buying and selling,"
-          - "<cur:crystals>Crystals</cur:crystals> <c:text>for Depths power, <cur:credits>Credits</cur:credits>"
+          - "<cur:crystals>Crystals</cur:crystals> <c:text>for the Black Market, <cur:credits>Credits</cur:credits>"
           - "<c:text>for the credit shop and <cur:shards>Shards</cur:shards> <c:text>for"
           - "<c:text>the Black Market. See them: <c:value>/bal</c:value>"
       - title: "<c:value>Credits"
@@ -1227,6 +1202,12 @@ topics:
           - "<c:text>and boosters add up to your sell bonus,"
           - "<c:text>up to +300%. Tools, enchant books,"
           - "<c:text>notes and set pieces can't be sold."
+      - title: "<c:value>Sell without a trip"
+        lines:
+          - "<c:value>Sell Wand</c:value><c:text>: right-click a chest"
+          - "<c:text>on your island to sell it all."
+          - "<c:value>Auto-Sell Chest</c:value><c:text> and</c:text> <c:value>Chunk</c:value>"
+          - "<c:value>Collector</c:value><c:text>: Black Market items."
 
   notes:
     icon: paper
@@ -1353,9 +1334,9 @@ topics:
 
   blackmarket:
     icon: amethyst_shard
-    aliases: [black-market, bm, shards-shop, island-charter, charter]
+    aliases: [black-market, bm, island-charter, charter]
     name: "<c:flame>Black Market"
-    summary: ["<c:text>Rare things for shards.", "<c:text>The stock changes twice a day."]
+    summary: ["<c:text>Rare things for crystals.", "<c:text>The stock changes twice a day."]
     take-me-there: "blackmarket"
     commands: [Rewards]
     pages:
@@ -1363,8 +1344,8 @@ topics:
         lines:
           - "<c:value>/blackmarket</c:value> <c:text>or the trader in the"
           - "<c:text>Market Square alley. Pay with"
-          - "<c:text>shards. Shards come from shard"
-          - "<c:text>blocks on your island."
+          - "<c:text>crystals from quests, contracts"
+          - "<c:text>and the challenge book."
       - title: "<c:value>The stock"
         lines:
           - "<c:text>New offers at 00:00 and 12:00:"
@@ -1380,7 +1361,7 @@ topics:
       - title: "<c:value>Island Charter"
         lines:
           - "<c:text>Grow your island past 9x9, one"
-          - "<c:text>step at a time, with shards or"
+          - "<c:text>step at a time, with crystals or"
           - "<c:text>credits. It lasts this season only:"
           - "<c:text>islands are wiped at the reset."
 
@@ -1440,7 +1421,7 @@ topics:
       - title: "<c:value>Good to know"
         lines:
           - "<c:text>Money and crystal pouches grow with"
-          - "<c:text>your Depths tier. Items that don't"
+          - "<c:text>your progress. Items that don't"
           - "<c:text>fit go to your</c:text> <c:value>/box</c:value><c:text>. Rewards"
           - "<c:text>not live yet pay crystals for now."
 

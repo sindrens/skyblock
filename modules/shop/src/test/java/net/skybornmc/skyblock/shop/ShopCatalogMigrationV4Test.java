@@ -85,7 +85,7 @@ class ShopCatalogMigrationV4Test {
         ShopCatalog c = ShopCatalogTest.catalogOf(v5);
         assertEquals(5, v5.getInt("config-version"));
         assertEquals(999, c.item("hopper").orElseThrow().price());
-        assertEquals(274, c.size());
+        assertEquals(ShopCatalogTest.catalogOf(ShopCatalogTest.bundled()).size(), c.size(), "everything the bundled catalog sells");
         assertEquals(1_500, c.worth("ender_chest").orElseThrow());
         assertTrue(c.worth("oak_planks").isPresent(), "removed in v4: block worth only");
     }

@@ -22,6 +22,7 @@ class NpcSkinsTest {
         skins.forEach((role, skin) -> assertEquals(NpcSkin.Kind.DEFAULT, NpcSkin.parse(skin).orElseThrow().kind(), role));
         var change = new NpcsConfig().valueChanges().get(7).get("npcs.skins");
         assertTrue(change.matches(List.of()), "an empty live list gets the skins");
-        assertEquals(new NpcsConfig().skins, change.to());
+        // v8 (tutorial NPCs) moves the v7 list on to today's skins.
+        assertEquals(new NpcsConfig().skins, new NpcsConfig().valueChanges().get(8).get("npcs.skins").to());
     }
 }

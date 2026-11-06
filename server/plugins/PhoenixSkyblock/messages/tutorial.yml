@@ -1,0 +1,120 @@
+# The guided tour /tutorial (docs/planning/PLAN_TUTORIAL_CHAT.md). MiniMessage + style tags (style.yml).
+# Item names: bold, one colour. Lore: muted subtitle, empty line, sections, the "» CLICK to ..." line last.
+# Reload: /skyblock reload tutorial
+loading: "<prefix><c:text>Your tutorial is still loading, try again in a moment."
+
+# ------------------------------------------------------------------ steps and chapters
+step:
+  done: "<c:success><sym:check></c:success> <c:text><step>"
+  next: "<prefix><c:text>Next: <c:value><step></c:value> <c:muted><sym:dot> <hint>"
+bossbar: "<c:action>▶</c:action> <c:text><step></c:text> <c:muted><sym:dot> <chapter>"
+chapter:
+  done:
+    title: "<bold><c:action>Chapter done!</c:action></bold>"
+    subtitle: "<c:text><chapter>"
+  reward: "<prefix><c:success><sym:check></c:success> <c:text>You finished <c:value><chapter></c:value>: <c:value><rewards></c:value>"
+reward:
+  money: "$<amount>"
+  crystals: "<amount> Crystals"
+  shards: "<amount> Farming Shards"
+  mining_shards: "<amount> Mining Shards"
+  key: "<amount> <id> key"
+  tag: "the <id> tag"
+
+# ------------------------------------------------------------------ talking NPCs
+dialog:
+  display: "<bold><name></bold>\n<c:text><text>"
+  actionbar: "<bold><name></bold> <c:muted>»</c:muted> <c:text><text>"
+  chat: "<bold><name></bold><c:muted>:</c:muted> <c:text><line>"
+  command: "<c:action><command></c:action>"
+  command-hover: "<c:text>Click to run <c:action><command>"
+
+# ------------------------------------------------------------------ the quest book (Java)
+book:
+  title: "Tutorial"
+  author: "Rowan"
+  chapter-head: "<bold><chapter></bold>\n<dark_gray>Chapter <number> <sym:dot> </dark_gray><state>\n\n<dark_green><bar></dark_green> <dark_gray><done>/<total> done</dark_gray>\n<dark_gray>-- To do --</dark_gray>\n"
+  state-new: "<blue>New</blue>"
+  state-started: "<gold>Started</gold>"
+  step-done: "<dark_green><sym:check></dark_green> <gray><st><step></st></gray>\n"
+  step-next: "<gold>▶</gold> <black><bold><step></bold> <dark_gray><count></dark_gray></black>\n<dark_gray><italic>  <hint></italic></dark_gray>\n"
+  step-open: "<dark_gray>•</dark_gray> <black><step> <dark_gray><count></dark_gray></black>\n"
+  step-hover: "<c:text>Click to go: <c:action><command>"
+  see-all: "\n<dark_gray>Next page: all chapters »</dark_gray>"
+  finished: "<bold>All done!</bold>\n\n<black>You finished every chapter. Have fun on your island!</black>\n\n<dark_gray>Need help? /help</dark_gray>"
+  skipped: "<bold>Tutorial skipped</bold>\n\n<black>You skipped the tour. /help shows what to do next any time.</black>"
+  all-head: "<bold>All Chapters</bold>\n<dark_green><bar></dark_green> <black><percent>%</black>\n\n"
+  chapter-done: "<dark_green><sym:check></dark_green> <gray><chapter></gray>\n"
+  chapter-current: "<gold>▶</gold> <black><bold><chapter></bold></black>\n"
+  chapter-locked: "<dark_gray><sym:cross> <chapter></dark_gray>\n"
+  locked-hover: "<c:text>Finish <c:value><chapter></c:value> first"
+  reward-hover: "<c:text>Reward: <c:value><rewards>"
+  footer: "\n<dark_gray>Click a step to go there.</dark_gray>"
+
+# ------------------------------------------------------------------ the menu (Bedrock /tutorial, Rowan's /start)
+menu:
+  title: "Tutorial"
+  start-title: "<guide>"
+  click: "<bold><c:action>» CLICK</c:action></bold> <c:text>to <action>"
+  finished:
+    name: "<bold><c:success>All chapters done!</c:success></bold>"
+    lore: "<c:text>Have fun on your island."
+  skipped:
+    name: "<bold><c:muted>Tutorial skipped</c:muted></bold>"
+    lore: "<c:text>/help shows what to do next."
+  chapter:
+    name: "<bold><c:action><chapter></c:action></bold>"
+    subtitle: "<c:muted>Chapter <number> of <total>"
+    progress: "<c:text><bar> <c:value><done>/<total></c:value> done"
+    reward-head: "<c:header>| Reward"
+    reward: "<c:text><rewards>"
+  step:
+    name-done: "<bold><c:success><sym:check> <step></c:success></bold>"
+    name-next: "<bold><c:action>▶ <step></c:action></bold>"
+    name-open: "<bold><c:text><step></c:text></bold>"
+    state-done: "<c:muted>Done"
+    state-next: "<c:muted>Do this next"
+    state-open: "<c:muted>Still to do"
+    hint: "<c:text><hint>"
+    count: "<c:text>Progress: <c:value><count>/<amount>"
+    action: "go there"
+  place:
+    action: "go there"
+    island:
+      name: "<bold><c:success>Your Island</c:success></bold>"
+      lore: "<c:text>Build, farm and grow."
+    farm:
+      name: "<bold><c:warning>The Farm</c:warning></bold>"
+      lore: "<c:text>Harvest crops for money."
+    mine:
+      name: "<bold><c:info>The Mine</c:info></bold>"
+      lore: "<c:text>Mine ores for money."
+  book:
+    name: "<bold><c:action>Quest Book</c:action></bold>"
+    lore: "<c:text>Every step and chapter."
+    action: "read it"
+  chapters:
+    name-done: "<bold><c:success><sym:check> <chapter></c:success></bold>"
+    name-current: "<bold><c:action>▶ <chapter></c:action></bold>"
+    name-locked: "<bold><c:muted><chapter></c:muted></bold>"
+    state-done: "<c:muted>Finished"
+    state-current: "<c:muted>Your chapter now"
+    state-locked: "<c:muted>Finish the chapters before it first"
+
+# ------------------------------------------------------------------ commands
+skip:
+  already: "<prefix><c:error><sym:cross></c:error> <c:text>Your tutorial is already finished."
+  done: "<prefix><c:text>Tutorial skipped. <c:muted>/help</c:muted> shows what to do next any time."
+bar:
+  hidden: "<prefix><c:text>Tutorial bar hidden. <c:action>/tutorial show</c:action> brings it back."
+  shown: "<prefix><c:text>Tutorial bar shown."
+track:
+  none: "<prefix><c:error><sym:cross></c:error> <c:text>Your next step has no NPC nearby to point at."
+  "on": "<prefix><c:text>Follow the trail!"
+admin:
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work (database error); see the console."
+  reset: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial of <c:value><player></c:value> starts over."
+  no-step: "<prefix><c:error><sym:cross></c:error> <c:text>No step <c:value><step></c:value> (use tab completion)."
+  step: "<prefix><c:success><sym:check></c:success> <c:text><c:value><player></c:value>: done <c:value><step></c:value>."
+  stats-head: "<prefix><c:text>Tutorial: <c:value><started></c:value> started, <c:value><skipped></c:value> skipped."
+  stats-line: "<c:muted> <sym:bullet></c:muted> <c:text><chapter>: <c:value><count></c:value> finished"

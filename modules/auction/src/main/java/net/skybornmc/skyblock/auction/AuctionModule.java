@@ -567,7 +567,7 @@ public final class AuctionModule implements SkyblockModule, Listener {
             java.util.concurrent.CompletableFuture<net.skybornmc.skyblock.common.economy.SendGate.Check> check;
             try {
                 check = sendGate.isEmpty() ? java.util.concurrent.CompletableFuture.completedFuture(null)
-                        : sendGate.get().check(uuid, listing.seller(), Currency.MONEY);
+                        : sendGate.get().check(uuid, listing.seller(), Currency.MONEY, listing.price());
             } catch (RuntimeException e) {
                 check = java.util.concurrent.CompletableFuture.failedFuture(e);
             }
@@ -576,13 +576,26 @@ public final class AuctionModule implements SkyblockModule, Listener {
                 return null;
             });
         }
-        gate.thenCompose(check -> engine.buy(listing.id(), uuid, name, actor, check)).whenCompleteAsync((r, error) -> {
+        gate.thenComposeAsync(check -> {
+            // Owner 6 Nov 2026: the daily pay limit tells the buyer itself (how much is left, when it grows).
+            if (check != null && !check.allowed() && check.kind() != net.skybornmc.skyblock.common.economy.SendGate.Kind.EARNED) {
+                Player online = online(uuid);
+                if (online != null) {
+                    net.skybornmc.skyblock.common.economy.SendGate.of(core.services()).ifPresent(g -> g.tell(online, check));
+                }
+                return java.util.concurrent.CompletableFuture.completedFuture(null);
+            }
+            return engine.buy(listing.id(), uuid, name, actor, check);
+        }, main).whenCompleteAsync((r, error) -> {
             Player online = online(uuid);
             if (online == null) {
                 if (r != null && r.outcome() == AuctionEngine.BuyOutcome.SOLD) {
                     drain.drain(uuid); // C3: bought while leaving or switching: the item goes to /box
                 }
                 return;
+            }
+            if (error == null && r == null) {
+                return; // the pay limit already told the buyer
             }
             if (error != null || r == null) {
                 send(online, "error");

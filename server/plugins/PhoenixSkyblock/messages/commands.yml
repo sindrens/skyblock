@@ -7,6 +7,8 @@ usage: "<prefix><c:error><sym:cross></c:error> <c:text>Usage: <click:suggest_com
 # FIXES1: a word our command can't take (unknown option, or too many words), instead of Minecraft's grey
 # "Incorrect argument for command ... <--[HERE]". <input> = the first word that doesn't fit.
 unknown-input: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>doesn't fit here. Usage: <click:suggest_command:'<example>'><hover:show_text:'<c:text><description><newline><c:action>Click to fill in'><c:value><usage></c:value></hover></click>"
+# FX-16: a mistyped sub-command. <suggestion> = the closest option as a full command, <command> = the command typed.
+did-you-mean: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>is not an option. Did you mean <click:run_command:'<suggestion>'><hover:show_text:'<c:text>Runs <suggestion>'><c:action><suggestion></c:action></hover></click><c:text>? <c:muted>All options: /help <command>"
 players-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only players can use this."
 console-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the console can use this."
 cooldown: "<prefix><c:error><sym:cross></c:error> <c:text>Slow down. Try again in <c:value><time></c:value>."

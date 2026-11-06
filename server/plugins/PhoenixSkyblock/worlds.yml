@@ -125,6 +125,7 @@ worlds:
       spawn_mobs: false
       spawn_monsters: false
       random_tick_speed: 0
+      pvp: false
 
 # Finished builds (/skyblock builds, owner/admin): .schem + .yml per build from the builders (BUILDER_BRIEF §3.5/3.6).
 builds:

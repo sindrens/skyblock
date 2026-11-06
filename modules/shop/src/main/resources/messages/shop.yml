@@ -80,7 +80,7 @@ groups:
   mob-drops: { undead: "Undead", hostile: "Hostile mobs", animal: "Animals", meat: "Meat", ocean: "Ocean", more: "More" }
   colors: { concrete: "Concrete", extras: "Glass, terracotta and wool", glass: "Stained glass", terracotta: "Terracotta", more: "More" }
   decoration: { light: "Lights", display: "Display", more: "More" }
-  essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", more: "More" }
+  essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", storage: "Storage", more: "More" }
   redstone: { power: "Power", machines: "Machines", inputs: "Inputs", rails: "Rails", more: "More" }
   spawners: { tier1: "Tier 1", tier2: "Tier 2", tier3: "Tier 3", tier4: "Tier 4", more: "More" }
 

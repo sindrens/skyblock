@@ -700,7 +700,7 @@ public final class TradeModule implements SkyblockModule, Listener {
             return;
         }
         UUID partner = s.other(p.getUniqueId()).profile;
-        gate.get().check(side.profile, partner, currency).whenCompleteAsync((check, error) -> {
+        gate.get().check(side.profile, partner, currency, amount).whenCompleteAsync((check, error) -> {
             if (!p.isOnline() || sessions.get(p.getUniqueId()) != s) {
                 return;
             }
@@ -708,6 +708,10 @@ public final class TradeModule implements SkyblockModule, Listener {
                 core.plugin().getLogger().log(Level.WARNING, "Trade: the send check for " + p.getName() + " failed", error);
                 send(p, "error");
                 sound(p, "error");
+                return;
+            }
+            if (!check.allowed() && check.kind() != net.skybornmc.skyblock.common.economy.SendGate.Kind.EARNED) {
+                gate.get().tell(p, check); // owner 6 Nov 2026: daily pay limit, island-only shards
                 return;
             }
             if (!check.allowed()) {

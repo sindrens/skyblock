@@ -107,6 +107,14 @@ public final class SellWandListener implements Listener {
             msg.send(p, "sell-wand.nothing");
             return;
         }
+        // FX-04: charge the use now, on this exact wand, before the async sale (swapping items can no longer dodge it).
+        int left = uses - 1;
+        if (left <= 0) {
+            p.getInventory().setItemInMainHand(null);
+        } else {
+            SellWand.setUses(core, wand, left);
+            p.getInventory().setItemInMainHand(wand);
+        }
         UUID profile = core.services().optional(ProfileService.class).map(s -> s.profileKey(p)).orElse(p.getUniqueId());
         SellRequest request = new SellRequest(p.getUniqueId(), p.getName(), profile, taken, sell.get().bonusPercent(p), "wand",
                 Actor.player(p));
@@ -116,23 +124,36 @@ public final class SellWandListener implements Listener {
             List<ItemStack> back = error != null || result == null ? taken : result.giveBack();
             putBack(at, p, back);
             if (error != null || result == null || result.status() != SellResult.Status.SOLD) {
+                refund(p, wand, left);
                 msg.send(p, "sell-wand.nothing");
                 return;
             }
-            ItemStack hand = p.getInventory().getItemInMainHand();
-            int left = SellWand.uses(hand) - 1;
-            if (SellWand.uses(hand) >= 0) {
-                if (left <= 0) {
-                    p.getInventory().setItemInMainHand(null);
-                    msg.send(p, "sell-wand.broke");
-                } else {
-                    SellWand.setUses(core, hand, left);
-                }
+            if (left <= 0) {
+                msg.send(p, "sell-wand.broke");
             }
             msg.send(p, "sell-wand.sold", Msg.number("items", result.quote().items()), Msg.p("amount", Format.money(result.quote().total())),
                     Msg.number("uses", Math.max(0, left)));
             core.sounds().play(p, "money");
         }));
+    }
+
+    /** Nothing was sold: the charged use goes back onto the same wand (found by its id), or a 1-use wand when it broke. */
+    private void refund(Player p, ItemStack charged, int left) {
+        if (!p.isOnline()) {
+            return;
+        }
+        if (left <= 0) {
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), p, net.skybornmc.skyblock.common.box.BoxSource.SELL, SellWand.create(core, 1));
+            return;
+        }
+        String id = charged.getItemMeta().getPersistentDataContainer().get(SellWand.ID, org.bukkit.persistence.PersistentDataType.STRING);
+        for (ItemStack item : p.getInventory().getContents()) {
+            if (item != null && SellWand.uses(item) >= 0 && id != null
+                    && id.equals(item.getItemMeta().getPersistentDataContainer().get(SellWand.ID, org.bukkit.persistence.PersistentDataType.STRING))) {
+                SellWand.setUses(core, item, SellWand.uses(item) + 1);
+                return;
+            }
+        }
     }
 
     /** Unsold stacks back into the chest, then the player, then on the ground at the chest. Main thread. */
@@ -142,12 +163,21 @@ public final class SellWandListener implements Listener {
         }
         Block block = at.getBlock();
         Inventory inv = block.getState() instanceof Chest c ? c.getInventory() : block.getState() instanceof Barrel b ? b.getInventory() : null;
+        List<ItemStack> overflow = new ArrayList<>();
         for (ItemStack item : items) {
             HashMap<Integer, ItemStack> rest = inv == null ? new HashMap<>(java.util.Map.of(0, item)) : inv.addItem(item);
-            for (ItemStack r : rest.values()) {
-                HashMap<Integer, ItemStack> over = p.isOnline() ? p.getInventory().addItem(r) : new HashMap<>(java.util.Map.of(0, r));
-                over.values().forEach(o -> at.getWorld().dropItemNaturally(at.clone().add(0.5, 1, 0.5), o));
-            }
+            overflow.addAll(rest.values());
+        }
+        if (overflow.isEmpty()) {
+            return;
+        }
+        // Never dropped: the player's inventory, then the mailbox (also when they left meanwhile).
+        UUID profile = core.services().optional(ProfileService.class).map(s -> s.profileKey(p)).orElse(p.getUniqueId());
+        if (p.isOnline()) {
+            net.skybornmc.skyblock.common.box.ItemBox.give(core.services(), p, net.skybornmc.skyblock.common.box.BoxSource.SELL, overflow);
+        } else {
+            net.skybornmc.skyblock.common.box.ItemBox.of(core.services()).ifPresent(b -> b.deliver(profile, overflow,
+                    net.skybornmc.skyblock.common.box.BoxSource.SELL, Actor.system("sell_wand")));
         }
     }
 

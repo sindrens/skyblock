@@ -244,9 +244,22 @@ public final class EconomyConfig extends ModuleConfig {
     // ------------------------------------------------------------------ sending money (owner F1)
 
     @Setting(path = "send-gate.required", desc = "Owner F1: a profile can send money away (/pay, notes, /trade) only after it "
-            + "earned this much itself. Sending to members of its own island is always allowed. 0 = off.", min = 0,
+            + "earned this much itself. Sending to members of its own island is always allowed. 0 = off (owner 6 Nov 2026: "
+            + "replaced by the playtime pay limit, pay-limit.tiers).", min = 0,
             level = Setting.Level.OWNER)
-    public long sendGateRequired = 10_000;
+    public long sendGateRequired = 0;
+
+    @Setting(path = "pay-limit.tiers", desc = "Owner 6 Nov 2026 (anti-boost): money a profile may send to other players per day "
+            + "(/pay, /trade, auction buys) by its account's playtime, as 'hours:limit' lines (limit -1 = no limit). Members of "
+            + "your own island never count. Empty = no limit.", level = Setting.Level.OWNER)
+    public List<String> payLimitTiers = List.of("0:20k", "3:100k", "6:500k", "12:2.5M", "24:-1");
+
+    @Setting(path = "pay-limit.zone", desc = "Time zone of the pay limit's day (it resets at midnight there).", level = Setting.Level.OWNER)
+    public String payLimitZone = "Europe/Oslo";
+
+    @Setting(path = "shards.island-only", desc = "Owner 6 Nov 2026: shards are personal and may only be paid (/pay, /trade) to "
+            + "members of your own island.", level = Setting.Level.OWNER)
+    public boolean shardsIslandOnly = true;
 
     @Setting(path = "send-gate.currencies", desc = "Currencies the F1 rule covers when sent (the earned amount is always "
             + "counted in money).", level = Setting.Level.OWNER)
@@ -486,13 +499,15 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
-                6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)));
+                6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)),
+                // owner 6 Nov 2026: the $10k earned rule is replaced by the playtime pay limit
+                7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)));
     }
 
     @Override

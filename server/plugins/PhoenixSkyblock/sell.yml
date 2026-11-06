@@ -54,37 +54,38 @@ categories:
     torchflower: 396
     pitcher_plant: 870
 
-  # Spawner mob loot (ECONOMY_BALANCE §4.3: island price of Depths tier 1/3/5/7/9 per item, ~1.5 items per mob).
+  # Spawner mob loot. Owner plan 5 Nov 2026 (never shown): one mob is worth about $3 / $6 / $10 / $18 (spawner tiers 1-4),
+  # so a spawner pays back its shop price in about 100 h (tier 1) to 150 h (tier 4) before upgrades.
   mob-loot:
-    # Spawner tier 1 (pig, cow, chicken, sheep, rabbit): $10
-    porkchop: 10
-    cooked_porkchop: 10
-    beef: 10
-    cooked_beef: 10
-    chicken: 10
-    cooked_chicken: 10
-    mutton: 10
-    cooked_mutton: 10
-    rabbit: 10
-    cooked_rabbit: 10
-    leather: 10
-    feather: 10
-    rabbit_hide: 10
-    rabbit_foot: 10
-    # Spawner tier 2 (zombie, skeleton, spider, slime): $18. Arrows are not listed: 1 feather crafts 4 arrows.
-    rotten_flesh: 18
-    bone: 18
-    string: 18
-    spider_eye: 18
-    slime_ball: 18
-    # Spawner tier 3 (creeper, witch, drowned, husk): $33
-    gunpowder: 33
-    glowstone_dust: 33
-    # Spawner tier 4 (blaze, enderman, guardian, piglin): $61
-    blaze_rod: 61
-    ender_pearl: 61
-    prismarine_shard: 61
-    prismarine_crystals: 61
+    # Spawner tier 1 (pig, cow, chicken, sheep, rabbit): $1 per item, about $3 per mob
+    porkchop: 1
+    cooked_porkchop: 1
+    beef: 1
+    cooked_beef: 1
+    chicken: 1
+    cooked_chicken: 1
+    mutton: 1
+    cooked_mutton: 1
+    rabbit: 1
+    cooked_rabbit: 1
+    leather: 1
+    feather: 1
+    rabbit_hide: 1
+    rabbit_foot: 1
+    # Spawner tier 2 (zombie, skeleton, spider, slime): $5 per item, about $6 per mob. Arrows are not listed: 1 feather crafts 4 arrows.
+    rotten_flesh: 5
+    bone: 5
+    string: 5
+    spider_eye: 5
+    slime_ball: 5
+    # Spawner tier 3 (creeper, witch, drowned, husk): $10 per item
+    gunpowder: 10
+    glowstone_dust: 10
+    # Spawner tier 4 (blaze, enderman, guardian, piglin): $36 per item, about $18 per mob (0.5 per kill)
+    blaze_rod: 36
+    ender_pearl: 36
+    prismarine_shard: 36
+    prismarine_crystals: 36
     # Spawner tier 5 (iron golem, wither skeleton, shulker): $180
     shulker_shell: 180
     wither_skeleton_skull: 180

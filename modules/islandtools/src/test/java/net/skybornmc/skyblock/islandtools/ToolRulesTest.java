@@ -150,9 +150,9 @@ class ToolRulesTest {
         assertEquals(0, ToolRules.carryOver(0, 3, 3));
         Upgrades u = Upgrades.parse(C.perks, w -> { });
         Map<String, Integer> hoe = ToolRules.migrate(Kind.HOE, "row=4,magnet=1,shard_finder=3,fortune=2,storage=10", u);
-        assertEquals(Map.of("shard_finder", 300, "fortune", 2, "storage", 250), hoe, "row and magnet are dropped");
+        assertEquals(Map.of("shard_finder", 30, "fortune", 2, "storage", 100), hoe, "row and magnet are dropped (4 Nov 2026 perk maxima)");
         Map<String, Integer> pick = ToolRules.migrate(Kind.PICKAXE, "smelter=5,experience=5,extra_drops=1", u);
-        assertEquals(Map.of("smelter", 100, "extra_drops", 100), pick);
+        assertEquals(Map.of("smelter", 100, "extra_drops", 20), pick);
     }
 
     @Test

@@ -168,7 +168,8 @@ final class GrindAreas extends CommandGroup implements Listener {
             fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
             core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
             // Chunk reloads show the real (wheat) blocks again: refresh the own-crop view of players at the farm.
-            core.scheduler().repeat("essentials:grind-view", 200L, 200L, () -> {
+            // FX-07: every 30 s (chunk loads and regrowth already resend their part)
+            core.scheduler().repeat("essentials:grind-view", 600L, 600L, () -> {
                 for (Player p : world.getPlayers()) {
                     if (Math.abs(p.getLocation().getBlockX() - FARM_X) <= FARM_HALF + 40) {
                         sendFarm(p);
@@ -482,21 +483,19 @@ final class GrindAreas extends CommandGroup implements Listener {
             return; // the real blocks are this tier
         }
         org.bukkit.block.data.BlockData view = tier.block().createBlockData();
-        List<org.bukkit.block.BlockState> states = new ArrayList<>();
+        // FX-07: no BlockState per block (thousands per player): one multi-block packet from positions.
+        java.util.Map<io.papermc.paper.math.Position, org.bukkit.block.data.BlockData> changes = new java.util.HashMap<>();
         for (int x = Math.max(minX, MINE_X - MINE_HALF); x <= Math.min(maxX, MINE_X + MINE_HALF); x++) {
             for (int z = Math.max(minZ, -MINE_HALF); z <= Math.min(maxZ, MINE_HALF); z++) {
                 for (int d = 0; d < MINE_DEPTH; d++) {
-                    Block b = world.getBlockAt(x, base - d, z);
-                    if (b.getType() == BASE_ORE) {
-                        org.bukkit.block.BlockState st = b.getState();
-                        st.setBlockData(view);
-                        states.add(st);
+                    if (world.getType(x, base - d, z) == BASE_ORE) {
+                        changes.put(io.papermc.paper.math.Position.block(x, base - d, z), view);
                     }
                 }
             }
         }
-        if (!states.isEmpty()) {
-            p.sendBlockChanges(states);
+        if (!changes.isEmpty()) {
+            p.sendMultiBlockChange(changes);
         }
     }
 
@@ -550,6 +549,11 @@ final class GrindAreas extends CommandGroup implements Listener {
             // Owner 4 Nov 2026: farm/mine progress and bonus are per profile, so the bonus is owed to this profile.
             pendingBonus.merge(net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p), scaled, Long::sum);
         }
+    }
+
+    /** Pays the bonus money still waiting (module stop). */
+    void flush() {
+        payBonus();
     }
 
     private void payBonus() {
@@ -682,20 +686,19 @@ final class GrindAreas extends CommandGroup implements Listener {
         if (world == null || !p.getWorld().equals(world) || cropFor(farmed(p)) == Crop_WHEAT()) {
             return;
         }
-        List<org.bukkit.block.BlockState> states = new ArrayList<>();
+        // FX-07: no BlockState per block: one multi-block packet from positions.
+        java.util.Map<io.papermc.paper.math.Position, org.bukkit.block.data.BlockData> changes = new java.util.HashMap<>();
         for (int x = Math.max(minX, FARM_X - FARM_HALF); x <= Math.min(maxX, FARM_X + FARM_HALF); x++) {
             for (int z = Math.max(minZ, -FARM_HALF); z <= Math.min(maxZ, FARM_HALF); z++) {
                 Block b = world.getBlockAt(x, base + 1, z);
                 org.bukkit.block.data.BlockData view = viewOf(p, b);
                 if (view != null) {
-                    org.bukkit.block.BlockState st = b.getState();
-                    st.setBlockData(view);
-                    states.add(st);
+                    changes.put(io.papermc.paper.math.Position.block(x, base + 1, z), view);
                 }
             }
         }
-        if (!states.isEmpty()) {
-            p.sendBlockChanges(states);
+        if (!changes.isEmpty()) {
+            p.sendMultiBlockChange(changes);
         }
     }
 

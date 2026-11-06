@@ -140,7 +140,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
         service.sanctions(() -> core.services().optional(net.skybornmc.skyblock.common.moderation.SanctionService.class).orElse(null));
         core.services().register(ID, EconomyService.class, service);
         // Owner F1: money can be sent away only after the profile earned send-gate.required itself (island members excepted).
-        sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis);
+        // Owner 6 Nov 2026: the daily pay limit by playtime and island-only shards ride on the same gate.
+        sendGate = new SendGateImpl(core.database(), () -> config, this::sameIsland, System::currentTimeMillis, this::islandMates,
+                profile -> {
+                    UUID account = profiles().ownerOf(profile);
+                    return account == null || Bukkit.getPlayer(account) == null ? -1L
+                            : core.players().get(account).map(d -> d.playtimeMillis()).orElse(-1L);
+                }, profile -> {
+                    UUID account = profiles().ownerOf(profile);
+                    return account == null ? profile : account;
+                }, this::tellSendGate);
         core.services().register(ID, net.skybornmc.skyblock.common.economy.SendGate.class, sendGate);
         ecoTargets = new EcoTargets(core.database());
         notes = new MoneyNotes(this, new NoteService(core.database(), service, System::currentTimeMillis, core.plugin().getLogger(),
@@ -287,10 +296,74 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     /** Tells a player the F1 rule blocked a send: how much more they must earn. {@code key}: pay.send-gate / note.send-gate. */
     void tellSendGate(Player player, net.skybornmc.skyblock.common.economy.SendGate.Check check, String key) {
-        msg.send(player, key, exactAmountTag("required", player, Currency.MONEY, check.required()),
-                exactAmountTag("earned", player, Currency.MONEY, check.earned()),
-                exactAmountTag("missing", player, Currency.MONEY, check.missing()));
+        switch (check.kind()) {
+            case DAILY_LIMIT, ISLAND_ONLY -> tellSendGate(player, check);
+            default -> {
+                msg.send(player, key, exactAmountTag("required", player, Currency.MONEY, check.required()),
+                        exactAmountTag("earned", player, Currency.MONEY, check.earned()),
+                        exactAmountTag("missing", player, Currency.MONEY, check.missing()));
+                sound(player, "error");
+            }
+        }
+    }
+
+    /** Owner 6 Nov 2026: why a send was refused (daily pay limit, island-only shards, the F1 rule), for every module. */
+    void tellSendGate(Player player, net.skybornmc.skyblock.common.economy.SendGate.Check check) {
+        switch (check.kind()) {
+            case ISLAND_ONLY -> msg.send(player, "pay-limit.shards-island");
+            case DAILY_LIMIT -> {
+                if (check.nextHours() > 0) {
+                    msg.send(player, "pay-limit.reached", exactAmountTag("left", player, Currency.MONEY, check.left()),
+                            Msg.number("hours", check.nextHours()), exactAmountTag("next", player, Currency.MONEY, check.nextLimit()));
+                } else {
+                    msg.send(player, "pay-limit.reached-top", exactAmountTag("left", player, Currency.MONEY, check.left()));
+                }
+            }
+            default -> {
+                tellSendGate(player, check, "pay.send-gate");
+                return;
+            }
+        }
         sound(player, "error");
+    }
+
+    /** Owner 6 Nov 2026: the pay limit ladder in chat. Main thread. */
+    private void showPayLimit(Player player) {
+        UUID profile = profiles().profileKey(player);
+        java.util.List<SendGateImpl.Tier> tiers = SendGateImpl.tiers(config.payLimitTiers);
+        if (tiers.isEmpty()) {
+            msg.send(player, "pay-limit.reached-top", exactAmountTag("left", player, Currency.MONEY, Long.MAX_VALUE));
+            return;
+        }
+        then(player, sendGate.status(profile), status -> {
+            long minutes = status[0];
+            long sent = status[1];
+            SendGateImpl.Tier at = SendGateImpl.tierFor(tiers, minutes / 60);
+            msg.send(player, "pay-limit.header");
+            for (SendGateImpl.Tier t : tiers) {
+                TagResolver limit = t.limit() < 0 ? net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component("limit",
+                        msg.component(player, "pay-limit.unlimited"))
+                        : exactAmountTag("limit", player, Currency.MONEY, t.limit());
+                if (t.equals(at)) {
+                    msg.send(player, "pay-limit.tier-here", limit, Msg.number("hours", t.hours()),
+                            exactAmountTag("sent", player, Currency.MONEY, sent));
+                } else if (t.hours() < at.hours()) {
+                    msg.send(player, "pay-limit.tier-done", limit, Msg.number("hours", t.hours()));
+                } else {
+                    msg.send(player, "pay-limit.tier-locked", limit,
+                            Msg.p("time", net.skybornmc.skyblock.common.util.Format.duration(Duration.ofMinutes(t.hours() * 60 - minutes))));
+                }
+            }
+        });
+    }
+
+    /** Island member profiles of the island {@code profile} is on (coop excluded). Main thread. */
+    private java.util.Set<UUID> islandMates(UUID profile) {
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class).flatMap(is -> is.islandOfProfile(profile)
+                .map(island -> is.members(island.id()).entrySet().stream()
+                        .filter(e -> e.getValue() != net.skybornmc.skyblock.common.island.IslandService.Role.COOP)
+                        .map(java.util.Map.Entry::getKey).collect(java.util.stream.Collectors.toSet())))
+                .orElse(java.util.Set.of());
     }
 
     /**
@@ -587,6 +660,16 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         Msg.p("player", ctx.get(payTarget))})
                 .example("pay Steve 1.5k")
                 .executes(ctx -> pay(ctx.player(), ctx.get(payTarget), ctx.get(payAmount), ctx.getOr(payCurrency, Currency.MONEY))));
+
+        // Owner 6 Nov 2026: the daily pay limit by playtime, as a ladder (passed, you are here, unlocks in ...).
+        core.commands().register(CommandSpec.command("paylimit")
+                .description("How much money you may send to other players per day, by playtime")
+                .category("Economy")
+                .permission(PERM_PAY)
+                .playerOnly()
+                .aliases("paylimits")
+                .example("paylimit")
+                .executes(ctx -> showPayLimit(ctx.player())));
 
         core.commands().register(CommandSpec.command("transactions")
                 .description("Your money history: payments, sales, purchases")
@@ -1120,7 +1203,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     return;
                 }
                 // Owner F1: only after this profile earned send-gate.required itself, unless the receiver is on its island.
-                then(payer, sendGate.check(from, to, currency), check -> {
+                then(payer, sendGate.check(from, to, currency, amount), check -> {
                     if (!check.allowed()) {
                         tellSendGate(payer, check, "pay.send-gate");
                         return;

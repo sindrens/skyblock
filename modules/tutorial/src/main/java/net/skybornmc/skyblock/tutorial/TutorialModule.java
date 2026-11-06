@@ -17,7 +17,6 @@ import net.skybornmc.skyblock.common.economy.TxGuard;
 import net.skybornmc.skyblock.common.economy.TxReason;
 import net.skybornmc.skyblock.common.island.IslandService;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
-import net.skybornmc.skyblock.common.nextstep.NextStep;
 import net.skybornmc.skyblock.common.nextstep.NextStepService;
 import net.skybornmc.skyblock.common.npc.NpcDirectory;
 import net.skybornmc.skyblock.common.profile.ProfileService;
@@ -435,8 +434,9 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
         return s.command().isEmpty() ? "tutorial" : s.command();
     }
 
-    private Optional<NextStep> nextStep(Player player) {
-        return next(player).map(n -> new NextStep(n.text(), n.command()));
+    private Optional<net.skybornmc.skyblock.common.nextstep.NextStep> nextStep(Player player) {
+        // Fully qualified: TutorialService.NextStep (inherited member type) shadows the import here.
+        return next(player).map(n -> new net.skybornmc.skyblock.common.nextstep.NextStep(n.text(), n.command()));
     }
 
     @Override

@@ -1,0 +1,5 @@
+# LuckPerms grants for the tutorial / quest line module. Applied by scripts/apply-permissions.sh after base.txt.
+# Node definitions: modules/tutorial/src/main/resources/permissions/tutorial.yml.
+
+# --- Staff (FX-13, 6 Nov 2026): admins reset, set steps and read the stats without OP ---
+lp group admin permission set skyblock.tutorial.admin true

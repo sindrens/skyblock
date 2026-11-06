@@ -133,7 +133,7 @@ class EconR3RulesTest {
     @Test
     void sendGateNeedsTenThousandEarnedExceptToIslandMembers() {
         EconomyConfig cfg = new EconomyConfig();
-        assertEquals(10_000, cfg.sendGateRequired);
+        assertEquals(0, cfg.sendGateRequired, "owner 6 Nov 2026: off, the playtime pay limit replaces it");
         SendGate.Check blocked = SendGateImpl.decide(10_000, true, false, false, 2_500);
         assertFalse(blocked.allowed());
         assertEquals(7_500, blocked.missing(), "the message says how much more to earn");

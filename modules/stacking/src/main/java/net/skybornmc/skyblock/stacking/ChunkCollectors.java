@@ -17,6 +17,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
+import net.skybornmc.skyblock.common.island.IslandRemovedEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -74,6 +77,15 @@ final class ChunkCollectors implements Listener {
         });
     }
 
+    private void forget(Placed p) {
+        Map<Long, Placed> world = byChunk.get(p.pos().world());
+        if (world != null) {
+            world.remove(p.pos().chunk(), p);
+        }
+        module.core().database().transaction(c -> Sql.update(c, "DELETE FROM stacking_chunk_collectors WHERE world = ? AND x = ? AND y = ? AND z = ?",
+                p.pos().world(), p.pos().x(), p.pos().y(), p.pos().z()));
+    }
+
     private void track(Placed p) {
         byChunk.computeIfAbsent(p.pos().world(), k -> new ConcurrentHashMap<>()).put(p.pos().chunk(), p);
     }
@@ -98,17 +110,75 @@ final class ChunkCollectors implements Listener {
         if (p == null) {
             return;
         }
+        // Owner 6 Nov 2026 (Q-18): only drops on the collector's own island (a chunk can touch a neighbour island).
+        Optional<IslandService> islands = module.core().services().optional(IslandService.class);
+        if (islands.isEmpty() || !islands.get().islandAt(item.getLocation()).map(i -> i.id().equals(p.island())).orElse(false)) {
+            return;
+        }
         Block b = item.getWorld().getBlockAt(p.pos().x(), p.pos().y(), p.pos().z());
         if (!(b.getState(false) instanceof Hopper hopper)) {
             return;
         }
-        ItemStack stack = item.getItemStack();
-        Map<Integer, ItemStack> rest = hopper.getInventory().addItem(stack.clone());
-        if (rest.isEmpty()) {
+        // FX-01: a stacked kill drop is one entity holding N items; move all N, not the single visible item.
+        ItemStack proto = item.getItemStack();
+        long total = ItemStacker.count(item);
+        long left = insert(hopper, proto, total);
+        if (left <= 0) {
             event.setCancelled(true);
-        } else {
-            item.setItemStack(rest.values().iterator().next());
+        } else if (left < total) {
+            if (ItemStacker.isStacked(item)) {
+                module.items().setCount(item, left, false);
+            } else {
+                ItemStack rest = proto.clone();
+                rest.setAmount((int) left);
+                item.setItemStack(rest);
+            }
         }
+    }
+
+    /** Puts {@code amount} copies of {@code proto} into the hopper; returns how many did not fit. */
+    static long insert(Hopper hopper, ItemStack proto, long amount) {
+        int max = Math.max(1, proto.getMaxStackSize());
+        long left = amount;
+        while (left > 0) {
+            ItemStack part = proto.clone();
+            int n = (int) Math.min(left, max);
+            part.setAmount(n);
+            Map<Integer, ItemStack> rest = hopper.getInventory().addItem(part);
+            int notFit = rest.values().stream().mapToInt(ItemStack::getAmount).sum();
+            left -= n - notFit;
+            if (notFit > 0) {
+                break;
+            }
+        }
+        return left;
+    }
+
+    // ------------------------------------------------------------------ explosions and island removal (FX-02)
+
+    private boolean isCollector(Block b) {
+        Map<Long, Placed> world = byChunk.get(b.getWorld().getName());
+        Placed p = world == null ? null : world.get(chunkKey(b.getX() >> 4, b.getZ() >> 4));
+        return p != null && p.pos().equals(Pos.of(b));
+    }
+
+    /** Explosions never destroy a collector (its row would stay and block the chunk forever). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().removeIf(this::isCollector);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockExplode(BlockExplodeEvent event) {
+        event.blockList().removeIf(this::isCollector);
+    }
+
+    /** A removed island takes its collectors with it (map and database). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandRemoved(IslandRemovedEvent event) {
+        UUID island = event.islandId();
+        byChunk.values().forEach(m -> m.values().removeIf(p -> p.island().equals(island)));
+        module.core().database().transaction(c -> Sql.update(c, "DELETE FROM stacking_chunk_collectors WHERE island_id = ?", Sql.toBytes(island)));
     }
 
     // ------------------------------------------------------------------ place / break
@@ -130,7 +200,12 @@ final class ChunkCollectors implements Listener {
         }
         Pos pos = Pos.of(b);
         Map<Long, Placed> world = byChunk.getOrDefault(pos.world(), Map.of());
-        if (world.containsKey(pos.chunk())) {
+        Placed existing = world.get(pos.chunk());
+        if (existing != null && !(b.getWorld().getBlockAt(existing.pos().x(), existing.pos().y(), existing.pos().z()).getState(false) instanceof Hopper)) {
+            forget(existing); // FX-02: the old collector block is gone (staff edit, reset): free the chunk
+            existing = null;
+        }
+        if (existing != null) {
             event.setCancelled(true);
             module.msg().send(player, "collector.one-per-chunk");
             return;

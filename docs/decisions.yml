@@ -137,7 +137,7 @@ decisions:
     module: economy
     file: economy.yml
     path: send-gate.required
-    value: 10000
+    value: 0   # owner 6 Nov 2026: replaced by the playtime pay limit (pay-limit.tiers)
   - id: "R3-10a"
     answer: "Mini-boss health +25% per extra eligible player"
     module: depths

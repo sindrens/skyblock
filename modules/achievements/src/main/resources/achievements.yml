@@ -95,7 +95,7 @@ achievements:
   # ------------------------------------------------------------------ skills
   prospector:
     name: "<pillar:mining>Prospector"
-    description: ["<c:text>Level up <pillar:mining>Mining</pillar:mining><c:text> at /mine and on your island."]
+    description: ["<c:text>Level <pillar:mining>Mining</pillar:mining><c:text> at /mine and at home."]
     icon: iron_pickaxe
     category: skills
     metric: skill_mining

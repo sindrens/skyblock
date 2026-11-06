@@ -54,7 +54,9 @@ class DeadConfigKeysTest {
             "motd.yml:brand", "MotdModule reads the brand line straight from the yml (catalog part of the file)",
             "motd.yml:motds", "MotdModule reads the MOTD catalog (motds.<id>.line1/line2) straight from the yml",
             "worlds.yml:worlds", "WorldsModule reads one section per world (create, biome, spawn, border, gamerules)",
-            "worlds.yml:defaults", "WorldsModule reads the default gamerules for every world");
+            "worlds.yml:defaults", "WorldsModule reads the default gamerules for every world",
+            "tutorial.yml:chapters", "TutorialModule's Catalog reads the chapters and steps straight from the yml",
+            "tutorial.yml:idle", "TutorialModule reads the NPC idle lines (idle.<role>) straight from the yml");
 
     // ------------------------------------------------------------------ rule 1: every setting is read
 

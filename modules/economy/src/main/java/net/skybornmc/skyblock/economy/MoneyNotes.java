@@ -310,7 +310,7 @@ final class MoneyNotes implements Listener {
         // The note belongs to the profile the money comes from (PROF): created_by = the active profile key.
         UUID key = module.profiles().profileKey(uuid);
         // Owner F1: a note can go to anyone, so the profile must have earned send-gate.required itself first.
-        module.sendGate().check(key, null, currency).whenCompleteAsync((check, error) -> {
+        module.sendGate().check(key, null, currency, amount).whenCompleteAsync((check, error) -> {
             if (error != null || check == null || !check.allowed()) {
                 busy.remove(uuid);
                 rate.giveBack(uuid);

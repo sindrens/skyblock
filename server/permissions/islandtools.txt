@@ -1,0 +1,5 @@
+# LuckPerms grants for the island tools module. Applied by scripts/apply-permissions.sh after base.txt.
+# Node definitions: modules/islandtools/src/main/resources/permissions/islandtools.yml.
+
+# --- Staff (FX-13, 6 Nov 2026): admins give tool handles and fix tools without OP ---
+lp group admin permission set skyblock.islandtools.admin true

@@ -8,7 +8,7 @@
 prefix: "<c:ember>»</c:ember> "
 # System notices to everyone (plan chat look, 4 Nov 2026): <notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.
 # The gradient word PHOENIX and an arrow; the text after it is gray with white values.
-notice: "<bold><grad:phoenix>PHOENIX</grad></bold> <c:muted>→</c:muted> "
+notice: "<bold><grad:phoenix>PHOENIX</grad></bold> <c:muted>»</c:muted> "
 prefixes:
   islands: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
   progression: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "

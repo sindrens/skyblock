@@ -65,6 +65,29 @@ public final class NpcsConfig extends ModuleConfig {
     public List<String> roleActions = List.of(
             "guide: command start",
             "info: help help",
+            "forge: command tool",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "crates: command crates",
+            "dungeon: help",
+            "foreman: help",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
+            "sage: command skills");
+
+    /** {@code npcs.actions} before v9 (the Forge and the Depths are gone, 4-6 Nov 2026). */
+    static final List<String> ACTIONS_V8 = List.of(
+            "guide: command start",
+            "info: help help",
             "forge: command forge",
             "enchanter: command enchanter",
             "wardrobe: command wardrobe",
@@ -308,7 +331,7 @@ public final class NpcsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 8;
+        return 9;
     }
 
     /**
@@ -317,7 +340,8 @@ public final class NpcsConfig extends ModuleConfig {
      * island and pillar gain, switching Solo/Team. v5 (F13a): the two milestone boards (milestones_island,
      * milestones_personal; they show once a build has leaderboard points with those ids). v6 (owner 3 Nov 2026): the spawn
      * guide (Rowan) runs /start, the start guide menu. v7: skins. v8 (tutorial, owner 4 Nov 2026): the spawn NPCs Bramble
-     * (farm_merchant), Flint (mine_merchant), Tinker and Sage. An owner-edited list is kept.
+     * (farm_merchant), Flint (mine_merchant), Tinker and Sage. v9 (6 Nov 2026, FX-11): no NPC runs /dungeon or /forge
+     * any more (the Forge NPC opens the tool menu, the old Depths roles only show help). An owner-edited list is kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -328,7 +352,8 @@ public final class NpcsConfig extends ModuleConfig {
                 6, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V5, new NpcsConfig().roleActions)),
                 7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)),
                 8, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V6, new NpcsConfig().roleActions),
-                        "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)));
+                        "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)),
+                9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, new NpcsConfig().roleActions)));
     }
 
     private static List<String> sources() {

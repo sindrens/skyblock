@@ -194,8 +194,8 @@ tasks:
     lore:
       - "<c:muted>Grow your island: Kindle offers"
       - "<c:muted>more as it levels up."
-  story-name: "<area:reward><sym:star> <amount> <item> <c:muted>→ <c:value><reward>"
-  errand-name: "<area:reward><amount> <item> <c:muted>→ <c:value><reward>"
+  story-name: "<area:reward><sym:star> <amount> <item> <c:muted>» <c:value><reward>"
+  errand-name: "<area:reward><amount> <item> <c:muted>» <c:value><reward>"
   trade-name: "<area:money><reward> <c:muted>for <c:value><amount> <item>"
   ask-header:
     - "<c:muted>Kindle asks for:"

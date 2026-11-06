@@ -54,6 +54,7 @@ class EconR3DatabaseTest {
         db.start();
         new Migrations(db, Logger.getLogger("econ-r3")).migrate("core", getClass().getClassLoader());
         new Migrations(db, Logger.getLogger("econ-r3")).migrate("economy", getClass().getClassLoader());
+        config.sendGateRequired = 10_000; // the F1 rule itself (off by default since 6 Nov 2026) is still tested here
         AuditLog audit = new AuditLog(db, new AuditConfig(), dir.toFile(), Logger.getLogger("econ-r3"));
         EconomyStore store = new EconomyStore(db, () -> 0, clock::get);
         economy = new EconomyServiceImpl(store, new BalanceCache(), audit, () -> config, uuid -> null, c -> "$", () -> 0,

@@ -333,8 +333,8 @@ categories:
     groups:
       basics: [torch, scaffolding, bread, white_bed]
       tools: [flint_and_steel, bucket, shears, water_bucket, fishing_rod, lava_bucket]
-      workstations: [crafting_table, furnace, smoker, blast_furnace, stonecutter, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
-      storage: [chest, barrel, composter, ladder, glass_pane, painting, armor_stand]
+      workstations: [crafting_table, furnace, smoker, stonecutter, blast_furnace, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
+      storage: [ladder, glass_pane, composter, chest, barrel, painting, armor_stand]
     items:
       # Feedback 5 Nov 2026 ("a lot of items missing, such as repeater"): workstations, storage and redstone parts are back.
       crafting_table: 10
@@ -369,9 +369,9 @@ categories:
   redstone:
     icon: redstone
     groups:
-      power: [redstone, redstone_torch, repeater, comparator, observer, daylight_detector]
-      machines: [dispenser, dropper, piston, sticky_piston, redstone_lamp, crafter, hopper]
-      inputs: [lever, stone_button, oak_button, stone_pressure_plate, tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, light_weighted_pressure_plate, note_block]
+      power: [redstone_torch, daylight_detector, repeater, comparator, observer, redstone]
+      machines: [dropper, dispenser, piston, redstone_lamp, sticky_piston, crafter, hopper]
+      inputs: [stone_button, oak_button, lever, stone_pressure_plate, tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, note_block, light_weighted_pressure_plate]
       rails: [rail, detector_rail, activator_rail, powered_rail, minecart]
     items:
       redstone: 260

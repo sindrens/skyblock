@@ -110,7 +110,7 @@ bar:
   shown: "<prefix><c:text>Tutorial bar shown."
 track:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>Your next step has no NPC nearby to point at."
-  on: "<prefix><c:text>Follow the trail!"
+  "on": "<prefix><c:text>Follow the trail!"
 admin:
   error: "<prefix><c:error><sym:cross></c:error> <c:text>That did not work (database error); see the console."
   reset: "<prefix><c:success><sym:check></c:success> <c:text>Tutorial of <c:value><player></c:value> starts over."

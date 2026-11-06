@@ -61,8 +61,8 @@ class TutorialStoreTest {
 
     @Test
     void rewardsPayOnceAndSurviveAReset() {
-        assertTrue(db.blocking(c -> TutorialStore.claim(c, alex, "welcome", 1)));
-        assertFalse(db.blocking(c -> TutorialStore.claim(c, alex, "welcome", 2)));
+        assertTrue(db.<Boolean>blocking(c -> TutorialStore.claim(c, alex, "welcome", 1)));
+        assertFalse(db.<Boolean>blocking(c -> TutorialStore.claim(c, alex, "welcome", 2)));
         db.blockingTransaction(c -> {
             TutorialStore.save(c, alex, new TutorialStore.Saved(Set.of("welcome.rowan"), Map.of(), Set.of("welcome"), 0, false), 1);
             TutorialStore.reset(c, alex);
@@ -71,7 +71,7 @@ class TutorialStoreTest {
         TutorialStore.Saved back = db.blocking(c -> TutorialStore.load(c, alex));
         assertTrue(back.done().isEmpty());
         assertTrue(back.chapters().isEmpty());
-        assertFalse(db.blocking(c -> TutorialStore.claim(c, alex, "welcome", 3)), "a reset never pays a chapter again");
+        assertFalse(db.<Boolean>blocking(c -> TutorialStore.claim(c, alex, "welcome", 3)), "a reset never pays a chapter again");
     }
 
     @Test
