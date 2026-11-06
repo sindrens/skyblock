@@ -7,7 +7,7 @@ Written during the night while you slept. Newest at the top of each section.
 - Building happens in batches, each released to the test server. Status of each batch is below.
 
 ## ⚠ Test server not updated since update128
-Since about 08:00 SSH to the test server doesn't work: port 22 accepts the connection but sshd never answers (banner timeout); the Minecraft server itself is up (port 25565 answers). Likely sshd is overloaded or rate-limiting (for example the old Claude session still connecting in a loop), or the firewall throttles the Mac's IP. update129, 130 and 131 are **on GitHub `main`** but **not on the test server**. To deploy: when SSH works again, run `~/Development/.skyborn-claude/release2.sh 131` on the Mac (it deploys the newest jar; 131 includes 129 and 130). After that, two live config edits are needed (I'll do them myself once I can connect): in `upgrades.yml` the new Spawner Speed values and hiding Spawner Stack Limit, and in `tutorial.yml` the two new chapters.
+Since about 08:00 SSH to the test server doesn't work: port 22 accepts the connection but sshd never answers (banner timeout); the Minecraft server itself is up (port 25565 answers). Likely sshd is overloaded or rate-limiting (for example the old Claude session still connecting in a loop), or the firewall throttles the Mac's IP. update129-133 are **on GitHub `main`** but **not on the test server**. To deploy: when SSH works again, run `~/Development/.skyborn-claude/release2.sh 133` on the Mac (it deploys the newest jar; 133 includes 129-132). After that, two live config edits are needed (I'll do them myself once I can connect): in `upgrades.yml` the new Spawner Speed values and hiding Spawner Stack Limit, and in `tutorial.yml` the two new chapters.
 
 ## Batches
 | Batch | What | Status |
@@ -91,6 +91,13 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - **No PvP; dying in the arena costs nothing** (items and levels kept, back at the start).
 - **Island Sword (update133)**: a fourth island tool for the arena. Kills with it give tool XP, **Combat Shards** (new personal shard type), sword perks (Shard Finder, Sharpness, Looting, Wisdom, Sweeping Edge, Lucky) and 8 sword enchants (Shard Burst, Scholar, Combo, Keyfinder ...). Tool menu `/is tools` now shows four tools.
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
+
+## Still to do (in this order)
+1. /pve bosses (Boss Sigils, personal boss per ring, boss bar, 3 minutes, loot + pity), Warden Hale and Marla NPCs with their quest chains, Fish and Combat Mastery.
+2. Batch 9: crates (one menu, preview with chances, 2 s animation, pity bar), collection pages per area (farm, ores, fish, mobs, crates), auction house (categories, search, sort), shop (all items, Mob Drops tab).
+3. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
+4. Batch 10: pack v2, ranks v2.
+5. Small fixes: FX-05, FX-17, FX-19, FX-21.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
