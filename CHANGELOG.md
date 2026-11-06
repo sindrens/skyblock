@@ -1,6 +1,16 @@
 # Changelog
 
 ## [Unreleased]
+### 7 Nov (night): batches 1-10
+- **Dynamic prices v2:** each island gets full price for the first 3,000 of an item a day, then 1% less per 100 (down to 60%); half the excess carries past the 04:00 reset. Every Monday each item moves -10% to +10% for the week. The sell chest shows "Price today" when a sale goes past the 3,000.
+- **Money x100:** every price, reward and balance is 100 times bigger (scaled once on the live server, with backups).
+- **/fish** (pond, six waters, Island Rod, Fishing Shards) and **/pve** (ten rings, Island Sword, Combat Shards, bosses with Boss Sigils, safe deaths).
+- **Island tools:** green names (Island Hoe, Pickaxe, Rod, Sword), 17 personal enchants per tool, personal prestige and rebirths, tool storage at /farm and /mine.
+- **Spawners v2:** levels per mob type, limit 4 per level, prestige, Spawner Speed 10 s to 5 s.
+- **Farm, Mine, Fish and Combat Mastery** for islands; Bramble, Flint, Marla and Warden Hale at the four areas; four new quest book chapters; /mailbox.
+- Crates, collection, shop and auction house polish; Black Market sells the Wardrobe Tome; pay limit by playtime.
+- GUIs: no glass panes as decoration, state tiles use dyes, Rewards menu row for Crates/Vote/Boosters/Black Market, The Arena in Travel, Tinker and Sage at spawn, no Depths texts left, titles nobody can earn are hidden.
+
 ### 5 Nov: quick fixes from the testers
 - /farm: carrots need 3,000 harvests (potatoes 12,000, beetroot 40,000); every farmland at /farm is wet and never dries.
 - Island bank: clicking a locked Deposit/Withdraw/History button says why (your island role can't; the Leader sets it in /is permissions).
