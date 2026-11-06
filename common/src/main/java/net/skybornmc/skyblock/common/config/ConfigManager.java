@@ -62,7 +62,9 @@ public final class ConfigManager {
                 return List.of(problem);
             }
         }
+        boolean fresh = !file.exists() || yaml.getKeys(false).isEmpty();
         boolean changed = migrate(config, yaml);
+        changed |= scaleMoney(config, yaml, file, fresh);
         changed |= removeDeadKeys(config, yaml);
 
         for (Field field : settingFields(config)) {
@@ -186,6 +188,53 @@ public final class ConfigManager {
             changed = true;
         }
         return changed;
+    }
+
+    /**
+     * Money x100 ({@link MoneyScale}): a live file without the marker has its {@link ModuleConfig#moneyKeys} multiplied
+     * once (owner values included; backup {@code <file>.pre-money-x100.bak}, one log line per value), then gets the
+     * marker. A new file only gets the marker (its defaults are x100 already). Runs after the value changes, so those
+     * still match the old defaults. Returns true when the file must be saved.
+     */
+    boolean scaleMoney(ModuleConfig config, YamlConfiguration yaml, File file, boolean fresh) {
+        Map<String, MoneyScale.Rule> keys = config.moneyKeys();
+        if (keys.isEmpty()) {
+            return false;
+        }
+        long fileScale = fresh ? MoneyScale.FACTOR : MoneyScale.fileScale(yaml);
+        if (fileScale >= MoneyScale.FACTOR) {
+            if (yaml.getLong(MoneyScale.KEY, 0) == MoneyScale.FACTOR) {
+                return false;
+            }
+            yaml.set(MoneyScale.KEY, MoneyScale.FACTOR);
+            return true;
+        }
+        long factor = MoneyScale.FACTOR / fileScale;
+        if (file.exists()) {
+            File backup = new File(file.getParentFile(), file.getName() + ".pre-money-x100.bak");
+            if (!backup.exists()) {
+                try {
+                    java.nio.file.Files.copy(file.toPath(), backup.toPath());
+                } catch (IOException e) {
+                    log.warning(config.fileName() + ": could not write the backup before money x100 (" + e.getMessage() + ")");
+                }
+            }
+        }
+        int n = 0;
+        for (Map.Entry<String, MoneyScale.Rule> e : keys.entrySet()) {
+            try {
+                String line = MoneyScale.apply(yaml, e.getKey(), e.getValue(), factor);
+                if (line != null) {
+                    log.info(config.fileName() + ": money x" + factor + " " + line);
+                    n++;
+                }
+            } catch (ArithmeticException overflow) {
+                log.severe(config.fileName() + " → " + e.getKey() + ": too large to scale x" + factor + ", left as it was");
+            }
+        }
+        yaml.set(MoneyScale.KEY, MoneyScale.FACTOR);
+        log.info(config.fileName() + ": money x" + factor + " done (" + n + " value(s))");
+        return true;
     }
 
     /** Deletes {@link ModuleConfig#removedKeys} from the file (never a current setting). Returns true when one was removed. */

@@ -47,6 +47,15 @@ public abstract class ModuleConfig {
     }
 
     /**
+     * Money x100 (batch 10): the paths of this file that hold money and how to scale each ({@link MoneyScale}). A live
+     * file without the {@code money-scale} marker has these values multiplied once (owner values too); a new file
+     * starts with the x100 defaults and the marker. Default: none.
+     */
+    public Map<String, MoneyScale.Rule> moneyKeys() {
+        return Map.of();
+    }
+
+    /**
      * Keys (or whole sections) that no code reads any more, with the reason: they are deleted from the live file on load,
      * with a log line, so dead settings can't mislead the owner (REVIEW3 R3-16 / dead-key rule). A path that is still a
      * {@link Setting} is never removed. Unknown keys that are not listed here are left alone (catalog sections parsed

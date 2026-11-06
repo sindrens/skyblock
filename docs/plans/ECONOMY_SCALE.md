@@ -25,3 +25,19 @@ Status: **planned, not built yet** (deliberately after the gameplay batches: a h
 
 ## Balance check after the scale
 /farm and /mine bonus money must not out-earn the island (FULL_PLAN §0.3): the grind areas pay shards and XP, the island pays money long term.
+
+## Build design (7 Nov 2026, batch 10 part C; checked against the code of today)
+- **Marker per file**: a top-level `money-scale: 100`. A file that is created now (fresh install) gets it at once, so
+  it is never scaled again. A live file without it has scale 1: every money key in it (owner values too) is multiplied
+  once, a backup `<file>.pre-money-x100.bak` is written and every change is logged. Then the marker is set.
+- **Typed configs**: `ModuleConfig.moneyKeys()` lists the paths and how to scale them (number, list of numbers, one
+  field of a `a:b:c` line, `100k`-style tokens). `ConfigManager.load` runs the scale step after `valueChanges`, so old
+  value changes still match old defaults. Bundled defaults are x100 in code.
+- **Catalogs** (sell.yml, shop.yml, upgrades.yml, masteries.yml, tasks.yml, sets.yml, guide/tutorial money rewards):
+  `CatalogScale.apply(file, rules)` with the same marker, called at the top of each loader. shop.yml: v8 in its chain.
+- **Database**: one SQL migration per table (`V###__money_x100_<table>.sql`, the runner has no transaction per file, so
+  one statement per file keeps it exactly-once). They run before the module's config load, in the same start. On a
+  fresh database they change nothing. The ledger is scaled too, so balances and history stay consistent.
+- **Not scaled**: shards, crystals, credits, "minutes of income" values (they multiply `ref-per-minute`, which scales),
+  ratios such as the boss pay x60.
+- Release: one update, DB and plugins backup first.
