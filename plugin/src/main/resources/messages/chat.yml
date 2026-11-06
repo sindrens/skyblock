@@ -103,6 +103,8 @@ rank-preview:
   simple: " <c:muted>Simple</c:muted>  <badge>"
   java: " <c:muted>Java</c:muted>  <badge>"
   bedrock: " <c:muted>Bedrock</c:muted>  <badge>"
+  # Ranks v2: a sample chat line with the badge and the white name.
+  line: " <c:muted>Chat</c:muted>  <badge> <white><name></white> <c:muted>»</c:muted> <white>Hello!"
 
 # /chat card <id> (staff): preview of a broadcast card. Card texts: messages/broadcasts.yml.
 broadcasts:

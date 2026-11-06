@@ -75,6 +75,7 @@ class NickRulesTest {
     void reservedWordsAndImpersonation() {
         assertEquals("admin", NickRules.reservedWord("TheAdminGuy", List.of("admin", "owner")));
         assertNull(NickRules.reservedWord("Phoenix", List.of("admin")));
+        assertEquals("pyrelord", NickRules.reservedWord("xPyrelordx", new PerksConfig().nickReserved), "rank names are reserved (Ranks v2)");
         assertTrue(NickRules.impersonates("steve", "Alex", List.of("Steve", "Alex")));
         assertFalse(NickRules.impersonates("alex", "Alex", List.of("Steve", "Alex")));
         assertFalse(NickRules.impersonates("Nobody", "Alex", List.of("Steve", "Alex")));

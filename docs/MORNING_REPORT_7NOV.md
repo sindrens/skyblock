@@ -141,6 +141,13 @@ If a buy would go over the seller's daily receive limit, it is refused with a me
 - Not built (Q-74): **Tool Skins** need held-item models in the resource pack (comes with pack v2). Tell me which skins and which tools. **Hologram** has no description anywhere: what should it be?
 - Q-75: the Tome gives set XP (as built). A 4 Nov note said "+1 wardrobe slot". Which one do you want?
 
+## Ranks v2 leftovers (update138)
+- Ranks v2 was already built (names, colours, LuckPerms groups and perks, auto Ashborn, weekly kit and monthly tag, `/trash` admin only). Left over and done now:
+  - Rank names (Hatchling ... Firecrown, Ashborn, Builder) can't be used as nicknames.
+  - `/rank preview` also shows a sample chat line.
+  - A test checks that every rank colour in chat matches the LuckPerms group and that prefix order follows the weights.
+- Still waiting for the credit shop: rank prices, paying only the difference on upgrade, and the season script that gives the won ranks.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

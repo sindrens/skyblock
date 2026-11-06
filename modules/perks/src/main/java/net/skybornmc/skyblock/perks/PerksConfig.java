@@ -23,6 +23,11 @@ public final class PerksConfig extends ModuleConfig {
 
     @Setting(path = "nick.reserved", desc = "Words a nickname may not contain (case-insensitive). Bypass: skyblock.perks.nick.bypass.")
     public List<String> nickReserved = List.of("admin", "owner", "staff", "moderator", "helper", "console", "server",
+            "skyborn", "phoenix", "system", "official", "support", "builder", "ashborn", "hatchling", "fledgling", "firewing",
+            "flamecrest", "sunfeather", "pyrelord", "immortal", "torchbearer", "flameheart", "firecrown");
+
+    /** {@code nick.reserved} before v2 (Ranks v2, batch 10: the rank names can't be worn as a nickname). */
+    static final List<String> NICK_RESERVED_V1 = List.of("admin", "owner", "staff", "moderator", "helper", "console", "server",
             "skyborn", "phoenix", "system", "official", "support");
 
     @Setting(path = "hat.blocked", desc = "Materials that can't be worn with /hat, e.g. [tnt, lava_bucket].")
@@ -101,6 +106,17 @@ public final class PerksConfig extends ModuleConfig {
 
     @Setting(path = "freerank.tags", desc = "The 3 tags the player picks 1 from (ids from tags-titles.yml). Kept forever.")
     public List<String> freerankTags = List.of("ember", "spark", "ash");
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (Ranks v2 leftovers, 7 Nov 2026): the rank names join the reserved nickname words. An edited list is kept. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("nick.reserved", ValueChange.of(NICK_RESERVED_V1, new PerksConfig().nickReserved)));
+    }
 
     @Override
     public String fileName() {

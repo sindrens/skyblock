@@ -263,6 +263,8 @@ public final class ChatModule implements SkyblockModule, Listener {
         msg.send(sender, "rank-preview.simple", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN.withGradient(gradient))));
         msg.send(sender, "rank-preview.java", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN)));
         msg.send(sender, "rank-preview.bedrock", Msg.c("badge", badges.badge(group, shown, BadgeOptions.BEDROCK)));
+        String player = name == null || name.isBlank() ? sender.getName() : name;
+        msg.send(sender, "rank-preview.line", Msg.c("badge", badges.badge(group, shown, BadgeOptions.PLAIN)), Msg.p("name", player));
     }
 
     private void registerCommands() {
