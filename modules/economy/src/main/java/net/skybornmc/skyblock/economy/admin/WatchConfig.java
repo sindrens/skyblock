@@ -156,7 +156,7 @@ public final class WatchConfig extends ModuleConfig {
     public long earnMinCreditsEarned = 1_000;
 
     @Setting(path = "rules.earn-rate.min.shards", desc = "Never alert below this many shards earned in one hour.", min = 0)
-    public long earnMinShards = 5_000;
+    public long earnMinShards = 50_000;
 
     // ------------------------------------------------------------------ rule: big transfer
 
@@ -183,7 +183,7 @@ public final class WatchConfig extends ModuleConfig {
     public long bigMinCreditsEarned = 10_000;
 
     @Setting(path = "rules.big-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
-    public long bigMinShards = 50_000;
+    public long bigMinShards = 500_000;
 
     @Setting(path = "rules.big-transfer.include-created", desc = "Also alert when one transaction creates that much (a huge "
             + "sale, an auction payout). Staff /eco changes are never included (they have their own alert).")
@@ -206,7 +206,7 @@ public final class WatchConfig extends ModuleConfig {
     public long staffMinCredits = 1_000;
 
     @Setting(path = "rules.staff-transfer.min.shards", desc = "Never alert below this many shards.", min = 1)
-    public long staffMinShards = 10_000;
+    public long staffMinShards = 100_000;
 
     @Setting(path = "rules.staff-transfer.alert-permission", desc = "Who gets staff-transfer alerts in chat (admins: the "
             + "mods' own transfers are not shown to mods).", level = Setting.Level.OWNER)
@@ -309,7 +309,7 @@ public final class WatchConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -332,7 +332,11 @@ public final class WatchConfig extends ModuleConfig {
                         List.of("money", "crystals", "credits", "shards"))),
                 // Card C1-R1-10: alert on one credit transfer from 1,000 (owner-edited values stay).
                 5, java.util.Map.of("rules.big-transfer.min.credits", ValueChange.of(10_000L, 1_000L)),
-                6, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(IGNORE_REASONS_V5, IGNORE_REASONS_V6)));
+                6, java.util.Map.of("earnings.ignore-reasons", ValueChange.of(IGNORE_REASONS_V5, IGNORE_REASONS_V6)),
+                // owner 7 Nov 2026: shards x10
+                7, java.util.Map.of("rules.earn-rate.min.shards", ValueChange.of(5_000L, 50_000L),
+                        "rules.big-transfer.min.shards", ValueChange.of(50_000L, 500_000L),
+                        "rules.staff-transfer.min.shards", ValueChange.of(10_000L, 100_000L)));
     }
 
     @Override

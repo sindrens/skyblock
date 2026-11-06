@@ -162,6 +162,20 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
         core.services().unregister(ID, TutorialService.class);
     }
 
+    /** Shards x10 (owner 7 Nov 2026, docs/plans/SHARDS_X10_BREAKTHROUGHS.md): the chapter shard rewards of a live file, once. */
+    static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
+            java.util.Map.of(1, java.util.Map.of(
+                    "chapters.farm.rewards", change(List.of("shards 100"), List.of("shards 1000")),
+                    "chapters.mine.rewards", change(List.of("mining_shards 100"), List.of("mining_shards 1000")),
+                    "chapters.farm_pro.rewards", change(List.of("shards 500", "key ember 1"), List.of("shards 5000", "key ember 1")),
+                    "chapters.mine_pro.rewards", change(List.of("mining_shards 500", "key ember 1"), List.of("mining_shards 5000", "key ember 1")),
+                    "chapters.fish_pro.rewards", change(List.of("fishing_shards 500", "key ember 1"), List.of("fishing_shards 5000", "key ember 1")),
+                    "chapters.pve_pro.rewards", change(List.of("combat_shards 500", "key ember 1"), List.of("combat_shards 5000", "key ember 1"))));
+
+    private static net.skybornmc.skyblock.common.config.CatalogUpdate.Change change(List<String> from, List<String> to) {
+        return net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(from, to);
+    }
+
     private void loadCatalog() {
         File file = new File(core.plugin().getDataFolder(), Catalog.FILE);
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
@@ -169,6 +183,19 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
         if (!yaml.getKeys(false).isEmpty()) {
             net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, java.util.List.of(net.skybornmc.skyblock.common.config.CatalogScale.Path.of("chapters.*.rewards", net.skybornmc.skyblock.common.config.CatalogScale.moneyLines())),
                     core.plugin().getLogger());
+        }
+        if (!yaml.getKeys(false).isEmpty()) {
+            int before = net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml);
+            for (String line : net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CATALOG_STEPS)) {
+                core.plugin().getLogger().info(Catalog.FILE + ": " + line);
+            }
+            if (net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml) != before) {
+                try {
+                    yaml.save(file);
+                } catch (java.io.IOException e) {
+                    core.plugin().getLogger().log(Level.WARNING, "Could not write " + Catalog.FILE, e);
+                }
+            }
         }
         catalog = Catalog.load(yaml, w -> core.plugin().getLogger().warning(w));
         places = Places.parse(config.places, w -> core.plugin().getLogger().warning(w));

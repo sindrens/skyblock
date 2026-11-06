@@ -33,63 +33,63 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "harvest_basket (one of every unlocked ore/crop), lucky_streak (after value blocks without a rare find the rare chances "
             + "double), keyfinder (a crate key).", level = Setting.Level.OWNER)
     public List<String> enchantList = List.of(
-            // owner 7 Nov 2026: hoe and pickaxe enchants 10x the shards a level, max 500 (everyday), 300 (mid), 100 (rare)
-            "pickaxe:blast:500:20:0.5:1.0:4:18:0:1:0",
-            "pickaxe:shard_burst:500:20:0.4:1.0:3:6:0:1:0",
-            "pickaxe:scholar:500:20:0:0:5:25:0:1:0",
-            "pickaxe:rich_vein:500:20:1:5:1:2:0:3:0",
-            "pickaxe:quick_study:500:20:1:5:1:1:0:5:0",
-            "pickaxe:cash_vein:300:30:0.5:2.0:5:5:0:8:0",
-            "pickaxe:combo:500:20:0:0:5:20:0:10:0",
-            "pickaxe:compound_interest:300:30:0:0:5:15:0:13:0",
-            "pickaxe:shard_echo:300:30:0:0:10:25:0:16:0",
-            "pickaxe:lightning:300:30:0.05:0.15:9:18:20:20:0",
-            "pickaxe:motherlode:300:30:0.2:0.6:10:10:0:24:0",
-            "pickaxe:lucky_streak:300:30:0:0:100:50:0:28:0",
-            "pickaxe:geode:100:40:0.05:0.2:1:1:0:32:0",
-            "pickaxe:keyfinder:100:50:0.001:0.02:1:1:0:36:0",
-            "pickaxe:meteor:100:50:0.03:0.08:15:25:20:1:1",
-            "pickaxe:nuke:100:80:0.003:0.01:40:100:300:1:5",
-            "pickaxe:shard_jackpot:100:60:0.01:0.04:40:75:0:1:10",
-            "hoe:explode:500:20:0.5:1.0:4:18:0:1:0",
-            "hoe:shard_burst:500:20:0.4:1.0:3:6:0:1:0",
-            "hoe:scholar:500:20:0:0:5:25:0:1:0",
-            "hoe:bountiful:500:20:1:5:1:2:0:3:0",
-            "hoe:quick_study:500:20:1:5:1:1:0:5:0",
-            "hoe:cash_crop:300:30:0.5:2.0:5:5:0:8:0",
-            "hoe:combo:500:20:0:0:5:20:0:10:0",
-            "hoe:compound_interest:300:30:0:0:5:15:0:13:0",
-            "hoe:shard_echo:300:30:0:0:10:25:0:16:0",
-            "hoe:row_reaper:300:30:0.3:0.7:4:7:0:20:0",
-            "hoe:golden_crop:300:30:0.1:0.4:5:5:0:24:0",
-            "hoe:lucky_streak:300:30:0:0:100:50:0:28:0",
-            "hoe:harvest_basket:100:40:0.05:0.2:1:1:0:32:0",
-            "hoe:keyfinder:100:50:0.001:0.02:1:1:0:36:0",
-            "hoe:tornado:100:50:0.03:0.08:20:28:20:1:1",
-            "hoe:meteor_shower:100:80:0.01:0.03:12:36:60:1:5",
-            "hoe:shard_jackpot:100:60:0.01:0.04:40:100:0:1:10",
+            // owner 7 Nov 2026: max 500 (everyday), 300 (mid), 100 (rare); shards x10 (prices and Shard Burst/Jackpot x10)
+            "pickaxe:blast:500:200:0.5:1.0:4:18:0:1:0",
+            "pickaxe:shard_burst:500:200:0.4:1.0:30:60:0:1:0",
+            "pickaxe:scholar:500:200:0:0:5:25:0:1:0",
+            "pickaxe:rich_vein:500:200:1:5:1:2:0:3:0",
+            "pickaxe:quick_study:500:200:1:5:1:1:0:5:0",
+            "pickaxe:cash_vein:300:300:0.5:2.0:5:5:0:8:0",
+            "pickaxe:combo:500:200:0:0:5:20:0:10:0",
+            "pickaxe:compound_interest:300:300:0:0:5:15:0:13:0",
+            "pickaxe:shard_echo:300:300:0:0:10:25:0:16:0",
+            "pickaxe:lightning:300:300:0.05:0.15:9:18:20:20:0",
+            "pickaxe:motherlode:300:300:0.2:0.6:10:10:0:24:0",
+            "pickaxe:lucky_streak:300:300:0:0:100:50:0:28:0",
+            "pickaxe:geode:100:400:0.05:0.2:1:1:0:32:0",
+            "pickaxe:keyfinder:100:500:0.001:0.02:1:1:0:36:0",
+            "pickaxe:meteor:100:500:0.03:0.08:15:25:20:1:1",
+            "pickaxe:nuke:100:800:0.003:0.01:40:100:300:1:5",
+            "pickaxe:shard_jackpot:100:600:0.01:0.04:400:750:0:1:10",
+            "hoe:explode:500:200:0.5:1.0:4:18:0:1:0",
+            "hoe:shard_burst:500:200:0.4:1.0:30:60:0:1:0",
+            "hoe:scholar:500:200:0:0:5:25:0:1:0",
+            "hoe:bountiful:500:200:1:5:1:2:0:3:0",
+            "hoe:quick_study:500:200:1:5:1:1:0:5:0",
+            "hoe:cash_crop:300:300:0.5:2.0:5:5:0:8:0",
+            "hoe:combo:500:200:0:0:5:20:0:10:0",
+            "hoe:compound_interest:300:300:0:0:5:15:0:13:0",
+            "hoe:shard_echo:300:300:0:0:10:25:0:16:0",
+            "hoe:row_reaper:300:300:0.3:0.7:4:7:0:20:0",
+            "hoe:golden_crop:300:300:0.1:0.4:5:5:0:24:0",
+            "hoe:lucky_streak:300:300:0:0:100:50:0:28:0",
+            "hoe:harvest_basket:100:400:0.05:0.2:1:1:0:32:0",
+            "hoe:keyfinder:100:500:0.001:0.02:1:1:0:36:0",
+            "hoe:tornado:100:500:0.03:0.08:20:28:20:1:1",
+            "hoe:meteor_shower:100:800:0.01:0.03:12:36:60:1:5",
+            "hoe:shard_jackpot:100:600:0.01:0.04:400:1000:0:1:10",
             // owner 6 Nov 2026: the island rod at /fish (a catch is about 10x rarer than a block, so the chances are higher)
-            "rod:shard_burst:1000:2:4:10:4:8:0:1:0",
-            "rod:scholar:1000:2:0:0:5:25:0:1:0",
-            "rod:big_catch:1000:2:10:40:1:2:0:1:0",
-            "rod:quick_study:1000:2:5:20:1:2:0:5:0",
-            "rod:golden_fish:1000:3:5:20:5:5:0:8:0",
-            "rod:combo:1000:2:0:0:5:20:0:10:0",
-            "rod:compound_interest:1000:3:0:0:5:15:0:13:0",
-            "rod:shard_echo:1000:3:0:0:10:25:0:16:0",
-            "rod:lucky_streak:1000:3:0:0:30:15:0:28:0",
-            "rod:treasure_chest:1000:4:0.5:2:1:1:0:32:0",
-            "rod:keyfinder:1000:5:0.01:0.2:1:1:0:36:0",
-            "rod:shard_jackpot:1000:6:0.1:0.4:40:100:0:1:10",
+            "rod:shard_burst:1000:20:4:10:40:80:0:1:0",
+            "rod:scholar:1000:20:0:0:5:25:0:1:0",
+            "rod:big_catch:1000:20:10:40:1:2:0:1:0",
+            "rod:quick_study:1000:20:5:20:1:2:0:5:0",
+            "rod:golden_fish:1000:30:5:20:5:5:0:8:0",
+            "rod:combo:1000:20:0:0:5:20:0:10:0",
+            "rod:compound_interest:1000:30:0:0:5:15:0:13:0",
+            "rod:shard_echo:1000:30:0:0:10:25:0:16:0",
+            "rod:lucky_streak:1000:30:0:0:30:15:0:28:0",
+            "rod:treasure_chest:1000:40:0.5:2:1:1:0:32:0",
+            "rod:keyfinder:1000:50:0.01:0.2:1:1:0:36:0",
+            "rod:shard_jackpot:1000:60:0.1:0.4:400:1000:0:1:10",
             // owner 6 Nov 2026: the island sword at /pve (no area, drops and progress enchants: kills go to the bag)
-            "sword:shard_burst:1000:2:2:6:3:6:0:1:0",
-            "sword:scholar:1000:2:0:0:5:25:0:1:0",
-            "sword:combo:1000:2:0:0:5:20:0:10:0",
-            "sword:compound_interest:1000:3:0:0:5:15:0:13:0",
-            "sword:shard_echo:1000:3:0:0:10:25:0:16:0",
-            "sword:lucky_streak:1000:3:0:0:50:25:0:28:0",
-            "sword:keyfinder:1000:5:0.005:0.1:1:1:0:36:0",
-            "sword:shard_jackpot:1000:6:0.05:0.2:40:100:0:1:10");
+            "sword:shard_burst:1000:20:2:6:30:60:0:1:0",
+            "sword:scholar:1000:20:0:0:5:25:0:1:0",
+            "sword:combo:1000:20:0:0:5:20:0:10:0",
+            "sword:compound_interest:1000:30:0:0:5:15:0:13:0",
+            "sword:shard_echo:1000:30:0:0:10:25:0:16:0",
+            "sword:lucky_streak:1000:30:0:0:50:25:0:28:0",
+            "sword:keyfinder:1000:50:0.005:0.1:1:1:0:36:0",
+            "sword:shard_jackpot:1000:60:0.05:0.2:400:1000:0:1:10");
 
     /** The enchant list of 6-7 Nov 2026 (version 13 moves an untouched list to the new prices and max levels). */
     static final List<String> ENCHANTS_V12 = List.of(
@@ -149,6 +149,12 @@ public final class IslandToolsConfig extends ModuleConfig {
             "sword:lucky_streak:1000:3:0:0:50:25:0:28:0",
             "sword:keyfinder:1000:5:0.005:0.1:1:1:0:36:0",
             "sword:shard_jackpot:1000:6:0.05:0.2:40:100:0:1:10");
+
+    @Setting(path = "enchants.breakthroughs", desc = "Owner 7 Nov 2026: breakthroughs as 'percent:multiplier'. From that percent of an "
+            + "enchant's max level on, its main number (the chance of a proc, the value of a steady enchant) is that many times the "
+            + "normal curve: slow growth between them, a jump at each one. 10:2 = at level 50 of 500 (10 of 100) it doubles.",
+            level = Setting.Level.OWNER)
+    public List<String> enchantBreakthroughs = List.of("2:1.5", "10:2", "30:2.5", "100:3");
 
     @Setting(path = "enchants.cap-base", desc = "Highest grind enchant level at prestige 0 (plans/TOOLS_V3.md).", min = 1, max = 100_000)
     public int enchantCapBase = 20;
@@ -224,17 +230,17 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ shards
 
-    @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 Mining Shard per relevant block mined with the island pickaxe (over 100 = more than one).", min = 0, max = 1000)
-    public double shardPickaxe = 30; // feedback 5 Nov 2026: about 5x faster
+    @Setting(path = "shards.chance-pickaxe", desc = "Percent chance of 1 Mining Shard per relevant block mined with the island pickaxe (over 100 = more than one).", min = 0, max = 10_000)
+    public double shardPickaxe = 300; // owner 7 Nov 2026: shards x10
 
     @Setting(path = "shards.chance-rod", desc = "Owner 6 Nov 2026: percent chance of 1 Fishing Shard per catch at /fish with the island rod (over 100 = more than one; a catch is much slower than a block).", min = 0, max = 10_000)
-    public double shardRod = 300;
+    public double shardRod = 3000; // owner 7 Nov 2026: shards x10
 
     @Setting(path = "shards.chance-sword", desc = "Owner 6 Nov 2026: percent chance of 1 Combat Shard per /pve kill with the island sword (over 100 = more than one).", min = 0, max = 10_000)
-    public double shardSword = 150;
+    public double shardSword = 1500; // owner 7 Nov 2026: shards x10
 
-    @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
-    public double shardHoe = 60; // owner 7 Nov 2026: more shards (was 40)
+    @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 10_000)
+    public double shardHoe = 600; // owner 7 Nov 2026: more shards (was 40), then x10
 
     @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (owner 7 Nov 2026: 3% a level, 100 levels = 4x shards; the lore shows only the level).", min = 0, max = 20)
     public double shardFinderPerLevel = 3.0;
@@ -271,7 +277,29 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "enchant=<vanilla id>, haste, smelt, drops (Extra Drops), storage (hoe), shards (Shard Finder), autosell (Auto-Sell), growth "
             + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds). "
             + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
-    public List<String> perks = List.of( // feedback 5 Nov 2026: fewer, bigger steps; the first upgrade within a minute
+    public List<String> perks = List.of( // owner 7 Nov 2026: shards x10 (prices x10 too)
+            "hoe:shard_finder:shards:100:1:400+60", "hoe:efficiency:enchant=efficiency:5:1:1500/6000/20000/60000/150000",
+            "hoe:extra_drops:drops:100:3:600+80", "hoe:fortune:enchant=fortune:3:5:15000/80000/300000",
+            "hoe:wisdom:wisdom:50:5:800+100", "hoe:growth:growth:100:10:1000+100", "hoe:storage:storage:100:10:600+60",
+            "hoe:haste:haste:2:15:50000/300000", "hoe:auto_sell:autosell:1:20:200000", "hoe:sell_bonus:sell:100:25:2000+200",
+            "hoe:lucky:lucky:100:30:3000+250", "hoe:sweep:sweep:100:45:30000+1000:1",
+            "pickaxe:shard_finder:shards:100:1:400+60", "pickaxe:efficiency:enchant=efficiency:5:1:1500/6000/20000/60000/150000",
+            "pickaxe:extra_drops:drops:100:3:600+80", "pickaxe:fortune:enchant=fortune:3:5:15000/80000/300000",
+            "pickaxe:wisdom:wisdom:50:5:800+100", "pickaxe:smelter:smelt:100:10:1000+100", "pickaxe:storage:storage:100:10:600+60",
+            "pickaxe:haste:haste:2:15:50000/300000", "pickaxe:auto_sell:autosell:1:20:200000", "pickaxe:sell_bonus:sell:100:25:2000+200",
+            "pickaxe:lucky:lucky:100:30:3000+250", "pickaxe:vein:sweep:100:45:30000+1000:1",
+            // owner 6 Nov 2026: the island rod (/fish)
+            "rod:shard_finder:shards:100:1:400+60", "rod:lure:enchant=lure:3:1:3000/20000/90000",
+            "rod:extra_drops:drops:100:3:600+80", "rod:luck:enchant=luck_of_the_sea:3:5:15000/80000/300000",
+            "rod:wisdom:wisdom:50:5:800+100", "rod:storage:storage:100:10:600+60", "rod:auto_sell:autosell:1:20:200000",
+            "rod:sell_bonus:sell:100:25:2000+200", "rod:lucky:lucky:100:30:3000+250",
+            // owner 6 Nov 2026: the island sword (/pve)
+            "sword:shard_finder:shards:100:1:400+60", "sword:sharpness:enchant=sharpness:5:1:1500/6000/20000/60000/150000",
+            "sword:looting:enchant=looting:3:5:15000/80000/300000", "sword:wisdom:wisdom:50:5:800+100",
+            "sword:sweeping:enchant=sweeping_edge:3:10:10000/50000/200000", "sword:lucky:lucky:100:30:3000+250");
+
+    /** {@code perks} v13 (before shards x10, owner 7 Nov 2026). */
+    static final List<String> PERKS_V13 = List.of( // feedback 5 Nov 2026: fewer, bigger steps; the first upgrade within a minute
             "hoe:shard_finder:shards:100:1:40+6", "hoe:efficiency:enchant=efficiency:5:1:150/600/2000/6000/15000",
             "hoe:extra_drops:drops:100:3:60+8", "hoe:fortune:enchant=fortune:3:5:1500/8000/30000",
             "hoe:wisdom:wisdom:50:5:80+10", "hoe:growth:growth:100:10:100+10", "hoe:storage:storage:100:10:60+6",
@@ -291,6 +319,66 @@ public final class IslandToolsConfig extends ModuleConfig {
             "sword:shard_finder:shards:100:1:40+6", "sword:sharpness:enchant=sharpness:5:1:150/600/2000/6000/15000",
             "sword:looting:enchant=looting:3:5:1500/8000/30000", "sword:wisdom:wisdom:50:5:80+10",
             "sword:sweeping:enchant=sweeping_edge:3:10:1000/5000/20000", "sword:lucky:lucky:100:30:300+25");
+
+    /** {@code enchants.list} v13 (before shards x10, owner 7 Nov 2026). */
+    static final List<String> ENCHANTS_V13 = List.of(
+            // owner 7 Nov 2026: hoe and pickaxe enchants 10x the shards a level, max 500 (everyday), 300 (mid), 100 (rare)
+            "pickaxe:blast:500:20:0.5:1.0:4:18:0:1:0",
+            "pickaxe:shard_burst:500:20:0.4:1.0:3:6:0:1:0",
+            "pickaxe:scholar:500:20:0:0:5:25:0:1:0",
+            "pickaxe:rich_vein:500:20:1:5:1:2:0:3:0",
+            "pickaxe:quick_study:500:20:1:5:1:1:0:5:0",
+            "pickaxe:cash_vein:300:30:0.5:2.0:5:5:0:8:0",
+            "pickaxe:combo:500:20:0:0:5:20:0:10:0",
+            "pickaxe:compound_interest:300:30:0:0:5:15:0:13:0",
+            "pickaxe:shard_echo:300:30:0:0:10:25:0:16:0",
+            "pickaxe:lightning:300:30:0.05:0.15:9:18:20:20:0",
+            "pickaxe:motherlode:300:30:0.2:0.6:10:10:0:24:0",
+            "pickaxe:lucky_streak:300:30:0:0:100:50:0:28:0",
+            "pickaxe:geode:100:40:0.05:0.2:1:1:0:32:0",
+            "pickaxe:keyfinder:100:50:0.001:0.02:1:1:0:36:0",
+            "pickaxe:meteor:100:50:0.03:0.08:15:25:20:1:1",
+            "pickaxe:nuke:100:80:0.003:0.01:40:100:300:1:5",
+            "pickaxe:shard_jackpot:100:60:0.01:0.04:40:75:0:1:10",
+            "hoe:explode:500:20:0.5:1.0:4:18:0:1:0",
+            "hoe:shard_burst:500:20:0.4:1.0:3:6:0:1:0",
+            "hoe:scholar:500:20:0:0:5:25:0:1:0",
+            "hoe:bountiful:500:20:1:5:1:2:0:3:0",
+            "hoe:quick_study:500:20:1:5:1:1:0:5:0",
+            "hoe:cash_crop:300:30:0.5:2.0:5:5:0:8:0",
+            "hoe:combo:500:20:0:0:5:20:0:10:0",
+            "hoe:compound_interest:300:30:0:0:5:15:0:13:0",
+            "hoe:shard_echo:300:30:0:0:10:25:0:16:0",
+            "hoe:row_reaper:300:30:0.3:0.7:4:7:0:20:0",
+            "hoe:golden_crop:300:30:0.1:0.4:5:5:0:24:0",
+            "hoe:lucky_streak:300:30:0:0:100:50:0:28:0",
+            "hoe:harvest_basket:100:40:0.05:0.2:1:1:0:32:0",
+            "hoe:keyfinder:100:50:0.001:0.02:1:1:0:36:0",
+            "hoe:tornado:100:50:0.03:0.08:20:28:20:1:1",
+            "hoe:meteor_shower:100:80:0.01:0.03:12:36:60:1:5",
+            "hoe:shard_jackpot:100:60:0.01:0.04:40:100:0:1:10",
+            // owner 6 Nov 2026: the island rod at /fish (a catch is about 10x rarer than a block, so the chances are higher)
+            "rod:shard_burst:1000:2:4:10:4:8:0:1:0",
+            "rod:scholar:1000:2:0:0:5:25:0:1:0",
+            "rod:big_catch:1000:2:10:40:1:2:0:1:0",
+            "rod:quick_study:1000:2:5:20:1:2:0:5:0",
+            "rod:golden_fish:1000:3:5:20:5:5:0:8:0",
+            "rod:combo:1000:2:0:0:5:20:0:10:0",
+            "rod:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "rod:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "rod:lucky_streak:1000:3:0:0:30:15:0:28:0",
+            "rod:treasure_chest:1000:4:0.5:2:1:1:0:32:0",
+            "rod:keyfinder:1000:5:0.01:0.2:1:1:0:36:0",
+            "rod:shard_jackpot:1000:6:0.1:0.4:40:100:0:1:10",
+            // owner 6 Nov 2026: the island sword at /pve (no area, drops and progress enchants: kills go to the bag)
+            "sword:shard_burst:1000:2:2:6:3:6:0:1:0",
+            "sword:scholar:1000:2:0:0:5:25:0:1:0",
+            "sword:combo:1000:2:0:0:5:20:0:10:0",
+            "sword:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "sword:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "sword:lucky_streak:1000:3:0:0:50:25:0:28:0",
+            "sword:keyfinder:1000:5:0.005:0.1:1:1:0:36:0",
+            "sword:shard_jackpot:1000:6:0.05:0.2:40:100:0:1:10");
 
     /** {@code perks} v9 (feedback 5 Nov 2026); v11 (owner 6 Nov 2026) adds the island rod. */
     static final List<String> PERKS_V9 = List.of(
@@ -354,10 +442,10 @@ public final class IslandToolsConfig extends ModuleConfig {
     public double luckyPerLevel = 0.01;
 
     @Setting(path = "effects.lucky-min", desc = "Lucky: fewest shards in a Shard Pouch (the prestige bonus applies on top).", min = 1, max = 1_000_000)
-    public int luckyMin = 25;
+    public int luckyMin = 250;
 
     @Setting(path = "effects.lucky-max", desc = "Lucky: most shards in a Shard Pouch.", min = 1, max = 1_000_000)
-    public int luckyMax = 250;
+    public int luckyMax = 2500;
 
     @Setting(path = "sweep.bands", desc = "Owner 4 Nov 2026: Sweep (hoe) and Vein (pickaxe) per prestige band, 'prestige:extra-blocks:chance-at-max-level'. "
             + "Locked below the first band; the 100 levels raise the chance inside the current band.")
@@ -468,7 +556,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 13;
+        return 14;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -504,6 +592,15 @@ public final class IslandToolsConfig extends ModuleConfig {
                         ValueChange.of(ENCHANTS_V12.stream().filter(l -> !l.startsWith("rod:") && !l.startsWith("sword:")).toList(), ENCHANTS_V12)),
                 // v12 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): more shards, a Shard Finder level that matters
                 13, Map.of("enchants.list", ValueChange.of(ENCHANTS_V12, d.enchantList)),
+                // v14 (owner 7 Nov 2026, plans/SHARDS_X10_BREAKTHROUGHS.md): every shard x10, found and paid
+                14, Map.ofEntries(Map.entry("perks", ValueChange.of(PERKS_V13, d.perks)),
+                        Map.entry("enchants.list", ValueChange.of(ENCHANTS_V13, d.enchantList)),
+                        Map.entry("shards.chance-hoe", ValueChange.of(60.0, d.shardHoe)),
+                        Map.entry("shards.chance-pickaxe", ValueChange.of(30.0, d.shardPickaxe)),
+                        Map.entry("shards.chance-rod", ValueChange.of(300.0, d.shardRod)),
+                        Map.entry("shards.chance-sword", ValueChange.of(150.0, d.shardSword)),
+                        Map.entry("effects.lucky-min", ValueChange.of(25, d.luckyMin)),
+                        Map.entry("effects.lucky-max", ValueChange.of(250, d.luckyMax))),
                 12, Map.of("shards.chance-hoe", ValueChange.of(40.0, d.shardHoe),
                         "shards.finder-per-level", ValueChange.of(1.0, d.shardFinderPerLevel)));
     }

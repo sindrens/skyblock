@@ -74,7 +74,8 @@ final class EnchantProcs implements Listener {
     }
 
     void parse(List<String> lines) {
-        defs = GrindEnchants.parse(lines, w -> m.core().plugin().getLogger().warning(w));
+        java.util.function.Consumer<String> warn = w -> m.core().plugin().getLogger().warning(w);
+        defs = GrindEnchants.parse(lines, GrindEnchants.Breakthrough.parse(m.config().enchantBreakthroughs, warn), warn);
     }
 
     GrindEnchants defs() {
@@ -249,6 +250,13 @@ final class EnchantProcs implements Listener {
             m.msg().send(p, "enchant.bought", Msg.p("enchant", name(def)), Msg.number("level", have + n), Msg.number("max", def.max()),
                     Msg.mm("cost", m.shardText(kind, cost)));
             m.core().sounds().play(p, "enchant");
+            if (def.crosses(have, have + n)) { // owner 7 Nov 2026: a breakthrough is a moment
+                String x = EnchantMenu.num(def.boost(have + n));
+                m.msg().title(p, "enchant.breakthrough.title", Msg.p("enchant", name(def)), Msg.p("multiplier", x));
+                m.msg().send(p, "enchant.breakthrough.chat", Msg.p("enchant", name(def)), Msg.p("multiplier", x),
+                        Msg.number("level", have + n));
+                m.core().sounds().play(p, "tool-max");
+            }
         }
         m.core().audit().logPlayer(AuditCategory.ITEM, "grind_enchant", Actor.player(p), p.getUniqueId(), p.getName(), cost,
                 p.getLocation(), Map.of("kind", kind.id(), "enchant", def.id(), "from", have, "to", have + n,

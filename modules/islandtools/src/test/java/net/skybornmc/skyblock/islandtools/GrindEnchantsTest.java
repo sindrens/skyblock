@@ -106,7 +106,7 @@ class GrindEnchantsTest {
     @Test
     void pricesGrowAndSumUp() {
         GrindEnchants.Def d = defaults(new ArrayList<>()).get(Kind.PICKAXE, "shard_burst").orElseThrow();
-        assertEquals(20, d.priceOf(1), "owner 7 Nov 2026: level 1 costs 20 shards (was 2)");
+        assertEquals(200, d.priceOf(1), "owner 7 Nov 2026: level 1 costs 200 shards (shards x10)");
         long last = 0;
         for (int l = 1; l <= 500; l += 37) {
             assertTrue(d.priceOf(l) >= last);
@@ -203,5 +203,52 @@ class GrindEnchantsTest {
             assertNotNull(y.getString("enchant.menu.gives." + e.name().toLowerCase(java.util.Locale.ROOT)), e + " has a 'gives' text");
         }
         assertNotNull(y.getString("enchant.crate." + C.enchantKeyCrate));
+    }
+
+    @Test
+    void breakthroughsJumpThenFlatten() {
+        List<String> problems = new ArrayList<>();
+        List<GrindEnchants.Breakthrough> b = GrindEnchants.Breakthrough.parse(C.enchantBreakthroughs, problems::add);
+        assertEquals(List.of(), problems);
+        GrindEnchants g = GrindEnchants.parse(C.enchantList, b, problems::add);
+        GrindEnchants.Def blast = g.get(Kind.PICKAXE, "blast").orElseThrow();
+        assertEquals(List.of(10, 50, 150, 500), b.stream().map(x -> x.level(500)).toList(), "a 500-level enchant");
+        assertEquals(List.of(2, 10, 30, 100), b.stream().map(x -> x.level(100)).toList(), "a 100-level enchant");
+        assertEquals(1, blast.boost(9));
+        assertEquals(1.5, blast.boost(10));
+        assertEquals(2, blast.boost(149));
+        assertEquals(3, blast.boost(500));
+        assertEquals(blast.chance(9) * 1.5, blast.chance(10), 0.01, "a jump at the breakthrough");
+        assertEquals(3.0, blast.chance(500), 1e-9, "x3 at the max");
+        assertEquals(18, blast.value(500), 1e-9, "a proc's amount stays (its chance grows)");
+        assertTrue(blast.crosses(49, 50));
+        assertFalse(blast.crosses(50, 120));
+        assertEquals(50, blast.next(12).orElseThrow().level(500));
+        assertTrue(blast.next(500).isEmpty());
+        GrindEnchants.Def combo = g.get(Kind.PICKAXE, "combo").orElseThrow();
+        assertEquals(60, combo.value(500), 1e-9, "a steady enchant: its value x3");
+        GrindEnchants.Def pity = g.get(Kind.PICKAXE, "lucky_streak").orElseThrow();
+        assertEquals(50, pity.value(pity.max()), 1e-9, "Lucky Streak's block count is not boosted");
+        GrindEnchants.Def rod = g.get(Kind.ROD, "big_catch").orElseThrow();
+        assertTrue(rod.chance(rod.max()) <= 100, "never above 100%");
+        assertEquals(1, GrindEnchants.Breakthrough.parse(List.of("10:2", "x:1", "0:2", "50:0.5"), problems::add).size());
+        assertEquals(3, problems.size());
+    }
+
+    @Test
+    void shardsAreTenTimesBiggerWithTheSameValue() {
+        GrindEnchants now = defaults(new ArrayList<>());
+        GrindEnchants old = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V13, w -> { });
+        for (Kind k : Kind.values()) {
+            for (GrindEnchants.Def d : now.of(k)) {
+                GrindEnchants.Def o = old.get(k, d.id()).orElseThrow();
+                assertEquals(o.cost() * 10, d.cost(), 1e-9, d.key());
+                double shards = d.effect() == GrindEnchants.Effect.SHARDS ? 10 : 1;
+                assertEquals(o.valueMax() * shards, d.valueMax(), 1e-9, d.key());
+            }
+        }
+        assertEquals(600, C.shardHoe);
+        assertEquals(2_500, C.luckyMax);
+        assertEquals(14, C.version());
     }
 }

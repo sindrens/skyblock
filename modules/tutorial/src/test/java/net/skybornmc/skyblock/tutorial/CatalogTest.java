@@ -44,8 +44,8 @@ class CatalogTest {
             assertFalse(r.isEmpty(), ch.id() + " pays something");
         }
         assertEquals(List.of("money 50000"), c.chapter("welcome").orElseThrow().rewards());
-        assertEquals(List.of("shards 100"), c.chapter("farm").orElseThrow().rewards());
-        assertEquals(List.of("mining_shards 100"), c.chapter("mine").orElseThrow().rewards());
+        assertEquals(List.of("shards 1000"), c.chapter("farm").orElseThrow().rewards());
+        assertEquals(List.of("mining_shards 1000"), c.chapter("mine").orElseThrow().rewards());
         assertEquals(List.of("key ember 1"), c.chapter("together").orElseThrow().rewards());
     }
 
@@ -106,5 +106,20 @@ class CatalogTest {
         Catalog.Step rowan = c.step("welcome.rowan").orElseThrow();
         assertTrue(rowan.matches(Signal.of(StepType.NPC, "GUIDE", 1)));
         assertFalse(rowan.matches(Signal.of(StepType.MENU, "guide", 1)));
+    }
+
+    @Test
+    void liveShardRewardsGoTimesTenOnce() {
+        YamlConfiguration live = new YamlConfiguration();
+        live.set("chapters.farm.rewards", List.of("shards 100"));
+        live.set("chapters.fish_pro.rewards", List.of("fishing_shards 500", "key ember 1"));
+        live.set("chapters.mine.rewards", List.of("mining_shards 300")); // an owner edit stays
+        List<String> log = net.skybornmc.skyblock.common.config.CatalogUpdate.apply(live, TutorialModule.CATALOG_STEPS);
+        assertEquals(2, log.size());
+        assertEquals(List.of("shards 1000"), live.getStringList("chapters.farm.rewards"));
+        assertEquals(List.of("fishing_shards 5000", "key ember 1"), live.getStringList("chapters.fish_pro.rewards"));
+        assertEquals(List.of("mining_shards 300"), live.getStringList("chapters.mine.rewards"));
+        assertEquals(1, net.skybornmc.skyblock.common.config.CatalogUpdate.version(live));
+        assertEquals(List.of(), net.skybornmc.skyblock.common.config.CatalogUpdate.apply(live, TutorialModule.CATALOG_STEPS));
     }
 }

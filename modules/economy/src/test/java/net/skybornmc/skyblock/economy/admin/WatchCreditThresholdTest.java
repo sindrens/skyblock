@@ -16,13 +16,13 @@ class WatchCreditThresholdTest {
         assertEquals(1_000, config.bigMin(Currency.CREDITS));
         assertEquals(1_000, config.staffMin(Currency.CREDITS));
         assertEquals(5_000_000_000L, config.bigMin(Currency.MONEY), "money x100; other currencies unchanged");
-        assertEquals(50_000, config.bigMin(Currency.SHARDS), "other currencies unchanged");
+        assertEquals(500_000, config.bigMin(Currency.SHARDS), "owner 7 Nov 2026: shards x10");
     }
 
     @Test
     void onlyTheUntouchedOldDefaultMigrates() {
         WatchConfig config = new WatchConfig();
-        assertEquals(6, config.version());
+        assertEquals(7, config.version());
         var change = config.valueChanges().get(5).get("rules.big-transfer.min.credits");
         assertTrue(change.matches(10_000), "YAML reads ints");
         assertEquals(1_000L, change.to());

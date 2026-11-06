@@ -24,13 +24,13 @@ public final class ShardBlockConfig extends ModuleConfig {
     @Setting(path = "block.max-per-island", desc = "Shard blocks one island can have.", min = 1, max = 64, level = Setting.Level.OWNER)
     public int maxPerIsland = 4;
 
-    @Setting(path = "shards.per-break", desc = "Shards paid per break (a double roll pays twice this).", min = 1, max = 100,
+    @Setting(path = "shards.per-break", desc = "Shards paid per break (a double roll pays twice this).", min = 1, max = 1000,
             level = Setting.Level.OWNER)
-    public int perBreak = 1;
+    public int perBreak = 10;
 
     @Setting(path = "shards.daily-cap-per-profile", desc = "Most shards one profile can get from shard blocks per day (0 = no cap). "
-            + "Checked inside the payout transaction.", min = 0, max = 100000, level = Setting.Level.OWNER)
-    public int dailyCap = 100;
+            + "Checked inside the payout transaction.", min = 0, max = 1000000, level = Setting.Level.OWNER)
+    public int dailyCap = 1000;
 
     @Setting(path = "shards.cap-zone", desc = "Time zone whose midnight starts a new day for the daily cap.")
     public String capZone = "Europe/Oslo";
@@ -110,14 +110,16 @@ public final class ShardBlockConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /** v2 (owner 3 Nov 2026): regrow in 5 min down to 1 min, upgrades paid with money (shards come from island tools). */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         ShardBlockConfig d = new ShardBlockConfig();
-        return java.util.Map.of(2, java.util.Map.of(
+        return java.util.Map.of(3, java.util.Map.of( // owner 7 Nov 2026: shards x10
+                "shards.per-break", ValueChange.of(1, d.perBreak), "shards.daily-cap-per-profile", ValueChange.of(100, d.dailyCap)),
+                2, java.util.Map.of(
                 "levels.respawn-seconds", ValueChange.of(RESPAWN_SECONDS_V1, d.respawnSeconds),
                 "upgrades.respawn", ValueChange.of(RESPAWN_COSTS_V1, d.respawnCosts),
                 "upgrades.double", ValueChange.of(DOUBLE_COSTS_V1, d.doubleCosts)));

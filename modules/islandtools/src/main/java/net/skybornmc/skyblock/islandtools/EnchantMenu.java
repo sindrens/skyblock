@@ -166,6 +166,14 @@ final class EnchantMenu extends Menu {
         if (d.cooldownSeconds() > 0) {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.cooldown", Msg.number("seconds", d.cooldownSeconds())));
         }
+        GrindEnchants.Breakthrough nextBreak = d.next(lv).orElse(null); // owner 7 Nov 2026: the next goal is always in sight
+        if (nextBreak != null) {
+            int at = nextBreak.level(d.max());
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.breakthrough", Msg.p("multiplier", num(nextBreak.multiplier())),
+                    Msg.number("level", at), Msg.number("left", at - lv)));
+        } else if (d.boost(lv) > 1) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.breakthrough-done", Msg.p("now", num(d.boost(lv)))));
+        }
         if (lv >= d.max()) {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.max"));
         } else if (max) {

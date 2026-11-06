@@ -450,6 +450,15 @@ enchant:
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your enchants changed on another screen. Nothing was paid; check the price and click again."
   # <enchant> <level> <max> <cost>
   bought: "<prefix><c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max></c:muted> <c:text>for <cost><c:text>."
+  # owner 7 Nov 2026: a breakthrough. <enchant> <multiplier> <level>
+  breakthrough:
+    title:
+      title: "<grad:flame><bold>BREAKTHROUGH!"
+      subtitle: "<c:value><enchant></c:value> <c:muted>· <c:value>x<multiplier></c:value> <c:text>as strong"
+      fade-in: 5
+      stay: 50
+      fade-out: 15
+    chat: "<prefix><c:success><sym:star></c:success> <c:text>Breakthrough! </c:text><c:value><enchant></c:value> <c:text>is now </c:text><c:value>x<multiplier></c:value> <c:text>as strong (level <level>)."
   # Action bar when an enchant procs. <enchant> <amount>
   proc:
     area: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> blocks"
@@ -520,6 +529,9 @@ enchant:
     effect-max: "<c:bar>| </c:bar><c:text>Gives: </c:text><c:value><now>"
     # <seconds>
     cooldown: "<c:bar>| </c:bar><c:muted>At most once every <seconds> s"
+    # owner 7 Nov 2026: <multiplier> <level> <left> (the next breakthrough) / <now> (all reached)
+    breakthrough: "<c:bar>| </c:bar><c:text>Breakthrough: </c:text><c:value>x<multiplier></c:value> <c:muted>at <level> (<left> to go)"
+    breakthrough-done: "<c:bar>| </c:bar><c:success>All breakthroughs: x<now>"
     # What one proc gives. {value} {crate}
     gives:
       area: "{value} blocks"

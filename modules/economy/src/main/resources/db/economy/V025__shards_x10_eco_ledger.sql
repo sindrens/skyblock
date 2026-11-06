@@ -1,0 +1,2 @@
+-- Shards x10 (owner 7 Nov 2026, docs/plans/SHARDS_X10_BREAKTHROUGHS.md): bigger numbers, same value. One table per file, so each runs once.
+UPDATE eco_ledger SET amount = CASE WHEN amount > 922337203685477580 THEN 9223372036854775807 ELSE amount * 10 END, from_balance = CASE WHEN from_balance > 922337203685477580 THEN 9223372036854775807 ELSE from_balance * 10 END, to_balance = CASE WHEN to_balance > 922337203685477580 THEN 9223372036854775807 ELSE to_balance * 10 END WHERE currency IN ('shards', 'mining_shards', 'fishing_shards', 'combat_shards');

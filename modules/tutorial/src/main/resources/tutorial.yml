@@ -93,7 +93,7 @@ chapters:
   farm:
     name: "The Farm"
     icon: wheat
-    rewards: ["shards 100"]
+    rewards: ["shards 1000"]
     steps:
       go:
         type: place
@@ -144,7 +144,7 @@ chapters:
   mine:
     name: "The Mine"
     icon: iron_pickaxe
-    rewards: ["mining_shards 100"]
+    rewards: ["mining_shards 1000"]
     steps:
       go:
         type: place
@@ -334,7 +334,7 @@ chapters:
   farm_pro:
     name: "Bramble's Farmhand"
     icon: golden_hoe
-    rewards: ["shards 500", "key ember 1"]
+    rewards: ["shards 5000", "key ember 1"]
     steps:
       enchant:
         type: audit
@@ -366,7 +366,7 @@ chapters:
   mine_pro:
     name: "Flint's Apprentice"
     icon: golden_pickaxe
-    rewards: ["mining_shards 500", "key ember 1"]
+    rewards: ["mining_shards 5000", "key ember 1"]
     steps:
       enchant:
         type: audit
@@ -406,7 +406,7 @@ chapters:
   fish_pro:
     name: "Marla's Deckhand"
     icon: fishing_rod
-    rewards: ["fishing_shards 500", "key ember 1"]
+    rewards: ["fishing_shards 5000", "key ember 1"]
     steps:
       marla:
         type: npc
@@ -453,7 +453,7 @@ chapters:
   pve_pro:
     name: "Hale's Recruit"
     icon: iron_sword
-    rewards: ["combat_shards 500", "key ember 1"]
+    rewards: ["combat_shards 5000", "key ember 1"]
     steps:
       hale:
         type: npc

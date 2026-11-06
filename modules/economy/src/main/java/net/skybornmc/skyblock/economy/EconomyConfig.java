@@ -78,7 +78,7 @@ public final class EconomyConfig extends ModuleConfig {
     public long payConfirmCredits = 100;
 
     @Setting(path = "pay.confirm-above.shards", desc = "/pay asks to confirm at or above this many shards. 0 = never.", min = 0)
-    public long payConfirmShards = 1_000;
+    public long payConfirmShards = 10_000;
 
     @Setting(path = "pay.confirm-seconds", desc = "How long a /pay confirmation stays valid (seconds).", min = 5, max = 120,
             restart = true)
@@ -550,7 +550,7 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 10;
+        return 11;
     }
 
     @Override
@@ -565,7 +565,9 @@ public final class EconomyConfig extends ModuleConfig {
                 9, java.util.Map.of("sell.weekly.enabled", ValueChange.of(true, false)),
                 // owner 7 Nov 2026: a smaller economy, start with $10k, every sell price / 4
                 10, java.util.Map.of("start.money", ValueChange.of(100_000L, 10_000L),
-                        "sell.price-multiplier", ValueChange.of(1.0, 0.25)));
+                        "sell.price-multiplier", ValueChange.of(1.0, 0.25)),
+                // owner 7 Nov 2026: shards x10 (balances too, V024-V026)
+                11, java.util.Map.of("pay.confirm-above.shards", ValueChange.of(1_000L, 10_000L)));
     }
 
     @Override

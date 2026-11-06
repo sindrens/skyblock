@@ -218,6 +218,13 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Bigger shard numbers and breakthroughs (update149, plan: `docs/plans/SHARDS_X10_BREAKTHROUGHS.md`)
+Your "only 1-3 shards even maxed ... low to high ... goodies that suddenly feel a lot stronger":
+- **Every shard x10, same value:** a ripe crop now gives about 6 shards (was 0.6), so you see "+6", "+20", "+60" instead of "+1". Prices x10 too (Shard Finder level 1: 460, Explode level 1: 200). **Balances x10 once** (database migration for all four shard types), shard notes and shard block pay (10 a break) too. Shard Burst 30-60, Jackpot 400-1,000, Lucky pouch 250-2,500. Tutorial shard rewards 1,000 / 5,000.
+- **Every level costs a bit more than the one before** (smooth curve, never a wall).
+- **Breakthroughs:** every enchant jumps at 2%, 10%, 30% and 100% of its max level: x1.5, x2, x2.5 and x3 (a 500-level enchant at 10, 50, 150 and 500; a 100-level one at 2, 10, 30, 100). Between them it grows slowly. The menu always shows the next one ("Breakthrough: x2 at 50 (12 to go)"), and reaching one gives a title, a sound and a chat line. Knob: `islandtools.yml enchants.breakthroughs`.
+- Why (research): rising numbers feel like progress; a visible next goal makes people speed up toward it (goal gradient); a plateau followed by a big jump is what players remember.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).
