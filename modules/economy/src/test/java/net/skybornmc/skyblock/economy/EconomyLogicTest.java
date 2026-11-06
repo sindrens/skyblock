@@ -71,7 +71,7 @@ class EconomyLogicTest {
     @Test
     void decidedDefaults() {
         EconomyConfig c = new EconomyConfig();
-        assertEquals(100_000, c.start(Currency.MONEY), "money x100 (batch 10)");
+        assertEquals(10_000, c.start(Currency.MONEY), "owner 7 Nov 2026: start with $10k");
         assertEquals(0, c.start(Currency.CREDITS_EARNED));
         assertTrue(c.tradeable(Currency.MONEY));
         assertTrue(c.tradeable(Currency.SHARDS));

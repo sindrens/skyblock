@@ -12,7 +12,7 @@ public final class EconomyConfig extends ModuleConfig {
     // ------------------------------------------------------------------ starting balances (given once per season)
 
     @Setting(path = "start.money", desc = "Money every new profile starts with (once per season and profile; owner answer 121).", min = 0, level = Setting.Level.OWNER)
-    public long startMoney = 100_000;
+    public long startMoney = 10_000; // owner 7 Nov 2026: start with $10k (economy / 4)
 
     @Setting(path = "start.crystals", desc = "Island crystals a new player starts with (once per season).", min = 0,
             level = Setting.Level.OWNER)
@@ -413,7 +413,7 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "sell.price-multiplier", desc = "Multiplies every price in sell.yml (listed, custom, roots and derived). Keep "
             + "shop-settings.yml buy.price-multiplier equal, or payback and the shop invariant change.", min = 0.01, max = 1000,
             level = Setting.Level.OWNER)
-    public double sellPriceMultiplier = 1.0;
+    public double sellPriceMultiplier = 0.25; // owner 7 Nov 2026: all money prices / 4
 
     @Setting(path = "sell.derive.enabled", desc = "Every block sellable: prices of crafted and smelted items come from their "
             + "parts (sell.yml derive.*: factors, exclude list). Off = only listed items and roots sell.", level = Setting.Level.OWNER)
@@ -550,7 +550,7 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 9;
+        return 10;
     }
 
     @Override
@@ -562,7 +562,10 @@ public final class EconomyConfig extends ModuleConfig {
                 // dynamic prices v2 (7 Nov 2026): the old global model is retired; sell.daily.* and sell.weekly.* replace it
                 8, java.util.Map.of("sell.dynamic.enabled", ValueChange.of(true, false)),
                 // owner 7 Nov 2026 ("simple, nothing unnecessary"): no weekly price change
-                9, java.util.Map.of("sell.weekly.enabled", ValueChange.of(true, false)));
+                9, java.util.Map.of("sell.weekly.enabled", ValueChange.of(true, false)),
+                // owner 7 Nov 2026: a smaller economy, start with $10k, every sell price / 4
+                10, java.util.Map.of("start.money", ValueChange.of(100_000L, 10_000L),
+                        "sell.price-multiplier", ValueChange.of(1.0, 0.25)));
     }
 
     @Override

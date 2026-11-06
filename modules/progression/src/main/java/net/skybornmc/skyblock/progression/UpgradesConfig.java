@@ -23,6 +23,10 @@ public final class UpgradesConfig extends ModuleConfig {
                 Texts: messages/progression.yml. Reload: /skyblock reload progression""";
     }
 
+    @Setting(path = "cost-multiplier", desc = "Owner 7 Nov 2026: every island upgrade and mastery cost in upgrades.yml and masteries.yml "
+            + "times this (0.25 = all money prices / 4), kept to 2 significant figures.", min = 0.01, max = 100, level = Setting.Level.OWNER)
+    public double costMultiplier = 0.25;
+
     @Setting(path = "enabled", desc = "Show /is upgrade and allow buying (off = the menu is closed; bought levels keep working).")
     public boolean enabled = true;
 

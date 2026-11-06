@@ -222,6 +222,7 @@ final class UpgradeManager implements Listener {
      * in the bundled file are added to an existing file (turn one off with {@code enabled: false} instead of deleting it).
      */
     private UpgradeCatalog loadCatalog() {
+        UpgradeCatalog.costMultiplier = config.costMultiplier; // owner 7 Nov 2026: all money prices / 4
         File file = new File(core.plugin().getDataFolder(), UpgradeCatalog.FILE);
         YamlConfiguration bundled = bundled();
         YamlConfiguration yaml = new YamlConfiguration();

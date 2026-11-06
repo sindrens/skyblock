@@ -42,7 +42,7 @@ class GrindEventsTest {
         assertEquals(2.0, GrindEventsImpl.value(c, Kind.DOUBLE_DROPS));
         assertEquals(2.0, GrindEventsImpl.value(c, Kind.DOUBLE_SHARDS));
         assertEquals(2.0, GrindEventsImpl.value(c, Kind.PROC_FRENZY));
-        assertEquals(5.0, GrindEventsImpl.value(c, Kind.GOLDEN_BLOCKS));
+        assertEquals(2.0, GrindEventsImpl.value(c, Kind.GOLDEN_BLOCKS)); // owner 7 Nov 2026: rare, x2
         assertEquals(1.0, GrindEventsImpl.value(c, Kind.INSTANT_REGROW), "a switch, not a multiplier");
         assertTrue(Kind.GOLDEN_BLOCKS.id().equals("golden_blocks"));
     }

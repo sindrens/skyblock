@@ -82,6 +82,26 @@ final class UpgradeCatalog {
         this.byTab = tabs;
     }
 
+    /**
+     * Owner 7 Nov 2026 ("all money prices / 4"): every cost in the file times this ({@code upgrades-settings.yml
+     * cost-multiplier}), kept to 2 significant figures. Set by the manager before each load; 1.0 in tests.
+     */
+    static volatile double costMultiplier = 1.0;
+
+    /** {@code cost} x the multiplier, 2 significant figures (exact below 100). */
+    static long scaled(long cost) {
+        double m = costMultiplier;
+        if (m == 1.0 || !(m > 0) || !Double.isFinite(m) || cost <= 0) {
+            return cost;
+        }
+        double v = cost * m;
+        if (v < 100) {
+            return Math.max(1, Math.round(v));
+        }
+        double unit = Math.pow(10, Math.floor(Math.log10(v)) - 1);
+        return Math.round(Math.round(v / unit) * unit);
+    }
+
     static UpgradeCatalog empty() {
         return new UpgradeCatalog(List.of());
     }
@@ -174,7 +194,7 @@ final class UpgradeCatalog {
                 errors.add("level " + n + ": min-island-level must be a whole number 0 or more");
             }
             if (tier != null && cost != null && value != null && minLevel != null) {
-                levels.add(new Level(tier.intValue(), cost, value, minLevel.intValue()));
+                levels.add(new Level(tier.intValue(), scaled(cost), value, minLevel.intValue()));
             }
         }
         if (effect != null) {

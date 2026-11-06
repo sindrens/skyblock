@@ -24,7 +24,7 @@ config-version: 2
 money-scale: 100
 # Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): crops -40%, spawner loot 1x per drop priced per tier. A live file
 # gets these once (an edited price stays); the number below records it.
-catalog-version: 3
+catalog-version: 4
 
 categories:
   # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
@@ -44,17 +44,18 @@ categories:
   crops:
     # Owner 3 Nov 2026: crops you harvest with the hoe pay better per item than crops that farm themselves
     # (cactus, cane, melon, pumpkin, cocoa, berries: big automatic farms must not be OP). /farm pays a bonus on top.
-    wheat: 700
-    carrot: 900
-    potato: 900
-    beetroot: 1200
+    # Owner 7 Nov 2026: each /farm crop is a clear step up (wheat, carrot, potato, beetroot, nether wart).
+    wheat: 400
+    carrot: 700
+    potato: 1100
+    beetroot: 1600
     sugar_cane: 250
     melon_slice: 120
     pumpkin: 600
     cocoa_beans: 500
     cactus: 300
     sweet_berries: 350
-    nether_wart: 1800
+    nether_wart: 2400
     torchflower: 24000
     pitcher_plant: 52000
 

@@ -46,7 +46,7 @@ class SellKnobTest {
     @Test
     void newKeysHaveTheSpecDefaults() {
         EconomyConfig e = new EconomyConfig();
-        assertEquals(1.0, e.sellPriceMultiplier, 1e-9);
+        assertEquals(0.25, e.sellPriceMultiplier, 1e-9); // owner 7 Nov 2026: all money prices / 4
         assertTrue(e.sellDeriveEnabled);
         assertEquals(6, e.sellDeriveMaxDepth);
         assertEquals(500.0, e.hotMinBase, 1e-9);

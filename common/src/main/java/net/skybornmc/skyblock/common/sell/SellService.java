@@ -63,6 +63,11 @@ public interface SellService {
         return 0;
     }
 
+    /** The economy's {@code sell.price-multiplier} (already inside every {@link SellPrice#base()}); 1.0 by default. */
+    default double priceMultiplier() {
+        return 1.0;
+    }
+
     /** Every sellable price table key, in file order. Any thread. */
     List<String> itemKeys();
 

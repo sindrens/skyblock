@@ -211,6 +211,13 @@ Your "simple, nothing unnecessary" answer:
 - **No weekly price change** any more (`sell.weekly.enabled: false`). Only the daily island price stays; spawner loot always pays full.
 - **Fix:** shard and money payments could fail when two hit the same account at once (MariaDB "Record has changed since last read"). They are retried now, safely (every try is a full rollback).
 
+## Smaller economy, storage, enchants (update148)
+- **All money prices / 4** (sell, shop, spawners, island upgrades and masteries, /farm /mine /fish /pve pay, money pouches) and **start money $10k** (also after joining an island). Knobs: `economy.yml sell.price-multiplier: 0.25`, `shop-settings.yml buy.price-multiplier: 0.25`, `upgrades-settings.yml cost-multiplier: 0.25`. Spawners still pay back in ~50 h.
+- **/farm crops are clear steps**: wheat $100, carrot $175, potato $275, beetroot $400, nether wart $600 a crop (after the / 4).
+- **The $17.5k a carrot was Golden Blocks** (the bonus on every crop at x5). Now Golden Blocks makes the bonus 3x as likely (12% instead of 4%) at x2: still rare.
+- **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
+- **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

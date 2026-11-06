@@ -155,6 +155,7 @@ public final class PortalService implements Listener {
             String text = switch (d) {
                 case PortalResolver.Island ignored -> p.id() + " → island";
                 case PortalResolver.Teleport t -> p.id() + " → " + t.target();
+                case PortalResolver.Command c -> p.id() + " → /" + c.command();
                 case PortalResolver.Refused f -> p.id() + " (" + f.reason().name().toLowerCase(Locale.ROOT).replace('_', ' ')
                         + (f.target().isEmpty() ? "" : ": " + f.target()) + ")";
             };
@@ -274,6 +275,11 @@ public final class PortalService implements Listener {
                 } finally {
                     warzonePass.remove(id);
                 }
+            }
+            case PortalResolver.Command c -> {
+                quietUntil.put(id, now + config.portalGraceMillis);
+                core.sounds().play(player, config.portalSound);
+                player.performCommand(c.command()); // the command's own rules apply (combat, frozen, cooldowns)
             }
             case PortalResolver.Island ignored -> {
                 IslandService islands = core.services().optional(IslandService.class).orElse(null);

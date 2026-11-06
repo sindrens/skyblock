@@ -77,7 +77,7 @@ public final class ShopSettings extends ModuleConfig {
             + "x this, kept to 2 significant figures. Move it together with economy.yml sell.price-multiplier, or items whose "
             + "price falls under 5.5x their sell price stop being sold. Block worth (island level) does not change.",
             min = 0.1, max = 10.0, level = Setting.Level.OWNER)
-    public double priceMultiplier = 1.0;
+    public double priceMultiplier = 0.25; // owner 7 Nov 2026: all money prices / 4 (spawners too)
 
     @Setting(path = "shop.auto-markup", desc = "ECON-SELL-SHOP-AH B1: an item with 'price: auto' in shop.yml costs this many "
             + "times its sell.yml base price, rounded up (10: always above the 5.5x rule).", min = 7.6, max = 100,
@@ -86,14 +86,15 @@ public final class ShopSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /** ECON-SPAWNERS step 11: the shop now sells tiers 1 to 4 (an owner-chosen value stays). */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("spawners.max-tier", ValueChange.of(2, 4)),
-                3, java.util.Map.of("spawners.dynamic-factor", ValueChange.of(0.85, 1.0)));
+                3, java.util.Map.of("spawners.dynamic-factor", ValueChange.of(0.85, 1.0)),
+                4, java.util.Map.of("buy.price-multiplier", ValueChange.of(1.0, 0.25)));
     }
 
     /** REVIEW3 §3.6: the buy confirm screen is gone (SELL2 quick-buy); its threshold key is deleted on load. */

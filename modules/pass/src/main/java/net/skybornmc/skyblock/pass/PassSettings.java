@@ -112,8 +112,7 @@ public final class PassSettings extends ModuleConfig {
 
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers 1-12. Same "
             + "numbers as quests.yml, daily.yml and crates-settings.yml.", level = Setting.Level.OWNER)
-    public List<String> refPerMinute = List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300",
-            "34933300", "100000000", "285333300");
+    public List<String> refPerMinute = List.of("20675", "36675", "64000", "112675", "198000", "346675", "608675", "1066675", "3053325", "8733325", "25000000", "71333325"); // owner 7 Nov 2026: money / 4
 
     @Setting(path = "pouch.crystal-growth", desc = "Crystal growth per tier: base x growth^(tier-1) (ECONOMY_BALANCE §9.1).",
             min = 1, max = 3, level = Setting.Level.OWNER)
@@ -152,6 +151,17 @@ public final class PassSettings extends ModuleConfig {
     public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
         return java.util.Map.ofEntries(
                 java.util.Map.entry("pouch.ref-per-minute", net.skybornmc.skyblock.common.config.MoneyScale.numbers()));
+    }
+
+    /** Version 2 (owner 7 Nov 2026): money pouches follow the smaller economy (reference income / 4). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new PassSettings().refPerMinute)));
     }
 
     @Override

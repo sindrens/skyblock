@@ -52,7 +52,7 @@ config-version: 7
 money-scale: 100
 # Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): seeds and crops 10x their sell price, spawners priced by what they
 # earn (~50 h payback). A live file gets these once (an edited price stays); the number below records it.
-catalog-version: 9
+catalog-version: 10
 
 categories:
   # Wood, planks, stone and its crafted variants, earth, Nether, End and ocean blocks, sorted by type.
@@ -232,18 +232,18 @@ categories:
   farming:
     icon: wheat_seeds
     groups:
-      seeds: [bone_meal, melon_seeds, pumpkin_seeds, wheat_seeds, beetroot_seeds]
+      seeds: [bone_meal, wheat_seeds, melon_seeds, pumpkin_seeds, beetroot_seeds]
       crops: [sugar_cane, cactus, sweet_berries, cocoa_beans, carrot, potato]
       trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
     items:
       # Owner 3 Nov 2026: seeds and crops cost a lot: buy one, regrow it and grow the farm instead of buying many.
-      wheat_seeds: 7000
-      beetroot_seeds: 12000
+      wheat_seeds: 4000
+      beetroot_seeds: 16000
       melon_seeds: 6000
       pumpkin_seeds: 6000
       bone_meal: 3000
-      carrot: 9000
-      potato: 9000
+      carrot: 7000
+      potato: 11000
       sugar_cane: 2500
       cocoa_beans: 5000
       cactus: 3000

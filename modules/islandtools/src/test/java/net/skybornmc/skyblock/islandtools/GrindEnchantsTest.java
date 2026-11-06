@@ -89,31 +89,34 @@ class GrindEnchantsTest {
         GrindEnchants.Def blast = defaults(new ArrayList<>()).get(Kind.PICKAXE, "blast").orElseThrow();
         assertEquals(0, blast.chance(0));
         assertEquals(0.5, blast.chance(1), 1e-9);
-        assertEquals(1.0, blast.chance(1000), 1e-9);
-        assertEquals(0.75, blast.chance(500), 0.001);
+        assertEquals(500, blast.max(), "owner 7 Nov 2026: everyday enchants go to 500");
+        assertEquals(1.0, blast.chance(500), 1e-9);
+        assertEquals(0.75, blast.chance(250), 0.002);
         assertEquals(4, blast.value(1), 1e-9);
-        assertEquals(18, blast.value(1000), 1e-9);
+        assertEquals(18, blast.value(500), 1e-9);
         assertEquals(18, blast.value(5000), 1e-9, "above the max counts as the max");
         assertEquals(7, GrindEnchants.lerp(3, 7, 1, 1), 1e-9, "a one-level enchant is at its max at once");
         GrindEnchants.Def pity = defaults(new ArrayList<>()).get(Kind.HOE, "lucky_streak").orElseThrow();
         assertEquals(100, pity.value(1), 1e-9);
-        assertEquals(50, pity.value(1000), 1e-9, "Lucky Streak: 100 blocks down to 50");
+        assertEquals(50, pity.value(pity.max()), 1e-9, "Lucky Streak: 100 blocks down to 50");
+        assertEquals(300, pity.max());
+        assertEquals(100, defaults(new ArrayList<>()).get(Kind.HOE, "tornado").orElseThrow().max(), "rare enchants go to 100");
     }
 
     @Test
     void pricesGrowAndSumUp() {
         GrindEnchants.Def d = defaults(new ArrayList<>()).get(Kind.PICKAXE, "shard_burst").orElseThrow();
-        assertEquals(2, d.priceOf(1), "level 1 costs about the base cost");
+        assertEquals(20, d.priceOf(1), "owner 7 Nov 2026: level 1 costs 20 shards (was 2)");
         long last = 0;
-        for (int l = 1; l <= 1000; l += 37) {
+        for (int l = 1; l <= 500; l += 37) {
             assertTrue(d.priceOf(l) >= last);
             last = d.priceOf(l);
         }
         assertEquals(d.priceOf(1) + d.priceOf(2) + d.priceOf(3), d.price(0, 3));
         assertEquals(0, d.price(5, 0));
         assertEquals(10, d.buyable(0, 10));
-        assertEquals(3, d.buyable(997, 10), "never past the max");
-        assertEquals(0, d.buyable(1000, 1));
+        assertEquals(3, d.buyable(497, 10), "never past the max");
+        assertEquals(0, d.buyable(500, 1));
     }
 
     @Test

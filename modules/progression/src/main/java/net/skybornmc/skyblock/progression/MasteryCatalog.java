@@ -192,7 +192,7 @@ final class MasteryCatalog {
                 errors.add("rank " + n + ": island-level must be a whole number 0 or more");
             }
             if (tier != null && cost != null && value != null && pillarLevel != null && islandLevel != null) {
-                ranks.add(new Rank(tier.intValue(), cost, value, pillarLevel.intValue(), islandLevel.intValue()));
+                ranks.add(new Rank(tier.intValue(), UpgradeCatalog.scaled(cost), value, pillarLevel.intValue(), islandLevel.intValue()));
             }
         }
         if (effect != null) {

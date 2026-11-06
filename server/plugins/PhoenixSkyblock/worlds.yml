@@ -160,11 +160,11 @@ portals:
   # Portal id (or build:id) that creates/teleports to the player's island. Empty = from the build metadata (target island, or an id containing island/start).
   island-portal: ""
   # Portal ids that teleport although the build marks them closed (open the gate first).
-  force-open: []
+  force-open: [to_outposts, to_events]   # 7 Nov 2026: they lead to /fish and /pve
   # Portal ids that never teleport.
   disabled: []
-  # portal=target entries replacing the metadata target (targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>).
-  target-overrides: []
+  # portal=target entries replacing the metadata target (targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>, command:<command>).
+  target-overrides: [to_outposts=command:fish, to_events=command:pve]
   # target=world entries: which world a target name leads to.
   world-targets: [spawn=spawn, depths=grind, warzone=warzone]   # 3 Nov 2026: Depths portals lead to the farm and mine world
   # Worlds whose portals open only once a build of that world is applied.

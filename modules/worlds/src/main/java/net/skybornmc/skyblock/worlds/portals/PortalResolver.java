@@ -8,7 +8,8 @@ import java.util.Optional;
  * Where a portal sends a player (pure, unit-tested). Targets: {@code island} (the island portal: create or home),
  * a world target ({@code spawn}, {@code depths}, {@code warzone}, {@code world:<name>}: the landing in front of the
  * return portal of that world when one exists, else the world spawn), {@code point:<category>:<id>} (a build point),
- * anything else is not open yet ({@code outposts}, {@code events}).
+ * {@code command:<command>} (owner 7 Nov 2026: the player runs a command, e.g. {@code command:fish} for /fish), anything
+ * else is not open yet ({@code outposts}, {@code events}).
  */
 public final class PortalResolver {
 
@@ -31,7 +32,11 @@ public final class PortalResolver {
     }
 
     /** Result of {@link #resolve}. */
-    public sealed interface Destination permits Teleport, Island, Refused {
+    public sealed interface Destination permits Teleport, Island, Command, Refused {
+    }
+
+    /** The player runs {@code command} (without the slash), e.g. {@code fish} for the /fish pond. */
+    public record Command(String command, String target) implements Destination {
     }
 
     /** Teleport to a fixed spot. {@code target} is the name used for the arrival title. */
@@ -70,6 +75,11 @@ public final class PortalResolver {
         }
         if (settings.isIslandPortal(portal)) {
             return new Island();
+        }
+        if (target.startsWith("command:")) {
+            String command = target.substring("command:".length()).strip();
+            return command.isEmpty() || !command.matches("[a-zA-Z0-9_ -]{1,64}") ? new Refused(Reason.UNKNOWN, target)
+                    : new Command(command, command.split(" ")[0]);
         }
         if (target.startsWith("point:")) {
             String[] parts = target.substring("point:".length()).split(":", 2);

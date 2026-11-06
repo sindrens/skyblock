@@ -69,17 +69,21 @@ public final class EssentialsConfig extends ModuleConfig {
     public double grindEventProcs = 2.0;
 
     @Setting(path = "grind.events.golden", desc = "Golden Blocks: the farm/mine money bonus is this many times bigger and always comes.", min = 1, max = 100)
-    public double grindEventGolden = 5.0;
+    public double grindEventGolden = 2.0; // owner 7 Nov 2026: the bonus stays rare (was x5 on every block)
+
+    @Setting(path = "grind.events.golden-chance", desc = "Golden Blocks: the bonus comes this many times as often (owner 7 Nov 2026: "
+            + "3 = 12% instead of 4%; it is never on every block).", min = 1, max = 25)
+    public double grindEventGoldenChance = 3.0;
 
     @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot, nether wart): small at the start, bigger later.")
-    public List<Integer> grindFarmBonus = List.of(2000, 3500, 6000, 10000, 15000); // owner 7 Nov 2026: half (less farm money)
+    public List<Integer> grindFarmBonus = List.of(500, 900, 1500, 2500, 3800); // owner 7 Nov 2026: half, then all money / 4
 
     @Setting(path = "grind.farm-unlocks", desc = "FX-09: crops harvested in total that turn the whole /farm into the next crop for you "
             + "(wheat, carrots, potatoes, beetroot, nether wart; the first is always 0; a missing entry uses the built-in number).")
     public List<Integer> grindFarmUnlocks = List.of(0, 3_000, 12_000, 40_000, 60_000);
 
     @Setting(path = "grind.mine-bonus", desc = "Money of one /mine bonus per ore tier (coal, iron, gold, redstone, lapis, diamond, emerald).")
-    public List<Integer> grindMineBonus = List.of(3000, 6000, 12000, 16000, 24000, 45000, 80000);
+    public List<Integer> grindMineBonus = List.of(750, 1500, 3000, 4000, 6000, 11000, 20000); // owner 7 Nov 2026: money / 4
 
     @Setting(path = "grind.mine-unlocks", desc = "Owner 4 Nov 2026: blocks mined in total that turn the whole /mine into the next ore for you "
             + "(coal, iron, gold, redstone, lapis, diamond, emerald; the first is always 0).")
@@ -91,12 +95,12 @@ public final class EssentialsConfig extends ModuleConfig {
             + "Every catch pays its water's money (vanilla fish keep a small sell price, so island fish farms never print money).",
             level = Setting.Level.OWNER)
     public List<String> fishWaters = List.of(
-            "shallows:0:15000:cod@85,salmon@12,ink_sac@3",
-            "river:500:19000:salmon@80,cod@12,tropical_fish@8",
-            "lake:2000:24000:tropical_fish@75,salmon@17,pufferfish@8",
-            "reef:6000:30000:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
-            "deep:15000:37000:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
-            "abyss:35000:45000:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2");
+            "shallows:0:3750:cod@85,salmon@12,ink_sac@3",
+            "river:500:4750:salmon@80,cod@12,tropical_fish@8",
+            "lake:2000:6000:tropical_fish@75,salmon@17,pufferfish@8",
+            "reef:6000:7500:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
+            "deep:15000:9250:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
+            "abyss:35000:11250:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2"); // owner 7 Nov 2026: money / 4
 
     @Setting(path = "grind.fish-wait-ticks", desc = "How long a fish takes to bite at /fish, 'min-max' in ticks (vanilla 100-600).", level = Setting.Level.OWNER)
     public String fishWait = "60-160";
@@ -279,13 +283,25 @@ public final class EssentialsConfig extends ModuleConfig {
     /** Version 2 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): the /farm money bonus is halved (untouched lists only). */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        EssentialsConfig d = new EssentialsConfig();
         return java.util.Map.of(2, java.util.Map.of("grind.farm-bonus",
-                ValueChange.of(List.of(4000, 7000, 12000, 20000, 30000), new EssentialsConfig().grindFarmBonus)));
+                ValueChange.of(List.of(4000, 7000, 12000, 20000, 30000), List.of(2000, 3500, 6000, 10000, 15000))),
+                // v3 (owner 7 Nov 2026): money / 4, Golden Blocks no longer pays on every block
+                3, java.util.Map.of("grind.farm-bonus", ValueChange.of(List.of(2000, 3500, 6000, 10000, 15000), d.grindFarmBonus),
+                        "grind.mine-bonus", ValueChange.of(List.of(3000, 6000, 12000, 16000, 24000, 45000, 80000), d.grindMineBonus),
+                        "grind.fish-waters", ValueChange.of(List.of(
+            "shallows:0:15000:cod@85,salmon@12,ink_sac@3",
+            "river:500:19000:salmon@80,cod@12,tropical_fish@8",
+            "lake:2000:24000:tropical_fish@75,salmon@17,pufferfish@8",
+            "reef:6000:30000:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
+            "deep:15000:37000:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
+            "abyss:35000:45000:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2"), d.fishWaters),
+                        "grind.events.golden", ValueChange.of(5.0, d.grindEventGolden)));
     }
 
     @Override

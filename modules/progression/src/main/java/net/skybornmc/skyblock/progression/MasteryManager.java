@@ -199,6 +199,7 @@ final class MasteryManager implements Listener {
      * new in the bundled file are added to an existing file (turn one off with {@code enabled: false} instead).
      */
     private MasteryCatalog loadCatalog() {
+        UpgradeCatalog.costMultiplier = upgradesConfig.costMultiplier; // owner 7 Nov 2026: all money prices / 4
         File file = new File(core.plugin().getDataFolder(), MasteryCatalog.FILE);
         YamlConfiguration bundled = bundled();
         YamlConfiguration yaml = new YamlConfiguration();
@@ -323,7 +324,7 @@ final class MasteryManager implements Listener {
 
     /** Price of the next Ascension level of the island, -1 when none can be bought. */
     long ascensionCost(UUID islandId) {
-        return MasteryRules.ascensionCost(config.ascensionBaseCost, config.ascensionGrowth, config.ascensionStartLevel, ascension(islandId) + 1);
+        return UpgradeCatalog.scaled(MasteryRules.ascensionCost(config.ascensionBaseCost, config.ascensionGrowth, config.ascensionStartLevel, ascension(islandId) + 1));
     }
 
     MasteryRules.Status ascensionStatus(Player viewer, UUID islandId, long bank) {

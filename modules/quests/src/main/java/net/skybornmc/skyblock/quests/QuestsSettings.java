@@ -118,12 +118,13 @@ public final class QuestsSettings extends ModuleConfig {
     /** v2 (FX-12, 6 Nov 2026): the Depths mine, chop and kill quests and forge leave the pools; /mine ores and /farm crops come in. */
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ModuleConfig.ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of(
+        return java.util.Map.of(3, java.util.Map.of("pouch.ref-per-minute", ModuleConfig.ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new QuestsSettings().refPerMinute)),
+                2, java.util.Map.of(
                 "daily.pool", ModuleConfig.ValueChange.of(DAILY_V1, new QuestsSettings().dailyPool),
                 "weekly.pool", ModuleConfig.ValueChange.of(WEEKLY_V1, new QuestsSettings().weeklyPool),
                 "island.pool", ModuleConfig.ValueChange.of(ISLAND_V1, new QuestsSettings().islandPool)));
@@ -161,8 +162,7 @@ public final class QuestsSettings extends ModuleConfig {
 
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers 1-12. Same "
             + "numbers as daily.yml and crates-settings.yml.", level = Setting.Level.OWNER)
-    public List<String> refPerMinute = List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300",
-            "34933300", "100000000", "285333300");
+    public List<String> refPerMinute = List.of("20675", "36675", "64000", "112675", "198000", "346675", "608675", "1066675", "3053325", "8733325", "25000000", "71333325"); // owner 7 Nov 2026: money / 4
 
     @Setting(path = "pouch.crystal-growth", desc = "Crystal growth per tier: base x growth^(tier-1) (ECONOMY_BALANCE §9.1).",
             min = 1, max = 3, level = Setting.Level.OWNER)

@@ -671,7 +671,8 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     private void rollBonus(Player p, long amount, Block at) {
         // Owner 6 Nov 2026: Golden Blocks makes the bonus come every time and worth more.
         boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
-        if (amount > 0 && (golden || ThreadLocalRandom.current().nextDouble(100) < config.grindBonusChance)) {
+        double chance = config.grindBonusChance * (golden ? config.grindEventGoldenChance : 1); // owner 7 Nov 2026: still rare
+        if (amount > 0 && ThreadLocalRandom.current().nextDouble(100) < chance) {
             // owner 7 Nov 2026: the bonus floats up from the crop or ore that gave it (0.5 s), not the action bar
             moneyPopup(p, at == null ? null : at.getLocation(), addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount));
         }

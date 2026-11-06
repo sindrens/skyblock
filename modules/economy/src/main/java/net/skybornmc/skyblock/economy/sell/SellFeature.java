@@ -82,7 +82,15 @@ public final class SellFeature implements Listener {
      * (1 of each drop). A live price that is still the old default changes once; an owner price stays.
      */
     static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
-            java.util.Map.of(3, java.util.Map.ofEntries(
+            java.util.Map.of(
+                    // v4 (owner 7 Nov 2026): wheat pays less, every /farm crop a clear step up
+                    4, java.util.Map.ofEntries(
+                    java.util.Map.entry("categories.crops.wheat", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(700, 400)),
+                    java.util.Map.entry("categories.crops.carrot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(900, 700)),
+                    java.util.Map.entry("categories.crops.potato", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(900, 1100)),
+                    java.util.Map.entry("categories.crops.beetroot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1200, 1600)),
+                    java.util.Map.entry("categories.crops.nether_wart", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1800, 2400))),
+                    3, java.util.Map.ofEntries(
                     java.util.Map.entry("categories.crops.wheat", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1200, 700)),
                     java.util.Map.entry("categories.crops.carrot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1500, 900)),
                     java.util.Map.entry("categories.crops.potato", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1500, 900)),

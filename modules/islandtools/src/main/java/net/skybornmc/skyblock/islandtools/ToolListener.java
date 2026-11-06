@@ -139,6 +139,17 @@ final class ToolListener implements Listener {
 
     // ------------------------------------------------------------------ blocks
 
+    /** True when the storage slots 0-35 (hotbar too) have no empty slot (the drops would not fit in the bag). */
+    static boolean bagFull(Player p) {
+        org.bukkit.inventory.ItemStack[] storage = p.getInventory().getStorageContents();
+        for (org.bukkit.inventory.ItemStack s : storage) {
+            if (s == null || s.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
@@ -147,9 +158,10 @@ final class ToolListener implements Listener {
             return; // the rod and the sword break blocks like plain items
         }
         Block block = event.getBlock();
-        // Owner Q-30 (FULL_PLAN.md): at /farm and /mine the drops go into the tool's storage; when it is full the
-        // breaking pauses (nothing is lost) until the player sells or empties it.
-        if (grindWorld(p) && !expanding.contains(p.getUniqueId()) && m.storage().used(m.profile(p), kind) >= m.storage().capacity(p, kind)) {
+        // Owner 7 Nov 2026: at /farm and /mine the drops fill the inventory first, then the tool's storage; only when
+        // both are full does the breaking pause (nothing is lost; shards keep coming while there is room).
+        if (grindWorld(p) && !expanding.contains(p.getUniqueId()) && bagFull(p)
+                && m.storage().used(m.profile(p), kind) >= m.storage().capacity(p, kind)) {
             event.setCancelled(true);
             m.msg().actionBar(p, "storage.paused");
             return;
@@ -342,15 +354,7 @@ final class ToolListener implements Listener {
                 it.remove(); // Auto-Sell: sold in the next batch
                 continue;
             }
-            if (grindWorld(p)) { // owner Q-30: the tool's storage first at /farm and /mine, then the bag, never the ground
-                long stored = m.storage().add(p, kind, stack.getType().getKey().getKey(), stack.getAmount());
-                if (stored >= stack.getAmount()) {
-                    it.remove();
-                    continue;
-                }
-                stack.setAmount(stack.getAmount() - (int) stored);
-            }
-            // Owner 4 Nov 2026: the bag first, then the tool's storage; at /farm and /mine nothing ever lands on the ground.
+            // Owner 7 Nov 2026: the bag first, then the tool's storage, everywhere; at /farm and /mine never the ground.
             Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
             if (left.isEmpty()) {
                 it.remove();
@@ -499,7 +503,7 @@ final class ToolListener implements Listener {
         if (!grindWorld(p) || ToolItems.kindOf(p.getInventory().getItemInMainHand()) != Kind.ROD || !m.loaded(p)) {
             return;
         }
-        if (m.storage().used(m.profile(p), Kind.ROD) >= m.storage().capacity(p, Kind.ROD)) {
+        if (bagFull(p) && m.storage().used(m.profile(p), Kind.ROD) >= m.storage().capacity(p, Kind.ROD)) {
             event.setCancelled(true);
             m.msg().actionBar(p, "storage.paused-rod");
         }
@@ -528,15 +532,15 @@ final class ToolListener implements Listener {
         if (mult > 1.0) {
             stack.setAmount(Math.max(1, Math.min(stack.getMaxStackSize(), ToolRules.roll(stack.getAmount() * mult, ThreadLocalRandom.current().nextDouble()))));
         }
-        caught.remove(); // nothing flies to the player: storage first, then the bag
+        caught.remove(); // nothing flies to the player: the bag first, then the rod's storage (owner 7 Nov 2026)
         if (m.autoSell(p, kind, stack)) {
             return;
         }
-        long stored = m.storage().add(p, kind, stack.getType().getKey().getKey(), stack.getAmount());
-        if (stored < stack.getAmount()) {
-            stack.setAmount(stack.getAmount() - (int) stored);
-            Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
-            if (!left.isEmpty()) {
+        Map<Integer, ItemStack> left = p.getInventory().addItem(stack);
+        if (!left.isEmpty()) {
+            ItemStack rest = left.values().iterator().next();
+            long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount());
+            if (stored < rest.getAmount()) {
                 warn(p, "storage.full");
             }
         }

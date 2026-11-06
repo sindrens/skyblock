@@ -260,6 +260,12 @@ public final class SellServiceImpl implements SellService {
     }
 
     @Override
+    public double priceMultiplier() {
+        double m = config.get().sellPriceMultiplier;
+        return m > 0 && Double.isFinite(m) ? m : 1.0;
+    }
+
+    @Override
     public List<String> itemKeys() {
         return catalog.get().sellableKeys();
     }

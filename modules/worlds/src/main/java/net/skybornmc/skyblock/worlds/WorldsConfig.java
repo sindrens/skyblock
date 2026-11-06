@@ -54,14 +54,14 @@ public final class WorldsConfig extends ModuleConfig {
     public String islandPortal = "";
 
     @Setting(path = "portals.force-open", desc = "Portal ids that teleport although the build marks them closed (open the gate first).")
-    public List<String> portalsForceOpen = List.of();
+    public List<String> portalsForceOpen = List.of("to_outposts", "to_events"); // owner 7 Nov 2026: they lead to /fish and /pve
 
     @Setting(path = "portals.disabled", desc = "Portal ids that never teleport.")
     public List<String> portalsDisabled = List.of();
 
     @Setting(path = "portals.target-overrides", desc = "portal=target entries replacing the metadata target "
-            + "(targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>).")
-    public List<String> portalTargetOverrides = List.of();
+            + "(targets: island, spawn, depths, warzone, world:<name>, point:<category>:<id>, command:<command>).")
+    public List<String> portalTargetOverrides = List.of("to_outposts=command:fish", "to_events=command:pve");
 
     @Setting(path = "portals.world-targets", desc = "target=world entries: which world a target name leads to.")
     public List<String> portalWorldTargets = List.of("spawn=spawn", "depths=depths", "warzone=warzone");

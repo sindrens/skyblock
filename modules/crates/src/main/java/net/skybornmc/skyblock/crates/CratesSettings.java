@@ -91,8 +91,7 @@ public final class CratesSettings extends ModuleConfig {
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers "
             + "1-12; a Money Pouch of N minutes pays N x this at the opener's tier. The last value is used above.",
             level = Setting.Level.OWNER)
-    public List<String> refPerMinute = List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300",
-            "34933300", "100000000", "285333300");
+    public List<String> refPerMinute = List.of("20675", "36675", "64000", "112675", "198000", "346675", "608675", "1066675", "3053325", "8733325", "25000000", "71333325"); // owner 7 Nov 2026: money / 4
 
     @Setting(path = "pouch.crystal-growth", desc = "Crystal Pouch growth per tier: base x growth^(tier-1) (crystals grow "
             + "x1.30 per tier, ECONOMY_BALANCE §9.1). Also scales the crystal value of coming-soon rewards.",
@@ -311,7 +310,7 @@ public final class CratesSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /**
@@ -320,7 +319,8 @@ public final class CratesSettings extends ModuleConfig {
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of(
+        return java.util.Map.of(3, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new CratesSettings().refPerMinute)),
+                2, java.util.Map.of(
                 "spinner.duration-ticks", ValueChange.of(60, 40),
                 "fragments.enabled", ValueChange.of(true, false),
                 "tier.stage-skills", ValueChange.of(List.of("mining", "foraging", "combat"), List.of("farming", "mining", "fishing", "combat"))));

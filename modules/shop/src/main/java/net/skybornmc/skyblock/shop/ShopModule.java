@@ -111,6 +111,13 @@ public final class ShopModule implements SkyblockModule, Listener {
      */
     static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
             java.util.Map.of(
+                    // v10 (owner 7 Nov 2026): seeds and crops 10x the new /farm crop prices
+                    10, java.util.Map.ofEntries(
+                    java.util.Map.entry("categories.farming.items.wheat_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(7000, 4000)),
+                    java.util.Map.entry("categories.farming.items.carrot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(9000, 7000)),
+                    java.util.Map.entry("categories.farming.items.potato", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(9000, 11000)),
+                    java.util.Map.entry("categories.farming.items.beetroot_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(12000, 16000)),
+                    java.util.Map.entry("categories.farming.groups.seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("bone_meal", "melon_seeds", "pumpkin_seeds", "wheat_seeds", "beetroot_seeds"), java.util.List.of("bone_meal", "wheat_seeds", "melon_seeds", "pumpkin_seeds", "beetroot_seeds")))),
                     // v9 (owner 7 Nov 2026, "simple"): mobs whose loot copies another mob leave the shop (null = removed)
                     9, java.util.Map.ofEntries(
                     java.util.Map.entry("categories.spawners.items.hoglin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(7500000L, null)),
@@ -490,7 +497,9 @@ public final class ShopModule implements SkyblockModule, Listener {
      */
     private ShopCatalog.Pricing pricing() {
         Optional<SellService> sell = core.services().optional(SellService.class);
-        return new ShopCatalog.Pricing(id -> sell.flatMap(s -> s.price(id)).map(p -> p.base()).orElse(Double.NaN),
+        // owner 7 Nov 2026: 'auto' = markup x the sell.yml base BEFORE the economy's sell multiplier, then x the shop's
+        // buy multiplier once (both are / 4), so an auto price is never scaled twice
+        return new ShopCatalog.Pricing(id -> sell.flatMap(s -> s.price(id).map(p -> p.base() / s.priceMultiplier())).orElse(Double.NaN),
                 settings.autoMarkup, settings.priceMultiplier);
     }
 

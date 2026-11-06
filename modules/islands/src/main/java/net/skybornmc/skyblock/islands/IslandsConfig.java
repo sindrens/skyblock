@@ -341,7 +341,7 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "lifecycle.profile-reset.join-money", desc = "Money a player has right after joining an island (topped up to this; 0 = off).",
             min = 0, max = 1_000_000_000)
-    public long joinMoney = 100_000;
+    public long joinMoney = 10_000; // owner 7 Nov 2026: start with $10k
 
     @Setting(path = "lifecycle.wipe-profile", desc = "Owner 4 Nov 2026 (island = profile): every way of leaving an island (leave, "
             + "kick, staff removal, disband, staff delete/reset, replacing your solo island) wipes that profile: money, items, ender "
@@ -769,13 +769,14 @@ public final class IslandsConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /** Version 3 (owner 3 Nov 2026 start flow): the new starter chest, only when the live list is the untouched old default. */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("starter-chest.items", ValueChange.of(STARTER_ITEMS_V2, new IslandsConfig().starterItems)));
+        return java.util.Map.of(3, java.util.Map.of("starter-chest.items", ValueChange.of(STARTER_ITEMS_V2, new IslandsConfig().starterItems)),
+                4, java.util.Map.of("lifecycle.profile-reset.join-money", ValueChange.of(100_000L, 10_000L)));
     }
 
     /** Old defaults that version 2 changes (only untouched old defaults are changed; owner-chosen values stay). */
