@@ -60,6 +60,14 @@ final class SellMenu extends Menu {
             lore.add(Component.empty());
             lore.add(service.text(viewer, AuctionModule.ID, "sell.typical", module.typicalTag(viewer, typical.getAsDouble())));
             itemTile.lore(lore);
+        } else {
+            java.util.OptionalDouble cheapest = module.cheapestNow(expected, viewer.getUniqueId());
+            if (cheapest.isPresent()) {
+                List<Component> lore = new java.util.ArrayList<>(itemTile.lore() == null ? List.of() : itemTile.lore());
+                lore.add(Component.empty());
+                lore.add(service.text(viewer, AuctionModule.ID, "sell.cheapest", module.typicalTag(viewer, cheapest.getAsDouble())));
+                itemTile.lore(lore);
+            }
         }
         set(SLOT_ITEM, itemTile);
         List<String> durations = Pricing.durations(module.config);

@@ -111,8 +111,8 @@ class ShopCatalogGroupsTest {
     @Test
     void econResultCounts() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog();
-        assertEquals(293, c.size()); // + 19 workstations, storage and redstone parts (feedback 5 Nov 2026)
-        int[] expected = {57, 54, 20, 19, 52, 15, 28, 28, 20};
+        assertEquals(335, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42)
+        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 20};
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }

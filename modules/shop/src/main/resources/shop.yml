@@ -44,18 +44,23 @@
 # items and brought leaves, flowers and plants with price: auto. Older files are migrated once on startup, one version at a
 # time (backup shop.yml.before-v<N>, shop-migration-v<N>.log): your prices, enabled: false, requires and own items stay;
 # default items the new file drops move to worth-only.
+# config-version 7 (batch 9, 7 Nov 2026, Q-42): the planks, crafted stone and the other items v4 took out are sold again,
+# Mob Drops has arrows, the wither skull, ink sacs, the nautilus shell and three brewing drops. A live v6 file gets them
+# once (worth-only entries move back into their tab; groups follow when you never edited them).
 # Reload: /skyblock reload shop
-config-version: 6
+config-version: 7
 
 categories:
-  # Wood, stone, earth, Nether, End and ocean blocks, sorted by type. Polished, brick and plank variants are crafted.
+  # Wood, planks, stone and its crafted variants, earth, Nether, End and ocean blocks, sorted by type.
   building:
     icon: stone_bricks
     groups:
       wood: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, cherry_log, pale_oak_log, crimson_stem, warped_stem, bamboo_block]
-      soil: [dirt, mud, rooted_dirt, grass_block, podzol, clay]
+      planks: [oak_planks, spruce_planks, birch_planks, jungle_planks, acacia_planks, dark_oak_planks, mangrove_planks, cherry_planks, pale_oak_planks, crimson_planks, warped_planks, bamboo_planks]
+      soil: [dirt, coarse_dirt, mud, rooted_dirt, grass_block, podzol, clay]
       sand: [sand, gravel, red_sand]
       stone: [tuff, diorite, granite, calcite, cobblestone, stone, bricks]
+      crafted: [andesite, polished_andesite, polished_diorite, polished_granite, sandstone, polished_deepslate, polished_blackstone, deepslate_bricks, polished_blackstone_bricks, stone_bricks, mossy_cobblestone, mossy_stone_bricks, end_stone_bricks, quartz_bricks, quartz_pillar]
       deep: [cobbled_deepslate, pointed_dripstone, deepslate, dripstone_block]
       nether: [netherrack, basalt, blackstone, soul_sand, soul_soil, nether_bricks, red_nether_bricks, magma_block, crimson_nylium, warped_nylium, warped_wart_block]
       end: [end_stone, purpur_block, quartz_block, smooth_quartz]
@@ -119,6 +124,35 @@ categories:
       copper_block: 40
       obsidian: 60
       crying_obsidian: 80
+      # Batch 9 (Q-42): planks and crafted stone are back
+      oak_planks: 2
+      spruce_planks: 2
+      birch_planks: 2
+      jungle_planks: 2
+      acacia_planks: 2
+      dark_oak_planks: 2
+      mangrove_planks: 2
+      cherry_planks: 2
+      pale_oak_planks: 2
+      crimson_planks: 2
+      warped_planks: 2
+      bamboo_planks: 2
+      stone_bricks: 9
+      mossy_stone_bricks: 10
+      mossy_cobblestone: 9
+      andesite: 5
+      polished_andesite: 6
+      polished_diorite: 6
+      polished_granite: 6
+      sandstone: 6
+      polished_deepslate: 7
+      deepslate_bricks: 8
+      polished_blackstone: 7
+      polished_blackstone_bricks: 8
+      end_stone_bricks: 12
+      quartz_bricks: 22
+      quartz_pillar: 22
+      coarse_dirt: 4
   # Leaves, grass, flowers, moss and the plants of lush caves and the Nether.
   nature:
     icon: oak_leaves
@@ -126,7 +160,8 @@ categories:
       leaves: [oak_leaves, spruce_leaves, birch_leaves, jungle_leaves, acacia_leaves, dark_oak_leaves, mangrove_leaves, cherry_leaves, pale_oak_leaves, azalea_leaves, flowering_azalea_leaves]
       greens: [short_grass, fern, dead_bush]
       flowers: [dandelion, poppy, cornflower, blue_orchid, allium, azure_bluet, red_tulip, orange_tulip, white_tulip, pink_tulip, oxeye_daisy, lily_of_the_valley, sunflower, lilac, rose_bush, peony]
-      moss: [moss_block, azalea, flowering_azalea, spore_blossom]
+      moss: [moss_carpet, moss_block, azalea, flowering_azalea, spore_blossom]
+      ice: [packed_ice, blue_ice]
       plants: [vine, kelp, bamboo, lily_pad, brown_mushroom, red_mushroom, glow_berries]
       lush: [glow_lichen, hanging_roots, mangrove_roots, muddy_mangrove_roots, big_dripleaf, small_dripleaf, sea_pickle]
       nether: [crimson_roots, warped_roots, weeping_vines, twisting_vines, crimson_fungus, warped_fungus]
@@ -185,6 +220,10 @@ categories:
       twisting_vines: auto
       crimson_fungus: auto
       warped_fungus: auto
+      # Batch 9 (Q-42)
+      moss_carpet: 4
+      packed_ice: 12
+      blue_ice: 30
   # Seeds, crops and saplings. Crops that are their own seed sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more.
   farming:
     icon: wheat_seeds
@@ -218,11 +257,12 @@ categories:
   mob-drops:
     icon: bone
     groups:
-      undead: [rotten_flesh, bone]
+      undead: [arrow, rotten_flesh, bone, wither_skeleton_skull]
       hostile: [string, spider_eye, slime_ball, gunpowder, ender_pearl, blaze_rod]
+      brewing: [magma_cream, phantom_membrane, ghast_tear]
       animal: [feather, leather, rabbit_hide, rabbit_foot]
       meat: [porkchop, beef, chicken, mutton, rabbit]
-      ocean: [prismarine_shard, prismarine_crystals]
+      ocean: [ink_sac, glow_ink_sac, nautilus_shell, prismarine_shard, prismarine_crystals]
     items:
       rotten_flesh: auto
       bone: auto
@@ -243,6 +283,15 @@ categories:
       rabbit: auto
       prismarine_shard: auto
       prismarine_crystals: auto
+      # Batch 9 (7 Nov 2026): what the /pve and /fish finds lack, and the brewing drops of mobs that don't spawn here.
+      arrow: 6
+      wither_skeleton_skull: auto
+      magma_cream: 80
+      ghast_tear: 250
+      phantom_membrane: 120
+      ink_sac: auto
+      glow_ink_sac: auto
+      nautilus_shell: auto
   # Concrete, stained glass and terracotta in all 16 colours (2 pages). Wool, carpets and dyes are crafted.
   colors:
     icon: light_blue_concrete
@@ -309,7 +358,7 @@ categories:
     icon: lantern
     groups:
       light: [soul_torch, candle, end_rod, campfire, shroomlight, lantern, ochre_froglight, verdant_froglight, pearlescent_froglight, soul_lantern]
-      display: [flower_pot, iron_bars, decorated_pot, item_frame, glow_item_frame]
+      display: [flower_pot, iron_bars, decorated_pot, item_frame, white_banner, glow_item_frame, chiseled_bookshelf]
     items:
       soul_torch: 5
       candle: 15
@@ -326,12 +375,15 @@ categories:
       decorated_pot: 20
       item_frame: 25
       glow_item_frame: 40
+      # Batch 9 (Q-42): back in the shop
+      chiseled_bookshelf: 70
+      white_banner: 25
   # Advanced workstations, buckets, tools and food. Crafting table, furnace, chest and other simple crafts are made by the
   # player (ECON-TABLES D1).
   essentials:
     icon: crafting_table
     groups:
-      basics: [torch, scaffolding, bread, white_bed]
+      basics: [torch, scaffolding, bread, baked_potato, white_bed]
       tools: [flint_and_steel, shears, fishing_rod, bucket, water_bucket, lava_bucket]
       workstations: [crafting_table, furnace, smoker, stonecutter, blast_furnace, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
       storage: [ladder, glass_pane, composter, chest, barrel, painting, armor_stand]
@@ -365,6 +417,7 @@ categories:
       scaffolding: 5
       white_bed: 30
       bread: 15
+      baked_potato: 15
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone
@@ -532,37 +585,3 @@ worth-only:
   lectern: 50
   ender_chest: 1500
   # Shop v4 (ECON-SELL-SHOP-AH B1, ECON-TABLES D1): crafted from shop items, so players craft them; still sellable.
-  baked_potato: 15
-  oak_planks: 2
-  spruce_planks: 2
-  birch_planks: 2
-  jungle_planks: 2
-  acacia_planks: 2
-  dark_oak_planks: 2
-  mangrove_planks: 2
-  cherry_planks: 2
-  pale_oak_planks: 2
-  crimson_planks: 2
-  warped_planks: 2
-  bamboo_planks: 2
-  coarse_dirt: 4
-  sandstone: 6
-  stone_bricks: 9
-  mossy_stone_bricks: 10
-  mossy_cobblestone: 9
-  andesite: 5
-  polished_andesite: 6
-  polished_diorite: 6
-  polished_granite: 6
-  polished_deepslate: 7
-  deepslate_bricks: 8
-  polished_blackstone: 7
-  polished_blackstone_bricks: 8
-  end_stone_bricks: 12
-  quartz_bricks: 22
-  quartz_pillar: 22
-  packed_ice: 12
-  blue_ice: 30
-  white_banner: 25
-  chiseled_bookshelf: 70
-  moss_carpet: 4

@@ -39,9 +39,11 @@ final class ShopCatalogMigration {
     static final int V4 = 4;
     /** Owner 2 Nov 2026: tabs Building Blocks, Nature, Farming, Mob Drops, Colors, Decoration, Essentials, Redstone, Spawners. */
     static final int V5 = 5;
-    /** The current version (what a fresh install writes). */
+    /** Owner 3 Nov 2026: crop prices. */
     static final int V6 = 6;
-    static final int VERSION = V6;
+    /** The current version (what a fresh install writes): batch 9 (Q-42), the removed items are back. */
+    static final int V7 = 7;
+    static final int VERSION = V7;
 
     /**
      * v5 &rarr; v6 (owner 3 Nov 2026, "make the buy prices for the crops SUPER HIGH, so they buy 1 and regrow"): seeds and
@@ -83,6 +85,65 @@ final class ShopCatalogMigration {
         }
         live.set("config-version", V6);
         return Optional.of(new Result(live, changes));
+    }
+
+    /**
+     * v6 &rarr; v7 (batch 9, 7 Nov 2026, Q-42 "the 49 back"): every item of the bundled tabs that the live file keeps under
+     * {@code worth-only} moves back into its tab with the bundled price (it was taken out by v4; the 19 workstations of
+     * 5 Nov were brought back without a version, so an old live file may still park them there too). A tab whose
+     * {@code groups} are still the frozen v6 ones gets the bundled groups; an edited one keeps the owner's (new ids then
+     * form the last row). New items that were never in the file are added by {@code addMissing} afterwards.
+     */
+    static Optional<Result> itemsV7(YamlConfiguration live, YamlConfiguration bundled, YamlConfiguration v6Defaults) {
+        if (version(live) >= V7) {
+            return Optional.empty();
+        }
+        List<String> changes = new ArrayList<>();
+        ConfigurationSection tabs = bundled.getConfigurationSection(ShopCatalog.ROOT);
+        ConfigurationSection parked = live.getConfigurationSection(ShopCatalog.WORTH_ONLY);
+        if (tabs != null) {
+            for (String tab : tabs.getKeys(false)) {
+                String base = ShopCatalog.ROOT + "." + tab;
+                if (!live.contains(base)) {
+                    continue; // a tab the owner removed stays removed; addMissing brings back what is new
+                }
+                ConfigurationSection items = tabs.getConfigurationSection(tab + ".items");
+                if (items != null && parked != null) {
+                    for (String id : items.getKeys(false)) {
+                        if (parked.contains(id) && !live.contains(base + ".items." + id)) {
+                            live.set(base + ".items." + id, items.get(id));
+                            parked.set(id, null);
+                            changes.add(tab + ": " + id + " is sold again (" + priceText(items.get(id)) + ")");
+                        }
+                    }
+                }
+                Object groups = tabs.get(tab + ".groups");
+                ConfigurationSection liveGroups = live.getConfigurationSection(base + ".groups");
+                ConfigurationSection oldGroups = v6Defaults.getConfigurationSection(base + ".groups");
+                if (groups instanceof ConfigurationSection g && liveGroups != null && oldGroups != null
+                        && sameGroups(liveGroups, oldGroups) && !sameGroups(liveGroups, g)) {
+                    live.set(base + ".groups", null);
+                    for (String key : g.getKeys(false)) {
+                        live.set(base + ".groups." + key, g.getStringList(key));
+                    }
+                    changes.add(tab + ": rows updated to the new groups");
+                }
+            }
+        }
+        live.set("config-version", V7);
+        return Optional.of(new Result(live, changes));
+    }
+
+    private static boolean sameGroups(ConfigurationSection a, ConfigurationSection b) {
+        if (!a.getKeys(false).equals(b.getKeys(false))) {
+            return false;
+        }
+        for (String key : a.getKeys(false)) {
+            if (!a.getStringList(key).equals(b.getStringList(key))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** {@code /shop <old tab>} still finds the tab its items moved to. */

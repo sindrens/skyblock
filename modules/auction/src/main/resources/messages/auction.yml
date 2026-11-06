@@ -42,6 +42,8 @@ sell:
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your last listing is still going through. Try again in a second."
   # C5: the line under the item in the list dialog when the item has a typical price. <typical> = price per item
   typical: "<c:muted>Typical price </c:muted><typical> <c:muted>each"
+  # Batch 9: no typical price yet (few sales): the cheapest listing of the same item right now. <typical> = price per item
+  cheapest: "<c:muted>Cheapest now </c:muted><typical> <c:muted>each"
   duration:
     name: "<c:success>List for <c:value><time>"
     lore:
@@ -239,6 +241,21 @@ browse:
       - "<c:text>Showing items matching your search."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to search again"
+  # Batch 9 ("List similar"): only listings of the exact item in your hand.
+  similar:
+    name: "<c:value>Similar to your hand"
+    lore:
+      - "<c:text>Shows only listings of the"
+      - "<c:text>item you are holding."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to filter"
+  similar-active:
+    name: "<c:value>Similar: <c:flame><item>"
+    lore:
+      - "<c:text>Showing only this item."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show all"
+  similar-empty: "<prefix><c:error><sym:cross></c:error> <c:text>Hold the item you want to compare first."
   clear-search:
     name: "<c:error>Clear search"
     lore:

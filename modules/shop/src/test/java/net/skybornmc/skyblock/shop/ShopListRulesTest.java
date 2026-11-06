@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** ECON-TABLES D (Part B): what the bundled shop sells, how auto prices and the buy multiplier work. */
 class ShopListRulesTest {
 
-    /** Feedback 5 Nov 2026: 19 of the 53 removed items (workstations, storage, redstone parts) are sold again. */
+    /** Feedback 5 Nov 2026: 19 of the 53 removed items (workstations, storage, redstone parts) are sold again; batch 9 the other 34. */
     static final List<String> REMOVED = List.of(
             "baked_potato",
             "oak_planks", "spruce_planks", "birch_planks", "jungle_planks", "acacia_planks", "dark_oak_planks", "mangrove_planks",
@@ -27,16 +27,16 @@ class ShopListRulesTest {
     static final Set<String> OWNER_PRICES = Set.of("hopper", "bone_meal", "flint_and_steel");
 
     @Test
-    void the53RemovedItemsAreBlockWorthOnly() throws Exception {
+    void the53RemovedItemsAreSoldAgain() throws Exception { // batch 9 (Q-42): "the 49 back"
         assertEquals(34, REMOVED.size());
         ShopCatalog c = ShopCatalogTest.catalog();
         List<String> wrong = new ArrayList<>();
         for (String id : REMOVED) {
-            if (c.item(id).isPresent() || c.worth(id).isEmpty()) {
+            if (c.item(id).isEmpty() || c.worth(id).isEmpty()) {
                 wrong.add(id);
             }
         }
-        assertTrue(wrong.isEmpty(), "still sold or without block worth: " + wrong);
+        assertTrue(wrong.isEmpty(), "not sold or without block worth: " + wrong);
     }
 
     @Test
@@ -51,7 +51,7 @@ class ShopListRulesTest {
                 assertTrue(item.price() >= 5, item.id() + " costs " + item.price());
             }
         }
-        assertEquals(46 + 19, auto, "ECON-TABLES D3 plus the 19 mob drops");
+        assertEquals(46 + 19 + 4, auto, "ECON-TABLES D3 plus the 19 mob drops plus 4 of batch 9");
         assertEquals(5, c.item("oak_leaves").orElseThrow().price(), "10 x $0.50");
         assertEquals(10, c.item("blue_orchid").orElseThrow().price(), "10 x $1");
         assertEquals(15, c.item("peony").orElseThrow().price(), "10 x $1.50, rounded up");

@@ -110,7 +110,7 @@ class ShopCatalogTest {
             assertEquals(i, tab.slot(), "tab " + tab.id() + " sits in slot " + i);
             assertTrue(realItem(tab.icon()), tab.icon());
             assertFalse(tab.enabledItems().isEmpty(), tab.id());
-            int pages = Set.of("colors", "building", "nature").contains(tab.id()) ? 3 : 2;
+            int pages = tab.id().equals("building") ? 4 : Set.of("colors", "nature").contains(tab.id()) ? 3 : 2; // batch 9: planks and crafted stone
             assertTrue(tab.items().size() <= 28 * pages, tab.id() + " fits " + pages + " page(s)");
         }
         assertEquals(ShopCatalog.Kind.SPAWNER, c.category("spawners").orElseThrow().kind());
@@ -121,8 +121,8 @@ class ShopCatalogTest {
         ShopCatalog c = catalog();
         // ECON-TABLES D4 (Part B): remove 53, add 46, spawners 20 (tiers 1 to 4).
         // MENUS-V3 tab order: wood, stone-earth, special, colors, decoration, essentials, farming, redstone, spawners.
-        assertEquals(293, c.size()); // + 19 workstations, storage and redstone parts (feedback 5 Nov 2026)
-        int[] expected = {57, 54, 20, 19, 52, 15, 28, 28, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
+        assertEquals(335, c.size()); // + 19 workstations (5 Nov 2026), + 34 back and 8 mob drops (batch 9, Q-42)
+        int[] expected = {85, 57, 20, 27, 52, 17, 29, 28, 20}; // Shop v5 tabs (owner 2 Nov 2026), plus Mob Drops
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], c.categories().get(i).items().size(), c.categories().get(i).id());
         }
@@ -185,7 +185,7 @@ class ShopCatalogTest {
         String text = Files.readString(Path.of(ShopCatalogTest.class.getClassLoader().getResource("shop.yml").toURI()));
         assertTrue(text.contains("THE OWNER APPROVES THESE PRICES BEFORE LAUNCH"));
         assertEquals(ShopCatalogMigration.VERSION, bundled().getInt("config-version"));
-        assertEquals(6, ShopCatalogMigration.VERSION);
+        assertEquals(7, ShopCatalogMigration.VERSION);
         assertEquals(4, v4().getInt("config-version"), "the frozen v4 file stays version 4");
         assertEquals(2, v2().getInt("config-version"), "the frozen v2 file stays version 2");
         assertEquals(3, v3().getInt("config-version"), "the frozen v3 file stays version 3");

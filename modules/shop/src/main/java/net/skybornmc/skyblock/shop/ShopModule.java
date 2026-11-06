@@ -102,6 +102,8 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String V3_DEFAULTS = "migrations/shop-v3.yml";
     /** The frozen Shop v4 defaults: baseline of the v5 migration (owner's new tabs, 2 Nov 2026). */
     static final String V4_DEFAULTS = "migrations/shop-v4.yml";
+    /** The frozen Shop v6 defaults: baseline of the v7 groups (batch 9). */
+    static final String V6_DEFAULTS = "migrations/shop-v6.yml";
     /** /settings toggle ids (F14). */
     static final String SETTING_UNDO = "shop-undo";
     static final String SETTING_BIG_BUY = "shop-big-buy";
@@ -308,6 +310,11 @@ public final class ShopModule implements SkyblockModule, Listener {
                 if (v6.isPresent()) {
                     yaml = v6.get().yaml();
                     writeMigration(file, yaml, v6.get().changes(), ShopCatalogMigration.V6);
+                }
+                Optional<ShopCatalogMigration.Result> v7 = ShopCatalogMigration.itemsV7(yaml, bundled, bundled(V6_DEFAULTS));
+                if (v7.isPresent()) {
+                    yaml = v7.get().yaml();
+                    writeMigration(file, yaml, v7.get().changes(), ShopCatalogMigration.V7);
                 }
                 if (addMissing(yaml, bundled)) {
                     yaml.save(file);

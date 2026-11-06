@@ -377,6 +377,29 @@ public final class AuctionModule implements SkyblockModule, Listener {
     }
 
     /**
+     * Batch 9: the cheapest price per item of the same item listed right now by someone else, or empty. The sell page shows
+     * it when there are too few sales for a typical price (a fresh server). Main thread, memory only.
+     */
+    java.util.OptionalDouble cheapestNow(ItemStack stack, java.util.UUID seller) {
+        if (!config.hintsEnabled || stack == null || stack.isEmpty()) {
+            return java.util.OptionalDouble.empty();
+        }
+        return cheapestPerItem(engine().activeListings(), ItemCodec.itemKey(stack), seller, System.currentTimeMillis());
+    }
+
+    /** Pure: the lowest price per item among live listings of {@code itemKey} not by {@code seller}. */
+    static java.util.OptionalDouble cheapestPerItem(java.util.Collection<Listing> listings, String itemKey, java.util.UUID seller, long now) {
+        double best = Double.MAX_VALUE;
+        for (Listing l : listings) {
+            if (l.expiresAt() <= now || !l.item().itemKey().equals(itemKey) || l.seller().equals(seller)) {
+                continue;
+            }
+            best = Math.min(best, l.price() / (double) Math.max(1, l.item().amount()));
+        }
+        return best == Double.MAX_VALUE ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(best);
+    }
+
+    /**
      * C5: a price per item more than {@code hints.warn-factor} times above or below the typical price needs a second
      * click or command within {@code hints.confirm-seconds}. Returns true when the listing may go ahead (no typical price,
      * close enough, or this is the second time); otherwise asks (chat) and returns false.

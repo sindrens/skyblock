@@ -93,10 +93,9 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. Batch 9: crates (one menu, preview with chances, 2 s animation, pity bar), collection pages per area (farm, ores, fish, mobs, crates), auction house (categories, search, sort), shop (all items, Mob Drops tab).
-2. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
-3. Batch 10: pack v2, ranks v2.
-4. Small fixes: FX-05, FX-17, FX-19, FX-21 (Tinker and Sage at spawn still need a spot, see below).
+1. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
+2. Batch 10: pack v2, ranks v2.
+3. Small fixes: FX-05, FX-17, FX-19, FX-21 (Tinker and Sage at spawn still need a spot, see below).
 
 ## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
 - **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
@@ -109,6 +108,18 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Two new chapters in /tutorial: **Marla's Deckhand** (meet Marla, 50 fish, a rod enchant, rod level 10, Golden Fish; 500 Fishing Shards + Ember key) and **Hale's Recruit** (meet Hale, 100 kills, a sword enchant, sword level 10, a boss kill; 500 Combat Shards + Ember key).
 - Boss kills are now in the audit log (`economy / pve_boss`, with ring and key), so staff can see them.
 - Still open (FX-21): **Tinker and Sage** have no spot at spawn. I can't see the spawn build from here, so I didn't guess; stand where you want them and tell me the coordinates (or add a line to `npcs.extra-spots`).
+
+## Batch 9: crates, collection, shop, auction house (update136, plan: `docs/plans/BATCH9_POLISH.md`)
+- **Crates**: the spin takes 2 s (was 3 s, still skippable). The crate tile and preview show a **luck bar** and "Top reward in N opens" (pity numbers unchanged: 3-4x more top rewards would flood the server). Every **"coming soon" row is gone**: Sell Wand, Auto-Sell Chest, Chunk Collector, Tool Skin, Tome, Blueprint and the rest don't exist yet (your Q-71 point). They already paid crystals, so their chance went to crystals: plain rows into the Crystal Pouch, star rows into a new star **Crystal Jackpot**. Players get the same value, and pity keeps its odds. A live `crates.yml` is changed once (backup `crates.yml.before-v3`). Key Fragments are off (their Depths drop is gone). Money pouches now grow with your best area skill (Farming, Mining, Fishing, Combat).
+- **Collection**: the Depths pages (which warned on every start and could never fill) are replaced by **Farm** (5 crops), **Ores** (7), **Fish** (9) and **Mobs** (10 ring mobs + their 10 bosses), plus Crates. Every entry now counts **how many** you found ("Found: 3,412"). Every 25% of a page also gives **5 crystals** (on top of the island point; a full page is still a title and a Blaze key).
+- **Shop** (your Q-42 "the 49 back"): the 34 items that were still missing are back: 12 planks, 15 bricks/polished stones, coarse dirt, packed and blue ice, moss carpet, baked potato, chiseled bookshelf, white banner, at their old prices. New rows: Planks, Bricks and polished stone, Ice, Brewing. Mob Drops adds arrows, wither skeleton skull, ink and glow ink sacs, nautilus shell, magma cream, phantom membrane and ghast tear (335 items, every price still passes the "can't buy and sell for profit" check). A live `shop.yml` is fixed once: worth-only items move back into their tab.
+- **Auction house**: a **"Similar to your hand"** button shows only listings of the exact item you hold. On a new server (too few sales for a typical price) the sell page shows **"Cheapest now"** from other players' listings.
+
+### Shop question (Q-73, default in place)
+The full plan says "one click buy, shift for 64", but your GUI-1 answer was "a click opens the buy page". I kept your GUI-1 answer: a click opens the buy page and shift-click buys a stack. Do you want a plain click to buy 1 instead?
+
+### Auction house note
+If a buy would go over the seller's daily receive limit, it is refused with a message (nobody loses money). The plan said the extra should wait in the mailbox. I kept the refusal because it is safer; tell me if you want the mailbox way.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

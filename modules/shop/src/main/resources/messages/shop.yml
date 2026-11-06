@@ -74,10 +74,10 @@ categories:
 # Group names of the shop grid (shop.yml categories.<tab>.groups.<group>), for /admin and docs only: the grid draws no
 # captions (MENUS-V3 6.2). Items in no group form the last group "more".
 groups:
-  building: { wood: "Logs and stems", soil: "Soil", sand: "Sand and gravel", stone: "Stone", deep: "Deepslate and caves", nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
-  nature: { leaves: "Leaves", greens: "Grass and ferns", flowers: "Flowers", moss: "Moss and azalea", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
+  building: { wood: "Logs and stems", planks: "Planks", soil: "Soil", sand: "Sand and gravel", stone: "Stone", crafted: "Bricks and polished stone", deep: "Deepslate and caves", nether: "Nether", end: "End and quartz", ocean: "Ocean", rare: "Rare blocks", more: "More" }
+  nature: { leaves: "Leaves", greens: "Grass and ferns", flowers: "Flowers", moss: "Moss and azalea", ice: "Ice", plants: "Plants", lush: "Lush plants", nether: "Nether plants", more: "More" }
   farming: { seeds: "Seeds", crops: "Crops", trees: "Saplings", more: "More" }
-  mob-drops: { undead: "Undead", hostile: "Hostile mobs", animal: "Animals", meat: "Meat", ocean: "Ocean", more: "More" }
+  mob-drops: { undead: "Undead", hostile: "Hostile mobs", brewing: "Brewing", animal: "Animals", meat: "Meat", ocean: "Ocean", more: "More" }
   colors: { concrete: "Concrete", extras: "Glass, terracotta and wool", glass: "Stained glass", terracotta: "Terracotta", more: "More" }
   decoration: { light: "Lights", display: "Display", more: "More" }
   essentials: { basics: "Basics", tools: "Tools and buckets", workstations: "Workstations", storage: "Storage", more: "More" }

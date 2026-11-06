@@ -29,6 +29,8 @@ final class AuctionMenu extends PagedMenu<Listing> {
     static final int SLOT_SELL = 2;
     static final int SLOT_MINE = 3;
     static final int SLOT_SUMMARY = 4;
+    /** Batch 9: "Similar to your hand" (only listings of that exact item). */
+    static final int SLOT_SIMILAR = 5;
     static final int SLOT_REFRESH = 6;
     static final int SLOT_CATEGORY = 46;
     static final int SLOT_SORT = 47;
@@ -57,6 +59,8 @@ final class AuctionMenu extends PagedMenu<Listing> {
     private Category category; // null = all
     private Sort sort = Sort.NEWEST;
     private String search;
+    private String similarKey; // null = off; else ItemCodec.itemKey of the item to match
+    private String similarName;
 
     AuctionMenu(AuctionModule module) {
         this.module = module;
@@ -89,7 +93,7 @@ final class AuctionMenu extends PagedMenu<Listing> {
 
     @Override
     protected String emptyKey() {
-        return search != null || category != null ? "browse.empty-filtered" : "browse.empty";
+        return search != null || category != null || similarKey != null ? "browse.empty-filtered" : "browse.empty";
     }
 
     @Override
@@ -113,6 +117,9 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 continue;
             }
             if (needle != null && !matches(l, needle)) {
+                continue;
+            }
+            if (similarKey != null && !similarKey.equals(l.item().itemKey())) {
                 continue;
             }
             out.add(l);
@@ -149,6 +156,18 @@ final class AuctionMenu extends PagedMenu<Listing> {
         TagResolver searchTag = Msg.p("search", search == null ? "" : search);
         set(SLOT_SEARCH, service.icon(viewer, "nav/search", service.text(viewer, AuctionModule.ID, searchKey + ".name", searchTag),
                 service.lines(viewer, AuctionModule.ID, searchKey + ".lore", searchTag)), click -> askSearch());
+        if (similarKey == null) {
+            set(SLOT_SIMILAR, service.item(cfg.icon("similar", Material.COMPASS), viewer, AuctionModule.ID, "browse.similar"),
+                    click -> similarToHand());
+        } else {
+            set(SLOT_SIMILAR, service.item(cfg.icon("similar", Material.COMPASS), viewer, AuctionModule.ID, "browse.similar-active",
+                    Msg.p("item", similarName)), click -> {
+                similarKey = null;
+                similarName = null;
+                page(0);
+                service.open(viewer, this);
+            });
+        }
         if (search != null) {
             set(SLOT_CLEAR, service.item(cfg.icon("clear-search", Material.BARRIER), viewer, AuctionModule.ID, "browse.clear-search",
                     Msg.p("search", search)), click -> {
@@ -157,6 +176,20 @@ final class AuctionMenu extends PagedMenu<Listing> {
                 service.open(viewer, this);
             });
         }
+    }
+
+    /** Batch 9 ("List similar"): shows only listings of the exact item in the viewer's main hand. */
+    private void similarToHand() {
+        ItemStack hand = viewer.getInventory().getItemInMainHand();
+        if (hand == null || hand.isEmpty()) {
+            module.send(viewer, "browse.similar-empty");
+            module.sound(viewer, "error");
+            return;
+        }
+        similarKey = ItemCodec.itemKey(hand);
+        similarName = ItemCodec.plainName(hand);
+        page(0);
+        service.open(viewer, this);
     }
 
     private ItemStack summary() {
