@@ -70,7 +70,7 @@ class MasteryCatalogTest {
     void unbuiltMasteriesAreHidden() throws Exception {
         Set<String> shown = new HashSet<>();
         bundled().shown().forEach(d -> shown.add(d.id()));
-        assertEquals(Set.of("warrior", "deep_pockets", "crystal_rush", "lucky_strike", "homestead", "wings", "treasury", "market_contacts",
+        assertEquals(Set.of("warrior", "homestead", "wings", "treasury", "market_contacts", // owner 7 Nov 2026: no Depths-only masteries
                 "farm_mastery", "mine_mastery", "fish_mastery", "combat_mastery"), shown,
                 "GUI-2: Timber, Swift Hands, Fuel Efficiency, Beast Tamer and Angler stay hidden until their feature reads them");
     }

@@ -140,13 +140,13 @@ menu:
       claimed: "<c:muted><sym:check> Level <level> · Claimed"
       locked: "<c:text>Level <level> · Locked"
       premium: "<c:text>Level <level> · Premium"
-      unavailable: "<c:muted>Level <level> · Coming soon"
+      unavailable: "<c:muted>Level <level>"
     overflow-name:
       claim: "<c:success>Bonus <level> · Click to claim"
       claimed: "<c:muted><sym:check> Bonus <level> · Claimed"
       locked: "<c:text>Bonus <level> · Locked"
       premium: "<c:text>Bonus <level> · Premium"
-      unavailable: "<c:muted>Bonus <level> · Coming soon"
+      unavailable: "<c:muted>Bonus <level>"
     state:
       claim: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
       claimed: ["<c:success><sym:check></c:success> <c:text>Claimed"]

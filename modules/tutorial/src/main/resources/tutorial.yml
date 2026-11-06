@@ -260,9 +260,9 @@ chapters:
         icon: anvil
       invite:
         type: audit
-        target: "island:island_invite|island_coop"
-        text: "Invite a friend to your island"
-        hint: "Use /is invite <name> or /is coop <name>."
+        target: "island:island_invite|island_coop|island_visit|island_like"
+        text: "Invite or visit a friend"
+        hint: "Use /is invite <name>, or /is visit to see others."
         command: is
         icon: player_head
       daily:

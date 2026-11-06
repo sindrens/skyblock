@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Quests and leftovers (update153):** tool-level steps count levels you have, the invite step has a solo path, grind enchants count for enchant contracts, do-nothing masteries hidden.
 - **Less spam and spawn fixes (update152):** one grind event at a time with a title, routine results as action bars, tool-style rows everywhere, noun confirm titles, Crate Keeper and Tailor at spawn, honest portal and board texts, Island Worth board, "Be the first!".
 - **Island level v2 (update151):** island level = island XP (live), rewards per level, new /is level menu, /is upgrade restyled, Coming soon upgrades hidden.
 - **Tools v5 and spawners (update150):** personal perks on 500-2,500-level tracks priced for 13 blocks a second (every broken block rolls shards), no chat spam on buys; spawners 64 +32 a level, Spawner Capacity upgrade, kills-to-go on the hologram and menu, cooked meat from burning mobs.

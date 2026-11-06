@@ -218,6 +218,13 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Quests and leftovers (update153)
+- **Quest book:** "Reach hoe level 10" (and the other tool-level steps) now count the level your tool already has. The "invite a friend" step also completes by visiting or liking an island, so solo players are never stuck.
+- **Contracts:** buying grind enchant levels counts for "enchant" contracts.
+- **Masteries that did nothing are hidden** (Deep Pockets, Crystal Rush, Lucky Strike: their bonuses were only read by the old Depths). Bought ranks stay saved.
+- Battle Pass tiles without a reward no longer say "Coming soon".
+- **Suggestions for you:** `SUGGESTIONS_7NOV.html` in this folder: 12 ideas from the big skyblock servers with Yes / No / Other buttons. Copy your answers and paste them to me.
+
 ## Less spam, clearer events, spawn fixes (update152)
 - **Grind events:** one event at a time for 60 s, then 3-5 minutes off (was 2-4 at once for 30 s every minute). It starts with a title that says what it does ("DOUBLE DROPS · Every drop x2 · 60 s"), one boss bar, no chat line, never the same event twice in a row.
 - **No more chat spam:** buying perks/enchants, Battle Pass levels, spawner levels, island limit warnings, booster endings and island level rewards are action bar lines; skill level-ups are a title only; collection finds are a title only; the island level-up chat comes every 5 levels; the /farm /mine /fish /pve welcome comes once per session; joining the booster queue is no longer broadcast.

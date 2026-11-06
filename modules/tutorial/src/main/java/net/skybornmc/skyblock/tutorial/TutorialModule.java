@@ -164,7 +164,16 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
 
     /** Shards x10 (owner 7 Nov 2026, docs/plans/SHARDS_X10_BREAKTHROUGHS.md): the chapter shard rewards of a live file, once. */
     static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
-            java.util.Map.of(1, java.util.Map.of(
+            java.util.Map.of(
+                    // v2 (FINISH_PLAN batch A): the invite step no longer blocks a solo player (visiting or liking an island counts)
+                    2, java.util.Map.of(
+                    "chapters.together.steps.invite.target", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(
+                            "island:island_invite|island_coop", "island:island_invite|island_coop|island_visit|island_like"),
+                    "chapters.together.steps.invite.text", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(
+                            "Invite a friend to your island", "Invite or visit a friend"),
+                    "chapters.together.steps.invite.hint", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(
+                            "Use /is invite <name> or /is coop <name>.", "Use /is invite <name>, or /is visit to see others.")),
+                    1, java.util.Map.of(
                     "chapters.farm.rewards", change(List.of("shards 100"), List.of("shards 1000")),
                     "chapters.mine.rewards", change(List.of("mining_shards 100"), List.of("mining_shards 1000")),
                     "chapters.farm_pro.rewards", change(List.of("shards 500", "key ember 1"), List.of("shards 5000", "key ember 1")),
@@ -288,7 +297,20 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
             finished.forEach(c -> reward(p, pr, c));
             barSince.put(id, System.currentTimeMillis());
             refresh(p);
+            syncToolLevels(p);
         }));
+    }
+
+    /** FINISH_PLAN batch A (owner 7 Nov 2026): a "Reach hoe level 10" step counts the level the tool already has. */
+    void syncToolLevels(Player p) {
+        core.services().optional(net.skybornmc.skyblock.common.tools.IslandToolLevels.class).ifPresent(tools -> {
+            for (String kind : List.of("hoe", "pickaxe", "rod", "sword")) {
+                int level = tools.level(p, kind);
+                if (level > 0) {
+                    signal(p, Signal.of(StepType.TOOL_LEVEL, kind, level));
+                }
+            }
+        });
     }
 
     void unload(Player p) {
@@ -361,6 +383,7 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
         if (!change.stepsDone().isEmpty() || !change.chaptersDone().isEmpty()) {
             barSince.put(p.getUniqueId(), System.currentTimeMillis());
             next(p).ifPresent(n -> msg.send(p, "step.next", Msg.p("step", n.text()), Msg.p("hint", n.hint())));
+            Bukkit.getScheduler().runTask(core.plugin(), () -> { if (p.isOnline()) { syncToolLevels(p); } }); // the next step may be a level
         }
         refresh(p);
     }

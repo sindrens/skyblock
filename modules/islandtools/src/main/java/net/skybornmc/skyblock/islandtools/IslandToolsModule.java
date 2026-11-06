@@ -1371,6 +1371,8 @@ public final class IslandToolsModule implements SkyblockModule {
         // Feedback 4 Nov 2026 (B7): /tool opens the held tool's menu (Bedrock: a click in the air may not reach us). The
         // custom tools module owns /tool when it is on and asks HeldToolMenu for an island tool; else it is ours.
         core.services().register(ID, net.skybornmc.skyblock.common.item.HeldToolMenu.class, this::openHeld);
+        core.services().register(ID, net.skybornmc.skyblock.common.tools.IslandToolLevels.class, (player, kind) -> Kind.of(kind)
+                .map(k -> view(player, k)).map(v -> level(v).level()).orElse(0)); // FINISH_PLAN A: quest steps count levels you have
         if (!core.commands().registered("tool")) {
             core.commands().register(CommandSpec.command("tool").description("Open the menu of the island tool in your hand")
                     .category("Island").permission(PERM_TOOL).playerOnly().example("tool")

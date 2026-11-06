@@ -256,6 +256,9 @@ final class EnchantProcs implements Listener {
             m.msg().actionBar(p, "enchant.bought", Msg.p("enchant", name(def)), Msg.number("level", have + n), Msg.number("max", def.max()),
                     Msg.mm("cost", m.shardText(kind, cost)));
             m.core().sounds().play(p, "enchant");
+            // FINISH_PLAN batch A: buying grind enchant levels counts for "enchant" contracts (one per purchase)
+            Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(p,
+                    net.skybornmc.skyblock.common.quest.GameActionEvent.ENCHANT, 1));
             if (def.crosses(have, have + n)) { // owner 7 Nov 2026: a breakthrough is a moment
                 String x = EnchantMenu.num(def.boost(have + n));
                 m.msg().title(p, "enchant.breakthrough.title", Msg.p("enchant", name(def)), Msg.p("multiplier", x));

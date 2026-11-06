@@ -22,11 +22,11 @@ enum MasteryEffect {
     /** MA3 +% damage to mobs (MOB_DAMAGE). The enchants module applies the family to mobs only, never to players. */
     WARRIOR("warrior", true, BonusFamily.MOB_DAMAGE, null),
     /** MA4 +% satchel size: no effect since the Depths satchel was removed (owner 3 Nov 2026; kept for stored rows). */
-    DEEP_POCKETS("deep-pockets", true, null, null),
-    /** MA6 +% crystals (CRYSTALS: Depths blocks and combat). */
-    CRYSTAL_RUSH("crystal-rush", true, BonusFamily.CRYSTALS, null),
-    /** MA7 +% rare finds (RARE_FINDS: key fragments, blueprints in the Depths roll). */
-    LUCKY_STRIKE("lucky-strike", true, BonusFamily.RARE_FINDS, null),
+    DEEP_POCKETS("deep-pockets", false, null, null), // owner 7 Nov 2026: hidden, it does nothing
+    /** MA6 +% crystals (CRYSTALS). Hidden (owner 7 Nov 2026): no module reads the family since the Depths are gone. */
+    CRYSTAL_RUSH("crystal-rush", false, BonusFamily.CRYSTALS, null),
+    /** MA7 +% rare finds (RARE_FINDS). Hidden (owner 7 Nov 2026): no module reads the family since the Depths are gone. */
+    LUCKY_STRIKE("lucky-strike", false, BonusFamily.RARE_FINDS, null),
     /** MA8 island fuel lasts longer (Phase 7): live while Island Fuel is on ({@link IslandFuelFeature}). */
     FUEL_EFFICIENCY("fuel-efficiency", false, null, null),
     /** MA9 faster breeding, more animal drops: no breeding hook yet. */
