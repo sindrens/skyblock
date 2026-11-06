@@ -21,22 +21,24 @@ public final class ProfilesConfig extends ModuleConfig {
     public int switchCooldownSeconds = 5;
 
     @Setting(path = "switch.blocked-worlds", desc = "Worlds where switching is not allowed (e.g. the boss arena). Combat and freeze are checked by their modules.")
-    public List<String> blockedWorlds = List.of("depths");
+    public List<String> blockedWorlds = List.of("grind");
 
     /**
      * Version 2 (owner 3 Nov 2026): the Depths has its own inventory, so switching waits until you are out of it (untouched
-     * lists only). Version 4 (owner 3 Nov 2026): 5 s between switches (untouched 10 s or 30 s values only).
+     * lists only). Version 4 (owner 3 Nov 2026): 5 s between switches (untouched 10 s or 30 s values only). Version 5
+     * (FX-15): the Depths are gone; switching is blocked in the /farm and /mine world instead (untouched lists only).
      */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("switch.blocked-worlds",
                         ValueChange.of(List.of(), List.of("depths"))),
-                4, java.util.Map.of("switch.cooldown-seconds", ValueChange.of(10, 5)));
+                4, java.util.Map.of("switch.cooldown-seconds", ValueChange.of(10, 5)),
+                5, java.util.Map.of("switch.blocked-worlds", ValueChange.of(List.of("depths"), List.of("grind"))));
     }
 
     @Setting(path = "switch.timeout-seconds", desc = "A switch that waits longer than this for the database is cancelled (nothing changes).",

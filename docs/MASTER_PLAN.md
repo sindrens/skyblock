@@ -38,7 +38,7 @@ Severity order. Paths are on `q/release-v4`.
 | FX-12 | Contract Board: default pools start with `mine`, `chop`, `kill` that are never offered, so island contracts show 2 instead of 3 | `QuestsModule.java:342-346`, `QuestsSettings.java:55,83,110` | New pools from P-10; until then drop the dead types. |
 | FX-13 | `skyblock.tutorial.admin` and `skyblock.islandtools.admin` are granted to nobody | `server/permissions/` | Add `tutorial.txt`, `islandtools.txt`. |
 | FX-14 | "Tutorial stats" has no tile in the staff hub | `menu.yml:114-126`, `navigation.yml:531` | Add tile. |
-| FX-15 | Profile switching is blocked in "depths" (no such world) but allowed in the grind world | `profiles/ProfilesConfig.java:24` | Block in the `/farm`/`/mine` world. |
+| FX-15 | Profile switching is blocked in "depths" (no such world) but allowed in the grind world | `profiles/ProfilesConfig.java:24` | Block in the `/farm`/`/mine` world. **Done 7 Nov** (blocked in `grind`, profiles.yml v5). |
 | FX-16 | `/is gho` prints the full sub-command list | `common/command/CommandService.java:287`, `messages/commands.yml:9` | "Did you mean /is go?" + short usage. |
 | FX-17 | Placed-block memory is RAM only (200k per world): place and break ore after a restart = free XP and shards | `common/PlacedBlocks.java`, `islandtools/ToolListener.java:76` | Store the "placed" mark in chunk data (persistent, no cap). **Done 7 Nov** (`ChunkMarks`, pistons and explosions handled). |
 | FX-18 | `/help` is wrong: Black Market "pay with shards" (now crystals), "Depths drops", sell topic misses Sell Wand / Auto-Sell Chest / Chunk Collector; Auto-Sell lore hardcodes "every 30 s" | `help.yml:555,1198,1359-1366`, `economy.yml:1230` | Rewrite those topics; placeholder for the interval. |

@@ -179,6 +179,12 @@ The old model (one price per item for the whole server that fell with every sale
 - The sell chest says "Price today: 85%" (green/yellow/red) when part of a sale is past the 3,000; `/eco sell price <item>` shows what all islands sold of it today.
 - All numbers are in `economy.yml → sell.daily.*` and `sell.weekly.*`. Defaults I picked are in **Q-77**.
 
+## Small fixes (update142)
+- **/titles**: titles nobody can earn any more (Deep Diver, Tycoon, Reborn: their achievements are off) are hidden unless you already have them (`cosmetics.yml titles.hidden-unless-owned`).
+- **Spawn portal**: the old "The Depths" sign over the portal that leads to the farm and mine world now says **Farm & Mine · /farm /mine** (the hologram updates on the next build apply or restart).
+- **FX-15**: profile switching is blocked in the /farm and /mine world (it was blocked in the Depths world, which no longer exists).
+- Two lore lines that were too wide for Bedrock were split (island missions without an island, the sell chest price note).
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).
