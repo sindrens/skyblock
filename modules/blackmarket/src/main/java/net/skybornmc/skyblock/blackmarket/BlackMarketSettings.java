@@ -144,10 +144,18 @@ public final class BlackMarketSettings extends ModuleConfig {
                     ? "autosell_chest: slot=rare price=120 weight=2 reward=autosell-chest limit=1/rotation icon=chest" : line)
             .toList();
 
-    /** The default offer list (version 4: the Chunk Collector is built too). */
-    static final List<String> OFFERS = OFFERS_V3.stream()
+    /** The default offer list of version 4: the Chunk Collector is built too. */
+    static final List<String> OFFERS_V4 = OFFERS_V3.stream()
             .map(line -> line.startsWith("chunk_collector:")
                     ? "chunk_collector: slot=rare price=100 weight=2 reward=chunk-collector limit=1/rotation icon=hopper" : line)
+            .toList();
+
+    /**
+     * The default offer list (version 5, owner 7 Nov 2026, Q-71): the Sell Wand, Auto-Sell Chest and Chunk Collector are
+     * off the Black Market until the owner has tested and approved them (the code stays, items already bought keep working).
+     */
+    static final List<String> OFFERS = OFFERS_V4.stream()
+            .filter(line -> !line.startsWith("sell_wand:") && !line.startsWith("autosell_chest:") && !line.startsWith("chunk_collector:"))
             .toList();
 
     /** The default offer list before ECON-SPAWNERS (version 1). */
@@ -171,7 +179,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     /**
@@ -183,6 +191,7 @@ public final class BlackMarketSettings extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("offers", ValueChange.of(OFFERS_V1, OFFERS)),
                 3, java.util.Map.of("offers", ValueChange.of(OFFERS_V2, OFFERS)),
-                4, java.util.Map.of("offers", ValueChange.of(OFFERS_V3, OFFERS)));
+                4, java.util.Map.of("offers", ValueChange.of(OFFERS_V3, OFFERS)),
+                5, java.util.Map.of("offers", ValueChange.of(OFFERS_V4, OFFERS)));
     }
 }

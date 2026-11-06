@@ -18,7 +18,7 @@ class OfferCatalogTest {
         List<String> problems = new ArrayList<>();
         OfferCatalog c = OfferCatalog.parse(new BlackMarketSettings().offers, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(18, c.all().size());
+        assertEquals(15, c.all().size(), "owner 7 Nov 2026 (Q-71): Sell Wand, Auto-Sell Chest and Chunk Collector are off");
         assertEquals(4, c.of(OfferCatalog.Slot.FIXED).size(), "scroll + 3 premium spawners (ECON-SPAWNERS)");
         assertEquals(3, c.of(OfferCatalog.Slot.HEADLINE).size());
     }
@@ -40,12 +40,13 @@ class OfferCatalogTest {
         assertEquals(400, golem.price());
         assertEquals(OfferCatalog.Period.DAY, golem.period());
         assertEquals(8, c.get("scroll").orElseThrow().price());
-        assertTrue(c.get("sell_wand").orElseThrow().rollable(), "owner 4 Nov 2026: the Sell Wand is sold for real");
-        assertEquals(OfferCatalog.Kind.SELL_WAND, c.get("sell_wand").orElseThrow().kind());
-        assertEquals("100", c.get("sell_wand").orElseThrow().ref());
+        assertTrue(c.get("sell_wand").isEmpty(), "owner 7 Nov 2026 (Q-71): off the Black Market until tested and approved");
+        assertTrue(c.get("chunk_collector").isEmpty());
+        assertTrue(c.get("autosell_chest").isEmpty());
         assertFalse(c.get("wardrobe_tome").orElseThrow().rollable(), "coming soon is never rolled");
-        assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, c.get("chunk_collector").orElseThrow().kind());
-        assertTrue(c.get("chunk_collector").orElseThrow().rollable(), "owner 4 Nov 2026: the Chunk Collector is sold for real");
+        OfferCatalog old = OfferCatalog.parse(BlackMarketSettings.OFFERS_V4, w -> { });
+        assertEquals(OfferCatalog.Kind.SELL_WAND, old.get("sell_wand").orElseThrow().kind(), "the offer kinds still parse");
+        assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, old.get("chunk_collector").orElseThrow().kind());
         assertFalse(c.get("scroll").orElseThrow().rollable(), "the fixed row is not rolled");
         assertTrue(c.get("elytra").orElseThrow().rollable());
         assertFalse(c.liveIds().contains("blueprint"));
@@ -77,6 +78,9 @@ class OfferCatalogTest {
         var v4 = new BlackMarketSettings().valueChanges().get(4).get("offers");
         assertEquals(BlackMarketSettings.OFFERS_V3, v4.from());
         assertEquals(BlackMarketSettings.OFFERS, v4.to());
+        var v5 = new BlackMarketSettings().valueChanges().get(5).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V4, v5.from());
+        assertEquals(BlackMarketSettings.OFFERS, v5.to());
     }
 
     @Test

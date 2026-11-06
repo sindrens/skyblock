@@ -121,8 +121,8 @@ class RotationTest {
     @Test
     void picksFollowTheSlotCountsWithoutRepeats() {
         List<Rotation.Pick> picks = Rotation.pick(42, 0, catalog, counts, o -> true, 25);
-        // Live commons in the defaults: bm_tag, elytra and the Sell Wand (4 Nov 2026); blueprint and tome are coming soon.
-        assertEquals(1 + 3 + 3, picks.size());
+        // Live commons in the defaults: bm_tag and elytra (the Sell Wand is off since 7 Nov 2026, Q-71); blueprint and tome are coming soon.
+        assertEquals(1 + 3 + 2, picks.size());
         Set<String> ids = new HashSet<>();
         for (Rotation.Pick p : picks) {
             assertTrue(ids.add(p.offerId()));
