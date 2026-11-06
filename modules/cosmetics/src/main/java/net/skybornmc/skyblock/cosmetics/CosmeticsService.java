@@ -65,6 +65,24 @@ public final class CosmeticsService implements Cosmetics, Listener {
         this.msg = msg;
     }
 
+    /** Titles nobody can earn any more: shown only to players who own them ({@code cosmetics.yml titles.hidden-unless-owned}). */
+    private volatile Set<String> hiddenTitles = Set.of();
+
+    void hiddenTitles(java.util.Collection<String> ids) {
+        Set<String> out = new java.util.HashSet<>();
+        for (String id : ids) {
+            if (id != null && !id.isBlank()) {
+                out.add(id.strip().toLowerCase(Locale.ROOT));
+            }
+        }
+        this.hiddenTitles = Set.copyOf(out);
+    }
+
+    /** Whether this entry is shown to this player in /titles and /tags (hidden titles only to their owners). */
+    boolean visibleTo(UUID player, Cosmetic c) {
+        return c.kind() != Kind.TITLE || !hiddenTitles.contains(c.id()) || owns(player, c.kind(), c.id());
+    }
+
     /** Title granted automatically to every player on join (e.g. {@code newcomer}); empty = none. */
     void autoTitle(String id) {
         this.autoTitle = id == null ? "" : id;

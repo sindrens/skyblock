@@ -125,7 +125,7 @@ menu:
   island:
     no-island:
       name: "<c:muted>You have no island"
-      lore: ["<c:text>Island missions are for island members. Start one with</c:text> <c:action>/is</c:action><c:text>."]
+      lore: ["<c:text>Island missions are for island", "<c:text>members. Start one with <c:action>/is</c:action><c:text>."]
   tabs:
     daily:
       crumb: "Daily"

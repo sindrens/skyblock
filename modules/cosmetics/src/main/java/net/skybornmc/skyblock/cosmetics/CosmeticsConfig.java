@@ -20,6 +20,10 @@ public final class CosmeticsConfig extends ModuleConfig {
             + "don't show as ([Name]).")
     public boolean tagStripBrackets = true;
 
+    @Setting(path = "titles.hidden-unless-owned", desc = "Titles that can't be earned any more (their achievement is off): "
+            + "players who have one keep it, everyone else doesn't see it in /titles (GUI pass, 7 Nov 2026).")
+    public java.util.List<String> hiddenTitles = java.util.List.of("deep_diver", "tycoon", "phoenix_reborn");
+
     @Override
     public int version() {
         return 2;

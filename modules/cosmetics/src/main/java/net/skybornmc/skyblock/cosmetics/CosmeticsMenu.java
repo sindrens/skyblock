@@ -48,6 +48,7 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
     protected List<Cosmetic> entries() {
         Set<String> owned = module.service().owned(viewer.getUniqueId(), kind);
         List<Cosmetic> list = new ArrayList<>(module.service().registered(kind));
+        list.removeIf(c -> !module.service().visibleTo(viewer.getUniqueId(), c));
         list.sort(Comparator.<Cosmetic, Boolean>comparing(c -> !owned.contains(c.id()))
                 .thenComparing(Comparator.comparing(Cosmetic::rarity).reversed())
                 .thenComparing(Cosmetic::id));
@@ -156,7 +157,7 @@ final class CosmeticsMenu extends PagedMenu<Cosmetic> {
     private ItemStack tabItem(Cosmetics.Kind tabKind, Material icon) {
         String key = tabKind == Cosmetics.Kind.TITLE ? "titles" : "tags";
         int owned = module.service().owned(viewer.getUniqueId(), tabKind).size();
-        int total = module.service().registered(tabKind).size();
+        int total = (int) module.service().registered(tabKind).stream().filter(c -> module.service().visibleTo(viewer.getUniqueId(), c)).count();
         List<Component> lore = new ArrayList<>(module.lines(viewer, "menu.tab-" + key + ".lore",
                 Msg.number("owned", owned), Msg.number("total", total)));
         lore.addAll(module.lines(viewer, tabKind == kind ? "menu.tab-selected" : "menu.tab-action"));

@@ -32,7 +32,7 @@ titles:
   deep_diver:
     display: "<c:sky_ice>Deep Diver"
     rarity: rare
-    source: "Unlock the last tier of The Depths."
+    source: "No longer earnable (kept by players who have it)."
     secret: false
     season-persistent: true
   tycoon:

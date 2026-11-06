@@ -12,4 +12,10 @@ tag:
   format: "<bold><tag></bold>"
   # Remove [ ] around a tag's own display, so older tags written as [Name] don't show as ([Name]).
   strip-brackets: true
+titles:
+  # Titles that can't be earned any more (their achievement is off): players who have one keep it, everyone else doesn't see it in /titles (GUI pass, 7 Nov 2026).
+  hidden-unless-owned:
+  - deep_diver
+  - tycoon
+  - phoenix_reborn
 config-version: 2

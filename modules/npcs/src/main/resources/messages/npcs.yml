@@ -172,7 +172,7 @@ holograms:
   signpost_tavern: "<c:flame><bold>Tavern"
   signpost_hall_of_heroes: "<c:flame><bold>Hall of Heroes"
   portal_to_warzone: "<c:flame><bold>Warzone <c:muted>· Soon"
-  portal_to_depths: "<c:flame><bold>The Depths"
+  portal_to_depths: "<c:flame><bold>Farm & Mine <c:muted>· /farm /mine"
   portal_to_island: "<c:flame><bold>Your Island"
   portal_to_outposts: "<c:flame><bold>Outposts <c:muted>· Soon"
   portal_to_events: "<c:flame><bold>Events <c:muted>· Soon"

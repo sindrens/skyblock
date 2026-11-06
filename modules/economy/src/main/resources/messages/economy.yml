@@ -480,7 +480,8 @@ sell:
         - "<c:bar>| </c:bar><c:text>Bonus: </c:text><c:value><bonus>%"
         - "<c:bar>| </c:bar><c:text>You get: </c:text><total>"
         - ""
-        - "<c:muted>Full price for the first <free> of each item a day."
+        - "<c:muted>Each item: full price for the"
+        - "<c:muted>first <free> a day."
       # Dynamic prices v2: shown when part of this sale is past the island's full-price amount today. <price> = "85%".
       day:
         - ""
