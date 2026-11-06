@@ -131,6 +131,7 @@ final class EnchantProcs implements Listener {
             EnchantStore.delete(c, profile);
             return null;
         });
+        m.store().deletePersonal(profile); // the own tool levels go with the profile
     }
 
     // ------------------------------------------------------------------ buying
@@ -150,14 +151,14 @@ final class EnchantProcs implements Listener {
         if (lv >= def.max()) {
             return "enchant.maxed";
         }
-        ToolStore.Prog prog = m.prog(p, def.kind());
+        ToolStore.Prog prog = m.view(p, def.kind()); // your own tool level and prestige
         if (prog == null) {
             return "loading";
         }
         if (m.level(prog).level() < def.unlockLevel()) {
             return "enchant.locked-level";
         }
-        if (prog.prestige() < def.unlockPrestige()) {
+        if (m.capPrestige(prog) < def.unlockPrestige()) {
             return "enchant.locked-prestige";
         }
         return lv >= cap(p, def) ? "enchant.capped" : null;
@@ -165,13 +166,12 @@ final class EnchantProcs implements Listener {
 
     /** The highest level the player can have now (the cap rises every prestige). */
     int cap(Player p, GrindEnchants.Def def) {
-        ToolStore.Prog prog = m.prog(p, def.kind());
-        return GrindEnchants.cap(def.max(), prog == null ? 0 : prog.prestige(), m.config().enchantCapBase, m.config().enchantCapPerPrestige);
+        return GrindEnchants.cap(def.max(), m.capPrestige(m.view(p, def.kind())), m.config().enchantCapBase, m.config().enchantCapPerPrestige);
     }
 
     /** The placeholders of a refusal message. */
     net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[] refusalTags(Player p, GrindEnchants.Def def) {
-        ToolStore.Prog prog = m.prog(p, def.kind());
+        ToolStore.Prog prog = m.view(p, def.kind());
         int prestige = prog == null ? 0 : prog.prestige();
         return new net.kyori.adventure.text.minimessage.tag.resolver.TagResolver[]{Msg.p("enchant", name(def)),
                 Msg.number("level", def.unlockLevel()), Msg.number("prestige", Math.max(1, def.unlockPrestige())),

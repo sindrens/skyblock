@@ -61,7 +61,7 @@ final class ToolsMenu extends Menu {
             return;
         }
         for (Kind kind : Kind.values()) {
-            ToolStore.Prog prog = m.prog(island, kind);
+            ToolStore.Prog prog = m.view(viewer, kind);
             if (prog == null) {
                 continue;
             }

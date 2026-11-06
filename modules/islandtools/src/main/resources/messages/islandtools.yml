@@ -104,7 +104,8 @@ level:
     stay: 50
     fade-out: 15
   island: "<c:text>Island <c:value><tool></c:value> <c:text>reached level <c:flame><level>"
-  can-prestige: "<prefix><c:success><sym:star></c:success> <c:text>The <c:value><tool></c:value> <c:text>is at the top level. The island owner or a co-owner can prestige it in its menu."
+  can-prestige: "<prefix><c:success><sym:star></c:success> <c:text>Your <c:value><tool></c:value> <c:text>is at the top level. Prestige it in its menu for a lasting bonus: <click:run_command:'/tool'><c:action>/tool</c:action></click>"
+  can-rebirth: "<prefix><c:success><sym:star></c:success> <c:text>Your <c:value><tool></c:value> <c:text>has every prestige. A <c:flame>rebirth</c:flame> <c:text>waits in its menu: <click:run_command:'/tool'><c:action>/tool</c:action></click>"
 
 # Lucky perk: a Shard Pouch. <amount> <shards>
 lucky:
@@ -122,7 +123,7 @@ prestige:
   not-max: "<prefix><c:error><sym:cross></c:error> <c:text>The <c:value><tool></c:value> <c:text>is level <c:value><level></c:value><c:muted>/<max></c:muted><c:text>. It can prestige at level <c:value><max></c:value><c:text>."
   busy: "<c:muted>The prestige is already going through..."
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>The tool changed while you confirmed (a purchase or new XP), so nothing happened. Open its menu and try again."
-  error: "<prefix><c:error><sym:cross></c:error> <c:text>The database did not answer, so the tool and everyone's shards are unchanged. Try again in a moment."
+  error: "<prefix><c:error><sym:cross></c:error> <c:text>The database did not answer, so your tool is unchanged. Try again in a moment."
   # <tool> <stars> <prestige>
   done:
     title: "<grad:flame><bold>PRESTIGE <stars>"
@@ -130,14 +131,35 @@ prestige:
     fade-in: 10
     stay: 60
     fade-out: 20
-  # <player> <tool> <stars> <bonus> <shards>
-  chat: "<prefix><c:value><player></c:value> <c:text>prestiged the island <c:value><tool></c:value> <c:flame><stars></c:flame><c:text>! It starts again at level 1 with +<bonus> XP and <shards> for good; everyone's <shards> went to 0."
+  # Owner 6-7 Nov 2026: your own prestige. <tool> <stars> <prestige> <bonus> <cap>
+  chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value><tool></c:value> <c:text>is prestige <c:flame><stars></c:flame><c:text>: +<bonus>% XP and shards for good, enchants up to level <c:value><cap></c:value><c:text>."
+  # Every 10th prestige, to everyone else. <player> <tool> <prestige>
+  broadcast: "<prefix><c:value><player></c:value> <c:text>reached prestige <c:flame><prestige></c:flame> <c:text>on their <tool>!"
   confirm-crumb: "Prestige?"
   # <tool> <shards>
   confirm-details:
-    - "<c:text>Back to level 1, every perk gone."
-    - "<c:text><shards> of ALL members go to 0."
-    - "<c:muted>For good: more XP and shards, cheaper perks."
+    - "<c:text>Your tool goes back to level 1."
+    - "<c:success>Enchants, perks and shards stay."
+    - "<c:muted>For good: more XP and shards,"
+    - "<c:muted>cheaper perks, a higher enchant cap."
+
+# Owner 6-7 Nov 2026: after prestige 50, rebirths (no end). <tool> <rebirth> <bonus>
+rebirth:
+  done:
+    title: "<grad:flame><bold>REBIRTH <rebirth>"
+    subtitle: "<c:text><tool>"
+    fade-in: 10
+    stay: 70
+    fade-out: 20
+  chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Rebirth <c:flame><rebirth></c:flame> <c:text>on your <c:value><tool></c:value><c:text>! Back to prestige 0 with +<bonus>% XP and shards for good. Enchants stay."
+  # <player> <tool> <rebirth>
+  broadcast: "<prefix><c:value><player></c:value> <c:text>did rebirth <c:flame><rebirth></c:flame> <c:text>on their <tool>!"
+  confirm-crumb: "Rebirth?"
+  confirm-details:
+    - "<c:text>Your tool goes back to prestige 0."
+    - "<c:success>Enchants, caps, perks and shards stay."
+    - "<c:muted>For good: +10% XP and shards."
+    - "<c:muted>Each rebirth needs a bit more XP."
 
 shards:
   name:
@@ -167,7 +189,7 @@ menu:
   tool-name: "<bold><area:skills><tool> <c:flame><stars>"
   # <level> <max> <percent> <stars> <shards>
   tool-lore:
-    - "<c:muted>Shared by your island."
+    - "<c:muted>Your own level · island perks."
     - ""
     - "<bold><c:header>| Tool</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max> (<percent>%)"
@@ -176,7 +198,7 @@ menu:
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   # <level> <max> <xp> <need> <percent> <prestige> <stars> <bonus> <discount> <boost> <shards>
   tool:
-    - "<c:muted>Shared by your island."
+    - "<c:muted>Your own level · island perks."
     - ""
     - "<bold><c:header>| Level</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
@@ -185,7 +207,7 @@ menu:
     - "<c:bar>| </c:bar><c:text>Prestige: </c:text><c:flame><stars></c:flame> <c:muted>+<bonus> XP, <shards>"
     - "<c:bar>| </c:bar><c:text>Island boost: </c:text><c:value>+<boost> <c:muted>drops"
   tool-max:
-    - "<c:muted>Shared by your island."
+    - "<c:muted>Your own level · island perks."
     - ""
     - "<bold><c:header>| Level</c:header></bold>"
     - "<c:bar>| </c:bar><c:text>Level: </c:text><c:success><level>/<max> <sym:check>"
@@ -208,15 +230,28 @@ menu:
       - ""
       - "<bold><c:header>| You get</c:header></bold>"
       - "<c:bar>| </c:bar><c:text>Total: </c:text><c:value>+<bonus> <c:muted>XP and shards"
-      - "<c:bar>| </c:bar><c:error>Resets level, perks, <shards>"
+      - "<c:bar>| </c:bar><c:text>Enchant cap: </c:text><c:value>+20 levels"
+      - "<c:bar>| </c:bar><c:success>Enchants, perks, shards stay"
       - ""
-      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to prestige (owner)"
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to prestige"
+  # <rebirth> (the next one) <bonus>
+  rebirth-ready:
+    name: "<bold><grad:flame>Rebirth <rebirth>"
+    lore:
+      - "<c:text>Every prestige done: start again"
+      - "<c:text>from prestige 0, stronger."
+      - ""
+      - "<bold><c:header>| You get</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Total: </c:text><c:value>+<bonus> <c:muted>XP and shards"
+      - "<c:bar>| </c:bar><c:success>Enchants, caps, perks, shards stay"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to rebirth"
   prestige-locked:
     name: "<bold><area:locked>Prestige"
     lore:
       - "<c:error><sym:cross> Locked"
       - "<c:text>Reach level <c:value><max></c:value> <c:muted>(now <level>)"
-      - "<c:muted>Then the owner can prestige."
+      - "<c:muted>Then you can prestige."
   # <name>
   perk-name: "<bold><area:skills><name>"
   perk-name-locked: "<bold><area:locked><name>"

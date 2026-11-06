@@ -64,6 +64,31 @@ class ToolStoreTest {
     }
 
     @Test
+    void personalToolsAreSeededFromTheIslandOnceAndPrestigeSafely() {
+        store.loadIsland(island, (k, old) -> "").join();
+        store.addXp(Map.of(island, Map.of(Kind.PICKAXE, 70L))).join();
+        Map<Kind, ToolStore.Personal> first = store.loadPersonal(profile, island).join();
+        assertEquals(new ToolStore.Personal(70, 0, 0, 0), first.get(Kind.PICKAXE), "the island's old XP carries over");
+        assertEquals(ToolStore.Personal.EMPTY, first.get(Kind.HOE));
+        store.addXp(Map.of(island, Map.of(Kind.PICKAXE, 1000L))).join();
+        assertEquals(70, store.loadPersonal(profile, island).join().get(Kind.PICKAXE).xp(), "seeded only once");
+        store.addPersonalXp(Map.of(profile, Map.of(Kind.PICKAXE, 5L))).join();
+        ToolStore.Personal now = store.loadPersonal(profile, null).join().get(Kind.PICKAXE);
+        assertEquals(75, now.xp());
+        assertFalse(db.<Boolean>transaction(c -> ToolStore.prestigePersonal(c, profile, Kind.PICKAXE, now, 0, 80, false)).join(), "not at max yet");
+        assertTrue(db.<Boolean>transaction(c -> ToolStore.prestigePersonal(c, profile, Kind.PICKAXE, now, 5, 80, false)).join(), "pending XP counts");
+        assertFalse(db.<Boolean>transaction(c -> ToolStore.prestigePersonal(c, profile, Kind.PICKAXE, now, 500, 80, false)).join(), "never twice");
+        ToolStore.Personal after = store.loadPersonal(profile, null).join().get(Kind.PICKAXE);
+        assertEquals(now.next(false), after);
+        assertTrue(db.<Boolean>transaction(c -> ToolStore.prestigePersonal(c, profile, Kind.PICKAXE, after, 10, 0, true)).join(), "a rebirth");
+        assertEquals(new ToolStore.Personal(0, 0, 1, 2), store.loadPersonal(profile, null).join().get(Kind.PICKAXE));
+        store.resetPersonal(profile).join();
+        assertEquals(0, store.loadPersonal(profile, null).join().get(Kind.PICKAXE).rebirth());
+        store.deletePersonal(profile).join();
+        assertEquals(ToolStore.Personal.EMPTY, store.loadPersonal(profile, null).join().get(Kind.PICKAXE), "a deleted profile starts fresh");
+    }
+
+    @Test
     void purchasesAndPrestigeNeverTwice() {
         store.loadIsland(island, (k, old) -> "").join();
         assertTrue(db.<Boolean>transaction(c -> ToolStore.buy(c, island, Kind.HOE, 0, "fortune=1")).join());

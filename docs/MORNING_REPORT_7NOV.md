@@ -11,7 +11,7 @@ Written during the night while you slept. Newest at the top of each section.
 |---|---|---|
 | 1 | Fixes and cleanup | **released** (update121, 02:14) |
 | 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
-| 3 | Tools v4 core | |
+| 3 | Tools v4 core: 17 personal grind enchants per tool, personal prestige 50 + rebirths **next release (update125)**; storage rework, old tools module removal next | in progress |
 | 4 | Island v2 | |
 | 5 | Spawners v2 | |
 | 6 | Quest line v2, menus, help, mailbox | |
@@ -19,6 +19,19 @@ Written during the night while you slept. Newest at the top of each section.
 | 8 | /pve | |
 | 9 | Polish (crates, collection, AH, shop) | |
 | 10 | Pack v2, ranks v2 | |
+
+## Tools v4 (batch 3): what you get in update125
+- **Your own enchants:** right-click the island pickaxe or hoe, then **Your enchants** (middle of the menu). 17 per tool, levels 1-1000, paid with your own shards, working only at /mine (pickaxe) and /farm (hoe). Rows: area (Blast, Lightning Strike, Meteor, Nuke / Explode, Row Reaper, Tornado, Meteor Shower), shards (Shard Burst, Shard Echo, Compound Interest, Shard Jackpot), loot (Rich Vein/Bountiful, Cash Vein/Cash Crop, Quick Study, Motherlode/Golden Crop, Geode/Harvest Basket), boosts (Scholar, Combo, Lucky Streak, Keyfinder).
+- A "Buy 1 / 10 / 100" button so Bedrock players can buy many levels too (Java: shift = 10, right-click = 100).
+- Area enchants break the blocks around you as **drops only**: no shards, money bonus, quests, contracts, skill XP or unlock progress from those blocks (so they can't multiply everything). Big ones (Nuke, 100 blocks) are spread over a few ticks.
+- Keyfinder is rare: 0.001% a block at level 1, 0.02% at level 1000 (about one key per 5,000 blocks at max), never doubled by Proc Frenzy.
+- **Your own prestige:** the tool level, prestige (up to 50) and rebirths (no end) are now yours, not the island's. Prestige resets only the level: enchants, perks and shards stay. Each prestige: +5% XP and shards and +20 enchant levels (cap 20 at prestige 0, 1000 at prestige 50). Each rebirth: +10% for good, needs 10% more XP. Everyone starts from their island tool's old level, so nobody loses anything.
+- Levels are much faster now: the first prestige takes about 15 minutes, prestige 49 about 50 minutes; the first rebirth about 25-30 hours (tune after a playtest).
+- The island perks (Efficiency, Fortune, Haste, Sweep/Vein, Auto-Sell, storage ...) stay shared by the island.
+
+### Changed from the plan (on purpose)
+- **Collector** (pickaxe #15, "+collection progress") became **Geode** (one of every ore you have unlocked): the collection log only records the first find, there is no progress to boost. Collection rework is batch 9.
+- Prestige is no longer owner/co-owner only and no longer takes everyone's shards (it is personal now).
 
 ## Released tonight
 - **update121 (02:14):** batch 1 + the pay limit + spawner payback. GitHub `main` is now the release-v4 line plus tonight's work (Q-50 done). Jar md5 0a62117c.

@@ -95,17 +95,17 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "enchants.key-crate", desc = "Crate whose key Keyfinder finds.", level = Setting.Level.OWNER)
     public String enchantKeyCrate = "ember";
 
-    @Setting(path = "levels.max", desc = "Owner 4 Nov 2026: highest tool level; at this level the island owner/co-owner can prestige the tool.", min = 2, max = 1000)
+    @Setting(path = "levels.max", desc = "Highest tool level; at this level the player can prestige their own tool (owner 6 Nov 2026: personal prestige).", min = 2, max = 1000)
     public int maxLevel = 50;
 
     @Setting(path = "levels.xp-base", desc = "XP for level L to L+1 = xp-base x L^exponent x (1 + prestige-factor x prestige).", min = 0.01, max = 1_000_000)
-    public double xpBase = 12;
+    public double xpBase = 0.8; // owner 6-7 Nov 2026: personal prestige, about 15 min for the first
 
-    @Setting(path = "levels.exponent", desc = "See levels.xp-base: how much slower every next level is (1.6 = the owner's sawtooth curve).", min = 0, max = 5)
-    public double xpExponent = 1.6;
+    @Setting(path = "levels.exponent", desc = "See levels.xp-base: how much slower every next level is.", min = 0, max = 5)
+    public double xpExponent = 1.2;
 
-    @Setting(path = "levels.prestige-factor", desc = "See levels.xp-base: every prestige makes the levels this much slower (0.35 = +35%).", min = 0, max = 10)
-    public double xpPrestigeFactor = 0.35;
+    @Setting(path = "levels.prestige-factor", desc = "See levels.xp-base: every prestige makes the levels this much slower (0.15 = +15%).", min = 0, max = 10)
+    public double xpPrestigeFactor = 0.15;
 
     @Setting(path = "levels.xp-per-block", desc = "Tool XP per relevant block (a ripe crop for the hoe, a natural ore or stone for the pickaxe), before the bonuses.", min = 0, max = 1000)
     public double xpPerBlock = 1;
@@ -116,6 +116,15 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "prestige.bonus-percent", desc = "Owner 4 Nov 2026: the island's permanent bonus per prestige on that tool: this much more tool XP and shards of its type.", min = 0, max = 100)
     public double prestigeBonus = 5;
 
+    @Setting(path = "prestige.max", desc = "Owner 6 Nov 2026: highest prestige of a player's own tool; after it come rebirths (no end).", min = 1, max = 1000)
+    public int prestigeMax = 50;
+
+    @Setting(path = "rebirth.bonus-percent", desc = "Owner 6 Nov 2026: lasting bonus per rebirth: this much more tool XP and shards of its type.", min = 0, max = 1000)
+    public double rebirthBonus = 10;
+
+    @Setting(path = "rebirth.xp-percent", desc = "Owner 6 Nov 2026: every rebirth needs this many percent more tool XP per level.", min = 0, max = 1000)
+    public double rebirthXpPercent = 10;
+
     @Setting(path = "prestige.discount-percent", desc = "Perks of a prestiged tool are this much cheaper per prestige.", min = 0, max = 100)
     public double prestigeDiscount = 5;
 
@@ -125,8 +134,6 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "prestige.max-stars", desc = "Stars in the tool name up to this prestige (★★★★★); after it '★6', '★7' ...", min = 1, max = 10)
     public int maxStars = 5;
 
-    @Setting(path = "prestige.roles", desc = "Island roles that may prestige a tool (owner: owner and co-owner = LEADER, ADMIN).")
-    public List<String> prestigeRoles = List.of("LEADER", "ADMIN");
 
     // ------------------------------------------------------------------ shards
 
@@ -336,7 +343,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 9;
+        return 10;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -363,14 +370,18 @@ public final class IslandToolsConfig extends ModuleConfig {
                         Map.entry("effects.wisdom-per-level", ValueChange.of(0.5, d.wisdomPerLevel)),
                         Map.entry("effects.sell-per-level", ValueChange.of(0.02, d.sellPerLevel)),
                         Map.entry("effects.lucky-chance-per-level", ValueChange.of(0.002, d.luckyPerLevel)),
-                        Map.entry("hoe.storage-per-level", ValueChange.of(200L, d.storagePerLevel))));
+                        Map.entry("hoe.storage-per-level", ValueChange.of(200L, d.storagePerLevel))),
+                // v10 (owner 6-7 Nov 2026, plans/TOOLS_V3.md): personal prestige 50 + rebirths: short, fast levels
+                10, Map.of("levels.xp-base", ValueChange.of(12.0, d.xpBase), "levels.exponent", ValueChange.of(1.6, d.xpExponent),
+                        "levels.prestige-factor", ValueChange.of(0.35, d.xpPrestigeFactor)));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */
     @Override
     public Map<String, String> removedKeys() {
         String gone = "island tools rework 4 Nov 2026";
-        return Map.ofEntries(Map.entry("tier-costs", gone + ": the tools start at diamond"), Map.entry("tier-money", gone + ": no tiers"),
+        return Map.ofEntries(Map.entry("prestige.roles", "owner 6-7 Nov 2026: every player prestiges their own tool"),
+                Map.entry("tier-costs", gone + ": the tools start at diamond"), Map.entry("tier-money", gone + ": no tiers"),
                 Map.entry("tasks", gone + ": tool levels replace the island tasks"),
                 Map.entry("shards.chance-axe", gone + ": no island axe"), Map.entry("shards.chance-sword", gone + ": no island sword"),
                 Map.entry("relevant.axe", gone + ": no island axe"), Map.entry("confirm-above", gone + ": only prestige has a confirm screen"),

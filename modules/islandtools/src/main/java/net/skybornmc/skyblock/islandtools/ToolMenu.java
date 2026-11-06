@@ -78,7 +78,7 @@ final class ToolMenu extends Menu {
     protected void build() {
         navBar();
         UUID island = m.island(viewer);
-        ToolStore.Prog prog = m.prog(island, kind);
+        ToolStore.Prog prog = m.view(viewer, kind); // the island's perks with your own level and prestige
         if (island == null || prog == null) {
             return;
         }
@@ -95,7 +95,7 @@ final class ToolMenu extends Menu {
                 Msg.number("level", lv.level()), Msg.number("max", m.config().maxLevel), Msg.number("xp", lv.into()),
                 Msg.number("need", lv.need()), Msg.number("percent", (long) Math.floor(lv.progress() * 100)),
                 Msg.number("prestige", prog.prestige()), Msg.p("stars", stars.isEmpty() ? "-" : stars),
-                Msg.p("bonus", pct(prog.prestige() * m.config().prestigeBonus)),
+                Msg.p("bonus", pct(prog.prestige() * m.config().prestigeBonus + prog.rebirth() * m.config().rebirthBonus)),
                 Msg.p("discount", pct(100 - 100 * m.priceFactor(prog))),
                 Msg.p("boost", pct(m.islandBoost(viewer, kind))), Msg.p("shards", m.raw("shards.name." + kind.id()))));
         set(SLOT_TOOL, service.item(m.items().create(kind, island, m.profile(viewer)),
@@ -172,11 +172,16 @@ final class ToolMenu extends Menu {
     }
 
     private ItemStack prestigeButton(ToolStore.Prog prog, ToolRules.Level lv) {
+        if (lv.maxed() && m.rebirthNext(prog)) { // owner 6-7 Nov 2026: after prestige 50, rebirths
+            int rebirth = prog.rebirth() + 1;
+            return service.item(Material.TOTEM_OF_UNDYING, viewer, IslandToolsModule.ID, "menu.rebirth-ready", Msg.number("rebirth", rebirth),
+                    Msg.p("bonus", pct(rebirth * m.config().rebirthBonus)));
+        }
         int next = prog.prestige() + 1;
         String key = lv.maxed() ? "menu.prestige-ready" : "menu.prestige-locked";
         return service.item(lv.maxed() ? Material.NETHER_STAR : Material.GRAY_DYE, viewer, IslandToolsModule.ID, key,
                 Msg.number("level", lv.level()), Msg.number("max", m.config().maxLevel), Msg.number("next", next),
-                Msg.p("stars", ToolRules.stars(next, m.config().maxStars)), Msg.p("bonus", pct(next * m.config().prestigeBonus)),
+                Msg.p("stars", ToolRules.stars(next, m.config().maxStars)), Msg.p("bonus", pct(next * m.config().prestigeBonus + prog.rebirth() * m.config().rebirthBonus)),
                 Msg.p("shards", m.raw("shards.name." + kind.id())));
     }
 
@@ -188,8 +193,9 @@ final class ToolMenu extends Menu {
             return;
         }
         String tool = m.raw("item.name." + kind.id());
-        openChild(new ConfirmMenu(v -> service.text(v, IslandToolsModule.ID, "prestige.confirm-crumb"), null,
-                v -> service.lines(v, IslandToolsModule.ID, "prestige.confirm-details", Msg.p("tool", tool),
+        String step = m.rebirthNext(m.view(p, kind)) ? "rebirth" : "prestige";
+        openChild(new ConfirmMenu(v -> service.text(v, IslandToolsModule.ID, step + ".confirm-crumb"), null,
+                v -> service.lines(v, IslandToolsModule.ID, step + ".confirm-details", Msg.p("tool", tool),
                         Msg.p("shards", m.raw("shards.name." + kind.id()))),
                 pl -> m.prestige(pl, kind, () -> m.core().menus().open(pl, new ToolMenu(m, kind))), pl -> { }));
     }
@@ -212,7 +218,7 @@ final class ToolMenu extends Menu {
             case LUCKY -> pct(lv * c.luckyPerLevel) + " " + m.raw("effect.lucky");
             case AUTOSELL -> m.raw("effect.auto-sell");
             case SWEEP -> {
-                ToolRules.Band band = m.band(m.island(viewer), kind);
+                ToolRules.Band band = m.band(viewer, kind);
                 yield band == null ? "-" : pct(ToolRules.sweepChance(band, lv, d.max())) + " " + m.raw("effect.sweep")
                         .replace("{blocks}", String.valueOf(band.blocks()));
             }

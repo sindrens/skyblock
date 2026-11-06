@@ -43,7 +43,7 @@ final class ToolItems {
                     .renderer(new ItemDefinition.Renderer() {
                         @Override
                         public String name(ItemStack stack, ItemDefinition def) {
-                            ToolStore.Prog prog = m.prog(islandOf(stack), kind);
+                            ToolStore.Prog prog = m.view(islandOf(stack), net.skybornmc.skyblock.common.item.BoundItems.boundTo(stack).orElse(null), kind);
                             String stars = prog == null ? "" : ToolRules.stars(prog.prestige(), m.config().maxStars);
                             return m.raw(stars.isEmpty() ? "item.plain-name" : "item.star-name").replace("{tool}", m.raw("item.name." + kind.id()))
                                     .replace("{stars}", stars).replace("{rarity}", rarity(stack, def).id());
@@ -51,12 +51,12 @@ final class ToolItems {
 
                         @Override
                         public void lore(ItemStack stack, ItemDefinition def, LoreBuilder lore) {
-                            renderLore(kind, m.prog(islandOf(stack), kind), lore);
+                            renderLore(kind, m.view(islandOf(stack), net.skybornmc.skyblock.common.item.BoundItems.boundTo(stack).orElse(null), kind), lore);
                         }
 
                         @Override
                         public Rarity rarity(ItemStack stack, ItemDefinition def) {
-                            ToolStore.Prog prog = m.prog(islandOf(stack), kind);
+                            ToolStore.Prog prog = m.view(islandOf(stack), net.skybornmc.skyblock.common.item.BoundItems.boundTo(stack).orElse(null), kind);
                             return prog != null && prog.prestige() > 0 ? Rarity.LEGENDARY : Rarity.EPIC;
                         }
                     })

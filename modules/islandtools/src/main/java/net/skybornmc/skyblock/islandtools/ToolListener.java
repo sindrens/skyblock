@@ -173,10 +173,10 @@ final class ToolListener implements Listener {
             m.farming().burstShow(p, block.getLocation());
         }
         boolean counts = kind == Kind.HOE ? ripe(block) : natural && relevant(kind, block.getType().getKey().getKey());
-        double chance = counts ? m.sweepChance(island, kind) * net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
+        double chance = counts ? m.sweepChance(p, kind) * net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(m.core().services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.PROC_FRENZY) : 0; // owner 6 Nov 2026: Proc Frenzy
         if (chance > 0 && ThreadLocalRandom.current().nextDouble(100) < chance) {
-            ToolRules.Band band = m.band(island, kind);
+            ToolRules.Band band = m.band(p, kind);
             sweep(p, block, kind, band == null ? 0 : band.blocks());
         }
     }
@@ -403,7 +403,7 @@ final class ToolListener implements Listener {
             Kind kind = ToolItems.kindOf(hand);
             UUID island = m.island(p);
             boolean working = kind != null && island != null && island.equals(ToolItems.islandOf(hand)) && toolWorld(p) && m.loaded(p);
-            int speed = working && kind == Kind.HOE ? speedLevel(island) : 0;
+            int speed = working && kind == Kind.HOE ? speedLevel(p) : 0;
             if (speed > 0) {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, speed - 1, true, false, true));
                 speedGiven.add(p.getUniqueId());
@@ -421,12 +421,12 @@ final class ToolListener implements Listener {
     }
 
     /** Owner 4 Nov 2026: Speed I while holding the island hoe, Speed II ("Swiftness") from hoe prestige 2. */
-    private int speedLevel(UUID island) {
+    private int speedLevel(Player p) {
         int level = m.config().speedLevel;
         if (level <= 0) {
             return 0;
         }
-        ToolStore.Prog hoe = m.prog(island, Kind.HOE);
+        ToolStore.Prog hoe = m.view(p, Kind.HOE); // the player's own hoe prestige
         int swift = m.config().swiftnessPrestige;
         return level + (hoe != null && swift > 0 && hoe.prestige() >= swift ? 1 : 0);
     }

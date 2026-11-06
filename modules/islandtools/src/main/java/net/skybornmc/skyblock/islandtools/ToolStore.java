@@ -21,10 +21,17 @@ import java.util.function.BiFunction;
  */
 final class ToolStore {
 
-    /** One island tool: XP in this prestige, prestige, perk levels and the purchase guard version. */
-    record Prog(long xp, int prestige, String upgrades, long version) {
+    /**
+     * One island tool: XP in this prestige, prestige, perk levels and the purchase guard version. Owner 6-7 Nov 2026: the
+     * module shows a "view" of it (IslandToolsModule#view) with the player's own XP, prestige and {@code rebirth}.
+     */
+    record Prog(long xp, int prestige, String upgrades, long version, int rebirth) {
 
         static final Prog EMPTY = new Prog(0, 0, "", 0);
+
+        Prog(long xp, int prestige, String upgrades, long version) {
+            this(xp, prestige, upgrades, version, 0);
+        }
 
         Map<String, Integer> levels() {
             return Upgrades.decode(upgrades);
@@ -35,15 +42,30 @@ final class ToolStore {
         }
 
         Prog withXp(long newXp) {
-            return new Prog(newXp, prestige, upgrades, version);
+            return new Prog(newXp, prestige, upgrades, version, rebirth);
         }
 
         Prog withUpgrades(String newUpgrades) {
-            return new Prog(xp, prestige, newUpgrades, version + 1);
+            return new Prog(xp, prestige, newUpgrades, version + 1, rebirth);
         }
 
         Prog prestiged() {
-            return new Prog(0, prestige + 1, "", version + 1);
+            return new Prog(0, prestige + 1, "", version + 1, rebirth);
+        }
+    }
+
+    /** Owner 6-7 Nov 2026: a player's own tool: XP in this prestige, prestige (0-50), rebirths and the guard version. */
+    record Personal(long xp, int prestige, int rebirth, long version) {
+
+        static final Personal EMPTY = new Personal(0, 0, 0, 0);
+
+        Personal withXp(long newXp) {
+            return new Personal(newXp, prestige, rebirth, version);
+        }
+
+        /** After a prestige ({@code rebirth} false) or a rebirth: XP 0, the next prestige or prestige 0 and one more rebirth. */
+        Personal next(boolean rebirth) {
+            return rebirth ? new Personal(0, 0, this.rebirth + 1, version + 1) : new Personal(0, prestige + 1, this.rebirth, version + 1);
         }
     }
 
@@ -77,6 +99,78 @@ final class ToolStore {
                 out.put(kind, new Prog(0, 0, seeded, 0));
             }
             return out;
+        });
+    }
+
+    /**
+     * A profile's own tools, created on first use from the island tool of {@code island} (its XP and prestige; null = from
+     * nothing), so the move to personal tools keeps every level.
+     */
+    CompletableFuture<Map<Kind, Personal>> loadPersonal(UUID profile, UUID island) {
+        return db.transaction(c -> {
+            Map<Kind, Personal> out = new EnumMap<>(Kind.class);
+            long now = System.currentTimeMillis();
+            for (Kind kind : Kind.values()) {
+                Optional<Personal> row = Sql.queryOne(c, "SELECT xp, prestige, rebirth, version FROM island_tool_personal WHERE profile_id = ? "
+                        + "AND kind = ?", rs -> new Personal(rs.getLong(1), rs.getInt(2), rs.getInt(3), rs.getLong(4)), profile, kind.id());
+                if (row.isPresent()) {
+                    out.put(kind, row.get());
+                    continue;
+                }
+                Personal seed = island == null ? Personal.EMPTY : Sql.queryOne(c, "SELECT xp, prestige FROM island_tool_progress WHERE "
+                                + "island_id = ? AND kind = ?", rs -> new Personal(rs.getLong(1), rs.getInt(2), 0, 0), Sql.toBytes(island), kind.id())
+                        .orElse(Personal.EMPTY);
+                Sql.update(c, "INSERT INTO island_tool_personal (profile_id, kind, xp, prestige, rebirth, version, updated_at) "
+                        + "VALUES (?, ?, ?, ?, 0, 0, ?)", profile, kind.id(), seed.xp(), seed.prestige(), now);
+                out.put(kind, seed);
+            }
+            return out;
+        });
+    }
+
+    /** Adds personal tool XP (write-behind; never touches the version). */
+    CompletableFuture<Void> addPersonalXp(Map<UUID, Map<Kind, Long>> deltas) {
+        return db.transaction(c -> {
+            long now = System.currentTimeMillis();
+            for (Map.Entry<UUID, Map<Kind, Long>> profile : deltas.entrySet()) {
+                for (Map.Entry<Kind, Long> e : profile.getValue().entrySet()) {
+                    if (e.getValue() > 0) {
+                        Sql.update(c, "UPDATE island_tool_personal SET xp = xp + ?, updated_at = ? WHERE profile_id = ? AND kind = ?",
+                                e.getValue(), now, profile.getKey(), e.getKey().id());
+                    }
+                }
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Guard of a personal prestige or rebirth: the tool is still at {@code before.version()} and its XP (plus the
+     * {@code pending} XP not written yet) reaches the max level ({@code xpToMax}). Prestige + 1 (or prestige 0 and
+     * rebirth + 1), XP 0. Enchants and shards are kept (plans/TOOLS_V3.md section 5).
+     */
+    static boolean prestigePersonal(Connection c, UUID profile, Kind kind, Personal before, long pending, long xpToMax, boolean rebirth)
+            throws SQLException {
+        String set = rebirth ? "prestige = 0, rebirth = rebirth + 1" : "prestige = prestige + 1";
+        return Sql.update(c, "UPDATE island_tool_personal SET xp = 0, " + set + ", version = version + 1, updated_at = ? WHERE profile_id = ? "
+                        + "AND kind = ? AND version = ? AND prestige = ? AND rebirth = ? AND xp + ? >= ?", System.currentTimeMillis(), profile,
+                kind.id(), before.version(), before.prestige(), before.rebirth(), pending, xpToMax) == 1;
+    }
+
+    /** Staff: a profile's own tools back to level 1, prestige 0, no rebirth. */
+    CompletableFuture<Void> resetPersonal(UUID profile) {
+        return db.transaction(c -> {
+            Sql.update(c, "UPDATE island_tool_personal SET xp = 0, prestige = 0, rebirth = 0, version = version + 1, updated_at = ? "
+                    + "WHERE profile_id = ?", System.currentTimeMillis(), profile);
+            return null;
+        });
+    }
+
+    /** A deleted profile's rows go with it. */
+    CompletableFuture<Void> deletePersonal(UUID profile) {
+        return db.transaction(c -> {
+            Sql.update(c, "DELETE FROM island_tool_personal WHERE profile_id = ?", profile);
+            return null;
         });
     }
 
