@@ -21,6 +21,8 @@ public final class GrindBreakEvent extends PlayerEvent {
     public static final String FARM = "farm";
     /** {@link #area()} of a {@code /mine} break. */
     public static final String MINE = "mine";
+    /** {@link #area()} of a {@code /fish} catch (owner 6 Nov 2026): {@link #block()} is WATER, {@link #drop()} the catch. */
+    public static final String FISH = "fish";
 
     private static final HandlerList HANDLERS = new HandlerList();
 
@@ -47,6 +49,14 @@ public final class GrindBreakEvent extends PlayerEvent {
 
     public boolean farm() {
         return FARM.equals(area);
+    }
+
+    public boolean mine() {
+        return MINE.equals(area);
+    }
+
+    public boolean fish() {
+        return FISH.equals(area);
     }
 
     /** The block the player saw and broke ({@code WHEAT}, {@code CARROTS}, {@code COAL_ORE}, {@code STONE} ...). */

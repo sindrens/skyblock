@@ -169,6 +169,7 @@ shards:
   found:
     shards: "<cur:shards>+<amount> <sym:shards> Farming Shards"
     mining_shards: "<cur:mining_shards>+<amount> <sym:mining_shards> Mining Shards"
+    fishing_shards: "<cur:fishing_shards>+<amount> <sym:fishing_shards> Fishing Shards"
 
 # Sweep / Vein took more blocks along. <amount>
 sweep:

@@ -20,6 +20,7 @@ currency:
   credits_earned: "Earned credits"
   shards: "Farming Shards"
   mining_shards: "Mining Shards"
+  fishing_shards: "Fishing Shards"
 
 request:
   sent: "<prefix><c:success><sym:check></c:success> <c:text>Trade request sent to <c:value><player></c:value><c:text>. It expires in <seconds>s."

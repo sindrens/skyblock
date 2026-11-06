@@ -37,11 +37,13 @@ public enum Currency {
      */
     SHARDS,
     /** Mining Shards (owner 4 Nov 2026): earned with the island pickaxe (island generator ores and /mine); pays its upgrades. */
-    MINING_SHARDS;
+    MINING_SHARDS,
+    /** Fishing Shards (owner 6 Nov 2026, /fish): earned with the island rod at /fish; pays the rod's upgrades and enchants. */
+    FISHING_SHARDS;
 
-    /** True for the two shard currencies (Farming and Mining Shards), which share their economy.yml limits. */
+    /** True for the shard currencies (Farming, Mining and Fishing Shards), which share their economy.yml limits. */
     public boolean isShards() {
-        return this == SHARDS || this == MINING_SHARDS;
+        return this == SHARDS || this == MINING_SHARDS || this == FISHING_SHARDS;
     }
 
     /** Lowercase key used in the database, configs, messages, commands and style tags ({@code <cur:money>}). */
