@@ -63,15 +63,43 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
 
     /** {@code bonus}: money paid per harvest on top of the crop (the Farm pays better than an island farm). */
     static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 6), new Crop(Material.CARROTS, Material.CARROT, 3_000, 9),
-            new Crop(Material.POTATOES, Material.POTATO, 12_000, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 40_000, 16)); // owner 5 Nov: carrots take much longer
+            new Crop(Material.POTATOES, Material.POTATO, 12_000, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 40_000, 16), // owner 5 Nov: carrots take much longer
+            new Crop(Material.NETHER_WART, Material.NETHER_WART, 60_000, 300)); // 7 Nov 2026 (batch 3): a fifth crop that sells for more
     private static final org.bukkit.NamespacedKey FARMED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_farmed");
 
-    /** Pure: the crop a player with {@code farmed} harvests has unlocked. */
-    static Crop cropFor(long farmed) {
+    /** Pure: the crop a player with {@code farmed} harvests has unlocked ({@code unlocks}: grind.farm-unlocks). */
+    static Crop cropFor(long farmed, List<Long> unlocks) {
         Crop out = CROPS.getFirst();
-        for (Crop c : CROPS) {
-            if (farmed >= c.unlockAt()) {
-                out = c;
+        for (int i = 0; i < CROPS.size(); i++) {
+            if (farmed >= cropUnlockAt(i, unlocks)) {
+                out = CROPS.get(i);
+            }
+        }
+        return out;
+    }
+
+    /** Pure: harvests to unlock crop {@code index} (configured, else the built-in default). */
+    static long cropUnlockAt(int index, List<Long> unlocks) {
+        if (index <= 0) {
+            return 0;
+        }
+        Long v = index < unlocks.size() ? unlocks.get(index) : null;
+        return v == null || v < 0 ? CROPS.get(index).unlockAt() : v;
+    }
+
+    /** The crop at {@code farmed} with the configured thresholds (FX-09). */
+    private Crop cropFor(long farmed) {
+        return cropFor(farmed, farmUnlocks());
+    }
+
+    /** {@code grind.farm-unlocks} as longs (a broken entry falls back to the built-in threshold). */
+    private List<Long> farmUnlocks() {
+        List<Long> out = new ArrayList<>();
+        for (Object o : config.grindFarmUnlocks) {
+            try {
+                out.add(o instanceof Number n ? n.longValue() : Long.parseLong(String.valueOf(o).trim().replace(",", "")));
+            } catch (NumberFormatException e) {
+                out.add(-1L);
             }
         }
         return out;
@@ -142,7 +170,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             Crop crop = cropFor(have);
             int i = CROPS.indexOf(crop);
             return i + 1 >= CROPS.size() ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
-                    + net.skybornmc.skyblock.common.util.Format.number(CROPS.get(i + 1).unlockAt());
+                    + net.skybornmc.skyblock.common.util.Format.number(cropUnlockAt(i + 1, farmUnlocks()));
         }
         if (a.equals("Mine")) {
             long have = mined(p);
@@ -343,11 +371,11 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             msg.send(p, "grind.unlocked", net.skybornmc.skyblock.common.text.Msg.p("crop", name(crop.item())));
             core.sounds().play(p, "unlock");
             sendFarm(p);
-        } else if (crop.unlockAt() < CROPS.getLast().unlockAt()) {
+        } else if (CROPS.indexOf(crop) + 1 < CROPS.size()) {
             Crop next = CROPS.get(CROPS.indexOf(crop) + 1);
             if (farmed % 50 == 0) {
                 net.skybornmc.skyblock.common.hud.ActionBars.show(p, "progress", msg.component(p, "grind.progress", net.skybornmc.skyblock.common.text.Msg.number("have", farmed),
-                        net.skybornmc.skyblock.common.text.Msg.number("need", next.unlockAt()),
+                        net.skybornmc.skyblock.common.text.Msg.number("need", cropUnlockAt(CROPS.indexOf(next), farmUnlocks())),
                         net.skybornmc.skyblock.common.text.Msg.p("crop", name(next.item()))), net.skybornmc.skyblock.common.hud.ActionBars.INFO, 2000);
             }
         }
@@ -385,9 +413,10 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         List<Material> out = new java.util.ArrayList<>();
         if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(area)) {
             long farmed = farmed(p);
-            for (Crop c : CROPS) {
-                if (c.unlockAt() <= farmed) {
-                    out.add(c.item());
+            List<Long> unlocks = farmUnlocks();
+            for (int i = 0; i < CROPS.size(); i++) {
+                if (cropUnlockAt(i, unlocks) <= farmed) {
+                    out.add(CROPS.get(i).item());
                 }
             }
             return out;

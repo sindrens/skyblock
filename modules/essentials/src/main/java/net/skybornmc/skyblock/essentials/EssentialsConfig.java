@@ -71,8 +71,12 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "grind.events.golden", desc = "Golden Blocks: the farm/mine money bonus is this many times bigger and always comes.", min = 1, max = 100)
     public double grindEventGolden = 5.0;
 
-    @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot): small at the start, bigger later.")
-    public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200);
+    @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot, nether wart): small at the start, bigger later.")
+    public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200, 300);
+
+    @Setting(path = "grind.farm-unlocks", desc = "FX-09: crops harvested in total that turn the whole /farm into the next crop for you "
+            + "(wheat, carrots, potatoes, beetroot, nether wart; the first is always 0; a missing entry uses the built-in number).")
+    public List<Integer> grindFarmUnlocks = List.of(0, 3_000, 12_000, 40_000, 60_000);
 
     @Setting(path = "grind.mine-bonus", desc = "Money of one /mine bonus per ore tier (coal, iron, gold, redstone, lapis, diamond, emerald).")
     public List<Integer> grindMineBonus = List.of(30, 60, 120, 160, 240, 450, 800);

@@ -143,6 +143,17 @@ public final class IslandToolsModule implements SkyblockModule {
         long sellTicks = Math.max(1, config.autoSellSeconds) * 20L;
         tasks.add(core.scheduler().repeat("islandtools:auto-sell", sellTicks, sellTicks, this::flushAutoSell));
         registerCommands();
+        // Owner Q-30: the /farm and /mine scoreboard shows how full the tool's storage is.
+        for (Kind kind : Kind.values()) {
+            core.placeholders().registerText(ID, "tool_storage_" + kind.id(), p -> {
+                if (p == null) {
+                    return "";
+                }
+                long used = storage.used(profile(p), kind);
+                long cap = Math.max(1, storage.capacity(p, kind));
+                return Format.number(used) + "/" + Format.number(cap) + " (" + Math.min(100, used * 100 / cap) + "%)";
+            });
+        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }

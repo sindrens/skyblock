@@ -147,6 +147,13 @@ final class ToolListener implements Listener {
             return;
         }
         Block block = event.getBlock();
+        // Owner Q-30 (FULL_PLAN.md): at /farm and /mine the drops go into the tool's storage; when it is full the
+        // breaking pauses (nothing is lost) until the player sells or empties it.
+        if (grindWorld(p) && !expanding.contains(p.getUniqueId()) && m.storage().used(m.profile(p), kind) >= m.storage().capacity(p, kind)) {
+            event.setCancelled(true);
+            m.msg().actionBar(p, "storage.paused");
+            return;
+        }
         // Owner 3 Nov 2026: the island hoe never breaks a crop that is not fully grown.
         if (kind == Kind.HOE && IslandGrowth.CROPS.contains(block.getType())
                 && block.getBlockData() instanceof Ageable age && age.getAge() < age.getMaximumAge()) {
@@ -329,6 +336,14 @@ final class ToolListener implements Listener {
             if (m.autoSell(p, kind, stack)) {
                 it.remove(); // Auto-Sell: sold in the next batch
                 continue;
+            }
+            if (grindWorld(p)) { // owner Q-30: the tool's storage first at /farm and /mine, then the bag, never the ground
+                long stored = m.storage().add(p, kind, stack.getType().getKey().getKey(), stack.getAmount());
+                if (stored >= stack.getAmount()) {
+                    it.remove();
+                    continue;
+                }
+                stack.setAmount(stack.getAmount() - (int) stored);
             }
             // Owner 4 Nov 2026: the bag first, then the tool's storage; at /farm and /mine nothing ever lands on the ground.
             Map<Integer, ItemStack> left = p.getInventory().addItem(stack);

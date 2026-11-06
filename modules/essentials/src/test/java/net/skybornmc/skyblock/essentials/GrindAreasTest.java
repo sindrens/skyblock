@@ -10,10 +10,13 @@ class GrindAreasTest {
 
     @Test
     void cropsUnlockInOrder() {
-        assertEquals(Material.WHEAT, GrindAreas.cropFor(0).block());
-        assertEquals(Material.WHEAT, GrindAreas.cropFor(2_999).block());
-        assertEquals(Material.CARROTS, GrindAreas.cropFor(3_000).block(), "owner 5 Nov: carrots take much longer");
-        assertEquals(Material.BEETROOTS, GrindAreas.cropFor(1_000_000).block());
+        assertEquals(Material.WHEAT, GrindAreas.cropFor(0, java.util.List.of()).block());
+        assertEquals(Material.WHEAT, GrindAreas.cropFor(2_999, java.util.List.of()).block());
+        assertEquals(Material.CARROTS, GrindAreas.cropFor(3_000, java.util.List.of()).block(), "owner 5 Nov: carrots take much longer");
+        assertEquals(Material.BEETROOTS, GrindAreas.cropFor(40_000, java.util.List.of()).block());
+        assertEquals(Material.CARROTS, GrindAreas.cropFor(10, java.util.List.of(0L, 10L)).block(), "FX-09: thresholds from the config");
+        assertEquals(12_000, GrindAreas.cropUnlockAt(2, java.util.List.of(0L, 10L, -1L)), "a broken entry keeps the built-in number");
+        assertEquals(Material.NETHER_WART, GrindAreas.cropFor(1_000_000, java.util.List.of()).block(), "the fifth crop");
     }
 
     @Test

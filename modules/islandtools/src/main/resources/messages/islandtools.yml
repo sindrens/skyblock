@@ -323,7 +323,8 @@ upgrade:
 storage:
   crumb: "Storage"
   info:
-    - "<c:text>Loot that did not fit in your bag."
+    - "<c:text>At /farm and /mine every drop lands"
+    - "<c:text>here; elsewhere what did not fit."
     - "<c:muted>Take it out or sell everything."
   # <tool> <used> <cap> <bar>
   head:
@@ -349,6 +350,8 @@ storage:
     - ""
     - "<c:muted>Shift-click: as much as fits"
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take a stack"
+  # Action bar at /farm and /mine: the tool's storage is full, so breaking pauses (nothing is lost).
+  paused: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Right-click the tool</c:text> <c:muted>»</c:muted> <c:text>Storage</c:text> <c:muted>»</c:muted> <c:text>Sell all.</c:text>"
   # Action bar: bag and storage are full (at /farm and /mine the rest is lost, never dropped).
   full: "<c:warning><bold>Storage full!</bold></c:warning> <c:text>Empty it in the tool menu or /sell."
   inventory-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your bag is full. Make room first."
