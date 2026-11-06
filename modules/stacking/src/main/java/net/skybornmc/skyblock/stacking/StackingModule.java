@@ -363,6 +363,11 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         islands().flatMap(i -> i.islandAt(at)).ifPresent(info -> {
             int before = spawnerLevel(info.id(), mob);
             levels.add(info.id(), mob, killed);
+            if (config.islandXpPerKill > 0) { // owner 7 Nov 2026: island level v2, every spawner mob that dies on the island counts
+                core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class).ifPresent(s ->
+                        s.addPillarXp(info.id(), net.skybornmc.skyblock.common.progression.Pillar.COMBAT, killed * config.islandXpPerKill,
+                                "spawner_death", null));
+            }
             int after = spawnerLevel(info.id(), mob);
             if (after > before) {
                 int limit = spawnerLimit(info.id(), mob);

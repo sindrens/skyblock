@@ -98,6 +98,8 @@ public final class ProgressionModule implements SkyblockModule {
         });
         levels = new LevelManager(core, levelConfig, msg, pillars, levelStore, blocks, config.seasonId);
         ref[0] = levels;
+        levels.rewards(new XpRewards(core, levelConfig, msg, config.seasonId)); // island level v2 (owner 7 Nov 2026)
+        pillars.onGain(levels::request);
         Bukkit.getPluginManager().registerEvents(blocks, core.plugin());
         Bukkit.getPluginManager().registerEvents(levels, core.plugin());
         LevelMenus menus = new LevelMenus(core, msg, levels, pillars);

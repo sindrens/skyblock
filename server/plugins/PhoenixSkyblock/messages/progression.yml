@@ -66,6 +66,89 @@ level:
       stay: 50
       fade-out: 15
   global: "<c:flame><sym:star></c:flame> <c:text>The island <c:value><island></c:value> reached <c:value>level <level></c:value>!"
+  # Island level v2 (owner 7 Nov 2026): what a new level paid. <money> <level> / <crystals> <keys> <crate>
+  reward:
+    money: "<c:success><sym:check></c:success> <c:text>Island level <c:value><level></c:value><c:text>: <cur:money>+<money></cur:money> <c:text>in the island bank."
+    bonus: "<c:success><sym:check></c:success> <c:text>Bonus: <c:value><crystals></c:value> <c:text>crystals and <c:value><keys></c:value> <c:text><crate> key(s) for you."
+
+# /is level in island level v2 (owner 7 Nov 2026): the island tool's style. Lore lines max ~36 characters (Bedrock).
+xp-menu:
+  info:
+    - "<c:text>Everything your island does"
+    - "<c:text>gives island XP: crops, ores,"
+    - "<c:text>kills and catches, at home and"
+    - "<c:text>at /farm /mine /fish /pve."
+  # <level> <next> <xp> <need> <percent> <bar> <total> <place>
+  header:
+    name: "<bold><grad:flame>Island Level <level>"
+    lore:
+      - "<c:muted>Grows with everything you do."
+      - ""
+      - "<bold><c:header>| Level</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level>"
+      - "<c:bar>| </c:bar><bar> <c:value><percent>%"
+      - "<c:bar>| </c:bar><c:text>XP: </c:text><c:value><xp></c:value><c:muted>/<need>"
+      - "<c:bar>| </c:bar><c:text>Total: </c:text><c:value><total> XP"
+    ranked:
+      - "<c:bar>| </c:bar><c:text>Rank: </c:text><c:value>#<place>"
+    unranked:
+      - "<c:bar>| </c:bar><c:text>Rank: </c:text><c:muted>not yet"
+  upgrades:
+    name: "<bold><area:skills>Island Upgrades"
+    lore:
+      - "<c:muted>Spend the island bank."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # One tile per kind of work. <xp> <percent> (of all island XP)
+  source:
+    farming:
+      name: "<bold><area:skills>Farming"
+      lore:
+        - "<c:muted>Crops and catches."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Island XP: </c:text><c:value><xp></c:value> <c:muted>(<percent>%)"
+        - ""
+        - "<c:text>Ripe crops on your island"
+        - "<c:text>and at /farm, fish at /fish."
+    mining:
+      name: "<bold><area:skills>Mining"
+      lore:
+        - "<c:muted>Ores and stone."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Island XP: </c:text><c:value><xp></c:value> <c:muted>(<percent>%)"
+        - ""
+        - "<c:text>Your generators' ores and"
+        - "<c:text>blocks at /mine."
+    combat:
+      name: "<bold><area:skills>Combat"
+      lore:
+        - "<c:muted>Mobs and spawners."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Island XP: </c:text><c:value><xp></c:value> <c:muted>(<percent>%)"
+        - ""
+        - "<c:text>Every spawner mob that dies"
+        - "<c:text>on your island, kills at /pve."
+    foraging:
+      name: "<bold><area:skills>Foraging"
+      lore:
+        - "<c:muted>Trees."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Island XP: </c:text><c:value><xp></c:value> <c:muted>(<percent>%)"
+        - ""
+        - "<c:text>Logs you chop on your island."
+  # The next levels. <level> <money> <crystals> <crate>
+  reward:
+    name: "<bold><area:reward>Level <level>"
+    name-big: "<bold><grad:flame>Level <level>"
+    lore:
+      - "<c:muted>Reward for reaching it."
+      - ""
+      - "<c:bar>| </c:bar><c:text>Island bank: </c:text><cur:money>+<money>"
+    big:
+      - "<c:bar>| </c:bar><c:text>Each member: </c:text><c:value><crystals> crystals"
+      - "<c:bar>| </c:bar><c:text>Each member: </c:text><c:value>1 <crate> key"
+    server:
+      - "<c:bar>| </c:bar><c:text>The whole server hears it."
 
 # /is level (6 rows). Lore lines max ~36 characters (Bedrock).
 level-menu:
@@ -589,10 +672,11 @@ upgrades:
         - "<c:muted>Loading the balance..."
     # <level> <next> <percent> <points> (points from upgrades)
     level:
-      name: "<c:flame>Island Level <level>"
+      name: "<bold><grad:flame>Island Level <level>"
       lore:
-        - "<c:text>Progress: <c:value><percent>%</c:value> <c:text>to <c:value><next>"
-        - "<c:text>Upgrade points: <c:value><points>"
+        - "<c:muted>Grows with everything you do."
+        - ""
+        - "<c:bar>| </c:bar><c:text>Progress: </c:text><c:value><percent>%</c:value> <c:muted>to <next>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open /is level"
   tab:
@@ -619,31 +703,31 @@ upgrades:
   # The upgrade item. <upgrade> name, <level> next level (roman), <current> <max>, <now> <next> effects,
   # <cost> next level's price, <tier> its task tier, <island-level> its island level gate
   item:
-    name-ready: "<c:success><bold><upgrade> <level>"
-    name-open: "<c:warning><upgrade> <level>"
-    name-blocked: "<c:error><upgrade> <level>"
-    name-maxed: "<c:value><upgrade> <c:muted>(max)"
-    name-soon: "<c:muted><upgrade>"
+    name-ready: "<bold><area:skills><upgrade> <c:value><level>"
+    name-open: "<bold><area:skills><upgrade> <c:value><level>"
+    name-blocked: "<bold><area:locked><upgrade> <level>"
+    name-maxed: "<bold><area:skills><upgrade> <c:success><sym:check>"
+    name-soon: "<bold><area:locked><upgrade>"
     # Lore format of the item mockup (owner 3 Nov 2026): muted subtitle, then | Stats, | Tasks, | Price sections.
     level:
       - "<c:muted>Level <current>/<max>"
       - ""
-      - "<c:bar>|</c:bar> <bold><c:header>Stats</c:header></bold>"
+      - "<bold><c:header>| Stats</c:header></bold>"
     now:
-      - "<c:bar>|</c:bar> <c:text>Now: <c:value><now>"
+      - "<c:bar>| </c:bar><c:text>Now: </c:text><c:value><now>"
     next:
-      - "<c:bar>|</c:bar> <c:text>Next: <c:success><next>"
+      - "<c:bar>| </c:bar><c:text>Next: </c:text><c:success><next>"
     tasks-header:
       - ""
-      - "<c:bar>|</c:bar> <bold><c:header>Tasks</c:header></bold>"
+      - "<bold><c:header>| Tasks</c:header></bold>"
     no-tasks:
       - "  <c:muted>No tasks for this level"
     island-level:
-      - "<c:bar>|</c:bar> <c:text>Needs island level <c:value><island-level>"
+      - "<c:bar>| </c:bar><c:text>Needs island level <c:value><island-level>"
     cost:
       - ""
-      - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
-      - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost></c:money> <c:muted>(island bank)"
+      - "<bold><c:header>| Price</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Cost: </c:text><c:money><cost></c:money> <c:muted>(island bank)"
     soon:
       - "<c:muted>Coming soon"
     click:
@@ -680,11 +764,11 @@ upgrades:
       lore:
         - "<c:text><effect>"
         - ""
-        - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
-        - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost>"
-        - "<c:bar>|</c:bar> <c:text>Task tier: <c:value><tier>"
+        - "<bold><c:header>| Price</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Cost: </c:text><c:money><cost>"
+        - "<c:bar>| </c:bar><c:text>Task tier: </c:text><c:value><tier>"
       island-level:
-        - "<c:bar>|</c:bar> <c:text>Island level: <c:value><island-level>"
+        - "<c:bar>| </c:bar><c:text>Island level: </c:text><c:value><island-level>"
       bought:
         - "<c:success>Bought"
       next:
@@ -776,9 +860,9 @@ masteries:
   # Extra lines of the mastery item. <requires> upgrades to max first, <pillar> <pillar-level>
   item:
     requires:
-      - "<c:bar>|</c:bar> <c:text>Needs <c:value><requires></c:value> <c:text>maxed"
+      - "<c:bar>| </c:bar><c:text>Needs <c:value><requires></c:value> <c:text>maxed"
     pillar-level:
-      - "<c:bar>|</c:bar> <c:text>Needs <pillar> <c:text>pillar <c:value><pillar-level>"
+      - "<c:bar>| </c:bar><c:text>Needs <pillar> <c:text>pillar <c:value><pillar-level>"
     click:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see more"
   # State lines only masteries have (the rest are the upgrades' lines). <pillar> <pillar-level> <requires>
@@ -804,8 +888,8 @@ masteries:
       lore:
         - "<c:text><effect>"
         - ""
-        - "<c:bar>|</c:bar> <bold><c:header>Price</c:header></bold>"
-        - "<c:bar>|</c:bar> <c:text>Cost: <c:money><cost>"
+        - "<bold><c:header>| Price</c:header></bold>"
+        - "<c:bar>| </c:bar><c:text>Cost: </c:text><c:money><cost>"
   # Ascension: endless levels once everything is maxed (owner P5-24). <level> next level, <current> bought,
   # <cost> next price, <points> island level points per level
   ascension:
@@ -813,8 +897,8 @@ masteries:
     name-maxed: "<c:value>Ascension <c:muted>(max)"
     effect: "+<points> island level points"
     lore:
-      - "<c:bar>|</c:bar> <c:text>Levels: <c:value><current>"
-      - "<c:bar>|</c:bar> <c:text>Each: <c:success>+<points> island level points"
+      - "<c:bar>| </c:bar><c:text>Levels: </c:text><c:value><current>"
+      - "<c:bar>| </c:bar><c:text>Each: </c:text><c:success>+<points> island level points"
       - "<c:muted>Endless, a bit more each time."
     info:
       - "<c:text>When every upgrade and mastery"

@@ -17,6 +17,17 @@ public final class PillarsConfig extends ModuleConfig {
         return "pillars.yml";
     }
 
+    /** v1 (owner 7 Nov 2026, island level v2): the pillars are where island XP comes from; no chat line per pillar level. */
+    @Override
+    public int version() {
+        return 1;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(1, java.util.Map.of("notify.level-up-chat", ValueChange.of(true, false)));
+    }
+
     @Override
     public String header() {
         return """
@@ -118,7 +129,7 @@ public final class PillarsConfig extends ModuleConfig {
     public String weekTimeZone = "Europe/Oslo";
 
     @Setting(path = "notify.level-up-chat", desc = "Tell online members in chat when a pillar levels up (each player can hide it in /settings).")
-    public boolean notifyLevelUpChat = true;
+    public boolean notifyLevelUpChat = false; // owner 7 Nov 2026: no spam, the island level is the moment
 
     @Setting(path = "notify.title-every-levels", desc = "Also show a title to online members every this many pillar levels (0 = never).", min = 0, max = 1000)
     public int notifyTitleEvery = 10;

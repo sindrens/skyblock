@@ -267,6 +267,9 @@ final class PillarManager implements ProgressionService, Listener {
         if (ready && change != null) {
             levelUp(islandId, s, change, cause, source);
         }
+        if (ready) {
+            onGain.accept(islandId);
+        }
         return amount;
     }
 
@@ -478,6 +481,32 @@ final class PillarManager implements ProgressionService, Listener {
     @Override
     public int lowestPillarLevel(UUID islandId) {
         return PillarRules.lowest(pillarLevels(islandId), shown);
+    }
+
+    /** Island level v2: all island XP of the island (every pillar, also the hidden ones). */
+    double totalXp(UUID islandId) {
+        IslandPillars s = islandId == null ? null : islands.get(islandId);
+        if (s == null) {
+            return 0;
+        }
+        double sum = 0;
+        for (Pillar p : Pillar.values()) {
+            sum += Math.max(0, s.xp(p));
+        }
+        return sum;
+    }
+
+    /** Island XP of one pillar (the "where it comes from" rows of /is level). */
+    double xp(UUID islandId, Pillar pillar) {
+        IslandPillars s = islandId == null ? null : islands.get(islandId);
+        return s == null || pillar == null ? 0 : Math.max(0, s.xp(pillar));
+    }
+
+    /** Island level v2: called after every gain (the level follows within a few seconds). */
+    private volatile java.util.function.Consumer<UUID> onGain = id -> { };
+
+    void onGain(java.util.function.Consumer<UUID> listener) {
+        this.onGain = listener == null ? id -> { } : listener;
     }
 
     @Override

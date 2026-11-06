@@ -22,7 +22,7 @@ public final class LevelConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 3;
+        return 4; // v4 (owner 7 Nov 2026): island level = island XP (level.mode, xp.*)
     }
 
     @Override
@@ -55,6 +55,35 @@ public final class LevelConfig extends ModuleConfig {
                 A capped source can't be more than its cap-percent of the TOTAL (caps applied once, smallest first).
                 Coop players never count. Members' skills and Depths tiers count members with 3+ days on the island only.
                 Block values: block-values.yml. Texts: messages/progression.yml. Reload: /skyblock reload progression""";
+    }
+
+    // ------------------------------------------------------------------ island level v2 (owner 7 Nov 2026, plans/TOOLS_V5.md 3)
+
+    @Setting(path = "level.mode", desc = "Owner 7 Nov 2026: 'xp' = the island level is the island's XP (crops, ores, kills, catches "
+            + "of the members, on the island and at /farm /mine /fish /pve), live. 'points' = the old sources (bank, skills, blocks ...).",
+            level = Setting.Level.OWNER)
+    public String mode = "xp";
+
+    @Setting(path = "xp.base", desc = "Island XP for level n = base x n^exponent (1,500 and 1.5: level 10 = 47,000 XP, about an hour "
+            + "of grinding alone).", min = 1, max = 100_000_000, level = Setting.Level.OWNER)
+    public double xpBase = 1500;
+
+    @Setting(path = "xp.exponent", desc = "See xp.base: how much more every next level needs.", min = 1, max = 4, level = Setting.Level.OWNER)
+    public double xpExponent = 1.5;
+
+    @Setting(path = "xp.rewards.money-per-level", desc = "Every new island level puts this x the level into the island bank "
+            + "(level 10: 10 x this).", min = 0, max = 1_000_000_000, level = Setting.Level.OWNER)
+    public long rewardMoneyPerLevel = 20_000;
+
+    @Setting(path = "xp.rewards.crystals-every-5", desc = "Every 5 levels each member gets this x the level in crystals (level 10: 10 x this).",
+            min = 0, max = 1_000_000, level = Setting.Level.OWNER)
+    public long rewardCrystalsPerLevel = 10;
+
+    @Setting(path = "xp.rewards.key-crate", desc = "Every 5 levels each member gets one key of this crate (empty = none).", level = Setting.Level.OWNER)
+    public String rewardKeyCrate = "ember";
+
+    boolean xpMode() {
+        return "xp".equalsIgnoreCase(mode);
     }
 
     // ------------------------------------------------------------------ level

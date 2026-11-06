@@ -162,7 +162,7 @@ final class UpgradeMenu extends Menu {
     }
 
     private void buildUpgrades() {
-        List<UpgradeCatalog.Def> defs = menus.upgrades().catalog().tab(tab);
+        List<UpgradeCatalog.Def> defs = menus.upgrades().catalog().shown(tab);
         for (int i = 0; i < defs.size() && i < UPGRADE_SLOTS.length; i++) {
             UpgradeCatalog.Def def = defs.get(i);
             ItemStack item = memo.get(UPGRADE_SLOTS[i], menus.upgradeSignature(viewer, islandId, def, bank, def.buyable()),
@@ -184,7 +184,7 @@ final class UpgradeMenu extends Menu {
                 meta.setEnchantmentGlintOverride(true);
             }
         });
-        int size = t == UpgradeTab.MASTERIES ? masteryCount() : menus.upgrades().catalog().tab(t).size();
+        int size = t == UpgradeTab.MASTERIES ? masteryCount() : menus.upgrades().catalog().shown(t).size();
         ItemStack item = memo.get("tab:" + t.id(), UpgradeMenus.signature(menus.textsKey(), selected, size), () -> {
             TagResolver count = Msg.p("count", size);
             return service.mark(service.item(icon, text(selected ? "upgrades.tab.name-selected" : "upgrades.tab.name",

@@ -120,6 +120,11 @@ final class UpgradeCatalog {
         return byTab.getOrDefault(tab, List.of());
     }
 
+    /** Owner 7 Nov 2026 ("nothing unnecessary"): what the menu shows: only upgrades that work now (no "Coming soon"). */
+    List<Def> shown(UpgradeTab tab) {
+        return tab(tab).stream().filter(Def::buyable).toList();
+    }
+
     int size() {
         return byId.size();
     }

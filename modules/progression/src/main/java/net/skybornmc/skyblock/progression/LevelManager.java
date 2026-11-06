@@ -90,9 +90,12 @@ final class LevelManager implements Listener {
         int members;
         double averageSkill;
         Map<SkillType, Integer> depthsBest = new EnumMap<>(SkillType.class);
+        /** Island level v2: the level is the island XP ({@code total} is the XP then). */
+        boolean xp;
+        double xpProgress;
 
         double progress(double divisor) {
-            return LevelMath.progress(total, divisor);
+            return xp ? xpProgress : LevelMath.progress(total, divisor);
         }
     }
 
@@ -165,7 +168,18 @@ final class LevelManager implements Listener {
     void start() {
         startTasks();
         load();
+        if (rewards != null) {
+            rewards.load();
+        }
     }
+
+    /** Island level v2 rewards (money, crystals, keys per level). */
+    private XpRewards rewards;
+
+    void rewards(XpRewards r) {
+        this.rewards = r;
+    }
+
 
     private void startTasks() {
         tasks.add(core.scheduler().repeat("progression-level", 2L, 2L, this::tick));
@@ -370,6 +384,24 @@ final class LevelManager implements Listener {
             return;
         }
         long now = System.currentTimeMillis();
+        if (config.xpMode()) { // island level v2 (owner 7 Nov 2026): the island XP, cheap and on the main thread
+            double xp = pillars.totalXp(islandId);
+            State s = state(islandId);
+            s.xp = true;
+            s.total = xp;
+            s.earned = xp;
+            s.xpProgress = IslandXp.progress(xp, config.xpBase, config.xpExponent);
+            s.points = new EnumMap<>(LevelSource.class);
+            s.points.put(LevelSource.PILLARS, xp);
+            s.raw = s.points;
+            s.limits = new EnumMap<>(LevelSource.class);
+            s.members = islands.members(islandId).size();
+            s.blockWorth = blocks.ledger().worth(islandId);
+            s.detailed = true;
+            s.updatedAt = now;
+            apply(islandId, s, IslandXp.level(xp, config.xpBase, config.xpExponent), now);
+            return;
+        }
         Map<UUID, IslandService.Role> members = islands.members(islandId);
         List<UUID> counted = LevelRules.countedMembers(members.keySet(), m -> islands.memberSince(islandId, m), now,
                 (long) (config.memberMinDays * DAY));
@@ -552,8 +584,14 @@ final class LevelManager implements Listener {
             Bukkit.getPluginManager().callEvent(new IslandLevelUpEvent(islandId, old, level));
         }
         s.bestLevel = Math.max(oldBest, level);
-        // Only a new season high is announced (block worth going up and down never spams), never the first calculation.
-        if (!first && level > oldBest && config.notifyLevelUp) {
+        if (s.xp && rewards != null) {
+            // Island level v2: a level is announced and rewarded once (the paid level, not the old season high, decides).
+            int before = rewards.paid(islandId);
+            if (rewards.reach(islandId, level) && !first && config.notifyLevelUp && before > 0) {
+                announce(islandId, before, level);
+            }
+        } else if (!first && level > oldBest && config.notifyLevelUp) {
+            // Only a new season high is announced (block worth going up and down never spams), never the first calculation.
             announce(islandId, oldBest, level);
         }
         save(islandId, s);

@@ -90,7 +90,8 @@ final class LevelMenus {
             return;
         }
         levels.request(island.get().id()); // fresh numbers a few seconds after opening
-        core.menus().open(player, new LevelMenu(this, island.get().id()).parent(parent));
+        Menu menu = levels.config().xpMode() ? new IslandXpMenu(this, island.get().id()) : new LevelMenu(this, island.get().id());
+        core.menus().open(player, menu.parent(parent)); // island level v2 (owner 7 Nov 2026)
     }
 
     void openTop(Player player, Menu parent) {

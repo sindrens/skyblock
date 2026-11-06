@@ -235,6 +235,10 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.level.max", desc = "Highest spawner level (the prestige level).", min = 1, max = 100, level = Setting.Level.OWNER)
     public int levelMax = 16;
 
+    @Setting(path = "spawners.island-xp-per-kill", desc = "Owner 7 Nov 2026: island XP for every spawner mob that dies on the island "
+            + "(any cause, lava farms too; the island level is the island XP).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double islandXpPerKill = 0.1;
+
     @Setting(path = "spawners.level.limit-base", desc = "Owner 7 Nov 2026: spawners of one mob type an island may place at the first level.", min = 1, max = 100_000, level = Setting.Level.OWNER)
     public int limitBase = 64;
 

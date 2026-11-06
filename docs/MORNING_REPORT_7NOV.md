@@ -218,6 +218,13 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Island level v2 (update151, plan: `docs/plans/TOOLS_V5.md` section 3)
+- **Island level = island XP**, and it updates by itself within a few seconds (no Recalculate button, no waiting). Island XP comes from everything members do: crops on the island and at /farm, ores from generators and blocks at /mine, catches at /fish, kills at /pve, and every spawner mob that dies on the island (0.1 each, lava farms too). Bank, skills, achievements and block worth no longer count (block worth stays as the "Value" tab of /is top).
+- **Each level needs a bit more:** level 10 = 47,000 XP (about an hour alone at 13 blocks a second), level 50 = 530,000.
+- **Rewards:** every level puts $20,000 x the level in the island bank (level 10: $200k); every 5 levels each member gets crystals (10 x the level) and an Ember key; every 10 levels the whole server hears it. Islands that already have levels get those rewards once now.
+- **New /is level menu** in the tool style: the level bar, where the XP comes from (Farming, Mining, Combat, Foraging with their share) and the next five rewards. Island Upgrades button on top.
+- **/is upgrade** in the tool style too (| Stats, | Price rows), and upgrades that do nothing ("Coming soon") are hidden. No chat line per pillar level any more.
+
 ## Tools v5 and spawners (update150, plan: `docs/plans/TOOLS_V5.md`)
 Your answers before you went to sleep:
 - **Perks are your own now** (Shard Finder, Extra Drops, Efficiency, Fortune, Storage ...), bought with your own shards, and they work everywhere: your island, /farm, /mine, /fish, /pve. Everyone who already played got the island's old levels as their own, converted to the same strength. New players start at 0.
