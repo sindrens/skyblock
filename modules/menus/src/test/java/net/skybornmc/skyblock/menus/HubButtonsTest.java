@@ -99,7 +99,7 @@ class HubButtonsTest {
         List<String> problems = new ArrayList<>();
         ButtonLayout you = ButtonLayout.you(resource("menu.yml"), ITEMS, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(List.of("profiles", "titles", "achievements", "quests", "collection", "settings", "rules", "rank-rewards", "store", "credits"),
+        assertEquals(List.of("profiles", "titles", "achievements", "quests", "collection", "quest-book", "mailbox", "friends", "milestones", "settings", "rules", "rank-rewards", "store", "credits"),
                 you.buttons().stream().map(ButtonLayout.Button::id).toList());
         assertTrue(you.buttons().stream().allMatch(b -> b.slot() == -1), "You entries are placed by Centered, not by slot");
     }

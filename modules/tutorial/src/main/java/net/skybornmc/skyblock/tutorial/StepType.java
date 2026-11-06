@@ -29,7 +29,9 @@ enum StepType {
     /** A chest opened on your own island (the starter chest). */
     CHEST(false),
     /** Cobblestone or stone formed on your island while you were near it (a cobblestone generator works). */
-    GENERATOR(false);
+    GENERATOR(false),
+    /** Owner 7 Nov 2026 (quest line v2): your own island tool reached a level ({@code ToolLevelUpEvent}). target = hoe|pickaxe, amount = level. */
+    TOOL_LEVEL(true);
 
     private final boolean needsTarget;
 

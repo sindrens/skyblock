@@ -14,7 +14,7 @@ Written during the night while you slept. Newest at the top of each section.
 | 3 | Tools v4 core: enchants, personal prestige + rebirths (update125), storage (update126), old tools module removed (update128) | in progress |
 | 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
 | 5 | Spawners v2: levels per mob type, limit 4 x level, prestige, 10 s to 5 s speed, no efficiency curve (update129) | built |
-| 6 | Quest line v2, menus, help, mailbox | |
+| 6 | Quest line v2: two new quest book chapters (Bramble's Farmhand, Flint's Apprentice), /mailbox, /menu → You gets Quest Book, Mailbox, Friends, Milestones (update130) | built |
 | 7 | /fish | |
 | 8 | /pve | |
 | 9 | Polish (crates, collection, AH, shop) | |
@@ -64,6 +64,13 @@ Written during the night while you slept. Newest at the top of each section.
 1. Islands that already have more than 4 spawners of a type keep them (they work), but can't add more until the type levels up. OK? (default: yes; the alternative is giving existing islands a starting level.)
 2. The old "Spawner Stack Limit" island upgrade no longer does anything (the limit is per type now), so it is hidden from the menu (nobody can pay for nothing). Refund islands that bought it? (default: no refund until you answer.)
 3. Add/Take buttons stay in the spawner menu (the plan said "nothing else"). Remove them? (default: keep, they're handy.)
+
+## Quest line v2, mailbox, menu (batch 6, update130)
+- Two new quest book chapters after "What's Next": **Bramble's Farmhand** (buy a hoe enchant, hoe level 10, get Explode, prestige the hoe) and **Flint's Apprentice** (buy a pickaxe enchant, pickaxe level 10, reach iron, get Blast, prestige the pickaxe). Each pays 500 shards and an Ember key.
+- New quest step type "tool level" (counts your own hoe/pickaxe level).
+- `/mailbox` opens the item box (`/box` still works).
+- `/menu` → You now also has Quest Book, Mailbox, Friends and Milestones.
+- Not done from the plan's quest line: the NPC chains for /fish and /pve (those areas don't exist yet) and the Kindle island chain (spawner, island size, bank) — the island chapter already covers chest, seeds, generator, Kindle and island level.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

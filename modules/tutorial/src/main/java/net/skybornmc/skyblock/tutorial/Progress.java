@@ -186,7 +186,8 @@ final class Progress {
         boolean counted = false;
         for (Catalog.Step s : hits) {
             long have = counters.getOrDefault(s.key(), 0L);
-            long next = have + Math.max(1, signal.amount()) < have ? Long.MAX_VALUE : have + Math.max(1, signal.amount());
+            long next = s.type() == StepType.TOOL_LEVEL ? Math.max(have, signal.amount()) // a level, not a count
+                    : have + Math.max(1, signal.amount()) < have ? Long.MAX_VALUE : have + Math.max(1, signal.amount());
             if (next >= s.amount()) {
                 counters.remove(s.key());
                 done.add(s.key());

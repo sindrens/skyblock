@@ -116,7 +116,7 @@ public final class BoxModule implements SkyblockModule {
                 .description("Your item mailbox: items that did not fit your inventory")
                 .category("Economy")
                 .permission(PERM_USE)
-                .playerOnly()
+                .playerOnly().aliases("mailbox") // FULL_PLAN 9: /mailbox (the old /box works)
                 .example("box")
                 .executes(ctx -> BoxMenu.open(this, ctx.player())));
     }

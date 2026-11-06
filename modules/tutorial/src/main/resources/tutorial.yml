@@ -4,10 +4,10 @@
 # chapters.<id>: name, icon (vanilla item id), rewards (once per account: "money <n>", "crystals <n>", "shards <n>"
 #   (Farming Shards), "mining_shards <n>", "key <crate> <n>", "tag <id>") and steps in order.
 # steps.<id>:
-#   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator
+#   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator | tool_level
 #   target  npc: NPC role (npcs.yml) · menu: menu id(s) "hub|island" · place: id from places · grind: "farm" or
 #           "mine", optionally ":BLOCK|DROP" ("mine:COAL") · audit: "category:action[|action][:detail=value]" ·
-#           plant: blocks "WHEAT|CARROTS"
+#           plant: blocks "WHEAT|CARROTS" · tool_level: hoe | pickaxe (amount = the level)
 #   amount  how many (default 1)
 #   text    the step, short (it is the boss bar and the scoreboard "Next" line)
 #   hint    one short line: where to go or what to do
@@ -328,6 +328,79 @@ chapters:
         place: farm
         command: farm
         icon: carrot
+
+  # Quest line v2 (owner 7 Nov 2026, FULL_PLAN.md 7): the grind areas with the new tools.
+  farm_pro:
+    name: "Bramble's Farmhand"
+    icon: golden_hoe
+    rewards: ["shards 500", "key ember 1"]
+    steps:
+      enchant:
+        type: audit
+        target: "item:grind_enchant:kind=hoe"
+        text: "Buy a hoe enchant"
+        hint: "Right-click the hoe, then Your enchants."
+        icon: enchanted_book
+      level:
+        type: tool_level
+        target: hoe
+        amount: 10
+        text: "Reach hoe level 10"
+        hint: "Every ripe crop gives your hoe XP."
+        place: farm
+        icon: experience_bottle
+      explode:
+        type: audit
+        target: "item:grind_enchant:enchant=explode"
+        text: "Get Explode on your hoe"
+        hint: "It harvests the crops around you."
+        icon: tnt
+      prestige:
+        type: audit
+        target: "item:island_tool_prestige:kind=hoe"
+        text: "Prestige your hoe"
+        hint: "At level 50: tool menu, Prestige."
+        icon: nether_star
+
+  mine_pro:
+    name: "Flint's Apprentice"
+    icon: golden_pickaxe
+    rewards: ["mining_shards 500", "key ember 1"]
+    steps:
+      enchant:
+        type: audit
+        target: "item:grind_enchant:kind=pickaxe"
+        text: "Buy a pickaxe enchant"
+        hint: "Right-click the pickaxe, then Your enchants."
+        icon: enchanted_book
+      level:
+        type: tool_level
+        target: pickaxe
+        amount: 10
+        text: "Reach pickaxe level 10"
+        hint: "Every ore and stone gives your pickaxe XP."
+        place: mine
+        icon: experience_bottle
+      iron:
+        type: grind
+        target: "mine:IRON_ORE"
+        text: "Reach iron at /mine"
+        hint: "Mine 400 blocks to unlock iron."
+        place: mine
+        command: mine
+        icon: raw_iron
+      blast:
+        type: audit
+        target: "item:grind_enchant:enchant=blast"
+        text: "Get Blast on your pickaxe"
+        hint: "It breaks the blocks around you."
+        icon: tnt
+      prestige:
+        type: audit
+        target: "item:island_tool_prestige:kind=pickaxe"
+        text: "Prestige your pickaxe"
+        hint: "At level 50: tool menu, Prestige."
+        icon: nether_star
 
 # What an NPC says when you click it outside a tutorial step (before its menu opens). One line per click, in turn.
 # Each line points to the next NPC, so they work together. Remove a role's lines to keep it quiet.

@@ -4,7 +4,7 @@ Owner answer 7: **items are never dropped on the ground** when a player's invent
 
 | Command | What it does | Permission | Status |
 |---|---|---|---|
-| `/box` | Opens your item box: the stacks waiting for your active profile, oldest first, 28 per page. Click a stack to take it, or **Take all that fit** | `skyblock.box.use` | ✅ |
+| `/box` (`/mailbox`) | Opens your item box (mailbox): the stacks waiting for your active profile, oldest first, 28 per page. Click a stack to take it, or **Take all that fit** | `skyblock.box.use` | ✅ |
 
 Staff (no command): **`/inspect <player>` → Box** (chest minecart icon, admins only, `skyblock.box.admin`) shows that player's box per profile (head button switches profile). Click a stack → confirm → it is removed; **Clear box** → confirm → every stack of that profile is removed. Removed stacks are **moved to the `box_cleared` table**, never deleted, so they can be restored by hand. Audited (`box_view`, `box_remove`, `box_clear`, category `staff`).
 

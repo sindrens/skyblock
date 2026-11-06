@@ -62,6 +62,11 @@ you:
   achievements: {icon: nether_star, command: "achievements", service: AchievementService}
   quests:       {icon: map,       command: "contracts",    service: QuestService}
   collection:   {icon: bundle,   command: "collection",   service: CollectionLog}
+  # FULL_PLAN 8 (7 Nov 2026): every feature reachable from /menu.
+  quest-book:   {icon: writable_book, command: "tutorial"}
+  mailbox:      {icon: ender_chest,   command: "box"}
+  friends:      {icon: player_head,   command: "friends"}
+  milestones:   {icon: golden_apple,  command: "milestones"}
   settings:     {icon: repeater,     action: settings}
   rules:        {icon: book,        command: "rules"}
   # Ranks V2: donor ranks only (a player without the node never sees it).

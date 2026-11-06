@@ -246,6 +246,18 @@ you:
     collection:
       name: "<c:flame><bold>Collection"
       lore: ["<c:text>Everything you found yourself,", "<c:text>page milestones and rewards."]
+    quest-book:
+      name: "<c:flame><bold>Quest Book"
+      lore: ["<c:text>Your next step and the NPC", "<c:text>quests at spawn and the areas."]
+    mailbox:
+      name: "<c:flame><bold>Mailbox"
+      lore: ["<c:text>Items that did not fit your", "<c:text>bag wait here. Claim them."]
+    friends:
+      name: "<c:flame><bold>Friends"
+      lore: ["<c:text>Your friends, who is online", "<c:text>and where they are."]
+    milestones:
+      name: "<c:flame><bold>Milestones"
+      lore: ["<c:text>Long goals with perks", "<c:text>for your grind."]
 
 # /menu → Travel (GUI-2, was Warps). Places: menu.yml → travel. <name> in fallback-name = the place id when it has no texts.
 travel:

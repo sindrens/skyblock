@@ -67,7 +67,7 @@ class HubV2MigrationTest {
 
         List<String> problems = new ArrayList<>();
         assertEquals(17, ButtonLayout.hub(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size(), "head + 15 features + Staff tile (plan 4 Nov C adds Mine)");
-        assertEquals(10, ButtonLayout.you(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size(), "6 + Quests (M10.7) + Collection (M10.10) + Rank rewards (Ranks V2) + Credits (C1)");
+        assertEquals(14, ButtonLayout.you(yaml, HubButtonsTest.ITEMS, problems::add).buttons().size(), "6 + Quests + Collection + Rank rewards + Credits + Quest Book, Mailbox, Friends, Milestones (7 Nov 2026)");
         assertEquals(7, WarpLayout.parse(yaml, HubButtonsTest.ITEMS, problems::add).warps().size());
         assertEquals(List.of(), problems);
 

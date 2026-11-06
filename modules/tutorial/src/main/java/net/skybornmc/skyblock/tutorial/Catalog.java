@@ -43,7 +43,7 @@ final class Catalog {
                 return false;
             }
             return switch (type) {
-                case NPC, PLACE -> target.equalsIgnoreCase(s.target());
+                case NPC, PLACE, TOOL_LEVEL -> target.equalsIgnoreCase(s.target());
                 case MENU, PLANT -> anyOf(target, s.target());
                 case GRIND -> grind(s);
                 case AUDIT -> audit(s);

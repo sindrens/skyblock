@@ -138,6 +138,13 @@ final class TutorialListener implements Listener {
         m.signal(event.getPlayer(), Signal.of(StepType.MENU, event.menuId(), 1));
     }
 
+    /** Quest line v2: the island hoe or pickaxe reached a level. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onToolLevel(net.skybornmc.skyblock.common.tools.ToolLevelUpEvent event) {
+        m.signal(event.getPlayer(), Signal.of(StepType.TOOL_LEVEL, event.getTool().kind().name().toLowerCase(java.util.Locale.ROOT),
+                event.getTool().level()));
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGrind(GrindBreakEvent event) {
         m.signal(event.getPlayer(), new Signal(StepType.GRIND, event.area(), 1,
