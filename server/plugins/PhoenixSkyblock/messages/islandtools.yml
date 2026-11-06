@@ -555,3 +555,48 @@ enchant:
     # <amount>
     buy:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy <amount>"
+
+# Owner 7 Nov 2026: tool skins (a look only, bought once with credits). <skin> <tool> <price> <have>
+skins:
+  crumb: "Skins"
+  info:
+    - "<c:text>Change how your tool looks."
+    - "<c:text>A skin is bought once with"
+    - "<c:text>credits and changes only the look."
+  name:
+    diamond: "Diamond"
+    iron: "Iron"
+    golden: "Golden"
+    copper: "Copper"
+    netherite: "Netherite"
+    stone: "Stone"
+    wooden: "Wooden"
+  button:
+    name: "<bold><area:skills>Skins"
+    lore:
+      - "<c:muted>Change the look of the tool."
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  tile:
+    name: "<bold><area:skills><skin>"
+    name-worn: "<bold><area:skills><skin> <c:success><sym:check>"
+    lore:
+      - "<c:muted><tool> skin · look only"
+      - ""
+    worn:
+      - "<c:success>You wear this one."
+    owned:
+      - "<c:bar>| </c:bar><c:text>Owned</c:text>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to wear it"
+    price:
+      - "<c:bar>| </c:bar><c:text>Price: </c:text><c:value><price> credits"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+  confirm-crumb: "Confirm Skin"
+  confirm-details:
+    - "<c:text>Buy <c:value><skin></c:value> <c:text>for your <tool>?"
+    - "<c:value><price> credits</c:value><c:text>, once. You keep it."
+  bought: "<prefix><c:success><sym:check></c:success> <c:text>New skin: <c:value><skin></c:value> <c:text>for your <tool>."
+  poor: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <c:value><price></c:value> <c:text>credits; you have <c:value><have></c:value><c:text>. </c:text><click:run_command:'/credit'><c:action>/credit</c:action></click>"
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing was paid. Try again in a moment."

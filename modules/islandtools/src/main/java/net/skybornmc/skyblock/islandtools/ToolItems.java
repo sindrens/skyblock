@@ -137,6 +137,7 @@ final class ToolItems {
             m.core().items().retexture(stack, "item/island_" + kind.id() + "_diamond");
         }
         m.core().items().render(stack);
+        m.skins().apply(stack, kind, profile); // owner 7 Nov 2026: the chosen skin
         return stack;
     }
 

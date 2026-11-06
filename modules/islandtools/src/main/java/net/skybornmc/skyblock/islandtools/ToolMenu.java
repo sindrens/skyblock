@@ -35,6 +35,7 @@ final class ToolMenu extends Menu {
     static final int SLOT_PRESTIGE = 5;
     static final int SLOT_HANDLE = 47;
     static final int SLOT_ENCHANTS = 22;
+    static final int SLOT_SKINS = 51;
 
     private final IslandToolsModule m;
     private final Kind kind;
@@ -101,6 +102,10 @@ final class ToolMenu extends Menu {
         set(SLOT_TOOL, service.item(m.items().create(kind, island, m.profile(viewer)),
                 m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), info));
         set(SLOT_PRESTIGE, prestigeButton(prog, lv), click -> prestige(click.player()));
+        if (ToolSkins.KINDS.contains(kind) && !m.skins().skins().isEmpty()) { // owner 7 Nov 2026: tool skins
+            set(SLOT_SKINS, service.item(Material.ARMOR_STAND, viewer, IslandToolsModule.ID, "skins.button"),
+                    click -> openChild(new SkinMenu(m, kind)));
+        }
         long used = m.storage().used(m.profile(viewer), kind);
         long cap = m.storage().capacity(viewer, kind);
         set(SLOT_STORAGE, service.item(Material.BARREL, viewer, IslandToolsModule.ID, "menu.storage",

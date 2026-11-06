@@ -218,6 +218,10 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "rebirth.xp-percent", desc = "Owner 6 Nov 2026: every rebirth needs this many percent more tool XP per level.", min = 0, max = 1000)
     public double rebirthXpPercent = 10;
 
+    @Setting(path = "skins.list", desc = "Owner 7 Nov 2026: tool skins (hoe, pickaxe, sword) as 'id:credits'; the id is the vanilla "
+            + "item set (iron, golden, copper, netherite, stone, wooden). Diamond is the free default. Only the look changes.", level = Setting.Level.OWNER)
+    public List<String> skins = List.of("iron:250", "golden:500", "copper:500", "netherite:1000");
+
     @Setting(path = "rebirth.board-weight", desc = "Owner 7 Nov 2026: on the Top Tools board a rebirth counts as this many prestiges.", min = 1, max = 1000)
     public int rebirthBoardWeight = 50;
 

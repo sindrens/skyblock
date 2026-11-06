@@ -31,4 +31,17 @@ class OwnerPicksTest {
         assertEquals(50, c.rebirthBoardWeight);
         assertEquals(16, c.version());
     }
+
+    @Test
+    void skinsAreVanillaLooksBoughtWithCredits() {
+        List<String> problems = new ArrayList<>();
+        List<ToolSkins.Skin> skins = ToolSkins.parse(new IslandToolsConfig().skins, problems::add);
+        assertEquals(List.of(), problems);
+        assertEquals(List.of("iron", "golden", "copper", "netherite"), skins.stream().map(ToolSkins.Skin::id).toList());
+        assertEquals(Material.NETHERITE_HOE, skins.get(3).material(Kind.HOE));
+        assertEquals(Material.GOLDEN_SWORD, skins.get(1).material(Kind.SWORD));
+        assertEquals(1000, skins.get(3).price());
+        assertEquals(1, ToolSkins.parse(List.of("iron:250", "rainbow:5", "golden"), problems::add).size());
+        assertEquals(2, problems.size());
+    }
 }

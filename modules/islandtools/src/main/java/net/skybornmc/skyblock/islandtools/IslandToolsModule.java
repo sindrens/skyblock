@@ -232,6 +232,13 @@ public final class IslandToolsModule implements SkyblockModule {
     }
 
     /** Owner 6 Nov 2026: the personal grind enchants. */
+    /** Owner 7 Nov 2026: tool skins (looks bought with credits). */
+    private final ToolSkins skins = new ToolSkins(this);
+
+    ToolSkins skins() {
+        return skins;
+    }
+
     EnchantProcs enchants() {
         return enchants;
     }
@@ -776,6 +783,7 @@ public final class IslandToolsModule implements SkyblockModule {
             ItemStack copy = s.clone();
             items.applyEnchants(copy, kind, view(island, profile(p), kind));
             core.items().render(copy);
+            skins.apply(copy, kind, profile(p)); // owner 7 Nov 2026: the chosen look
             inv.setItem(i, copy);
         }
     }

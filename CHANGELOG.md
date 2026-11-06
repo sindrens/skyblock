@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Owner picks 3 (update158):** tool skins for credits.
 - **Owner picks 2 (update157):** meteor at spawn every hour, fishing contest every 2 hours.
 - **Owner picks 1 (update156):** Shard Finder number, Top Tools board, Auto-Compactor perk (blocks sell as 9 items).
 - **/fish and /pve contracts (update154).**
