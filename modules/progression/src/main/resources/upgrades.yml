@@ -372,7 +372,7 @@ upgrades:
     icon: "spawner"
     order: 1
     effect: spawner-stack
-    enabled: true
+    enabled: false # Spawners v2 (7 Nov 2026): the limit is per mob type now (Q-72); bought levels are kept
     levels:
       - tier: 1
         cost: 3350
@@ -419,34 +419,34 @@ upgrades:
     levels:
       - tier: 1
         cost: 2500
-        value: 12
+        value: 5
       - tier: 1
         cost: 9280
-        value: 24
+        value: 11
       - tier: 2
         cost: 34500
-        value: 36
+        value: 18
       - tier: 3
         cost: 128000
-        value: 48
+        value: 25
       - tier: 4
         cost: 475000
-        value: 60
+        value: 33
       - tier: 5
         cost: 1760000
-        value: 72
+        value: 43
       - tier: 6
         cost: 6550000
-        value: 84
+        value: 54
       - tier: 6
         cost: 24300000
-        value: 96
+        value: 67
       - tier: 7
         cost: 90300000
-        value: 108
+        value: 82
       - tier: 8
         cost: 335000000
-        value: 120
+        value: 100
   mob_loot:
     tab: production
     icon: "rotten_flesh"

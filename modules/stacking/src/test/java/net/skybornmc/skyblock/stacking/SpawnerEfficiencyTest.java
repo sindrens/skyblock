@@ -16,10 +16,10 @@ class SpawnerEfficiencyTest {
     private static final SpawnerEfficiency CURVE = SpawnerEfficiency.defaults();
 
     @Test
-    void configDefaultIsTheOwnersCurve() {
-        assertEquals(SpawnerEfficiency.DEFAULT, new StackingConfig().spawnerEfficiency);
+    void theOldCurveStillParses() {
+        // Spawners v2 (owner plan 5 Nov 2026): the curve is no longer used (every spawner works at 100%).
         List<String> problems = new ArrayList<>();
-        SpawnerEfficiency parsed = SpawnerEfficiency.parse(new StackingConfig().spawnerEfficiency, problems::add);
+        SpawnerEfficiency parsed = SpawnerEfficiency.parse(SpawnerEfficiency.DEFAULT, problems::add);
         assertEquals(List.of(), problems);
         assertEquals(5, parsed.bands().size());
     }

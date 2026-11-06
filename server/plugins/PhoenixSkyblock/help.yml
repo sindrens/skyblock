@@ -310,21 +310,29 @@ topics:
     pages:
       - title: "<c:value>Hoe and pickaxe"
         lines:
-          - "<c:text>Your island has a hoe and a"
-          - "<c:text>pickaxe. Use them at /farm, /mine"
-          - "<c:text>and on your island: they level up"
-          - "<c:text>and never break."
+          - "<c:text>You get an island hoe and pickaxe."
+          - "<c:text>Use them at /farm, /mine and on"
+          - "<c:text>your island: they level up and"
+          - "<c:text>never break. The perks are shared."
       - title: "<c:value>Shards and perks"
         lines:
           - "<c:text>The hoe finds Farming Shards, the"
           - "<c:text>pickaxe Mining Shards. Spend them"
           - "<c:text>on perks in the tool menu: right-"
           - "<c:text>click the tool or type /tool."
+      - title: "<c:value>Your enchants"
+        lines:
+          - "<c:text>17 enchants per tool are yours"
+          - "<c:text>alone: Blast, Shard Burst, Keyfinder"
+          - "<c:text>... They work at /farm and /mine."
+          - "<c:text>Tool menu: <c:value>Your enchants</c:value><c:text>."
       - title: "<c:value>Prestige"
         lines:
-          - "<c:text>At the top level a tool can"
-          - "<c:text>prestige: back to level 1 for a"
-          - "<c:text>lasting bonus to XP and shards."
+          - "<c:text>Your tool level is your own. At"
+          - "<c:text>the top, prestige: back to level 1"
+          - "<c:text>for more XP and shards and +20"
+          - "<c:text>enchant levels. Enchants, perks and"
+          - "<c:text>shards stay. After 50: rebirths."
 
   enchants:
     icon: enchanted_book
@@ -684,7 +692,7 @@ topics:
         lines:
           - "<c:text>Click an NPC to open what it"
           - "<c:text>does: the Banker opens the bank, the"
-          - "<c:text>Blacksmith the Forge."
+          - "<c:text>Blacksmith your tool menu."
           - "<c:text>Help NPCs explain on every click."
       - title: "<c:value>Help NPCs"
         lines:
@@ -1601,7 +1609,7 @@ topics:
       - title: "<c:value>Never dropped"
         lines:
           - "<c:text>When your inventory is full, items"
-          - "<c:text>from selling, the shop, the Forge,"
+          - "<c:text>from selling, the shop, crates,"
           - "<c:text>trades and more go to your box"
           - "<c:text>instead of falling on the ground."
       - title: "<c:value>Taking items"

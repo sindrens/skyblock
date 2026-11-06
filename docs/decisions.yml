@@ -313,6 +313,8 @@ decisions:
     file: stacking.yml
     path: spawners.efficiency
     item: "1-16:100"
+    check: false
+    note: "Superseded by the owner plan of 5 Nov 2026 (FULL_PLAN.md 5, Spawners v2): no diminishing output any more; the key spawners.efficiency was removed (update129)."
 
   - id: "F2-2"
     answer: "Diminishing spawner output: spawners 17-32 of a tier on one island work at 60%"
@@ -320,6 +322,8 @@ decisions:
     file: stacking.yml
     path: spawners.efficiency
     item: "17-32:60"
+    check: false
+    note: "Superseded by the owner plan of 5 Nov 2026 (FULL_PLAN.md 5, Spawners v2): no diminishing output any more; the key spawners.efficiency was removed (update129)."
 
   - id: "F2-3"
     answer: "Diminishing spawner output: spawners 33-64 of a tier on one island work at 35%"
@@ -327,6 +331,8 @@ decisions:
     file: stacking.yml
     path: spawners.efficiency
     item: "33-64:35"
+    check: false
+    note: "Superseded by the owner plan of 5 Nov 2026 (FULL_PLAN.md 5, Spawners v2): no diminishing output any more; the key spawners.efficiency was removed (update129)."
 
   - id: "F2-4"
     answer: "Diminishing spawner output: spawners 65-128 of a tier on one island work at 20%"
@@ -334,6 +340,8 @@ decisions:
     file: stacking.yml
     path: spawners.efficiency
     item: "65-128:20"
+    check: false
+    note: "Superseded by the owner plan of 5 Nov 2026 (FULL_PLAN.md 5, Spawners v2): no diminishing output any more; the key spawners.efficiency was removed (update129)."
 
   - id: "F2-5"
     answer: "Diminishing spawner output: spawner 129 and up of a tier on one island work at 10%"
@@ -341,6 +349,8 @@ decisions:
     file: stacking.yml
     path: spawners.efficiency
     item: "129+:10"
+    check: false
+    note: "Superseded by the owner plan of 5 Nov 2026 (FULL_PLAN.md 5, Spawners v2): no diminishing output any more; the key spawners.efficiency was removed (update129)."
 
   - id: "F2-payback-good"
     answer: "Shop spawner payback shows green up to 100 h"

@@ -84,7 +84,8 @@ class UpgradeRulesTest {
         assertEquals(OptionalInt.of(32), UpgradeRules.spawnerStack(catalog, Map.of("spawner_stack_limit", 2)));
         assertEquals(OptionalInt.of(512), UpgradeRules.spawnerStack(catalog, Map.of("spawner_stack_limit", 12)));
         assertEquals(1.0, UpgradeRules.spawnerRate(catalog, Map.of()), 1e-9);
-        assertEquals(1.36, UpgradeRules.spawnerRate(catalog, Map.of("spawner_rate", 3)), 1e-9);
+        assertEquals(1.18, UpgradeRules.spawnerRate(catalog, Map.of("spawner_rate", 3)), 1e-9, "Spawners v2: +18% speed at level 3");
+        assertEquals(3, UpgradeRules.level(catalog, Map.of("spawner_rate", 3), UpgradeEffect.SPAWNER_RATE), "the speed step level");
         assertEquals(50, UpgradeRules.whole(catalog, Map.of("entity_limits", 1), UpgradeEffect.ENTITY_LIMITS));
         assertEquals(10, UpgradeRules.whole(catalog, Map.of("bank_interest", 10), UpgradeEffect.BANK_INTEREST));
         assertEquals(60, UpgradeRules.bonusPercent(catalog, Map.of("sell_multiplier", 12), UpgradeEffect.SELL_BONUS), 1e-9);

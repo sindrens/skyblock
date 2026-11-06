@@ -62,6 +62,13 @@ spawner:
   error: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Your spawners are safe; try again."
   # ECON-SPAWNERS step 7: the island already has the most tier <tier> spawners allowed. <max> <tier>
   cap-reached: "<prefix><c:error><sym:cross></c:error> <c:text>This island holds <c:value><max></c:value> <c:text>tier <tier> spawners."
+  # Spawners v2: the island's limit of this mob type. <mob> <max> <level>
+  limit-reached: "<prefix><c:error><sym:cross></c:error> <c:text>Your island can hold <c:value><max></c:value> <mob> <c:text>spawners (level <c:value><level></c:value><c:text>). Kill mobs from your own spawners to level it up."
+  # <mob> <level> <limit>
+  level-up: "<prefix><c:success><sym:star></c:success> <mob> <c:text>spawners reached level <c:value><level></c:value><c:text>: your island can now hold <c:value><limit></c:value><c:text>."
+  level-max: "<prefix><c:flame><sym:star></c:flame> <mob> <c:text>spawners reached the top level <c:value><level></c:value><c:text>! Prestige them in the spawner menu for more drops."
+  # <mob> <prestige> <bonus>
+  prestiged: "<prefix><c:flame><sym:star></c:flame> <mob> <c:text>spawners prestige <c:flame><prestige></c:flame><c:text>: +<bonus>% drops for good. The limit stays."
   # The spawner item (custom item, lore built by the item framework). {mob} {tier} {rarity}
   item:
     name: "<rarity:{rarity}>{mob} Spawner"
@@ -145,24 +152,20 @@ menu:
     active: "<c:success>Running"
     paused: "<c:warning>Paused <c:muted>(no player near)"
     busy: "<c:muted>Saving..."
+  # Spawners v2 (owner plan 5 Nov 2026): level, kills, placed / limit, speed. <level> <max-level> <bar> <percent> <kills>
+  # <need> <placed> <limit> <prestige> <max-prestige> <bonus> <count> <max> <seconds> <next> <status>
   spawner:
-    name: "<c:value><mob></c:value> <c:text>Spawner"
+    name: "<c:value><mob></c:value> <c:text>Spawner <c:muted>Lv <level>"
     lore:
-      - "<c:text>Tier <c:value><tier>"
-      - "<c:text>Stacked <c:value><count>/<max>"
-      - "<c:text>Every <c:value><seconds> s"
-      - "<c:text>Mobs per spawn <c:value><mobs>"
-      - "<c:text>Loot <c:value>x<loot>"
-      - "<c:text>Output <c:value><rate></c:value> <c:text>mobs/min"
-      - "<c:text>Next spawn in <c:value><next>s"
+      - "<c:text>Level <c:value><level>/<max-level></c:value> <c:muted>Prestige <prestige>/<max-prestige>"
+      - "<bar> <c:value><percent>%"
+      - "<c:text>Kills <c:value><kills>/<need>"
+      - "<c:text>On your island <c:value><placed>/<limit>"
+      - "<c:text>Every <c:value><seconds> s</c:value> <c:muted>(next in <next>s)"
       - "<c:text>Status <status>"
       - ""
-      - "<c:text>On this island <c:value><owned>/<cap>"
-      - "<c:text>= <c:value><effective></c:value> <c:text>at full output."
-      - "<c:text>Next one works at <c:value><next-percent>%</c:value><c:text>."
-      - ""
-      - "<c:muted>Runs while a player is within"
-      - "<c:muted><range> blocks. Light is not needed."
+      - "<c:muted>Kills of mobs from your own"
+      - "<c:muted>spawners on your island count."
   add-one:
     name: "<c:success>Add 1"
     lore: ["<c:text>Adds one <c:value><mob></c:value> <c:text>spawner", "<c:text>from your inventory.", "<c:text>You carry <c:value><carried>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to add"]
@@ -179,11 +182,35 @@ menu:
   take-all-confirm:
     crumb: "Take all spawners?"
     details: ["<c:text>Put all <c:value><count></c:value> <c:text>spawners in your", "<c:text>inventory. The block disappears."]
-  upgrades:
-    name: "<c:ember>Limit <max> <sym:dot> Every <seconds> s"
+  # Spawners v2: the prestige of this mob type on the island.
+  prestige-ready:
+    name: "<bold><grad:flame>Prestige <mob>"
     lore:
-      - "<c:text>Limit <c:value><max></c:value> <c:muted>(up to <absolute-max>)"
-      - "<c:text>Every <c:value><seconds> s"
+      - "<c:text>Top level reached."
+      - "<c:text>Back to level 1, the limit stays."
+      - "<c:bar>| </c:bar><c:text>Drops: </c:text><c:value>+<next-bonus>%"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to prestige"
+  prestige-locked:
+    name: "<c:muted>Prestige"
+    lore:
+      - "<c:text>Reach level <c:value><max-level></c:value> <c:muted>(now <level>)"
+      - "<c:text>Drops now: <c:value>+<bonus>%"
+  prestige-max:
+    name: "<c:success><sym:check> Max prestige"
+    lore:
+      - "<c:text>Drops: <c:value>+<bonus>%"
+  prestige-premium:
+    name: "<c:muted>Premium spawner"
+    lore:
+      - "<c:text>No levels: your island can"
+      - "<c:text>hold <c:value><limit></c:value> <c:text>of this type."
+  prestige-confirm:
+    crumb: "Prestige spawners?"
+    details:
+      - "<mob> <c:text>spawners go back to level 1."
+      - "<c:success>The limit and your spawners stay."
+      - "<c:text>Drops: <c:value>+<next-bonus>%</c:value> <c:text>for good."
 
 collector:
   item:

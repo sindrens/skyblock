@@ -84,20 +84,20 @@ public final class StackingConfig extends ModuleConfig {
 
     // ------------------------------------------------------------------ spawners
 
-    @Setting(path = "spawners.stack-start", desc = "Spawners one block holds without upgrades (owner S20: 8).", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerStackStart = 8;
+    @Setting(path = "spawners.stack-start", desc = "Spawners one block holds (Spawners v2: 64, the island's limit per mob type decides).", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int spawnerStackStart = 64; // Spawners v2: one block can hold the whole type limit
 
     @Setting(path = "spawners.stack-max", desc = "Spawners one block can ever hold, with the Spawner Stack Limit upgrade (ECON-SPAWNERS S4: 32; was 512). Blocks above it keep their spawners but can't grow.", min = 1, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerStackMax = 32;
+    public int spawnerStackMax = 64;
 
     @Setting(path = "spawners.interval-jitter-percent", desc = "Random spread of each spawn interval in percent (0 = exact; a little desyncs many spawners).", min = 0, max = 50)
     public int spawnerIntervalJitterPercent = 0;
 
     @Setting(path = "spawners.interval-floor-seconds", desc = "No spawner ever spawns faster than this, whatever the steps say (protects the main thread).", min = 1, max = 60, level = Setting.Level.OWNER)
-    public int spawnerIntervalFloorSeconds = 4;
+    public int spawnerIntervalFloorSeconds = 5;
 
     @Setting(path = "spawners.speed-steps-seconds", desc = "Seconds between spawns per speed upgrade level (level 0 first; /is upgrade). A level above the list uses the last step.", level = Setting.Level.OWNER)
-    public List<String> speedSteps = List.of("10", "9", "8", "7", "6", "5");
+    public List<String> speedSteps = List.of("10", "9.5", "9", "8.5", "8", "7.5", "7", "6.5", "6", "5.5", "5"); // Spawners v2: 10 Spawner Speed levels
 
     @Setting(path = "spawners.mob-steps", desc = "Mobs each spawner adds per spawn, per mobs upgrade level (level 0 first).", level = Setting.Level.OWNER)
     public List<String> mobSteps = List.of("1.0", "1.25", "1.5", "1.75", "2.0");
@@ -106,7 +106,7 @@ public final class StackingConfig extends ModuleConfig {
     public List<String> lootSteps = List.of("1.0", "1.1", "1.2", "1.3", "1.4", "1.5");
 
     @Setting(path = "spawners.max-per-tier", desc = "Spawners of one tier an island can hold (all blocks; ECON-SPAWNERS S3: 32). 0 = no cap. Islands above it keep theirs (grandfathered) but can't add more.", min = 0, max = 100_000, level = Setting.Level.OWNER)
-    public int spawnerMaxPerTier = 32;
+    public int spawnerMaxPerTier = 0; // Spawners v2: the limit is per mob type (spawners.level.*)
 
     @Setting(path = "spawners.cap-perk-max", desc = "Most extra spawners per tier a credit perk can add to the cap.", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public int spawnerCapPerkMax = 64;
@@ -189,7 +189,7 @@ public final class StackingConfig extends ModuleConfig {
     public int activationRange = 16;
 
     @Setting(path = "spawners.spawn-range", desc = "Mobs appear up to this many blocks from the spawner (vanilla 4). Light, space and blocks are ignored (owner S25).", min = 0, max = 8)
-    public int spawnRange = 4;
+    public int spawnRange = 3;
 
     @Setting(path = "spawners.due-per-tick", desc = "Most spawner blocks handled in one tick (the rest wait a tick; keeps lag spikes away).", min = 1, max = 10_000)
     public int spawnerDuePerTick = 100;
@@ -212,8 +212,29 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.tier-5", desc = "Tier 5 = premium spawner types (Black Market for shards, credit shop later; never in /shop). Villager, warden, wither, ender dragon, elder guardian and allay are never allowed (SK8).", level = Setting.Level.OWNER)
     public List<String> tier5 = List.of("iron_golem", "wither_skeleton", "evoker");
 
-    @Setting(path = "spawners.efficiency", desc = "Owner F2: diminishing output per island and tier. All spawners of one tier on an island are counted (every block, outposts later); the k-th one works at the percent of its band. Format from-to:percent, the last band open (129+:10). Bands start at 1 without gaps. Empty list = every spawner at 100%. A broken list falls back to these defaults.", level = Setting.Level.OWNER)
-    public List<String> spawnerEfficiency = List.of("1-16:100", "17-32:60", "33-64:35", "65-128:20", "129+:10");
+    // ------------------------------------------------------------------ Spawners v2 (owner plan 5 Nov 2026, FULL_PLAN.md 5)
+
+    @Setting(path = "spawners.level.base", desc = "Spawners v2: kills per level step for tier 1-4; level n of a mob type needs base x n^2 kills "
+            + "of mobs from the island's own spawners on the island (tier 1 level 2 = 400).", level = Setting.Level.OWNER)
+    public List<Long> levelBase = List.of(100L, 250L, 600L, 1500L);
+
+    @Setting(path = "spawners.level.max", desc = "Highest spawner level (the prestige level).", min = 1, max = 100, level = Setting.Level.OWNER)
+    public int levelMax = 16;
+
+    @Setting(path = "spawners.level.limit-per-level", desc = "Spawners of one mob type an island may place per level.", min = 1, max = 1000, level = Setting.Level.OWNER)
+    public int limitPerLevel = 4;
+
+    @Setting(path = "spawners.level.limit-max", desc = "Most spawners of one mob type on an island.", min = 1, max = 100_000, level = Setting.Level.OWNER)
+    public int limitMax = 64;
+
+    @Setting(path = "spawners.level.premium-limit", desc = "Premium tier 5 spawners (Black Market) per mob type on an island; no levels.", min = 0, max = 1000, level = Setting.Level.OWNER)
+    public int premiumLimit = 3;
+
+    @Setting(path = "spawners.prestige.max", desc = "Prestiges per mob type (at the top level: back to level 1, more drops).", min = 0, max = 100, level = Setting.Level.OWNER)
+    public int prestigeMax = 10;
+
+    @Setting(path = "spawners.prestige.drop-percent", desc = "More drops of that mob type per prestige, in percent.", min = 0, max = 100, level = Setting.Level.OWNER)
+    public double prestigeDropPercent = 5;
 
     @Setting(path = "spawners.rare-drops", desc = "Strong drops from spawner mobs get this chance per mob instead of the vanilla one (owner SK10: very rare). Format mob:item:chance, chance 0-1.", level = Setting.Level.OWNER)
     public List<String> rareDrops = List.of("evoker:totem_of_undying:0.02");
@@ -278,7 +299,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -287,12 +308,20 @@ public final class StackingConfig extends ModuleConfig {
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of(
                 "spawners.min-interval-seconds", "ECON-SPAWNERS: every spawner spawns on its island's speed step (spawners.speed-steps-seconds)",
-                "spawners.max-interval-seconds", "ECON-SPAWNERS: every spawner spawns on its island's speed step (spawners.speed-steps-seconds)");
+                "spawners.max-interval-seconds", "ECON-SPAWNERS: every spawner spawns on its island's speed step (spawners.speed-steps-seconds)",
+                "spawners.efficiency", "Spawners v2 (owner plan 5 Nov 2026): the diminishing output curve is gone, every spawner works at 100%");
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("spawners.drops", ValueChange.of(SPAWNER_DROPS_V2, new StackingConfig().spawnerDrops)),
+        StackingConfig d = new StackingConfig();
+        return java.util.Map.of(4, java.util.Map.of("spawners.stack-start", ValueChange.of(8, d.spawnerStackStart),
+                        "spawners.stack-max", ValueChange.of(32, d.spawnerStackMax),
+                        "spawners.interval-floor-seconds", ValueChange.of(4, d.spawnerIntervalFloorSeconds),
+                        "spawners.speed-steps-seconds", ValueChange.of(List.of("10", "9", "8", "7", "6", "5"), d.speedSteps),
+                        "spawners.max-per-tier", ValueChange.of(32, d.spawnerMaxPerTier),
+                        "spawners.spawn-range", ValueChange.of(4, d.spawnRange)),
+                3, java.util.Map.of("spawners.drops", ValueChange.of(SPAWNER_DROPS_V2, new StackingConfig().spawnerDrops)),
                 2, java.util.Map.of(
                 "spawners.stack-max", ValueChange.of(512, 32),
                 "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "squid"),

@@ -63,6 +63,8 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
     private SpawnerDrops drops = SpawnerDrops.EMPTY;
     private SpawnerDropItems dropItems;
     private UnlockTracker unlock;
+    /** Spawners v2: kills and prestige per island and mob type. */
+    private SpawnerLevels levels;
     private final MobDropGuard dropGuard = new MobDropGuard();
     private final SpawnerMobSafety mobSafety = new SpawnerMobSafety(this::config);
     private MobStacker mobs;
@@ -102,6 +104,8 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         hoppers = new HopperCounter(this);
         collectors = new ChunkCollectors(this); // owner 4 Nov 2026: Chunk Collectors
         collectors.load();
+        levels = new SpawnerLevels(core.database(), core.plugin().getLogger());
+        levels.load();
         applyConfig();
         spawnerItems.register();
         spawners.load();
@@ -117,6 +121,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         tasks.add(core.scheduler().repeat("stacking-perf", 1200L, 1200L, perf::report));
         long save = 20L * Math.max(5, config.unlockSaveSeconds);
         tasks.add(core.scheduler().repeat("stacking-unlock-save", save, save, unlock::flush));
+        tasks.add(core.scheduler().repeat("stacking-levels-save", save, save, levels::flush));
     }
 
     @Override
@@ -134,6 +139,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         tasks.clear();
         if (unlock != null) {
             unlock.flushBlocking();
+        }
+        if (levels != null) {
+            levels.flushBlocking();
         }
         for (Listener listener : java.util.Arrays.asList(this, mobs, items, spawners, limits, crops, hoppers, dropGuard, mobSafety, collectors)) {
             if (listener != null) {
@@ -177,7 +185,7 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
                 problems.add("stacking.yml → spawners.drops: sold spawner mob '" + mob + "' has no custom drop (it keeps vanilla loot)");
             }
         }
-        efficiency = SpawnerEfficiency.parse(config.spawnerEfficiency, problems::add);
+        efficiency = SpawnerEfficiency.OFF; // Spawners v2: no diminishing output
         rareDrops = SpawnerTiers.rareDrops(config.rareDrops, id -> isMobType(entityType(id)),
                 id -> Material.matchMaterial(id) != null && Material.matchMaterial(id).isItem(), problems::add);
         if (config.spawnerStackStart > config.spawnerStackMax) {
@@ -291,6 +299,90 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         return steps.loot(level);
     }
 
+    /** Mob Loot times the prestige bonus of that mob type on the island (Spawners v2: +5% per prestige). */
+    double lootMultiplier(org.bukkit.Location at, EntityType type) {
+        java.util.UUID island = islands().flatMap(i -> i.islandAt(at)).map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::id).orElse(null);
+        double prestige = island == null || type == null || levels == null ? 1
+                : SpawnerLevelRules.dropMultiplier(levels.peek(island, type.getKey().getKey()).prestige, config.prestigeDropPercent);
+        return lootMultiplier(at) * prestige;
+    }
+
+    // ------------------------------------------------------------------ Spawners v2 levels
+
+    SpawnerLevels levels() {
+        return levels;
+    }
+
+    /** Kills per level step of a mob type (0 = no levels: premium or unknown). */
+    long levelBase(String mob) {
+        int tier = tiers == null ? 0 : tiers.tier(mob).orElse(0);
+        return tier >= 5 ? 0 : SpawnerLevelRules.base(config.levelBase, tier);
+    }
+
+    boolean premium(String mob) {
+        return tiers != null && tiers.tier(mob).orElse(0) >= 5;
+    }
+
+    int spawnerLevel(java.util.UUID island, String mob) {
+        return SpawnerLevelRules.level(levels.peek(island, mob).kills, levelBase(mob), config.levelMax);
+    }
+
+    /** The most spawners of this mob type the island may place (Spawners v2). */
+    int spawnerLimit(java.util.UUID island, String mob) {
+        SpawnerLevels.State s = levels.peek(island, mob);
+        return SpawnerLevelRules.limit(SpawnerLevelRules.level(s.kills, levelBase(mob), config.levelMax), s.prestige, premium(mob),
+                config.limitPerLevel, config.limitMax, config.premiumLimit, config.levelMax);
+    }
+
+    /**
+     * Kills of spawner mobs that died on an island count for that island's level of the type (mobs never walk: they come
+     * from the island's own spawners). One chat line to the members online at a new level.
+     */
+    void recordSpawnerKills(org.bukkit.Location at, EntityType type, long killed) {
+        if (killed <= 0 || type == null || at == null || levels == null) {
+            return;
+        }
+        String mob = type.getKey().getKey();
+        long base = levelBase(mob);
+        if (base <= 0) {
+            return;
+        }
+        islands().flatMap(i -> i.islandAt(at)).ifPresent(info -> {
+            int before = spawnerLevel(info.id(), mob);
+            levels.add(info.id(), mob, killed);
+            int after = spawnerLevel(info.id(), mob);
+            if (after > before) {
+                int limit = spawnerLimit(info.id(), mob);
+                for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                    if (islands().flatMap(i -> i.islandOf(p.getUniqueId())).map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::id)
+                            .filter(info.id()::equals).isPresent()) {
+                        msg.send(p, after >= config.levelMax ? "spawner.level-max" : "spawner.level-up", SpawnerManager.mob(mob),
+                                net.skybornmc.skyblock.common.text.Msg.number("level", after), net.skybornmc.skyblock.common.text.Msg.number("limit", limit));
+                        core.sounds().play(p, "level-up");
+                    }
+                }
+            }
+        });
+    }
+
+    /** Prestige of a mob type (menu, after the confirm): back to level 1, +drops. False when it can't now. */
+    boolean prestigeSpawners(org.bukkit.entity.Player player, java.util.UUID island, String mob) {
+        SpawnerLevels.State s = levels.peek(island, mob);
+        if (!SpawnerLevelRules.canPrestige(s.kills, levelBase(mob), config.levelMax, s.prestige, config.prestigeMax)) {
+            return false;
+        }
+        levels.prestige(island, mob);
+        levels.flush();
+        int p = levels.peek(island, mob).prestige;
+        msg.send(player, "spawner.prestiged", SpawnerManager.mob(mob), net.skybornmc.skyblock.common.text.Msg.number("prestige", p),
+                net.skybornmc.skyblock.common.text.Msg.p("bonus", SpawnerManager.number(p * config.prestigeDropPercent)));
+        core.sounds().play(player, "tool-prestige");
+        core.audit().log(net.skybornmc.skyblock.common.audit.AuditCategory.ISLAND, "spawner_prestige",
+                net.skybornmc.skyblock.common.audit.Actor.player(player), island.toString(), null, (long) p, player.getLocation(),
+                java.util.Map.of("mob", mob, "prestige", p));
+        return true;
+    }
+
     /** The island's cap per tier with the perk bonus (0 = no cap). */
     int spawnerCapFor(java.util.UUID island) {
         int bonus = island == null ? 0 : islands().map(i -> i.spawnerCapBonus(island)).orElse(0);
@@ -334,6 +426,9 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
             return;
         }
         java.util.UUID island = event.islandId();
+        if (levels != null) {
+            levels.clear(island); // Spawners v2: the island's spawner levels go with it
+        }
         java.util.Map<String, Long> before = new java.util.HashMap<>(unlock.kills(island));
         unlock.clear(island).whenComplete((rows, error) -> {
             if (error != null) {

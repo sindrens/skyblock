@@ -184,6 +184,17 @@ final class SpawnerManager implements Listener {
         return counts.get(island, tier);
     }
 
+    /** Spawners v2: spawners of one mob type on an island (every block; a place or add, not per tick). */
+    long typeCount(UUID island, String type) {
+        long sum = 0;
+        for (Spawner sp : spawners.values()) {
+            if (!sp.removed && island.equals(sp.island) && type.equals(sp.type)) {
+                sum += sp.amount;
+            }
+        }
+        return sum;
+    }
+
     /** Spawners of this spawner's tier on its island. */
     long islandCount(Spawner sp) {
         return counts.get(sp.island, tierOf(sp));
@@ -634,11 +645,13 @@ final class SpawnerManager implements Listener {
         }
         int tier = module.tiers().tier(type.get()).orElse(0);
         if (island != null && tier > 0) {
-            int cap = module.spawnerCapFor(island);
-            long owned = islandCount(island, tier);
+            // Spawners v2: the island's limit per mob type (4 x the type's level, max 64; premium 3).
+            int cap = module.spawnerLimit(island, type.get());
+            long owned = typeCount(island, type.get());
             if (SpawnerRules.room(owned, cap) < 1) {
                 event.setCancelled(true);
-                deny(player, "spawner.cap-reached", Msg.p("max", Format.number(cap)), Msg.p("tier", tier));
+                deny(player, "spawner.limit-reached", mob(type.get()), Msg.p("max", Format.number(cap)),
+                        Msg.number("level", module.spawnerLevel(island, type.get())));
                 capRefused(player, island, tier, owned, cap, block.getLocation());
                 return;
             }
@@ -844,11 +857,12 @@ final class SpawnerManager implements Listener {
         }
         int tier = tierOf(sp);
         if (sp.island != null && tier > 0) {
-            int cap = module.spawnerCapFor(sp.island);
-            long owned = islandCount(sp.island, tier);
+            int cap = module.spawnerLimit(sp.island, sp.type); // Spawners v2: per mob type
+            long owned = typeCount(sp.island, sp.type);
             long capRoom = SpawnerRules.room(owned, cap);
             if (capRoom < 1) {
-                deny(player, "spawner.cap-reached", Msg.p("max", Format.number(cap)), Msg.p("tier", tier));
+                deny(player, "spawner.limit-reached", mob(sp.type), Msg.p("max", Format.number(cap)),
+                        Msg.number("level", module.spawnerLevel(sp.island, sp.type)));
                 World w = Bukkit.getWorld(sp.pos.world());
                 capRefused(player, sp.island, tier, owned, cap, w == null ? null : sp.pos.center(w));
                 return;

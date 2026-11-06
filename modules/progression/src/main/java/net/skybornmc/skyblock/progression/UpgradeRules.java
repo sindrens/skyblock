@@ -140,6 +140,20 @@ final class UpgradeRules {
         return 1.0 + value(catalog, bought, UpgradeEffect.SPAWNER_RATE) / 100.0;
     }
 
+    /** Spawners v2 (owner 6-7 Nov 2026): the highest bought level among the upgrades with this effect (0 = none). */
+    static int level(UpgradeCatalog catalog, Map<String, Integer> bought, UpgradeEffect effect) {
+        int best = 0;
+        if (bought != null) {
+            for (Map.Entry<String, Integer> e : bought.entrySet()) {
+                UpgradeCatalog.Def def = catalog.get(e.getKey()).orElse(null);
+                if (def != null && def.effect() == effect && e.getValue() != null) {
+                    best = Math.max(best, e.getValue());
+                }
+            }
+        }
+        return best;
+    }
+
     /** A whole-number effect (bank levels, entity limit percent, slots). */
     static int whole(UpgradeCatalog catalog, Map<String, Integer> bought, UpgradeEffect effect) {
         return (int) Math.min(Integer.MAX_VALUE, Math.round(value(catalog, bought, effect)));

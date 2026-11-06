@@ -538,7 +538,7 @@ upgrades:
     lumberjack: "Lumberjack"
     xp_boost: "XP Boost"
     spawner_stack_limit: "Spawner Stack Limit"
-    spawner_rate: "Spawner Rate"
+    spawner_rate: "Spawner Speed"
     mob_loot: "Mob Loot"
     crop_growth: "Crop Growth"
     harvest_yield: "Harvest Yield"
@@ -561,7 +561,7 @@ upgrades:
     lumberjack: "+<value>% log drops"
     xp-boost: "+<value>% skill XP"
     spawner-stack: "<value> spawners per block"
-    spawner-rate: "+<value>% spawner output"
+    spawner-rate: "+<value>% spawner speed (10 s to 5 s)"
     mob-loot: "+<value>% spawner drops"
     crop-growth: "+<value>% crop growth"
     harvest-yield: "+<value>% double crops"
@@ -746,6 +746,8 @@ masteries:
     wings: "Wings"
     treasury: "Treasury"
     market_contacts: "Market Contacts"
+    farm_mastery: "Farm Mastery"
+    mine_mastery: "Mine Mastery"
   # What a rank gives. <value> the rank's value, <fee> (treasury) the bank fee in percent from bank.yml
   effect:
     timber: "+<value>% logs"
@@ -761,6 +763,8 @@ masteries:
     wings: "Island fly for everyone"
     treasury: "Bank fee <fee>%"
     market-contacts: "+<value>% sell prices"
+    farm-mastery: "+<value> hoe enchant levels (/farm)"
+    mine-mastery: "+<value> pickaxe enchant levels (/mine)"
   menu:
     crumb: "Masteries"
   # Extra lines of the mastery item. <requires> upgrades to max first, <pillar> <pillar-level>

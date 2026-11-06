@@ -72,7 +72,7 @@ final class SpawnerMenu extends Menu {
      * (next spawn, status) is redrawn each second; the buttons only when one of these values changed.
      */
     record Shown(int amount, int limit, int carried, int tier, String rate, String multiplier, long tierCount,
-                 String seconds, String mobs, String loot, int cap) {
+                 String seconds, String mobs, String loot, int cap, int level, int prestige, boolean canPrestige) {
     }
 
     private Shown shown;
@@ -83,7 +83,26 @@ final class SpawnerMenu extends Menu {
                 module.tiers().tier(spawner.type).orElse(0), SpawnerManager.number(manager.mobsPerMinute(spawner)),
                 SpawnerManager.number(manager.masteryMultiplier(spawner)), manager.islandCount(spawner),
                 SpawnerManager.number(manager.seconds(spawner)), SpawnerManager.number(manager.mobsPerSpawn(spawner)),
-                SpawnerManager.number(manager.loot(spawner)), module.spawnerCapFor(spawner.island));
+                SpawnerManager.number(manager.loot(spawner)),
+                spawner.island == null ? 0 : module.spawnerLimit(spawner.island, spawner.type),
+                spawner.island == null ? 1 : module.spawnerLevel(spawner.island, spawner.type),
+                spawner.island == null ? 0 : module.levels().peek(spawner.island, spawner.type).prestige, canPrestige());
+    }
+
+    /** Spawners v2: the island's mob type is at the top level and may prestige. */
+    private boolean canPrestige() {
+        if (spawner.island == null) {
+            return false;
+        }
+        SpawnerLevels.State st = module.levels().peek(spawner.island, spawner.type);
+        return SpawnerLevelRules.canPrestige(st.kills, module.levelBase(spawner.type), module.config().levelMax, st.prestige,
+                module.config().prestigeMax);
+    }
+
+    /** Ten dots, the done part lit (the same dots as the quest bars, Bedrock-safe). Pure. */
+    static String bar(double progress) {
+        int lit = (int) Math.floor(Math.max(0, Math.min(1, progress)) * 10);
+        return "<c:flame>" + "●".repeat(lit) + "</c:flame><c:locked>" + "●".repeat(10 - lit) + "</c:locked>";
     }
 
     /** Redraws what changed: everything when the buttons changed, else only the info item. */
@@ -102,8 +121,27 @@ final class SpawnerMenu extends Menu {
 
     private TagResolver[] placeholders(Shown s) {
         SpawnerManager manager = module.spawners();
+        SpawnerLevels.State st = spawner.island == null ? new SpawnerLevels.State() : module.levels().peek(spawner.island, spawner.type);
+        long base = module.levelBase(spawner.type);
+        int maxLevel = module.config().levelMax;
+        long need = s.level() >= maxLevel ? SpawnerLevelRules.killsFor(maxLevel, base) : SpawnerLevelRules.killsFor(s.level() + 1, base);
+        double progress = SpawnerLevelRules.progress(st.kills, base, maxLevel);
+        long placed = spawner.island == null ? spawner.amount : manager.typeCount(spawner.island, spawner.type);
         return new TagResolver[]{
                 SpawnerManager.mob(spawner.type),
+                // Spawners v2: level, kills, placed / limit, prestige
+                Msg.number("level", s.level()),
+                Msg.number("max-level", maxLevel),
+                Msg.mm("bar", bar(progress)),
+                Msg.number("percent", (long) Math.floor(progress * 100)),
+                Msg.p("kills", Format.number(st.kills)),
+                Msg.p("need", Format.number(need)),
+                Msg.p("placed", Format.number(placed)),
+                Msg.p("limit", Format.number(s.cap())),
+                Msg.number("prestige", s.prestige()),
+                Msg.number("max-prestige", module.config().prestigeMax),
+                Msg.p("bonus", SpawnerManager.number(s.prestige() * module.config().prestigeDropPercent)),
+                Msg.p("next-bonus", SpawnerManager.number((s.prestige() + 1) * module.config().prestigeDropPercent)),
                 Msg.p("tier", s.tier()),
                 Msg.p("count", Format.number(s.amount())),
                 Msg.p("max", Format.number(s.limit())),
@@ -149,8 +187,26 @@ final class SpawnerMenu extends Menu {
                 click -> act(() -> manager.add(viewer, spawner, 1)));
         set(SLOT_ADD_ALL, service.item(Material.EMERALD, viewer, StackingModule.ID, "menu.add-all", p),
                 click -> act(() -> manager.add(viewer, spawner, Integer.MAX_VALUE)));
-        // GUI-4: display only (limit and speed); the upgrade path isn't built, so no click and no promise.
-        set(SLOT_UPGRADES, service.item(Material.EXPERIENCE_BOTTLE, viewer, StackingModule.ID, "menu.upgrades", p));
+        // Spawners v2: the prestige of this mob type on the island (at the top level, with a confirm).
+        boolean premium = module.premium(spawner.type);
+        String key = premium ? "menu.prestige-premium" : shown.canPrestige() ? "menu.prestige-ready"
+                : shown.prestige() >= module.config().prestigeMax ? "menu.prestige-max" : "menu.prestige-locked";
+        set(SLOT_UPGRADES, service.item(shown.canPrestige() ? Material.NETHER_STAR : Material.EXPERIENCE_BOTTLE, viewer, StackingModule.ID, key, p),
+                click -> {
+                    if (!shown.canPrestige() || spawner.island == null) {
+                        module.core().sounds().play(click.player(), "error");
+                        return;
+                    }
+                    java.util.UUID island = spawner.island;
+                    String mob = spawner.type;
+                    openChild(new ConfirmMenu(v -> service.text(v, StackingModule.ID, "menu.prestige-confirm.crumb"), null,
+                            v -> service.lines(v, StackingModule.ID, "menu.prestige-confirm.details", placeholders(current())),
+                            player -> {
+                                if (!module.prestigeSpawners(player, island, mob)) {
+                                    module.core().sounds().play(player, "error");
+                                }
+                            }, player -> { }));
+                });
         set(SLOT_TAKE_ONE, service.item(Material.RED_DYE, viewer, StackingModule.ID, "menu.take-one", p),
                 click -> act(() -> manager.remove(viewer, spawner, 1, "menu")));
         set(SLOT_TAKE_ALL, service.item(Material.HOPPER, viewer, StackingModule.ID, "menu.take-all", p),

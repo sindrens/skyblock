@@ -733,6 +733,17 @@ final class UpgradeManager implements Listener {
             return UpgradeRules.spawnerRate(catalog, of(islandId));
         }
 
+        /** Spawners v2: the Spawner Speed level picks the step in stacking.yml spawners.speed-steps-seconds (10 s down to 5 s). */
+        @Override
+        public int spawnerSpeedLevel(UUID islandId) {
+            return UpgradeRules.level(catalog, of(islandId), UpgradeEffect.SPAWNER_RATE);
+        }
+
+        @Override
+        public int mobLootLevel(UUID islandId) {
+            return UpgradeRules.level(catalog, of(islandId), UpgradeEffect.MOB_LOOT);
+        }
+
         @Override
         public int entityLimitBonusPercent(UUID islandId) {
             return UpgradeRules.whole(catalog, of(islandId), UpgradeEffect.ENTITY_LIMITS);

@@ -13,7 +13,7 @@ Written during the night while you slept. Newest at the top of each section.
 | 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
 | 3 | Tools v4 core: enchants, personal prestige + rebirths (update125), storage (update126), old tools module removed (update128) | in progress |
 | 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
-| 5 | Spawners v2 | |
+| 5 | Spawners v2: levels per mob type, limit 4 x level, prestige, 10 s to 5 s speed, no efficiency curve (update129) | built |
 | 6 | Quest line v2, menus, help, mailbox | |
 | 7 | /fish | |
 | 8 | /pve | |
@@ -52,7 +52,21 @@ Written during the night while you slept. Newest at the top of each section.
 - "Gain tool levels" quests and the Toolsmith achievements now count the island hoe and pickaxe levels.
 - Nothing was deleted from the database: the old tool tables (and any Depths inventories stashed on 3 Nov) are still there, unused, in case we need to give something back. Old tool items still in inventories become plain tools with old lore.
 
+## Spawners v2 (batch 5, update129)
+- Every island has a **level per mob type** (1-16) from kills of mobs from its own spawners on the island: level n needs 100 / 250 / 600 / 1,500 x n² kills (tier 1-4). Tier 1 level 2 = 400 kills.
+- An island can place **4 spawners of a type per level**, up to 64 (premium tier 5: 3). The old "32 per tier" cap and the efficiency curve (100/60/35/20/10%) are gone: every spawner works at 100%.
+- At level 16 the type can **prestige** in the spawner menu: back to level 1, **+5% drops** for good (up to 10), and the limit stays at 64.
+- Every spawner spawns every **10 s**; the **Spawner Speed** island upgrade (was "Spawner Rate", which did nothing before) takes it down to **5 s** over 10 levels. Spawn radius 3.
+- Spawner menu: the info item shows level, a progress bar, kills, placed/limit, speed; the middle button is the prestige.
+- Chat line for the island when a type levels up.
+
+### Spawner questions (Q-72, defaults in place)
+1. Islands that already have more than 4 spawners of a type keep them (they work), but can't add more until the type levels up. OK? (default: yes; the alternative is giving existing islands a starting level.)
+2. The old "Spawner Stack Limit" island upgrade no longer does anything (the limit is per type now), so it is hidden from the menu (nobody can pay for nothing). Refund islands that bought it? (default: no refund until you answer.)
+3. Add/Take buttons stay in the spawner menu (the plan said "nothing else"). Remove them? (default: keep, they're handy.)
+
 ## Released tonight
+- **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).
 - **update127:** Farm and Mine Mastery (island masteries that raise the members' enchant caps by 100 a rank; 20 new island tasks: harvest island wheat + mine island cobblestone).
 - **update126:** tool storage first at /farm and /mine (full = pause, no loss), storage on the scoreboard, nether wart as the fifth crop, farm thresholds in the config.

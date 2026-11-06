@@ -73,8 +73,8 @@ class StackingMessagesTest {
         assertEquals(3.0, c.itemMergeRadius);
         assertEquals(10, c.itemDespawnMinutes);
         assertEquals(64, c.hopperPerTransfer);
-        assertEquals(8, c.spawnerStackStart);
-        assertEquals(32, c.spawnerStackMax); // ECON-SPAWNERS S4 (was 512; blocks above it keep their spawners)
+        assertEquals(64, c.spawnerStackStart); // Spawners v2: the limit per mob type decides
+        assertEquals(64, c.spawnerStackMax); // ECON-SPAWNERS S4 (was 512; blocks above it keep their spawners)
         assertEquals(16, c.activationRange);
         assertEquals(20, c.limitArmorStands);
         assertEquals(60, c.limitItemFrames);

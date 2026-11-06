@@ -49,11 +49,11 @@ class UpgradeCatalogTest {
         assertEquals(157_000L, c.get("entity_limits").orElseThrow().level(1).cost());
         assertEquals(2_500L, c.get("spawner_rate").orElseThrow().level(1).cost(), "production: C_p(1)");
         // Features that don't exist yet: shown as coming soon, not buyable.
-        for (String id : List.of("island_vault", "mob_loot", "generator", "fuel_tank", "lumberjack", "xp_boost")) {
+        for (String id : List.of("island_vault", "mob_loot", "generator", "fuel_tank", "lumberjack", "xp_boost", "spawner_stack_limit")) {
             assertFalse(c.get(id).orElseThrow().buyable(), id);
         }
         for (String id : List.of("island_size", "member_slots", "warp_slots", "entity_limits", "bank_capacity", "bank_interest",
-                "sell_multiplier", "spawner_stack_limit", "spawner_rate", "crop_growth", "harvest_yield", "mine_fortune")) {
+                "sell_multiplier", "spawner_rate", "crop_growth", "harvest_yield", "mine_fortune")) {
             assertTrue(c.get(id).orElseThrow().buyable(), id);
         }
         for (UpgradeTab tab : UpgradeTab.values()) {
