@@ -6,6 +6,9 @@ Written during the night while you slept. Newest at the top of each section.
 - The full plan is written: `docs/plans/FULL_PLAN.md` (everything: economy, /farm /mine /fish /pve, tools with 4 sets, island v2, spawners v2, quests, UI, other features, build order). It follows all your answers; nothing in it is waiting for you.
 - Building happens in batches, each released to the test server. Status of each batch is below.
 
+## ⚠ Test server not updated since update128
+Since about 08:00 the test server refuses my SSH connections ("Connection closed by remote host", probably the firewall banned the Mac's IP after many logins tonight). update129 and update130 are **on GitHub `main`** but **not on the test server**. To deploy: when SSH works again, run `~/Development/.skyborn-claude/release2.sh 130` on the Mac (it deploys the newest jar; 130 includes 129). After that, two live config edits are needed (I'll do them myself once I can connect): in `upgrades.yml` the new Spawner Speed values and hiding Spawner Stack Limit, and in `tutorial.yml` the two new chapters.
+
 ## Batches
 | Batch | What | Status |
 |---|---|---|
