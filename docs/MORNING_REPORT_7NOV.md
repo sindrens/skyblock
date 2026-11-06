@@ -93,16 +93,22 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. Warden Hale and Marla NPCs with their quest chains.
-2. Batch 9: crates (one menu, preview with chances, 2 s animation, pity bar), collection pages per area (farm, ores, fish, mobs, crates), auction house (categories, search, sort), shop (all items, Mob Drops tab).
-3. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
-4. Batch 10: pack v2, ranks v2.
-5. Small fixes: FX-05, FX-17, FX-19, FX-21.
+1. Batch 9: crates (one menu, preview with chances, 2 s animation, pity bar), collection pages per area (farm, ores, fish, mobs, crates), auction house (categories, search, sort), shop (all items, Mob Drops tab).
+2. Money x100 and dynamic prices v2 (needs your answer to Q-70 first: custom grind items or new prices).
+3. Batch 10: pack v2, ranks v2.
+4. Small fixes: FX-05, FX-17, FX-19, FX-21 (Tinker and Sage at spawn still need a spot, see below).
 
 ## Bosses and the last two masteries (update134, plan: `docs/plans/BATCH8_BOSSES.md`)
 - **Boss Sigils**: every 200 kills in a ring give one. `/pve boss` opens the boss menu: click a ring with a Sigil to summon its boss (Rotting King ... Ravager Alpha). Only you see and hit it, 3 minutes, a boss bar with its health and time.
 - A boss pays 60x the ring's kill money (about 30% on top of the 200 kills that earned the Sigil, so bosses are a bonus, not the main income), five mobs' worth of loot, 25 kills of Combat XP and sword progress, and a crate key 10% of the time (Ember for rings 1-5, Cinder for 6-10; every 10th boss without a key gives one for sure).
 - **Fish Mastery and Combat Mastery**: the last two Area Masteries (+100 rod / sword enchant levels a rank), same prices and island tasks as Farm and Mine Mastery.
+
+## NPCs in the four areas and two new quest chapters (update135)
+- Bramble (/farm), Flint (/mine), **Marla** (/fish) and **Warden Hale** (/pve) now stand at the entrance of their area. The areas are built by code, not from a build, so their spots are a new setting `npcs.extra-spots` (one line per NPC: id, role, world, x y z, facing). Move one there and `/skyblock reload npcs`.
+- Marla buys fish (opens /sell), Warden Hale opens the boss menu (/pve boss). Both have their own skin, name, help lines and idle chat lines.
+- Two new chapters in /tutorial: **Marla's Deckhand** (meet Marla, 50 fish, a rod enchant, rod level 10, Golden Fish; 500 Fishing Shards + Ember key) and **Hale's Recruit** (meet Hale, 100 kills, a sword enchant, sword level 10, a boss kill; 500 Combat Shards + Ember key).
+- Boss kills are now in the audit log (`economy / pve_boss`, with ring and key), so staff can see them.
+- Still open (FX-21): **Tinker and Sage** have no spot at spawn. I can't see the spawn build from here, so I didn't guess; stand where you want them and tell me the coordinates (or add a line to `npcs.extra-spots`).
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

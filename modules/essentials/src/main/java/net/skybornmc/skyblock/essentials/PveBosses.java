@@ -265,6 +265,9 @@ final class PveBosses implements Listener {
             areas.core().services().optional(net.skybornmc.skyblock.common.crate.CrateKeys.class).ifPresent(k ->
                     k.giveKeys(profile, crate, 1, "pve_boss", net.skybornmc.skyblock.common.audit.Actor.system("pve_boss")));
         }
+        areas.core().audit().logPlayer(net.skybornmc.skyblock.common.audit.AuditCategory.ECONOMY, "pve_boss",
+                net.skybornmc.skyblock.common.audit.Actor.player(p), p.getUniqueId(), p.getName(), t.pay() * PAY, p.getLocation(),
+                java.util.Map.of("ring", b.tier(), "key", key));
         areas.msg().title(p, "grind.pve.boss.defeated-title", Msg.p("boss", NAMES.get(b.tier() - 1)));
         areas.msg().send(p, key ? "grind.pve.boss.defeated-key" : "grind.pve.boss.defeated", Msg.p("boss", NAMES.get(b.tier() - 1)),
                 Msg.p("money", net.skybornmc.skyblock.common.util.Format.money(t.pay() * PAY)), Msg.p("crate", crate.substring(0, 1).toUpperCase() + crate.substring(1)));

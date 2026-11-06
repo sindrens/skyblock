@@ -22,7 +22,8 @@ class NpcSkinsTest {
         skins.forEach((role, skin) -> assertEquals(NpcSkin.Kind.DEFAULT, NpcSkin.parse(skin).orElseThrow().kind(), role));
         var change = new NpcsConfig().valueChanges().get(7).get("npcs.skins");
         assertTrue(change.matches(List.of()), "an empty live list gets the skins");
-        // v8 (tutorial NPCs) moves the v7 list on to today's skins.
-        assertEquals(new NpcsConfig().skins, new NpcsConfig().valueChanges().get(8).get("npcs.skins").to());
+        // v8 (tutorial NPCs) moves the v7 list on, v10 (Marla, Warden Hale) on to today's skins.
+        assertEquals(NpcsConfig.SKINS_V8, new NpcsConfig().valueChanges().get(8).get("npcs.skins").to());
+        assertEquals(new NpcsConfig().skins, new NpcsConfig().valueChanges().get(10).get("npcs.skins").to());
     }
 }

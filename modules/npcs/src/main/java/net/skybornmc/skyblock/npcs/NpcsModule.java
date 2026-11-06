@@ -176,7 +176,9 @@ public final class NpcsModule implements SkyblockModule {
      */
     private Planned computePlan() {
         NpcPlan.Inputs inputs = NpcPlan.Inputs.of(config);
-        BuildPoints points = core.services().optional(BuildPoints.class).orElse(null);
+        List<String> extraProblems = new java.util.ArrayList<>();
+        BuildPoints points = ExtraSpots.over(core.services().optional(BuildPoints.class).orElse(null),
+                ExtraSpots.parse(config.extraSpots, extraProblems));
         NpcPlan plan = NpcPlan.compute(inputs, points, NpcsModule::heldMaterial, this::hasHologramText, new NpcPlan.Texts() {
             @Override
             public TextContent hologram(Spots.Text t) {
@@ -193,6 +195,9 @@ public final class NpcsModule implements SkyblockModule {
         int problems = plan.problems().size();
         Runnable log = () -> {
             var logger = core.plugin().getLogger();
+            for (String problem : extraProblems) {
+                logger.warning(problem);
+            }
             for (int i = 0; i < lines.size(); i++) {
                 if (i < problems) {
                     logger.warning(lines.get(i));

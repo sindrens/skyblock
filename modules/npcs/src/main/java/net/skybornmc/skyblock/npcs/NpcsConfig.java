@@ -82,6 +82,31 @@ public final class NpcsConfig extends ModuleConfig {
             "farm_merchant: command sell",
             "mine_merchant: command sell",
             "tinker: command tool",
+            "sage: command skills",
+            "fish_merchant: command sell",
+            "arena_master: command pve boss");
+
+    /** {@code npcs.actions} v9 (before Marla at /fish and Warden Hale at /pve, 7 Nov 2026). */
+    static final List<String> ACTIONS_V9 = List.of(
+            "guide: command start",
+            "info: help help",
+            "forge: command tool",
+            "enchanter: command enchanter",
+            "wardrobe: command wardrobe",
+            "bank: command bank",
+            "shop: command shop",
+            "sell: command sell",
+            "auction: command ah",
+            "crates: command crates",
+            "dungeon: help",
+            "foreman: help",
+            "black_market: help",
+            "quests: help",
+            "daily: command daily",
+            "vote: help",
+            "farm_merchant: command sell",
+            "mine_merchant: command sell",
+            "tinker: command tool",
             "sage: command skills");
 
     /** {@code npcs.actions} before v9 (the Forge and the Depths are gone, 4-6 Nov 2026). */
@@ -171,7 +196,16 @@ public final class NpcsConfig extends ModuleConfig {
     @Setting(path = "npcs.skins", desc = "NPC id or role -> the skin its mannequin wears, as 'id: skin' lines. A skin is a "
             + "vanilla default (steve, alex, ari, efe, kai, makena, noor, sunny, zuri; slim:/wide: picks the arms; no lookup), "
             + "texture:<value>[:<signature>] (a Mojang texture) or a player name (player:<name>). Missing = Steve.")
-    public List<String> skins = SKINS_V8;
+    public List<String> skins = SKINS_V10;
+
+    @Setting(path = "npcs.extra-spots", desc = "NPCs that stand in places no build covers (the code-built /farm, /mine, /fish and "
+            + "/pve areas), as 'id: role world x y z yaw' lines. They are placed like build NPCs (names: messages/npcs.yml "
+            + "roles.<role>.name). Move one: edit its line and /skyblock reload npcs.")
+    public List<String> extraSpots = List.of(
+            "bramble: farm_merchant grind 3.5 100 -31.5 90",
+            "flint: mine_merchant grind 1003.5 100 -21.5 90",
+            "marla: fish_merchant grind 2603.5 100 -18.5 90",
+            "warden_hale: arena_master grind -1496.5 100 -61.5 90");
 
     @Setting(path = "npcs.held-items", desc = "NPC id or role -> item in the NPC's hand, as 'id: material' lines.")
     public List<String> heldItems = List.of(
@@ -329,9 +363,14 @@ public final class NpcsConfig extends ModuleConfig {
             "tinker: wide:zuri",
             "sage: slim:makena")).toList();
 
+    /** v10 (7 Nov 2026): Marla (fish_merchant, /fish) and Warden Hale (arena_master, /pve). */
+    static final List<String> SKINS_V10 = java.util.stream.Stream.concat(SKINS_V8.stream(), java.util.stream.Stream.of(
+            "fish_merchant: slim:ari",
+            "arena_master: wide:kai")).toList();
+
     @Override
     public int version() {
-        return 9;
+        return 10;
     }
 
     /**
@@ -341,7 +380,8 @@ public final class NpcsConfig extends ModuleConfig {
      * milestones_personal; they show once a build has leaderboard points with those ids). v6 (owner 3 Nov 2026): the spawn
      * guide (Rowan) runs /start, the start guide menu. v7: skins. v8 (tutorial, owner 4 Nov 2026): the spawn NPCs Bramble
      * (farm_merchant), Flint (mine_merchant), Tinker and Sage. v9 (6 Nov 2026, FX-11): no NPC runs /dungeon or /forge
-     * any more (the Forge NPC opens the tool menu, the old Depths roles only show help). An owner-edited list is kept.
+     * any more (the Forge NPC opens the tool menu, the old Depths roles only show help). v10 (7 Nov 2026): Marla at /fish
+     * opens /sell and Warden Hale at /pve opens the boss menu, with their own skins. An owner-edited list is kept.
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
@@ -353,7 +393,9 @@ public final class NpcsConfig extends ModuleConfig {
                 7, java.util.Map.of("npcs.skins", ValueChange.of(List.of(), SKINS_V7)),
                 8, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V6, new NpcsConfig().roleActions),
                         "npcs.skins", ValueChange.of(SKINS_V7, SKINS_V8)),
-                9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, new NpcsConfig().roleActions)));
+                9, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V8, ACTIONS_V9)),
+                10, java.util.Map.of("npcs.actions", ValueChange.of(ACTIONS_V9, new NpcsConfig().roleActions),
+                        "npcs.skins", ValueChange.of(SKINS_V8, SKINS_V10)));
     }
 
     private static List<String> sources() {

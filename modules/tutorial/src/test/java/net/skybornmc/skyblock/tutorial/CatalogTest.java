@@ -28,10 +28,10 @@ class CatalogTest {
         List<String> warnings = new ArrayList<>();
         Catalog c = bundled(warnings);
         assertEquals(List.of(), warnings);
-        assertEquals(List.of("welcome", "island", "farm", "mine", "money", "together", "next", "farm_pro", "mine_pro"),
+        assertEquals(List.of("welcome", "island", "farm", "mine", "money", "together", "next", "farm_pro", "mine_pro", "fish_pro", "pve_pro"),
                 c.chapters().stream().map(Catalog.Chapter::id).toList());
         assertEquals("Welcome to Phoenix", c.chapters().getFirst().name());
-        assertEquals("Flint's Apprentice", c.chapters().getLast().name());
+        assertEquals("Hale's Recruit", c.chapters().getLast().name());
     }
 
     @Test

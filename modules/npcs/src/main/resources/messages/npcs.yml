@@ -133,6 +133,16 @@ roles:
     help:
       - "<c:text>Every skill grows as you play: <c:value>/skills"
       - "<c:text>Higher skills give more crops and ores."
+  fish_merchant:
+    name: "Marla"
+    help:
+      - "<c:text>I buy every fish you catch: <c:value>/sell"
+      - "<c:text>Your rod levels up as you fish: <c:value>/tool"
+  arena_master:
+    name: "Warden Hale"
+    help:
+      - "<c:text>200 kills in a ring earn a Sigil."
+      - "<c:text>Spend it on that ring's boss: <c:value>/pve boss"
 
 # ------------------------------------------------------------------ help dialog
 help:

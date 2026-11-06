@@ -44,7 +44,7 @@ Severity order. Paths are on `q/release-v4`.
 | FX-18 | `/help` is wrong: Black Market "pay with shards" (now crystals), "Depths drops", sell topic misses Sell Wand / Auto-Sell Chest / Chunk Collector; Auto-Sell lore hardcodes "every 30 s" | `help.yml:555,1198,1359-1366`, `economy.yml:1230` | Rewrite those topics; placeholder for the interval. |
 | FX-19 | `/quest` opens the tutorial but `/help quest` shows Contracts | `TutorialCommands.java:46`, `help.yml:1548` | Help topic named Contracts; alias follows Q-12. |
 | FX-20 | Collection log Mine/Forest/Combat pages built from removed `depths_*` items (warnings on every start) | `collection/CollectionSettings.java:25-40` | New pages from farm/mine items (with C-01). |
-| FX-21 | NPCs `farm_merchant`, `mine_merchant`, `tinker`, `sage` have no placement in `server/builds` | builds | Check the live world; add placements. |
+| FX-21 | NPCs `farm_merchant`, `mine_merchant`, `tinker`, `sage` have no placement in `server/builds` | builds | Check the live world; add placements. **Partly done 7 Nov:** the four area NPCs via `npcs.extra-spots`; Tinker and Sage wait for a spawn spot. |
 
 ## 3. Cleanup (after the fixes)
 **C-01 Depths, dungeon and combat-zone leftovers in code and config** (no player sees a dead button):

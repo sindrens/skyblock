@@ -67,6 +67,15 @@ public final class TutorialConfig extends ModuleConfig {
             "spawn: spawn spawn",
             "farm: farm grind 0 0 45",
             "mine: mine grind 1000 0 35",
+            "fish: fish grind 2600 0 40",
+            "pve: pve grind -1500 0 70",
+            "island: is");
+
+    /** {@code places} before v2 (7 Nov 2026: /fish and /pve join the quest line). */
+    static final List<String> PLACES_V1 = List.of(
+            "spawn: spawn spawn",
+            "farm: farm grind 0 0 45",
+            "mine: mine grind 1000 0 35",
             "island: is");
 
     @Setting(path = "track.seconds", desc = "How long /tutorial track shows the trail toward the next NPC.", min = 2, max = 60)
@@ -77,6 +86,17 @@ public final class TutorialConfig extends ModuleConfig {
 
     @Setting(path = "track.length", desc = "Length of the trail in front of the player (blocks).", min = 2, max = 24)
     public int trackLength = 10;
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (7 Nov 2026): the places fish and pve for the chapters fish_pro and pve_pro. An owner-edited list is kept. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("places", ValueChange.of(PLACES_V1, new TutorialConfig().places)));
+    }
 
     @Override
     public String fileName() {

@@ -2,16 +2,16 @@
 # dialog speed, places ...) are added below by the plugin and can be edited in /admin. Reload: /skyblock reload tutorial
 #
 # chapters.<id>: name, icon (vanilla item id), rewards (once per account: "money <n>", "crystals <n>", "shards <n>"
-#   (Farming Shards), "mining_shards <n>", "key <crate> <n>", "tag <id>") and steps in order.
+#   (Farming Shards), "mining_shards <n>", "fishing_shards <n>", "combat_shards <n>", "key <crate> <n>", "tag <id>") and steps in order.
 # steps.<id>:
 #   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator | tool_level
-#   target  npc: NPC role (npcs.yml) · menu: menu id(s) "hub|island" · place: id from places · grind: "farm" or
-#           "mine", optionally ":BLOCK|DROP" ("mine:COAL") · audit: "category:action[|action][:detail=value]" ·
-#           plant: blocks "WHEAT|CARROTS" · tool_level: hoe | pickaxe (amount = the level)
+#   target  npc: NPC role (npcs.yml) · menu: menu id(s) "hub|island" · place: id from places · grind: "farm", "mine",
+#           "fish" or "pve", optionally ":BLOCK|DROP" ("mine:COAL") · audit: "category:action[|action][:detail=value]" ·
+#           plant: blocks "WHEAT|CARROTS" · tool_level: hoe | pickaxe | rod | sword (amount = the level)
 #   amount  how many (default 1)
 #   text    the step, short (it is the boss bar and the scoreboard "Next" line)
 #   hint    one short line: where to go or what to do
-#   place   where a click on the step takes you: spawn | farm | mine | island (the normal command and its warmup)
+#   place   where a click on the step takes you: spawn | farm | mine | fish | pve | island (the normal command and its warmup)
 #   command the command the step teaches; when it does not exist on this server the step counts as done
 #   dialog  npc steps: 1-4 short lines the NPC says. "/word" and "{/two words}" become clickable in chat.
 #   icon    item shown for the step in the chest menu (Bedrock and /start)
@@ -402,6 +402,101 @@ chapters:
         hint: "At level 50: tool menu, Prestige."
         icon: nether_star
 
+  fish_pro:
+    name: "Marla's Deckhand"
+    icon: fishing_rod
+    rewards: ["fishing_shards 500", "key ember 1"]
+    steps:
+      marla:
+        type: npc
+        target: fish_merchant
+        text: "Meet Marla at /fish"
+        hint: "She stands at the pond's entrance."
+        place: fish
+        command: fish
+        icon: cod
+        dialog:
+          - "Ahoy! I'm Marla. Every fish you catch, I buy."
+          - "Your island rod levels up as you fish."
+          - "Warden Hale runs the arena at /pve."
+      catch:
+        type: grind
+        target: fish
+        amount: 50
+        text: "Catch 50 fish at /fish"
+        hint: "Cast your island rod into the pond."
+        place: fish
+        command: fish
+        icon: tropical_fish
+      enchant:
+        type: audit
+        target: "item:grind_enchant:kind=rod"
+        text: "Buy a rod enchant"
+        hint: "Sneak + right-click the rod, Your enchants."
+        icon: enchanted_book
+      level:
+        type: tool_level
+        target: rod
+        amount: 10
+        text: "Reach rod level 10"
+        hint: "Every catch gives your rod XP."
+        place: fish
+        icon: experience_bottle
+      golden:
+        type: audit
+        target: "item:grind_enchant:enchant=golden_fish"
+        text: "Get Golden Fish on your rod"
+        hint: "It opens at rod level 8."
+        icon: gold_ingot
+
+  pve_pro:
+    name: "Hale's Recruit"
+    icon: iron_sword
+    rewards: ["combat_shards 500", "key ember 1"]
+    steps:
+      hale:
+        type: npc
+        target: arena_master
+        text: "Meet Warden Hale at /pve"
+        hint: "He guards the arena gate."
+        place: pve
+        command: pve
+        icon: shield
+        dialog:
+          - "Recruit! I'm Warden Hale. The rings get harder inward."
+          - "200 kills in a ring earn a Sigil for its boss."
+          - "Spend Sigils with /pve boss. Bring a good sword."
+      kills:
+        type: grind
+        target: pve
+        amount: 100
+        text: "Defeat 100 mobs at /pve"
+        hint: "Start in the outer ring, it is the easiest."
+        place: pve
+        command: pve
+        icon: rotten_flesh
+      enchant:
+        type: audit
+        target: "item:grind_enchant:kind=sword"
+        text: "Buy a sword enchant"
+        hint: "Right-click the sword, Your enchants."
+        icon: enchanted_book
+      level:
+        type: tool_level
+        target: sword
+        amount: 10
+        text: "Reach sword level 10"
+        hint: "Every kill gives your sword XP."
+        place: pve
+        icon: experience_bottle
+      boss:
+        type: audit
+        target: "economy:pve_boss"
+        text: "Defeat a ring boss"
+        hint: "/pve boss, spend a Sigil, win in 3 minutes."
+        command: pve
+        icon: wither_skeleton_skull
+
 # What an NPC says when you click it outside a tutorial step (before its menu opens). One line per click, in turn.
 # Each line points to the next NPC, so they work together. Remove a role's lines to keep it quiet.
 idle:
@@ -424,3 +519,7 @@ idle:
     - "Your hoe and pickaxe grow with you. Right-click in the air for their menu."
   sage:
     - "Every skill level helps. Look at them in /skills."
+  fish_merchant:
+    - "Bring me fish! Warden Hale at /pve pays for courage."
+  arena_master:
+    - "200 kills in a ring earn a Sigil. Marla at /fish buys fish."
