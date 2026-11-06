@@ -212,7 +212,7 @@ menu:
     info: ["<c:text>Pick one of the custom tools", "<c:text>in your inventory."]
     empty:
       name: "<c:muted>No custom tools"
-      lore: ["<c:text>Get one at <c:value>/forge</c:value><c:text>.", "<c:text>Vanilla tools can't get these."]
+      lore: ["<c:text>Books work on wardrobe armor.", "<c:text>Tool enchants: <c:value>/tool</c:value><c:text>."]
     entry: ["<c:muted>Lv <level> · slots <used>/<slots>"]
     click:
       apply: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a slot"]

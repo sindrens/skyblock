@@ -15,7 +15,6 @@ prefixes:
   production: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
   guide: "<c:ember><bold>Kindle</bold></c:ember> <c:muted>»</c:muted> "
   islandtools: "<c:ember><bold>Tools</bold></c:ember> <c:muted>»</c:muted> "
-  tools: "<c:ember><bold>Tools</bold></c:ember> <c:muted>»</c:muted> "
   economy: "<c:ember><bold>Money</bold></c:ember> <c:muted>»</c:muted> "
   shop: "<c:ember><bold>Shop</bold></c:ember> <c:muted>»</c:muted> "
   auction: "<c:ember><bold>Auction</bold></c:ember> <c:muted>»</c:muted> "

@@ -692,7 +692,7 @@ topics:
         lines:
           - "<c:text>Click an NPC to open what it"
           - "<c:text>does: the Banker opens the bank, the"
-          - "<c:text>Blacksmith the Forge."
+          - "<c:text>Blacksmith your tool menu."
           - "<c:text>Help NPCs explain on every click."
       - title: "<c:value>Help NPCs"
         lines:
@@ -1609,7 +1609,7 @@ topics:
       - title: "<c:value>Never dropped"
         lines:
           - "<c:text>When your inventory is full, items"
-          - "<c:text>from selling, the shop, the Forge,"
+          - "<c:text>from selling, the shop, crates,"
           - "<c:text>trades and more go to your box"
           - "<c:text>instead of falling on the ground."
       - title: "<c:value>Taking items"

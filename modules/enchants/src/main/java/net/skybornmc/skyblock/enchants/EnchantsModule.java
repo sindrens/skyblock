@@ -78,7 +78,7 @@ public final class EnchantsModule implements SkyblockModule {
     /** Enchanting needs custom tools and crystals. */
     @Override
     public Set<String> dependencies() {
-        return Set.of("tools", "economy");
+        return Set.of("economy"); // C-02 (7 Nov 2026): the old tools module is gone; armor enchants (wardrobe) stay
     }
 
     @Override

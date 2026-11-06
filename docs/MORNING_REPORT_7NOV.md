@@ -11,7 +11,7 @@ Written during the night while you slept. Newest at the top of each section.
 |---|---|---|
 | 1 | Fixes and cleanup | **released** (update121, 02:14) |
 | 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
-| 3 | Tools v4 core: 17 personal grind enchants per tool, personal prestige 50 + rebirths **released (update125, 03:22)**; storage rework, old tools module removal next | in progress |
+| 3 | Tools v4 core: enchants, personal prestige + rebirths (update125), storage (update126), old tools module removed (update128) | in progress |
 | 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
 | 5 | Spawners v2 | |
 | 6 | Quest line v2, menus, help, mailbox | |
@@ -46,7 +46,14 @@ Written during the night while you slept. Newest at the top of each section.
 - Each rank gives every member **+100 enchant levels** on that tool (cap = 20 + 20 per own prestige + 100 per mastery rank, max 1000). So a player can push enchants either by prestiging or by helping the island.
 - Not done yet (on purpose): Mastery gates on the higher crop and ore tiers. Gating them now would take tiers away from players who already have them; it comes with the 8 crops / 10 ores (Q-70).
 
+## Old tools module removed (C-02, your Q-05, update128, released)
+- The old `tools` module is gone: `/forge`, `/blueprint`, `/skin give`, the custom axes/swords/pickaxes, the Forge menu and the Depths inventory swap. `/tool` now always opens the island tool menu.
+- Kept on purpose: enchant books still work on wardrobe armor (the enchants module stays), the Blacksmith NPC opens the tool menu, its help texts were rewritten.
+- "Gain tool levels" quests and the Toolsmith achievements now count the island hoe and pickaxe levels.
+- Nothing was deleted from the database: the old tool tables (and any Depths inventories stashed on 3 Nov) are still there, unused, in case we need to give something back. Old tool items still in inventories become plain tools with old lore.
+
 ## Released tonight
+- **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).
 - **update127:** Farm and Mine Mastery (island masteries that raise the members' enchant caps by 100 a rank; 20 new island tasks: harvest island wheat + mine island cobblestone).
 - **update126:** tool storage first at /farm and /mine (full = pause, no loss), storage on the scoreboard, nether wart as the fifth crop, farm thresholds in the config.
 - **update125 (03:22):** Tools v4: 17 personal grind enchants per tool, personal prestige 50 + rebirths, faster tool levels. Jar md5 b4f1700c.

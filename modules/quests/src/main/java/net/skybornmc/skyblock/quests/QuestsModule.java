@@ -27,7 +27,6 @@ import net.skybornmc.skyblock.common.skills.SkillService;
 import net.skybornmc.skyblock.common.skills.SkillType;
 import net.skybornmc.skyblock.common.text.ModuleMessages;
 import net.skybornmc.skyblock.common.text.Msg;
-import net.skybornmc.skyblock.common.tools.ToolService;
 import net.skybornmc.skyblock.common.util.Format;
 import net.skybornmc.skyblock.common.util.Scheduler;
 import net.skybornmc.skyblock.common.island.IslandRemovedEvent;
@@ -354,17 +353,9 @@ public final class QuestsModule implements SkyblockModule, Listener {
                 && islands().map(i -> i.islandOf(player.getUniqueId()).isPresent()).orElse(false);
     }
 
+    /** C-02 (7 Nov 2026): every island member has the island hoe and pickaxe, so "tool levels" quests need an island. */
     private boolean holdsTool(Player player) {
-        Optional<ToolService> tools = core.services().optional(ToolService.class);
-        if (tools.isEmpty()) {
-            return false;
-        }
-        for (ItemStack stack : player.getInventory().getContents()) {
-            if (stack != null && tools.get().isTool(stack)) {
-                return true;
-            }
-        }
-        return false;
+        return islands().map(i -> i.islandOf(player.getUniqueId()).isPresent()).orElse(false);
     }
 
     private long playtimeMinutes(Player player) {

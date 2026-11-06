@@ -735,6 +735,11 @@ public final class IslandToolsModule implements SkyblockModule {
             msg.send(p, now.prestige() >= config.prestigeMax ? "level.can-rebirth" : "level.can-prestige", Msg.p("tool", tool));
         }
         refreshHandles(island, kind);
+        // C-02: the common level-up event (quests "tool levels", the Toolsmith achievements) now comes from these tools.
+        net.skybornmc.skyblock.common.tools.ToolInfo info = new net.skybornmc.skyblock.common.tools.ToolInfo(profile(p),
+                kind == Kind.HOE ? net.skybornmc.skyblock.common.tools.ToolKind.HOE : net.skybornmc.skyblock.common.tools.ToolKind.PICKAXE,
+                0, after.level(), now.xp(), now.prestige(), 0, List.of(), null, null, false, Map.of());
+        Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.tools.ToolLevelUpEvent(p, info, Math.max(1, after.level() - 1)));
     }
 
     /** Staff: adds tool XP to a player's own tool (testing the levels, prestige and rebirth). */

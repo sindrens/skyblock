@@ -45,8 +45,8 @@ roles:
   forge:
     name: "Blacksmith"
     help:
-      - "<c:text>Forge better tools here: <c:value>/forge</c:value>"
-      - "<c:text>Free starter kit every 24 hours."
+      - "<c:text>Your island hoe and pickaxe:"
+      - "<c:text>levels, enchants, prestige: <c:value>/tool</c:value>"
       - "<c:text>Tools keep their level when forged."
   enchanter:
     name: "Enchanter"
@@ -177,9 +177,9 @@ holograms:
     - "<c:text>Get keys from the daily"
     - "<c:text>calendar and playtime."
   blueprint_wall:
-    - "<c:flame><bold>Blueprints"
-    - "<c:text>Find blueprints in the Depths"
-    - "<c:text>and craft special tools: <c:value>/forge"
+    - "<c:flame><bold>Island tools"
+    - "<c:text>Level them, buy enchants"
+    - "<c:text>and prestige: <c:value>/tool"
   rules_board:
     - "<c:flame><bold>Rules"
     - "<c:text>Be kind, no cheats,"
@@ -238,8 +238,8 @@ hologram-help:
   key_board:
     - "<c:text>Open crates with your keys: <c:value>/crates"
   blueprint_wall:
-    - "<c:text>Blueprints drop in the Depths."
-    - "<c:text>Craft them at the Blacksmith: <c:value>/forge"
+    - "<c:text>Your tool's enchants work"
+    - "<c:text>at /farm and /mine: <c:value>/tool"
   dungeon_board:
     - "<c:text>Each tier opens with a skill level."
     - "<c:text>Pick a tier: <c:value>/dungeon"
