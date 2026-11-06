@@ -248,7 +248,7 @@ categories:
     icon: light_blue_concrete
     groups:
       concrete: [white_concrete, orange_concrete, magenta_concrete, light_blue_concrete, yellow_concrete, lime_concrete, pink_concrete, gray_concrete, light_gray_concrete, cyan_concrete, purple_concrete, blue_concrete, brown_concrete, green_concrete, red_concrete, black_concrete]
-      extras: [glass, terracotta, white_wool, tinted_glass]
+      extras: [glass, terracotta, tinted_glass, white_wool]
       glass: [white_stained_glass, orange_stained_glass, magenta_stained_glass, light_blue_stained_glass, yellow_stained_glass, lime_stained_glass, pink_stained_glass, gray_stained_glass, light_gray_stained_glass, cyan_stained_glass, purple_stained_glass, blue_stained_glass, brown_stained_glass, green_stained_glass, red_stained_glass, black_stained_glass]
       terracotta: [white_terracotta, orange_terracotta, magenta_terracotta, light_blue_terracotta, yellow_terracotta, lime_terracotta, pink_terracotta, gray_terracotta, light_gray_terracotta, cyan_terracotta, purple_terracotta, blue_terracotta, brown_terracotta, green_terracotta, red_terracotta, black_terracotta]
     items:
@@ -303,7 +303,7 @@ categories:
       glass: 5
       tinted_glass: 30
       terracotta: 5
-      white_wool: 6
+      white_wool: 50
   # Lights and display blocks.
   decoration:
     icon: lantern
@@ -331,8 +331,8 @@ categories:
   essentials:
     icon: crafting_table
     groups:
-      basics: [torch, scaffolding, bread, white_bed]
-      tools: [flint_and_steel, bucket, shears, water_bucket, fishing_rod, lava_bucket]
+      basics: [torch, scaffolding, white_bed, bread]
+      tools: [flint_and_steel, shears, fishing_rod, bucket, water_bucket, lava_bucket]
       workstations: [crafting_table, furnace, smoker, stonecutter, blast_furnace, grindstone, bookshelf, cauldron, brewing_stand, anvil, enchanting_table]
       storage: [ladder, glass_pane, composter, chest, barrel, painting, armor_stand]
     items:
@@ -355,16 +355,16 @@ categories:
       bookshelf: 60
       brewing_stand: 300
       cauldron: 60
-      bucket: 50
-      water_bucket: 60
-      lava_bucket: 200
+      bucket: 400
+      water_bucket: 450
+      lava_bucket: 500
       flint_and_steel: 40
       shears: 60
       fishing_rod: 150
       torch: 4
       scaffolding: 5
       white_bed: 30
-      bread: 15
+      bread: 250
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone
