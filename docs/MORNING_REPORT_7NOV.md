@@ -218,6 +218,9 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## /fish and /pve contracts (update154)
+- New contract types: "Catch 25 fish at /fish" and "Kill 100 mobs at /pve" (daily), 150 / 700 (weekly), 250 / 1,000 (island missions). The weekly island missions pick 3 of the 5 kinds.
+
 ## Quests and leftovers (update153)
 - **Quest book:** "Reach hoe level 10" (and the other tool-level steps) now count the level your tool already has. The "invite a friend" step also completes by visiting or liking an island, so solo players are never stuck.
 - **Contracts:** buying grind enchant levels counts for "enchant" contracts.

@@ -52,7 +52,7 @@ public final class QuestsSettings extends ModuleConfig {
             + "on your own island, while island farming is on; these need a "
             + "number). Only types you have unlocked are offered; a set never has a type twice or two of visit/like.",
             level = Setting.Level.OWNER)
-    public List<String> dailyPool = List.of("sell", "harvest 300", "ore 300", "tool_levels 1", "visit 3", "like 1");
+    public List<String> dailyPool = List.of("sell", "harvest 300", "ore 300", "fish 25", "fight 100", "tool_levels 1", "visit 3", "like 1"); // owner 7 Nov 2026: + /fish and /pve
 
     static final List<String> DAILY_V1 = List.of("mine", "chop", "kill", "sell", "tool_levels 1", "visit 3", "like 1", "harvest 300");
 
@@ -82,7 +82,7 @@ public final class QuestsSettings extends ModuleConfig {
     public String weeklyBonusCrate = "blaze";
 
     @Setting(path = "weekly.pool", desc = "Weekly quest pool, same format as daily.pool.", level = Setting.Level.OWNER)
-    public List<String> weeklyPool = List.of("sell", "harvest 2000", "ore 2000", "tool_levels 3", "enchant 1", "visit 10", "like 3");
+    public List<String> weeklyPool = List.of("sell", "harvest 2000", "ore 2000", "fish 150", "fight 700", "tool_levels 3", "enchant 1", "visit 10", "like 3"); // owner 7 Nov 2026: + /fish and /pve
 
     static final List<String> WEEKLY_V1 = List.of("mine", "chop", "kill", "sell", "tool_levels 3", "forge 1", "enchant 1", "visit 10", "like 3",
             "harvest 1500");
@@ -111,19 +111,24 @@ public final class QuestsSettings extends ModuleConfig {
 
     @Setting(path = "island.pool", desc = "Island mission pool, same format as daily.pool (only mine, chop, kill, sell and harvest make "
             + "sense for a whole island).", level = Setting.Level.OWNER)
-    public List<String> islandPool = List.of("sell", "harvest 3000", "ore 3000");
+    public List<String> islandPool = List.of("sell", "harvest 3000", "ore 3000", "fish 250", "fight 1000"); // owner 7 Nov 2026: + /fish and /pve
 
     static final List<String> ISLAND_V1 = List.of("mine", "chop", "kill", "sell", "harvest 3000");
 
     /** v2 (FX-12, 6 Nov 2026): the Depths mine, chop and kill quests and forge leave the pools; /mine ores and /farm crops come in. */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ModuleConfig.ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("pouch.ref-per-minute", ModuleConfig.ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new QuestsSettings().refPerMinute)),
+        QuestsSettings d = new QuestsSettings();
+        return java.util.Map.of(4, java.util.Map.of( // owner 7 Nov 2026 (FINISH_PLAN batch D): /fish and /pve contracts
+                "daily.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 300", "ore 300", "tool_levels 1", "visit 3", "like 1"), d.dailyPool),
+                "weekly.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 2000", "ore 2000", "tool_levels 3", "enchant 1", "visit 10", "like 3"), d.weeklyPool),
+                "island.pool", ModuleConfig.ValueChange.of(List.of("sell", "harvest 3000", "ore 3000"), d.islandPool)),
+                3, java.util.Map.of("pouch.ref-per-minute", ModuleConfig.ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new QuestsSettings().refPerMinute)),
                 2, java.util.Map.of(
                 "daily.pool", ModuleConfig.ValueChange.of(DAILY_V1, new QuestsSettings().dailyPool),
                 "weekly.pool", ModuleConfig.ValueChange.of(WEEKLY_V1, new QuestsSettings().weeklyPool),

@@ -69,6 +69,10 @@ final class QuestSources implements Listener {
             m.engine().count(event.getPlayer(), QuestType.HARVEST, 0, event.amount());
         } else if (GrindBreakEvent.MINE.equals(event.area())) {
             m.engine().count(event.getPlayer(), QuestType.ORE, 0, event.amount()); // owner 6 Nov 2026
+        } else if (event.fish()) {
+            m.engine().count(event.getPlayer(), QuestType.FISH, 0, event.amount()); // owner 7 Nov 2026
+        } else if (event.pve()) {
+            m.engine().count(event.getPlayer(), QuestType.FIGHT, 0, event.amount());
         }
     }
 }

@@ -57,7 +57,7 @@ final class QuestPool {
             case LIKE -> u.islands() && u.likesAllowed();
             // /farm and /mine are open to everyone with an island (6 Nov 2026: harvest needed island farming before)
             case HARVEST -> u.islands() || u.farming();
-            case ORE -> u.islands();
+            case ORE, FISH, FIGHT -> u.islands();
         };
     }
 

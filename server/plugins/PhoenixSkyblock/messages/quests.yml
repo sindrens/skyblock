@@ -53,6 +53,14 @@ quest:
     name: "<c:value>Mine <target> ores at /mine"
     name-one: "<c:value>Mine an ore at /mine"
     short: "Mine ores"
+  fish:
+    name: "<c:value>Catch <target> fish at /fish"
+    name-one: "<c:value>Catch a fish at /fish"
+    short: "Catch fish"
+  fight:
+    name: "<c:value>Kill <target> mobs at /pve"
+    name-one: "<c:value>Kill a mob at /pve"
+    short: "Kill mobs"
 
 # Progress dots in the menu: 10 dots, done ones in the first look.
 bar:

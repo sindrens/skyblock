@@ -31,7 +31,11 @@ enum QuestType {
     /** Harvest ripe crops on your own island or at /farm (PHASE-7 M7.3, owner 3 Nov 2026). */
     HARVEST("harvest", null, false),
     /** Mine ores at /mine (owner 6 Nov 2026: replaces the Depths mine, chop and kill quests). */
-    ORE("ore", null, false);
+    ORE("ore", null, false),
+    /** Catch fish at /fish (owner 7 Nov 2026, FINISH_PLAN batch D). */
+    FISH("fish", null, false),
+    /** Kill mobs at /pve (owner 7 Nov 2026, FINISH_PLAN batch D). */
+    FIGHT("fight", null, false);
 
     private final String id;
     private final SkillType wing;

@@ -87,8 +87,8 @@ class QuestPoolTest {
         assertEquals(List.of(QuestType.SELL), QuestPool.eligible(pool, noIsland).stream().map(QuestPool.Entry::type).toList());
         assertEquals(List.of(QuestType.SELL, QuestType.HARVEST, QuestType.ORE),
                 QuestPool.eligible(pool, island).stream().map(QuestPool.Entry::type).toList());
-        assertEquals(3, QuestPool.eligible(QuestPool.parse(new QuestsSettings().islandPool, "island", e -> { }), island).size(),
-                "FX-12: three island missions again");
+        assertEquals(5, QuestPool.eligible(QuestPool.parse(new QuestsSettings().islandPool, "island", e -> { }), island).size(),
+                "owner 7 Nov 2026: sell, harvest, ore, fish and fight (3 are picked a week)");
         assertTrue(QuestPool.parse("harvest").isEmpty(), "harvest needs a number");
         assertEquals(new QuestPool.Entry(QuestType.HARVEST, 300), QuestPool.parse("harvest 300").orElseThrow());
         assertFalse(QuestType.HARVEST.social());

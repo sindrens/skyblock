@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **/fish and /pve contracts (update154).**
 - **Quests and leftovers (update153):** tool-level steps count levels you have, the invite step has a solo path, grind enchants count for enchant contracts, do-nothing masteries hidden.
 - **Less spam and spawn fixes (update152):** one grind event at a time with a title, routine results as action bars, tool-style rows everywhere, noun confirm titles, Crate Keeper and Tailor at spawn, honest portal and board texts, Island Worth board, "Be the first!".
 - **Island level v2 (update151):** island level = island XP (live), rewards per level, new /is level menu, /is upgrade restyled, Coming soon upgrades hidden.
