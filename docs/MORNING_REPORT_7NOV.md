@@ -93,7 +93,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Still to do (in this order)
-1. Money x100 and dynamic prices v2 (**not started on purpose tonight**: it changes every balance in the database and about 30 live config files in one step, and with SSH down I can't check it on the test server. A half-done or untested scale is worse than none. It is ready to build as soon as we can test it together; plan in `docs/plans/ECONOMY_SCALE.md`) (needs your answer to Q-70 first: custom grind items or new prices).
+1. Dynamic prices v2 (per-island daily sell curve and weekly drift; needs your Q-70 answer). Money x100 is done (update139, see above).
 2. Batch 10: pack v2, ranks v2.
 3. Small fixes: FX-05 (Sell Wand and Auto-Sell: waits until those items are made), FX-21 (Tinker and Sage at spawn still need a spot, see below).
 
@@ -147,6 +147,18 @@ If a buy would go over the seller's daily receive limit, it is refused with a me
   - `/rank preview` also shows a sample chat line.
   - A test checks that every rank colour in chat matches the LuckPerms group and that prefix order follows the weights.
 - Still waiting for the credit shop: rank prices, paying only the difference on upgrade, and the season script that gives the won ranks.
+
+## Money x100 (update139) — READ BEFORE DEPLOYING
+- **Back up the database and the `plugins/PhoenixSkyblock/` folder first.** This update multiplies every money amount by 100, once: balances, banks, island banks, AH listings, notes, the ledger, pending rewards, backups, stats, and every money setting and catalog price (owner-edited values too). Shards, crystals and credits are not touched.
+- How it stays safe: every changed file gets `money-scale: 100` and a backup `<file>.pre-money-x100.bak`; each change is logged in the console. The database part is 30 small migrations that each run exactly once. A fresh install starts at the new numbers and is never scaled again.
+- New numbers, for example: start money $100,000; /pve ring 1 pays $2,000 a kill (ring 10 $35,000); bank tier 10 holds $1T; the pay limit ladder is $2M / $10M / $50M / $250M / no limit.
+- Everything keeps its ratios: island level points, upgrade prices against income, shop against sell prices (the "no buy-and-sell profit" check still passes).
+- What to check on the test server after the first start:
+  1. The console shows "money x100 done" lines.
+  2. `/bal` is 100x what it was.
+  3. `/is level` shows about the same level as before.
+  4. A shop price and a /sell price are both 100x.
+  5. `/ah` listings are 100x.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

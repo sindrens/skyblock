@@ -1,6 +1,6 @@
 # Plan: money x100 (owner 6-7 Nov 2026, "bigger numbers, but balanced")
 
-Status: **planned, not built yet** (deliberately after the gameplay batches: a half-done scale is worse than none).
+Status: **built 7 Nov 2026 (update139)**. Back up the database and `plugins/PhoenixSkyblock/` before the first start with it.
 
 ## Rules
 - One factor (100) for **money only**. Shards, crystals and credits stay.
@@ -41,3 +41,19 @@ Status: **planned, not built yet** (deliberately after the gameplay batches: a h
 - **Not scaled**: shards, crystals, credits, "minutes of income" values (they multiply `ref-per-minute`, which scales),
   ratios such as the boss pay x60.
 - Release: one update, DB and plugins backup first.
+
+## What was built (update139)
+- Framework: `common/config/MoneyScale` (rules, marker), `ConfigManager.scaleMoney` (typed configs, after value changes;
+  a value change that already wrote the new x100 default is not scaled again), `CatalogScale` (catalog files).
+- Typed configs with `moneyKeys()`: economy, watch, bank, shop settings, auction, trade, level, block values,
+  masteries (ascension), shard block, afk, crates/rewards/pass/quests `pouch.ref-per-minute`, islands join money,
+  essentials grind bonuses and fish pay.
+- Catalogs (bundled files carry `money-scale: 100`): sell.yml, shop.yml (scaled after the old v1-v6 steps, before v7),
+  upgrades.yml, masteries.yml, tasks.yml (earn/deposit), sets.yml (money sets), guide-quests.yml and tutorial.yml
+  ("money N" rewards), achievements.yml (money_earned, balance_peak, best_sale goals). punishments.yml money-max: the
+  bundled and tracked copies are 1e14 now (a live file keeps its own value).
+- Java: /pve pay per kill, the /farm and /mine fallback bonuses, the moderation money-max default.
+- Database: 30 one-statement migrations (`V###__money_x100_<table>.sql`, capped at the long maximum, money rows only).
+- Not changed: the money display (exact below `display.exact-below`, now $10M), crate/daily "money N minutes" lines
+  (they follow `ref-per-minute`), the Python generators in `tools/` (regenerating needs a x100 there first).
+- Known limit: a shop.yml older than v5 (none on the test server) would mix scales in its old migration steps.
