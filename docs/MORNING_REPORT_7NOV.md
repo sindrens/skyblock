@@ -7,7 +7,7 @@ Written during the night while you slept. Newest at the top of each section.
 - Building happens in batches, each released to the test server. Status of each batch is below.
 
 ## ⚠ Test server not updated since update128
-Since about 08:00 the test server refuses my SSH connections ("Connection closed by remote host", probably the firewall banned the Mac's IP after many logins tonight). update129 and update130 are **on GitHub `main`** but **not on the test server**. To deploy: when SSH works again, run `~/Development/.skyborn-claude/release2.sh 130` on the Mac (it deploys the newest jar; 130 includes 129). After that, two live config edits are needed (I'll do them myself once I can connect): in `upgrades.yml` the new Spawner Speed values and hiding Spawner Stack Limit, and in `tutorial.yml` the two new chapters.
+Since about 08:00 SSH to the test server doesn't work: port 22 accepts the connection but sshd never answers (banner timeout); the Minecraft server itself is up (port 25565 answers). Likely sshd is overloaded or rate-limiting (for example the old Claude session still connecting in a loop), or the firewall throttles the Mac's IP. update129, 130 and 131 are **on GitHub `main`** but **not on the test server**. To deploy: when SSH works again, run `~/Development/.skyborn-claude/release2.sh 131` on the Mac (it deploys the newest jar; 131 includes 129 and 130). After that, two live config edits are needed (I'll do them myself once I can connect): in `upgrades.yml` the new Spawner Speed values and hiding Spawner Stack Limit, and in `tutorial.yml` the two new chapters.
 
 ## Batches
 | Batch | What | Status |
