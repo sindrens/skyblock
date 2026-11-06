@@ -41,6 +41,9 @@ wallet:
   fishing_shards:
     name: "<cur:fishing_shards><bold>Your Fishing Shards"
     amount: "<cur:fishing_shards><amount>"
+  combat_shards:
+    name: "<cur:combat_shards><bold>Your Combat Shards"
+    amount: "<cur:combat_shards><amount>"
   credits:
     name: "<cur:credits><bold>Your Credits"
     amount: "<cur:credits><amount>"

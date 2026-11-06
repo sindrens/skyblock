@@ -85,7 +85,7 @@ final class StorageMenu extends Menu {
         List<Map.Entry<String, Long>> rows = new ArrayList<>(contents.entrySet());
         rows.sort(Map.Entry.comparingByKey());
         if (rows.isEmpty()) {
-            set(22, service.item(kind == Kind.HOE ? Material.WHEAT_SEEDS : kind == Kind.ROD ? Material.COD : Material.COBBLESTONE, viewer, IslandToolsModule.ID,
+            set(22, service.item(kind == Kind.HOE ? Material.WHEAT_SEEDS : kind == Kind.ROD ? Material.COD : kind == Kind.SWORD ? Material.BONE : Material.COBBLESTONE, viewer, IslandToolsModule.ID,
                     "storage.empty." + kind.id()));
             return;
         }

@@ -399,6 +399,7 @@ public final class IslandToolsModule implements SkyblockModule {
             case HOE -> config.hoeBoostEffect;
             case PICKAXE -> config.pickaxeBoostEffect;
             case ROD -> config.rodBoostEffect;
+            case SWORD -> config.swordBoostEffect;
         };
         return core.services().optional(ProgressionService.class).map(s -> s.upgradeEffectValue(island, effect)).orElse(0.0);
     }
@@ -712,6 +713,7 @@ public final class IslandToolsModule implements SkyblockModule {
             case HOE -> config.shardHoe;
             case PICKAXE -> config.shardPickaxe;
             case ROD -> config.shardRod;
+            case SWORD -> config.shardSword;
         } / 100.0;
         double finder = 1 + effect(island, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
@@ -749,6 +751,7 @@ public final class IslandToolsModule implements SkyblockModule {
                     case HOE -> net.skybornmc.skyblock.common.tools.ToolKind.HOE;
                     case PICKAXE -> net.skybornmc.skyblock.common.tools.ToolKind.PICKAXE;
                     case ROD -> net.skybornmc.skyblock.common.tools.ToolKind.ROD;
+                    case SWORD -> net.skybornmc.skyblock.common.tools.ToolKind.SWORD;
                 },
                 0, after.level(), now.xp(), now.prestige(), 0, List.of(), null, null, false, Map.of());
         Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.tools.ToolLevelUpEvent(p, info, Math.max(1, after.level() - 1)));

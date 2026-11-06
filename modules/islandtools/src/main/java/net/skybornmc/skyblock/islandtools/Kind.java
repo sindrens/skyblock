@@ -13,7 +13,9 @@ enum Kind {
     HOE(Currency.SHARDS),
     PICKAXE(Currency.MINING_SHARDS),
     /** Owner 6 Nov 2026: the island rod for /fish (Fishing Shards). */
-    ROD(Currency.FISHING_SHARDS);
+    ROD(Currency.FISHING_SHARDS),
+    /** Owner 6 Nov 2026: the island sword for /pve (Combat Shards). */
+    SWORD(Currency.COMBAT_SHARDS);
 
     private final Currency shards;
 
@@ -41,6 +43,6 @@ enum Kind {
 
     /** True for the removed tool kinds (owner 4 Nov 2026: no island axe and no island sword). */
     static boolean legacy(String id) {
-        return "axe".equalsIgnoreCase(id) || "sword".equalsIgnoreCase(id);
+        return "axe".equalsIgnoreCase(id); // the sword is back since 6 Nov 2026 (/pve)
     }
 }

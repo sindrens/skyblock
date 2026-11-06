@@ -143,8 +143,8 @@ final class ToolListener implements Listener {
     public void onBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
         Kind kind = usable(p, p.getInventory().getItemInMainHand(), event);
-        if (kind == null || kind == Kind.ROD) {
-            return; // the rod breaks blocks like a plain item
+        if (kind == null || kind == Kind.ROD || kind == Kind.SWORD) {
+            return; // the rod and the sword break blocks like plain items
         }
         Block block = event.getBlock();
         // Owner Q-30 (FULL_PLAN.md): at /farm and /mine the drops go into the tool's storage; when it is full the
@@ -419,6 +419,21 @@ final class ToolListener implements Listener {
      * the rod's enchants, tool XP and Fishing Shards, its Extra Drops and Double Drops, then the rod's storage (then the
      * bag, never the ground). A full storage gives nothing until it is sold (like the paused /farm and /mine).
      */
+    /** Owner 6 Nov 2026: a /pve kill with the island sword: its enchants, tool XP and Combat Shards. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onArenaKill(net.skybornmc.skyblock.common.grind.GrindBreakEvent event) {
+        if (!event.pve()) {
+            return;
+        }
+        Player p = event.getPlayer();
+        Kind kind = usable(p, p.getInventory().getItemInMainHand(), null);
+        if (kind != Kind.SWORD) {
+            return;
+        }
+        m.enchants().proc(p, kind, event.location().getBlock(), new ArrayList<>());
+        m.action(p, kind, false);
+    }
+
     /** A full rod storage pauses /fish before anything is counted or paid (owner Q-30: no loss). */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFishFull(org.bukkit.event.player.PlayerFishEvent event) {

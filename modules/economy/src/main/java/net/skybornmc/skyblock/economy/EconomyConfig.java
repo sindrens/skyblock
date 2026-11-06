@@ -567,7 +567,7 @@ public final class EconomyConfig extends ModuleConfig {
             case CREDITS -> 0L; // bought credits: only the store and the owner create them (C1-R2-02)
             case CREDITS_EARNED -> startCreditsEarned;
             case SHARDS -> startShards;
-            case MINING_SHARDS, FISHING_SHARDS -> 0L; // owner 4 Nov 2026: only the island tools create Mining / Fishing Shards
+            case MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> 0L; // owner 4 Nov 2026: only the island tools create Mining / Fishing Shards
         };
     }
 
@@ -581,7 +581,7 @@ public final class EconomyConfig extends ModuleConfig {
             case CRYSTALS -> tradeableCrystals;
             case CREDITS -> tradeableCredits;
             case CREDITS_EARNED -> false;
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> tradeableShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> tradeableShards;
         };
     }
 
@@ -590,7 +590,7 @@ public final class EconomyConfig extends ModuleConfig {
             case MONEY -> payMinMoney;
             case CRYSTALS -> payMinCrystals;
             case CREDITS, CREDITS_EARNED -> payMinCredits;
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> payMinShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> payMinShards;
         };
     }
 
@@ -659,7 +659,7 @@ public final class EconomyConfig extends ModuleConfig {
             case CRYSTALS -> ecoApproveCrystals;
             case CREDITS -> ecoApproveCredits;
             case CREDITS_EARNED -> ecoApproveCreditsEarned;
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> ecoApproveShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> ecoApproveShards;
         };
     }
 
@@ -678,7 +678,7 @@ public final class EconomyConfig extends ModuleConfig {
             case MONEY -> noteMinMoney;
             case CRYSTALS -> noteMinCrystals;
             case CREDITS, CREDITS_EARNED -> Long.MAX_VALUE; // never a note (C1-R1-26)
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> noteMinShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> noteMinShards;
         };
     }
 
@@ -687,7 +687,7 @@ public final class EconomyConfig extends ModuleConfig {
             case MONEY -> noteMaxMoney;
             case CRYSTALS -> noteMaxCrystals;
             case CREDITS, CREDITS_EARNED -> 0L; // never a note (C1-R1-26)
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> noteMaxShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> noteMaxShards;
         };
     }
 
@@ -696,7 +696,7 @@ public final class EconomyConfig extends ModuleConfig {
             case MONEY -> payConfirmMoney;
             case CRYSTALS -> payConfirmCrystals;
             case CREDITS, CREDITS_EARNED -> payConfirmCredits;
-            case SHARDS, MINING_SHARDS, FISHING_SHARDS -> payConfirmShards;
+            case SHARDS, MINING_SHARDS, FISHING_SHARDS, COMBAT_SHARDS -> payConfirmShards;
         };
     }
 }

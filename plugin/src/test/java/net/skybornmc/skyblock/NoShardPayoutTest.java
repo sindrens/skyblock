@@ -49,7 +49,7 @@ class NoShardPayoutTest {
                 List<String> lines = Files.readAllLines(f);
                 for (int i = 0; i < lines.size(); i++) {
                     String line = lines.get(i);
-                    if ((line.contains("Currency.SHARDS") || line.contains("Currency.MINING_SHARDS") || line.contains("Currency.FISHING_SHARDS"))
+                    if ((line.contains("Currency.SHARDS") || line.contains("Currency.MINING_SHARDS") || line.contains("Currency.FISHING_SHARDS") || line.contains("Currency.COMBAT_SHARDS"))
                             && !line.contains(".balance(")) { // reading a balance (wipe summary) pays nothing
                         bad.add(f + ":" + (i + 1) + "  " + line.trim());
                     }

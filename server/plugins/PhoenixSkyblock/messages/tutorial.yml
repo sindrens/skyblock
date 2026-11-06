@@ -19,6 +19,7 @@ reward:
   shards: "<amount> Farming Shards"
   mining_shards: "<amount> Mining Shards"
   fishing_shards: "<amount> Fishing Shards"
+  combat_shards: "<amount> Combat Shards"
   key: "<amount> <id> key"
   tag: "the <id> tag"
 

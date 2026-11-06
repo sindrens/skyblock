@@ -19,9 +19,10 @@ import java.util.UUID;
  */
 final class ToolsMenu extends Menu {
 
-    static final int SLOT_HOE = 11;
-    static final int SLOT_PICKAXE = 13;
-    static final int SLOT_ROD = 15; // owner 6 Nov 2026: /fish
+    static final int SLOT_HOE = 10;
+    static final int SLOT_PICKAXE = 12;
+    static final int SLOT_ROD = 14; // owner 6 Nov 2026: /fish
+    static final int SLOT_SWORD = 16; // owner 6 Nov 2026: /pve
 
     private final IslandToolsModule m;
 
@@ -72,7 +73,7 @@ final class ToolsMenu extends Menu {
                     Msg.number("level", lv.level()), Msg.number("max", m.config().maxLevel),
                     Msg.number("percent", (long) Math.floor(lv.progress() * 100)), Msg.p("stars", stars.isEmpty() ? "-" : stars),
                     Msg.p("shards", m.raw("shards.name." + kind.id()))));
-            set(kind == Kind.HOE ? SLOT_HOE : kind == Kind.ROD ? SLOT_ROD : SLOT_PICKAXE, service.item(m.items().create(kind, island, m.profile(viewer)),
+            set(kind == Kind.HOE ? SLOT_HOE : kind == Kind.ROD ? SLOT_ROD : kind == Kind.SWORD ? SLOT_SWORD : SLOT_PICKAXE, service.item(m.items().create(kind, island, m.profile(viewer)),
                     m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), lore),
                     click -> openChild(new ToolMenu(m, kind)));
         }

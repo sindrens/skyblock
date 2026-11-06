@@ -20,12 +20,14 @@ class ToolRulesTest {
 
     @Test
     void onlyHoeAndPickaxeWithTheirOwnShards() {
-        assertEquals(List.of(Kind.HOE, Kind.PICKAXE, Kind.ROD), List.of(Kind.values()), "owner 6 Nov 2026: the island rod for /fish");
+        assertEquals(List.of(Kind.HOE, Kind.PICKAXE, Kind.ROD, Kind.SWORD), List.of(Kind.values()), "owner 6 Nov 2026: the rod for /fish, the sword for /pve");
+        assertEquals(Currency.COMBAT_SHARDS, Kind.SWORD.shards());
+        assertEquals("diamond_sword", ToolRules.material(Kind.SWORD));
         assertEquals(Currency.FISHING_SHARDS, Kind.ROD.shards());
         assertEquals("fishing_rod", ToolRules.material(Kind.ROD));
         assertEquals(Currency.SHARDS, Kind.HOE.shards(), "the hoe earns Farming Shards (the old shards key)");
         assertEquals(Currency.MINING_SHARDS, Kind.PICKAXE.shards());
-        assertTrue(Kind.legacy("axe") && Kind.legacy("SWORD"));
+        assertTrue(Kind.legacy("axe") && !Kind.legacy("SWORD"), "the sword is back (/pve)");
         assertFalse(Kind.of("axe").isPresent(), "no island axe any more");
         assertEquals("diamond_hoe", ToolRules.material(Kind.HOE), "everything starts at diamond");
         assertEquals("diamond_pickaxe", ToolRules.material(Kind.PICKAXE));

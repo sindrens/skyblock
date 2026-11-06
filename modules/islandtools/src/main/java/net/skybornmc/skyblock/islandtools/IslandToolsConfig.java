@@ -79,7 +79,16 @@ public final class IslandToolsConfig extends ModuleConfig {
             "rod:lucky_streak:1000:3:0:0:30:15:0:28:0",
             "rod:treasure_chest:1000:4:0.5:2:1:1:0:32:0",
             "rod:keyfinder:1000:5:0.01:0.2:1:1:0:36:0",
-            "rod:shard_jackpot:1000:6:0.1:0.4:40:100:0:1:10");
+            "rod:shard_jackpot:1000:6:0.1:0.4:40:100:0:1:10",
+            // owner 6 Nov 2026: the island sword at /pve (no area, drops and progress enchants: kills go to the bag)
+            "sword:shard_burst:1000:2:2:6:3:6:0:1:0",
+            "sword:scholar:1000:2:0:0:5:25:0:1:0",
+            "sword:combo:1000:2:0:0:5:20:0:10:0",
+            "sword:compound_interest:1000:3:0:0:5:15:0:13:0",
+            "sword:shard_echo:1000:3:0:0:10:25:0:16:0",
+            "sword:lucky_streak:1000:3:0:0:50:25:0:28:0",
+            "sword:keyfinder:1000:5:0.005:0.1:1:1:0:36:0",
+            "sword:shard_jackpot:1000:6:0.05:0.2:40:100:0:1:10");
 
     @Setting(path = "enchants.cap-base", desc = "Highest grind enchant level at prestige 0 (plans/TOOLS_V3.md).", min = 1, max = 100_000)
     public int enchantCapBase = 20;
@@ -156,6 +165,9 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "shards.chance-rod", desc = "Owner 6 Nov 2026: percent chance of 1 Fishing Shard per catch at /fish with the island rod (over 100 = more than one; a catch is much slower than a block).", min = 0, max = 10_000)
     public double shardRod = 300;
 
+    @Setting(path = "shards.chance-sword", desc = "Owner 6 Nov 2026: percent chance of 1 Combat Shard per /pve kill with the island sword (over 100 = more than one).", min = 0, max = 10_000)
+    public double shardSword = 150;
+
     @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
     public double shardHoe = 40; // feedback 5 Nov 2026: about 5x faster
 
@@ -205,7 +217,11 @@ public final class IslandToolsConfig extends ModuleConfig {
             "rod:shard_finder:shards:100:1:40+6", "rod:lure:enchant=lure:3:1:300/2000/9000",
             "rod:extra_drops:drops:100:3:60+8", "rod:luck:enchant=luck_of_the_sea:3:5:1500/8000/30000",
             "rod:wisdom:wisdom:50:5:80+10", "rod:storage:storage:100:10:60+6", "rod:auto_sell:autosell:1:20:20000",
-            "rod:sell_bonus:sell:100:25:200+20", "rod:lucky:lucky:100:30:300+25");
+            "rod:sell_bonus:sell:100:25:200+20", "rod:lucky:lucky:100:30:300+25",
+            // owner 6 Nov 2026: the island sword (/pve)
+            "sword:shard_finder:shards:100:1:40+6", "sword:sharpness:enchant=sharpness:5:1:150/600/2000/6000/15000",
+            "sword:looting:enchant=looting:3:5:1500/8000/30000", "sword:wisdom:wisdom:50:5:80+10",
+            "sword:sweeping:enchant=sweeping_edge:3:10:1000/5000/20000", "sword:lucky:lucky:100:30:300+25");
 
     /** {@code perks} v9 (feedback 5 Nov 2026); v11 (owner 6 Nov 2026) adds the island rod. */
     static final List<String> PERKS_V9 = List.of(
@@ -305,6 +321,9 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Setting(path = "island-boost.rod-effect", desc = "The island upgrade whose value is percent more catches for the island rod at /fish (empty = none yet).")
     public String rodBoostEffect = "";
+
+    @Setting(path = "island-boost.sword-effect", desc = "The island upgrade whose value is percent more for the island sword at /pve (empty = none yet).")
+    public String swordBoostEffect = "";
 
     @Setting(path = "tool-worlds", desc = "Worlds besides the islands where the tools work exactly like on an island (level up, perks, shards): the /farm and /mine world.")
     public List<String> toolWorlds = List.of("grind");
@@ -412,7 +431,8 @@ public final class IslandToolsConfig extends ModuleConfig {
                 10, Map.of("levels.xp-base", ValueChange.of(12.0, d.xpBase), "levels.exponent", ValueChange.of(1.6, d.xpExponent),
                         "levels.prestige-factor", ValueChange.of(0.35, d.xpPrestigeFactor)),
                 // v11 (owner 6 Nov 2026): the island rod for /fish
-                11, Map.of("perks", ValueChange.of(PERKS_V9, d.perks), "enchants.list", ValueChange.of(d.enchantList.stream().filter(l -> !l.startsWith("rod:")).toList(), d.enchantList)));
+                11, Map.of("perks", ValueChange.of(PERKS_V9, d.perks), "enchants.list",
+                        ValueChange.of(d.enchantList.stream().filter(l -> !l.startsWith("rod:") && !l.startsWith("sword:")).toList(), d.enchantList)));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */

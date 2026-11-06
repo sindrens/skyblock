@@ -490,7 +490,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         core.placeholders().registerText(ID, "balance", p -> raw(p, Currency.MONEY));
         core.placeholders().registerText(ID, "balance_formatted", p -> formatted(p, Currency.MONEY));
         // Credits: the total of bought and earned (C1-R1-08), always exact (C1-R2-22).
-        for (Currency currency : List.of(Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS, Currency.MINING_SHARDS, Currency.FISHING_SHARDS)) {
+        for (Currency currency : List.of(Currency.CRYSTALS, Currency.CREDITS, Currency.SHARDS, Currency.MINING_SHARDS, Currency.FISHING_SHARDS, Currency.COMBAT_SHARDS)) {
             core.placeholders().registerText(ID, currency.key(), p -> raw(p, currency));
             core.placeholders().registerText(ID, currency.key() + "_formatted", p -> formatted(p, currency));
             // GUI-4 (owner U4): empty while the balance is 0, so a scoreboard "if:crystals_owned|" line only shows once you have some.

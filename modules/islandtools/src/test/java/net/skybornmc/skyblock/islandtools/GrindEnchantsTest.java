@@ -69,6 +69,14 @@ class GrindEnchantsTest {
     }
 
     @Test
+    void theSwordHasEightEnchants() {
+        GrindEnchants g = defaults(new ArrayList<>());
+        assertEquals(8, g.of(Kind.SWORD).size());
+        assertTrue(g.of(Kind.SWORD).stream().noneMatch(d -> d.effect() == GrindEnchants.Effect.AREA || d.effect() == GrindEnchants.Effect.EXTRA_ITEMS
+                || d.effect() == GrindEnchants.Effect.PROGRESS), "kills go to the bag: no area, extra items or progress enchants");
+    }
+
+    @Test
     void keyfinderStaysRare() {
         GrindEnchants.Def key = defaults(new ArrayList<>()).get(Kind.PICKAXE, "keyfinder").orElseThrow();
         assertTrue(key.rare());

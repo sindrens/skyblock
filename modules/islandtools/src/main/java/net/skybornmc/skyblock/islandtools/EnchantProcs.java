@@ -181,6 +181,7 @@ final class EnchantProcs implements Listener {
                     case HOE -> "farm-mastery";
                     case PICKAXE -> "mine-mastery";
                     case ROD -> "fish-mastery";
+                    case SWORD -> "combat-mastery";
                 })).orElse(0.0);
     }
 
@@ -357,6 +358,7 @@ final class EnchantProcs implements Listener {
             case HOE -> GrindBreakEvent.FARM;
             case PICKAXE -> GrindBreakEvent.MINE;
             case ROD -> GrindBreakEvent.FISH;
+            case SWORD -> GrindBreakEvent.PVE;
         };
     }
 
@@ -366,6 +368,7 @@ final class EnchantProcs implements Listener {
             case PICKAXE -> player;
             case HOE -> hoeKey(player);
             case ROD -> new UUID(player.getMostSignificantBits() ^ 0x27d4eb2fL, player.getLeastSignificantBits());
+            case SWORD -> new UUID(player.getMostSignificantBits() ^ 0x165667b1L, player.getLeastSignificantBits());
         };
     }
 
@@ -563,6 +566,7 @@ final class EnchantProcs implements Listener {
             case "grind_crop" -> event.getSkill() == SkillType.FARMING ? Kind.HOE : null;
             case "grind_block" -> event.getSkill() == SkillType.MINING ? Kind.PICKAXE : null;
             case "grind_fish" -> event.getSkill() == SkillType.FISHING ? Kind.ROD : null;
+            case "grind_kill" -> event.getSkill() == SkillType.COMBAT ? Kind.SWORD : null;
             default -> null;
         };
         if (kind == null || !m.config().enchantsEnabled || ToolItems.kindOf(event.getPlayer().getInventory().getItemInMainHand()) != kind) {

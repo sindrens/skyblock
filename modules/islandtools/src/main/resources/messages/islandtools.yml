@@ -8,11 +8,13 @@ item:
     hoe: "Harvester Hoe"
     pickaxe: "Island Pickaxe"
     rod: "Island Rod"
+    sword: "Island Sword"
   # One short line (owner mockup).
   description:
     hoe: "Levels up as your island farms."
     pickaxe: "Levels up as your island mines."
     rod: "Levels up as you fish at /fish."
+    sword: "Levels up as you fight at /pve."
   # Bold in the rarity colour (the stars after it). {tool} {stars} {rarity}
   plain-name: "<rarity:{rarity}>{tool}"
   star-name: "<rarity:{rarity}>{tool} <c:flame>{stars}"
@@ -168,11 +170,13 @@ shards:
     hoe: "Farming Shards"
     pickaxe: "Mining Shards"
     rod: "Fishing Shards"
+    sword: "Combat Shards"
   # Found while grinding (action bar). <amount>
   found:
     shards: "<cur:shards>+<amount> <sym:shards> Farming Shards"
     mining_shards: "<cur:mining_shards>+<amount> <sym:mining_shards> Mining Shards"
     fishing_shards: "<cur:fishing_shards>+<amount> <sym:fishing_shards> Fishing Shards"
+    combat_shards: "<cur:combat_shards>+<amount> <sym:combat_shards> Combat Shards"
 
 # Sweep / Vein took more blocks along. <amount>
 sweep:
@@ -314,6 +318,9 @@ upgrade:
   extra_drops: {name: "Extra Drops", icon: chest, lore: ["<c:muted>A few more drops per block."]}
   fortune: {name: "Fortune", icon: lapis_lazuli, lore: ["<c:muted>More ores and crops per block."]}
   lure: {name: "Lure", icon: string, lore: ["<c:muted>Fish bite sooner."]}
+  sharpness: {name: "Sharpness", icon: iron_sword, lore: ["<c:muted>More damage."]}
+  looting: {name: "Looting", icon: rotten_flesh, lore: ["<c:muted>More drops from mobs."]}
+  sweeping: {name: "Sweeping Edge", icon: golden_sword, lore: ["<c:muted>Hits the mobs around you."]}
   luck: {name: "Luck of the Sea", icon: prismarine_crystals, lore: ["<c:muted>Better catches."]}
   haste: {name: "Haste", icon: golden_pickaxe, lore: ["<c:muted>Haste while you hold it."]}
   wisdom: {name: "Wisdom", icon: experience_bottle, lore: ["<c:muted>The tool levels up faster."]}
@@ -354,6 +361,10 @@ storage:
       name: "<bold><c:muted>Empty"
       lore:
         - "<c:muted>Your catches at /fish land here."
+    sword:
+      name: "<bold><c:muted>Empty"
+      lore:
+        - "<c:muted>Kills at /pve drop into your bag."
   item-name: "<bold><c:value><item>"
   item-lore:
     - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><amount>"
@@ -454,6 +465,7 @@ enchant:
       hoe: "/farm"
       pickaxe: "/mine"
       rod: "/fish"
+      sword: "/pve"
     # <tool>
     header:
       name: "<bold><area:skills><tool> enchants"

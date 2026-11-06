@@ -89,7 +89,8 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Every kill pays money ($20 to $350, Golden Blocks x5), gives **Combat XP** (until now there was no way to get Combat XP: it was Depths-only) and counts for events, quests and the scoreboard. Drops go straight to your bag.
 - Six mobs per ring while someone is in the arena; they stay in their ring, don't burn in the sun and don't fight each other.
 - **No PvP; dying in the arena costs nothing** (items and levels kept, back at the start).
-- Not yet: the personal bosses with Boss Sigils, the island sword (4th tool), Combat Shards, Combat Mastery gates. The NPC "Warden Hale" and his quest chain.
+- **Island Sword (update133)**: a fourth island tool for the arena. Kills with it give tool XP, **Combat Shards** (new personal shard type), sword perks (Shard Finder, Sharpness, Looting, Wisdom, Sweeping Edge, Lucky) and 8 sword enchants (Shard Burst, Scholar, Combo, Keyfinder ...). Tool menu `/is tools` now shows four tools.
+- Not yet: the personal bosses with Boss Sigils, Combat Mastery gates, the NPC "Warden Hale" and his quest chain.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

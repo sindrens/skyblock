@@ -12,6 +12,7 @@ format:
   shards: "<hover:show_text:'<c:text><exact>'><cur:shards><sym:shards> <value></cur:shards></hover>"
   mining_shards: "<hover:show_text:'<c:text><exact>'><cur:mining_shards><sym:mining_shards> <value></cur:mining_shards></hover>"
   fishing_shards: "<hover:show_text:'<c:text><exact>'><cur:fishing_shards><sym:fishing_shards> <value></cur:fishing_shards></hover>"
+  combat_shards: "<hover:show_text:'<c:text><exact>'><cur:combat_shards><sym:combat_shards> <value></cur:combat_shards></hover>"
 
 names:
   money: "<cur:money>Money</cur:money>"
@@ -22,6 +23,7 @@ names:
   shards: "<cur:shards>Farming Shards</cur:shards>"
   mining_shards: "<cur:mining_shards>Mining Shards</cur:mining_shards>"
   fishing_shards: "<cur:fishing_shards>Fishing Shards</cur:fishing_shards>"
+  combat_shards: "<cur:combat_shards>Combat Shards</cur:combat_shards>"
 
 # Shown by the balance placeholders (scoreboard) for a moment after joining.
 placeholder:
