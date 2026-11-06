@@ -28,12 +28,13 @@ class EconomyLogicTest {
         assertEquals("0", Amounts.plain(0));
         assertEquals("12,500", Amounts.plain(12_500));
         assertEquals("99,999", Amounts.plain(99_999));
-        assertEquals("100k", Amounts.plain(100_000));
-        assertEquals("1.2M", Amounts.plain(1_234_567));
+        assertEquals("100,000", Amounts.plain(100_000), "money x100: exact below 10M");
+        assertEquals("1,234,567", Amounts.plain(1_234_567));
+        assertEquals("10M", Amounts.plain(10_000_000));
         assertEquals("9223.3Q", Amounts.plain(Long.MAX_VALUE)); // Q = quadrillion (NumberFormatter)
         assertEquals("$1,000", Amounts.withSymbol("$", Currency.MONEY, 1_000));
         assertEquals("-$500", Amounts.withSymbol("$", Currency.MONEY, -500));
-        assertEquals("◆ 250k", Amounts.withSymbol("◆", Currency.CRYSTALS, 250_000));
+        assertEquals("◆ 250,000", Amounts.withSymbol("◆", Currency.CRYSTALS, 250_000));
         assertEquals("✧ 7", Amounts.withSymbol("✧", Currency.SHARDS, 7));
     }
 
@@ -46,7 +47,7 @@ class EconomyLogicTest {
 
     @Test
     void payRulesFollowTheOwnerDecisions() {
-        EconomyConfig c = new EconomyConfig();
+        EconomyConfig c = EconomyTestConfigs.preScale(new EconomyConfig());
         assertTrue(PayRules.check(c, "Alex", "Steve", 1_500, Currency.MONEY, false).isEmpty());
         assertTrue(PayRules.check(c, "Alex", "Steve", 5, Currency.SHARDS, false).isEmpty());
         assertEquals(PayRules.Problem.CREDITS, PayRules.check(c, "Alex", "Steve", 5, Currency.CREDITS_EARNED, false).orElseThrow());
@@ -70,14 +71,14 @@ class EconomyLogicTest {
     @Test
     void decidedDefaults() {
         EconomyConfig c = new EconomyConfig();
-        assertEquals(1_000, c.start(Currency.MONEY));
+        assertEquals(100_000, c.start(Currency.MONEY), "money x100 (batch 10)");
         assertEquals(0, c.start(Currency.CREDITS_EARNED));
         assertTrue(c.tradeable(Currency.MONEY));
         assertTrue(c.tradeable(Currency.SHARDS));
         assertFalse(c.tradeable(Currency.CREDITS_EARNED));
         assertTrue(c.tradeable(Currency.CREDITS), "owner: bought credits can be traded");
         assertEquals(0, c.start(Currency.CREDITS), "bought credits never have a start balance");
-        assertEquals(1_000_000, c.payConfirmAbove(Currency.MONEY));
+        assertEquals(100_000_000, c.payConfirmAbove(Currency.MONEY));
         assertEquals(30, c.baltopRefreshSeconds);
     }
 

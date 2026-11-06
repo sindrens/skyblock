@@ -33,7 +33,8 @@ class LevelMathTest {
     void planExampleRegularSoloMonthOne() {
         // Pillars 48+44+42+36 = 170, 96 upgrade levels + 10 masteries = 100, 25 achievement points, skill total 190,
         // Depths 8+7+7, lowest bank $20M, block worth $6M → 384 points, level 38 (PHASE-5 M5.2 example).
-        LevelMath.Inputs in = new LevelMath.Inputs(170, 100, 25, 0, List.of(190), 22, 20_000_000L, 6_000_000);
+        // Money x100 (batch 10): the bank and block worth are 100x, the points stay the same.
+        LevelMath.Inputs in = new LevelMath.Inputs(170, 100, 25, 0, List.of(190), 22, 2_000_000_000L, 600_000_000);
         LevelMath.Result r = LevelMath.calculate(in, W);
         assertEquals(170, r.points().get(LevelSource.PILLARS), 1e-9);
         assertEquals(19, r.points().get(LevelSource.SKILLS), 1e-9);
@@ -50,7 +51,7 @@ class LevelMathTest {
     void withoutPillarsANewIslandStillGetsItsBlocksAndSkills() {
         // Version 3 defaults: no pillar points and no caps, so blocks and skills count in full.
         LevelMath.Weights now = LevelMath.Weights.of(new LevelConfig());
-        LevelMath.Inputs in = new LevelMath.Inputs(170, 0, 0, 0, List.of(190), 0, 0, 6_000_000);
+        LevelMath.Inputs in = new LevelMath.Inputs(170, 0, 0, 0, List.of(190), 0, 0, 600_000_000);
         LevelMath.Result r = LevelMath.calculate(in, now);
         assertEquals(0, r.points().get(LevelSource.PILLARS), 1e-9);
         assertTrue(r.points().get(LevelSource.BLOCKS) > 70, "blocks are not squeezed to 0: " + r.points());

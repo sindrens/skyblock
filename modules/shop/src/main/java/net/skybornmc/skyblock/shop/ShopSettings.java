@@ -9,7 +9,7 @@ public final class ShopSettings extends ModuleConfig {
 
     @Setting(path = "feedback.chat-from", desc = "Purchases costing at least this much also post a chat line; cheaper ones "
             + "only show the action bar line (SELL2 default: 100,000).", min = 0)
-    public long chatFrom = 100_000;
+    public long chatFrom = 10_000_000;
 
     @Setting(path = "feedback.sound", desc = "Sound (sounds.yml key) played after a purchase. A soft click by default.")
     public String buySound = "click";
@@ -106,6 +106,13 @@ public final class ShopSettings extends ModuleConfig {
                 java.util.Map.entry("quick-buy.right-amount", "Shop v2: a click opens the buy page; Java shift-click buys one stack"),
                 java.util.Map.entry("quick-buy.start-amount", "Shop v2: the amount screen became the buy page"),
                 java.util.Map.entry("buy.picker-steps", "Shop v2: the buy page has fixed Buy 1/16/64 buttons"));
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("feedback.chat-from", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     }
 
     @Override

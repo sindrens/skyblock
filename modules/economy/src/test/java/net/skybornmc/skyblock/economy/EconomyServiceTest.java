@@ -34,7 +34,7 @@ class EconomyServiceTest {
     private Database db;
     private AuditLog audit;
     private EconomyServiceImpl service;
-    private final EconomyConfig config = new EconomyConfig();
+    private final EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
     private final AtomicInteger season = new AtomicInteger(1);
     private final UUID steve = UUID.randomUUID();
     private final UUID alex = UUID.randomUUID();
@@ -109,6 +109,6 @@ class EconomyServiceTest {
         Transaction once = Transaction.deposit(AccountRef.player(steve), Currency.SHARDS, 5, TxReason.NOTE_REDEEM).idempotencyKey("note:1");
         assertTrue(service.execute(once).join().ok());
         assertEquals(TxResult.Status.DUPLICATE, service.execute(once).join().status());
-        assertEquals("$1.2M", service.format(Currency.MONEY, 1_234_567));
+        assertEquals("$1,234,567", service.format(Currency.MONEY, 1_234_567));
     }
 }

@@ -15,10 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Owner 6 Nov 2026: the daily pay limit by playtime (anti-boost). */
 class PayLimitTest {
 
-    private static final List<SendGateImpl.Tier> TIERS = SendGateImpl.tiers(new EconomyConfig().payLimitTiers);
+    private static final List<SendGateImpl.Tier> TIERS = SendGateImpl.tiers(EconomyTestConfigs.preScale(new EconomyConfig()).payLimitTiers);
 
     @Test
     void defaultLadderParses() {
+        assertEquals(new SendGateImpl.Tier(0, 2_000_000), SendGateImpl.tiers(new EconomyConfig().payLimitTiers).getFirst(), "money x100");
         assertEquals(5, TIERS.size());
         assertEquals(new SendGateImpl.Tier(0, 20_000), TIERS.getFirst());
         assertEquals(new SendGateImpl.Tier(24, -1), TIERS.getLast(), "24 h = no limit");

@@ -72,14 +72,14 @@ public final class EssentialsConfig extends ModuleConfig {
     public double grindEventGolden = 5.0;
 
     @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot, nether wart): small at the start, bigger later.")
-    public List<Integer> grindFarmBonus = List.of(40, 70, 120, 200, 300);
+    public List<Integer> grindFarmBonus = List.of(4000, 7000, 12000, 20000, 30000);
 
     @Setting(path = "grind.farm-unlocks", desc = "FX-09: crops harvested in total that turn the whole /farm into the next crop for you "
             + "(wheat, carrots, potatoes, beetroot, nether wart; the first is always 0; a missing entry uses the built-in number).")
     public List<Integer> grindFarmUnlocks = List.of(0, 3_000, 12_000, 40_000, 60_000);
 
     @Setting(path = "grind.mine-bonus", desc = "Money of one /mine bonus per ore tier (coal, iron, gold, redstone, lapis, diamond, emerald).")
-    public List<Integer> grindMineBonus = List.of(30, 60, 120, 160, 240, 450, 800);
+    public List<Integer> grindMineBonus = List.of(3000, 6000, 12000, 16000, 24000, 45000, 80000);
 
     @Setting(path = "grind.mine-unlocks", desc = "Owner 4 Nov 2026: blocks mined in total that turn the whole /mine into the next ore for you "
             + "(coal, iron, gold, redstone, lapis, diamond, emerald; the first is always 0).")
@@ -91,12 +91,12 @@ public final class EssentialsConfig extends ModuleConfig {
             + "Every catch pays its water's money (vanilla fish keep a small sell price, so island fish farms never print money).",
             level = Setting.Level.OWNER)
     public List<String> fishWaters = List.of(
-            "shallows:0:150:cod@85,salmon@12,ink_sac@3",
-            "river:500:190:salmon@80,cod@12,tropical_fish@8",
-            "lake:2000:240:tropical_fish@75,salmon@17,pufferfish@8",
-            "reef:6000:300:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
-            "deep:15000:370:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
-            "abyss:35000:450:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2");
+            "shallows:0:15000:cod@85,salmon@12,ink_sac@3",
+            "river:500:19000:salmon@80,cod@12,tropical_fish@8",
+            "lake:2000:24000:tropical_fish@75,salmon@17,pufferfish@8",
+            "reef:6000:30000:pufferfish@65,tropical_fish@20,prismarine_crystals*2@15",
+            "deep:15000:37000:glow_ink_sac@65,pufferfish@25,nautilus_shell@10",
+            "abyss:35000:45000:nautilus_shell@70,glow_ink_sac@28,heart_of_the_sea@2");
 
     @Setting(path = "grind.fish-wait-ticks", desc = "How long a fish takes to bite at /fish, 'min-max' in ticks (vanilla 100-600).", level = Setting.Level.OWNER)
     public String fishWait = "60-160";
@@ -280,6 +280,15 @@ public final class EssentialsConfig extends ModuleConfig {
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now",
                 "join.teleport-to-spawn", "replaced by join.location (island, last or spawn; owner 4 Nov 2026)");
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("grind.farm-bonus", net.skybornmc.skyblock.common.config.MoneyScale.numbers()),
+                java.util.Map.entry("grind.mine-bonus", net.skybornmc.skyblock.common.config.MoneyScale.numbers()),
+                java.util.Map.entry("grind.fish-waters", net.skybornmc.skyblock.common.config.MoneyScale.field(2, ":")));
     }
 
     @Override

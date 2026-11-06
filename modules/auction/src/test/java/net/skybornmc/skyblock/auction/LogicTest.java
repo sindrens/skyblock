@@ -13,7 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Pure rules: fee/tax math, durations, anti-abuse checks, slot permissions, blocked ids, categories. */
 class LogicTest {
 
-    private final AuctionConfig config = new AuctionConfig();
+    private final AuctionConfig config = preScale(new AuctionConfig());
+
+    /** Money x100 (batch 10): these tests use the small numbers from before the scale. */
+    static AuctionConfig preScale(AuctionConfig c) {
+        c.feeMin = 1;
+        c.priceMin = 10;
+        c.priceMax = 1_000_000_000_000L;
+        return c;
+    }
 
     @Test
     void feeIsOnePercentAndTaxFivePercentRoundedDown() {
@@ -47,6 +55,14 @@ class LogicTest {
         config.durations = List.of("nonsense", "30d", "6h");
         assertEquals(List.of("6h"), Pricing.durations(config));
         assertEquals("6h", Pricing.defaultDuration(config));
+    }
+
+    @Test
+    void moneyDefaultsAreX100() {
+        AuctionConfig d = new AuctionConfig();
+        assertEquals(100, d.feeMin);
+        assertEquals(1_000, d.priceMin);
+        assertEquals(100_000_000_000_000L, d.priceMax);
     }
 
     @Test

@@ -49,9 +49,9 @@ class SellKnobTest {
         assertEquals(1.0, e.sellPriceMultiplier, 1e-9);
         assertTrue(e.sellDeriveEnabled);
         assertEquals(6, e.sellDeriveMaxDepth);
-        assertEquals(5.0, e.hotMinBase, 1e-9);
+        assertEquals(500.0, e.hotMinBase, 1e-9);
         assertTrue(e.hotAnnounce && e.hotJoinLine && e.marketTipsButton);
-        assertEquals(5.0, e.marketTipsMinBase, 1e-9);
+        assertEquals(500.0, e.marketTipsMinBase, 1e-9);
         assertEquals(5.0, e.marketTipsMinPercent, 1e-9);
         assertEquals(5, e.marketTipsSize);
         assertEquals(60, e.marketTipsRefreshSeconds);

@@ -45,7 +45,7 @@ class BankOpsTest {
     private Database db;
     private EconomyService economy;
     private BankOps ops;
-    private final BankConfig config = new BankConfig();
+    private final BankConfig config = net.skybornmc.skyblock.economy.EconomyTestConfigs.preScale(new BankConfig());
     private final FakeProfiles profiles = new FakeProfiles();
     private final AtomicLong clock = new AtomicLong(5 * P + HOUR);
     private final AtomicInteger day = new AtomicInteger(20_000);

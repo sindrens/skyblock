@@ -15,7 +15,7 @@ class WatchCreditThresholdTest {
         WatchConfig config = new WatchConfig();
         assertEquals(1_000, config.bigMin(Currency.CREDITS));
         assertEquals(1_000, config.staffMin(Currency.CREDITS));
-        assertEquals(50_000_000, config.bigMin(Currency.MONEY), "other currencies unchanged");
+        assertEquals(5_000_000_000L, config.bigMin(Currency.MONEY), "money x100; other currencies unchanged");
         assertEquals(50_000, config.bigMin(Currency.SHARDS), "other currencies unchanged");
     }
 

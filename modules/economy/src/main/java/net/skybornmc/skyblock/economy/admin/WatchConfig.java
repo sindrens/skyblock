@@ -143,7 +143,7 @@ public final class WatchConfig extends ModuleConfig {
     public double earnMultiplier = 3.0;
 
     @Setting(path = "rules.earn-rate.min.money", desc = "Never alert below this much money earned in one hour.", min = 0)
-    public long earnMinMoney = 5_000_000;
+    public long earnMinMoney = 500_000_000;
 
     @Setting(path = "rules.earn-rate.min.crystals", desc = "Never alert below this many crystals earned in one hour.", min = 0)
     public long earnMinCrystals = 50_000;
@@ -169,7 +169,7 @@ public final class WatchConfig extends ModuleConfig {
     public double bigTransferSupplyPercent = 0.5;
 
     @Setting(path = "rules.big-transfer.min.money", desc = "Never alert below this much money.", min = 1)
-    public long bigMinMoney = 50_000_000;
+    public long bigMinMoney = 5_000_000_000L;
 
     @Setting(path = "rules.big-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long bigMinCrystals = 500_000;
@@ -197,7 +197,7 @@ public final class WatchConfig extends ModuleConfig {
     public boolean staffTransferEnabled = true;
 
     @Setting(path = "rules.staff-transfer.min.money", desc = "Never alert below this much money.", min = 1)
-    public long staffMinMoney = 5_000_000;
+    public long staffMinMoney = 500_000_000;
 
     @Setting(path = "rules.staff-transfer.min.crystals", desc = "Never alert below this many crystals.", min = 1)
     public long staffMinCrystals = 100_000;
@@ -259,7 +259,7 @@ public final class WatchConfig extends ModuleConfig {
 
     @Setting(path = "rules.sell-spike.min-amount", desc = "Never alert below this much money from selling in one hour.",
             min = 0)
-    public long sellSpikeMin = 50_000_000;
+    public long sellSpikeMin = 5_000_000_000L;
 
     @Setting(path = "rules.sell-spike.reason", desc = "Ledger reason of server sales.")
     public String sellReason = "sell";
@@ -285,6 +285,16 @@ public final class WatchConfig extends ModuleConfig {
     @Setting(path = "dashboard.cache-seconds", desc = "Seconds the dashboard numbers are reused before they are read again.",
             min = 0, max = 600)
     public int cacheSeconds = 30;
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("rules.earn-rate.min.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("rules.big-transfer.min.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("rules.staff-transfer.min.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("rules.sell-spike.min-amount", net.skybornmc.skyblock.common.config.MoneyScale.number()));
+    }
 
     @Override
     public String fileName() {

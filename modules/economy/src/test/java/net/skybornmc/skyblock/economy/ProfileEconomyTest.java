@@ -39,7 +39,7 @@ class ProfileEconomyTest {
     private EconomyServiceImpl economy;
     private NoteService notes;
     private final FakeProfiles profiles = new FakeProfiles();
-    private final EconomyConfig config = new EconomyConfig();
+    private final EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
     private final UUID steve = UUID.randomUUID();
     private final UUID steve2 = UUID.randomUUID();
     private final UUID alex = UUID.randomUUID();

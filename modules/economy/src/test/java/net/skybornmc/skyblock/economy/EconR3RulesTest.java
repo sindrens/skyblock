@@ -59,8 +59,8 @@ class EconR3RulesTest {
     @Test
     void upToTheLimitAppliesAtOnceAboveItWaits() {
         long limit = new EconomyConfig().ecoApproveAbove(Currency.MONEY);
-        assertEquals(1_000_000_000_000L, limit, "owner: $1T");
-        assertFalse(EcoApprovals.needsApproval(limit, limit), "exactly $1T applies at once");
+        assertEquals(100_000_000_000_000L, limit, "owner: $1T, x100 (batch 10)");
+        assertFalse(EcoApprovals.needsApproval(limit, limit), "exactly the limit applies at once");
         assertTrue(EcoApprovals.needsApproval(limit + 1, limit));
         assertFalse(EcoApprovals.needsApproval(Long.MAX_VALUE, 0), "0 = never wait");
     }

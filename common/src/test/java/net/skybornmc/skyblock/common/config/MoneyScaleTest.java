@@ -30,6 +30,30 @@ class MoneyScaleTest {
         }
     }
 
+    /** A value change that writes today's default (x100 already) is not scaled a second time. */
+    static final class ChangedConfig extends ModuleConfig {
+        @Setting(path = "cost", desc = "Cost") long cost = 500_000;
+
+        @Override public String fileName() { return "changed.yml"; }
+        @Override public int version() { return 2; }
+        @Override public Map<Integer, Map<String, ValueChange>> valueChanges() {
+            return Map.of(2, Map.of("cost", ValueChange.of(1_000L, new ChangedConfig().cost)));
+        }
+        @Override public Map<String, MoneyScale.Rule> moneyKeys() { return Map.of("cost", MoneyScale.number()); }
+    }
+
+    @Test
+    void aValueChangeToTheNewDefaultIsNotScaledTwice(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("changed.yml"), "config-version: 1\ncost: 1000\n");
+        ChangedConfig c = new ChangedConfig();
+        new ConfigManager(dir.toFile(), log).load(c);
+        assertEquals(500_000, c.cost);
+        Files.writeString(dir.resolve("changed.yml"), "config-version: 1\ncost: 2000\n");
+        ChangedConfig owner = new ChangedConfig();
+        new ConfigManager(dir.toFile(), log).load(owner);
+        assertEquals(200_000, owner.cost, "an owner value is scaled once");
+    }
+
     private final Logger log = Logger.getLogger("test");
 
     @Test

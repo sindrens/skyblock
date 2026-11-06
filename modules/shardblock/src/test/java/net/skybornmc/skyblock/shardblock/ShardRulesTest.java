@@ -37,9 +37,9 @@ class ShardRulesTest {
     @Test
     void costsPerLevelAndNothingPastTheTop() {
         ShardRules r = defaults(new ArrayList<>());
-        assertEquals(new ShardRules.Cost(Currency.MONEY, 2000), r.cost(ShardRules.Kind.RESPAWN, 1), "owner 3 Nov 2026: money, not shards");
-        assertEquals(new ShardRules.Cost(Currency.MONEY, 250000), r.cost(ShardRules.Kind.RESPAWN, 5));
-        assertEquals(new ShardRules.Cost(Currency.MONEY, 1500), r.cost(ShardRules.Kind.DOUBLE, 1));
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 200_000), r.cost(ShardRules.Kind.RESPAWN, 1), "owner 3 Nov 2026: money, not shards");
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 25_000_000), r.cost(ShardRules.Kind.RESPAWN, 5));
+        assertEquals(new ShardRules.Cost(Currency.MONEY, 150_000), r.cost(ShardRules.Kind.DOUBLE, 1));
         assertNull(r.cost(ShardRules.Kind.RESPAWN, 6), "maxed");
         assertNull(r.cost(ShardRules.Kind.DOUBLE, 0));
     }

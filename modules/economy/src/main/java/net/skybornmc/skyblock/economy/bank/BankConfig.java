@@ -63,10 +63,10 @@ public final class BankConfig extends ModuleConfig {
     // ------------------------------------------------------------------ deposits and withdrawals
 
     @Setting(path = "deposit.min", desc = "Smallest deposit.", min = 1, level = Setting.Level.OWNER)
-    public long depositMin = 1;
+    public long depositMin = 100;
 
     @Setting(path = "withdraw.min", desc = "Smallest withdrawal.", min = 1, level = Setting.Level.OWNER)
-    public long withdrawMin = 100;
+    public long withdrawMin = 10_000;
 
     @Setting(path = "withdraw.fee-percent", desc = "Withdrawal fee in percent of the amount taken out, before island "
             + "masteries (owner E4 + #169: 2%; feedback 4 Nov 2026: 0 = no fee, the menu then says nothing about a fee). "
@@ -96,32 +96,32 @@ public final class BankConfig extends ModuleConfig {
             + "UX3: x3-5 per tier up to $10B).",
             level = Setting.Level.OWNER)
     public List<String> personalTiers = List.of(
-            "100k 0 600",
-            "500k 10k 1.6k",
-            "2M 40k 4.4k",
-            "7.5M 150k 11.6k",
-            "25M 500k 27.5k",
-            "75M 1.5M 61k",
-            "250M 5M 145k",
-            "750M 15M 320k",
-            "2.5B 50M 770k",
-            "10B 200M 2.1M");
+            "10M 0 60k",
+            "50M 1M 160k",
+            "200M 4M 440k",
+            "750M 15M 1.16M",
+            "2.5B 50M 2.75M",
+            "7.5B 150M 6.1M",
+            "25B 500M 14.5M",
+            "75B 1.5B 32M",
+            "250B 5B 77M",
+            "1T 20B 210M");
 
     @Setting(path = "island.levels", desc = "Island bank by level 0-10, one line each: capacity (Bank Capacity upgrade level) "
             + "and payout cap per interest payout (Bank Interest upgrade level). Balance sheet 6.2 (UX3: about x3 per level up to "
             + "$50B). /is upgrade shows these amounts.", level = Setting.Level.OWNER)
     public List<String> islandLevels = List.of(
-            "1M 10k",
-            "3M 24k",
-            "10M 62k",
-            "30M 150k",
-            "100M 380k",
-            "300M 900k",
-            "1B 2.4M",
-            "3B 5.7M",
-            "8B 12M",
-            "20B 26M",
-            "50B 53M");
+            "100M 1M",
+            "300M 2.4M",
+            "1B 6.2M",
+            "3B 15M",
+            "10B 38M",
+            "30B 90M",
+            "100B 240M",
+            "300B 570M",
+            "800B 1.2B",
+            "2T 2.6B",
+            "5T 5.3B");
 
     @Setting(path = "island.withdraw-limit-percent.leader", desc = "Most the Leader may take out of the island bank per day, "
             + "in percent of the bank's capacity. -1 = no limit.", min = -1, max = 100, level = Setting.Level.OWNER)
@@ -147,6 +147,16 @@ public final class BankConfig extends ModuleConfig {
 
     @Setting(path = "history.page-size", desc = "Entries per page in the bank history.", min = 7, max = 28)
     public int historyPageSize = 28;
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("deposit.min", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("withdraw.min", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("personal.tiers", net.skybornmc.skyblock.common.config.MoneyScale.fields(" ", 0, 1, 2)),
+                java.util.Map.entry("island.levels", net.skybornmc.skyblock.common.config.MoneyScale.fields(" ", 0, 1)));
+    }
 
     @Override
     public String fileName() {

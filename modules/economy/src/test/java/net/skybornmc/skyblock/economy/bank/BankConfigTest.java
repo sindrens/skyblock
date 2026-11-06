@@ -121,13 +121,13 @@ class BankConfigTest {
             assertTrue(rate <= fresh.personalRatePercent / 100 + 1e-12, "the cap is never above the plain rate");
             lastRate = rate;
         }
-        assertEquals(10_000_000_000L, t.tier(10).capacity(), "tier 10 holds $10B, not $195.3B");
+        assertEquals(1_000_000_000_000L, t.tier(10).capacity(), "tier 10 holds $1T (money x100; was $10B)");
         lastRate = Double.MAX_VALUE;
         for (BankTiers.IslandLevel level : t.island()) {
             double rate = (double) level.payoutCap() / level.capacity();
             assertTrue(rate < lastRate && rate <= fresh.islandRatePercent / 100 + 1e-12, "island level " + level.level());
             lastRate = rate;
         }
-        assertEquals(50_000_000_000L, t.islandCapacity(10));
+        assertEquals(5_000_000_000_000L, t.islandCapacity(10));
     }
 }

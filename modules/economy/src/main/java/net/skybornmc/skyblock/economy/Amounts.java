@@ -10,7 +10,7 @@ import net.skybornmc.skyblock.common.util.Format;
 final class Amounts {
 
     /** Default of {@code display.exact-below}. */
-    static final long DEFAULT_EXACT_BELOW = 100_000;
+    static final long DEFAULT_EXACT_BELOW = 10_000_000; // money x100 (batch 10)
 
     /** Below this, amounts are shown exactly; set from economy.yml on load and reload. */
     private static volatile long exactBelow = DEFAULT_EXACT_BELOW;

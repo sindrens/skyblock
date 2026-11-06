@@ -118,7 +118,7 @@ public final class TradeConfig extends ModuleConfig {
             "money-currency:SUNFLOWER", "storing:HOPPER", "locked-slot:BLACK_STAINED_GLASS_PANE");
 
     @Setting(path = "menu.money-steps", desc = "The -/+ buttons of the money picker for money (3 steps, smallest first).")
-    public List<String> moneySteps = List.of("1000", "100000", "10000000");
+    public List<String> moneySteps = List.of("100000", "10000000", "1000000000");
 
     @Setting(path = "menu.other-steps", desc = "The -/+ buttons of the money picker for other currencies (shards …).")
     public List<String> otherSteps = List.of("1", "10", "100");
@@ -176,6 +176,13 @@ public final class TradeConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         return java.util.Map.of(2, java.util.Map.of("money.currencies",
                 ValueChange.of(List.of("money", "shards"), List.of("money", "shards", "credits"))));
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("menu.money-steps", net.skybornmc.skyblock.common.config.MoneyScale.numbers()));
     }
 
     @Override

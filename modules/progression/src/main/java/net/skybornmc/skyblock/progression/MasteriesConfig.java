@@ -9,6 +9,13 @@ import net.skybornmc.skyblock.common.config.Setting;
  */
 public final class MasteriesConfig extends ModuleConfig {
 
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("ascension.base-cost", net.skybornmc.skyblock.common.config.MoneyScale.number()));
+    }
+
     @Override
     public String fileName() {
         return "masteries-settings.yml";
@@ -31,8 +38,8 @@ public final class MasteriesConfig extends ModuleConfig {
     public boolean ascensionEnabled = true;
 
     @Setting(path = "ascension.base-cost", desc = "Price of level 1 of the endless curve: 4 hours of REF(12) (ECONOMY_BALANCE 5.4). Paid from the island bank.",
-            min = 0, max = 1_000_000_000_000L, level = Setting.Level.OWNER)
-    public long ascensionBaseCost = 686_000_000L;
+            min = 0, max = 100_000_000_000_000L, level = Setting.Level.OWNER)
+    public long ascensionBaseCost = 68_600_000_000L;
 
     @Setting(path = "ascension.growth", desc = "Each level of the endless curve costs this much more than the one before (1.12 = 12%).",
             min = 1.0, max = 3.0, level = Setting.Level.OWNER)

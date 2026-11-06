@@ -162,7 +162,11 @@ public final class ConfigManager {
 
     // ---------------------------------------------------------------- internals
 
+    /** Paths a value change set during the current load (money x100 must not scale a new default twice). */
+    private final java.util.Set<String> changedByMigration = new java.util.HashSet<>();
+
     private boolean migrate(ModuleConfig config, YamlConfiguration yaml) {
+        changedByMigration.clear();
         int fileVersion = yaml.getInt(VERSION_KEY, yaml.getKeys(false).isEmpty() ? config.version() : 1);
         boolean changed = false;
         for (int v = fileVersion + 1; v <= config.version(); v++) {
@@ -178,6 +182,7 @@ public final class ConfigManager {
                 String path = change.getKey();
                 if (yaml.contains(path) && change.getValue().matches(yaml.get(path))) {
                     yaml.set(path, change.getValue().to());
+                    changedByMigration.add(path);
                     log.info(config.fileName() + ": default of '" + path + "' changed " + change.getValue().from() + " → "
                             + change.getValue().to());
                     changed = true;
@@ -221,7 +226,17 @@ public final class ConfigManager {
             }
         }
         int n = 0;
+        Map<String, Object> defs = defaults.computeIfAbsent(config, this::snapshotDefaults);
+        Map<String, Object> defaultByPath = new java.util.HashMap<>();
+        for (Field field : settingFields(config)) {
+            defaultByPath.put(pathOf(field, field.getAnnotation(Setting.class)), toYaml(defs.get(field.getName())));
+        }
         for (Map.Entry<String, MoneyScale.Rule> e : keys.entrySet()) {
+            // A value change of this load already wrote today's (x100) default: never scale it again.
+            if (changedByMigration.contains(e.getKey()) && defaultByPath.containsKey(e.getKey())
+                    && ModuleConfig.ValueChange.of(defaultByPath.get(e.getKey()), null).matches(yaml.get(e.getKey()))) {
+                continue;
+            }
             try {
                 String line = MoneyScale.apply(yaml, e.getKey(), e.getValue(), factor);
                 if (line != null) {

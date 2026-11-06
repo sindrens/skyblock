@@ -50,11 +50,11 @@ class AfkRulesTest {
     @Test
     void moneyFollowsTierAndStep() {
         AfkRules r = AfkRules.from(new AfkConfig());
-        assertEquals(310, r.money(1, 0));
-        assertEquals(558, r.money(1, 480 * 60_000L), "310 x 180%");
-        assertEquals(1_070_000, r.money(12, 0));
-        assertEquals(1_070_000, r.money(40, 0), "above the table: last value");
-        assertEquals(310, r.money(0, 0), "below: first value");
+        assertEquals(31_000, r.money(1, 0), "money x100 (batch 10)");
+        assertEquals(55_800, r.money(1, 480 * 60_000L), "31,000 x 180%");
+        assertEquals(107_000_000, r.money(12, 0));
+        assertEquals(107_000_000, r.money(40, 0), "above the table: last value");
+        assertEquals(31_000, r.money(0, 0), "below: first value");
     }
 
     @Test
@@ -63,7 +63,7 @@ class AfkRulesTest {
         AfkRules r = AfkRules.from(new AfkConfig());
         for (int t = 1; t <= 12; t++) {
             double price = 20 * Math.pow(1.35, Math.min(t, 8) - 1) * Math.pow(2.2, Math.max(0, t - 8));
-            double ref = 2500 * Math.pow(1.3, t - 1) * price;
+            double ref = 100 * 2500 * Math.pow(1.3, t - 1) * price; // money x100
             double perHour = 60.0 / 15 * r.money(t, Long.MAX_VALUE / 2);
             assertTrue(perHour <= 0.05 * ref, "tier " + t + ": " + perHour + " > 5% of " + ref);
         }

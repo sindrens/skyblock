@@ -15,7 +15,7 @@ public final class AuctionConfig extends ModuleConfig {
     public double feePercent = 1.0;
 
     @Setting(path = "fee.min", desc = "Smallest listing fee (money). 0 = a fee below $1 is free.", min = 0, level = Setting.Level.OWNER)
-    public long feeMin = 1;
+    public long feeMin = 100;
 
     @Setting(path = "fee.refund-on-cancel", desc = "Give the listing fee back when the seller cancels (not on expiry). "
             + "Default no (open question).", level = Setting.Level.OWNER)
@@ -29,10 +29,10 @@ public final class AuctionConfig extends ModuleConfig {
     public long taxMin = 0;
 
     @Setting(path = "price.min", desc = "Lowest price a listing can have (money).", min = 1, level = Setting.Level.OWNER)
-    public long priceMin = 10;
+    public long priceMin = 1_000;
 
     @Setting(path = "price.max", desc = "Highest price a listing can have (money).", min = 1, level = Setting.Level.OWNER)
-    public long priceMax = 1_000_000_000_000L;
+    public long priceMax = 100_000_000_000_000L;
 
     // ------------------------------------------------------------------ listings
 
@@ -192,6 +192,16 @@ public final class AuctionConfig extends ModuleConfig {
     @Override
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of("anti-abuse.new-account", "owner answers 131/203: no new-account limit (R3-16)");
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("fee.min", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("tax.min", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("price.min", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("price.max", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     }
 
     @Override

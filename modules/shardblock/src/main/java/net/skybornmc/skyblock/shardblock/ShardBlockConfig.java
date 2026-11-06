@@ -49,11 +49,11 @@ public final class ShardBlockConfig extends ModuleConfig {
 
     @Setting(path = "upgrades.respawn", desc = "Cost of each respawn level after 0, as currency:amount (crystals, shards, money). "
             + "One entry per level above 0.", level = Setting.Level.OWNER)
-    public List<String> respawnCosts = List.of("money:2000", "money:8000", "money:25000", "money:80000", "money:250000");
+    public List<String> respawnCosts = List.of("money:200000", "money:800000", "money:2500000", "money:8000000", "money:25000000");
 
     @Setting(path = "upgrades.double", desc = "Cost of each double-chance level after 0, as currency:amount. One entry per level above 0.",
             level = Setting.Level.OWNER)
-    public List<String> doubleCosts = List.of("money:1500", "money:5000", "money:15000", "money:50000", "money:150000");
+    public List<String> doubleCosts = List.of("money:150000", "money:500000", "money:1500000", "money:5000000", "money:15000000");
 
     @Setting(path = "interaction.break-gap-ms", desc = "Shortest time between two shard block breaks of one player (anti auto-click).",
             min = 0, max = 10000)
@@ -121,6 +121,14 @@ public final class ShardBlockConfig extends ModuleConfig {
                 "levels.respawn-seconds", ValueChange.of(RESPAWN_SECONDS_V1, d.respawnSeconds),
                 "upgrades.respawn", ValueChange.of(RESPAWN_COSTS_V1, d.respawnCosts),
                 "upgrades.double", ValueChange.of(DOUBLE_COSTS_V1, d.doubleCosts)));
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("upgrades.respawn", net.skybornmc.skyblock.common.config.MoneyScale.onlyLines(net.skybornmc.skyblock.common.config.MoneyScale.startsWith("money:"), net.skybornmc.skyblock.common.config.MoneyScale.field(1, ":"))),
+                java.util.Map.entry("upgrades.double", net.skybornmc.skyblock.common.config.MoneyScale.onlyLines(net.skybornmc.skyblock.common.config.MoneyScale.startsWith("money:"), net.skybornmc.skyblock.common.config.MoneyScale.field(1, ":"))));
     }
 
     @Override

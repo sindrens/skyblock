@@ -49,7 +49,7 @@ class BankRulesTest {
 
     @Test
     void dailyLimitPerRole() {
-        BankConfig config = new BankConfig();
+        BankConfig config = net.skybornmc.skyblock.economy.EconomyTestConfigs.preScale(new BankConfig());
         long capacity = 1_000_000;
         assertEquals(Long.MAX_VALUE, BankRules.remainingToday(capacity, config.limitPercent(Role.LEADER), 900_000));
         assertEquals(Long.MAX_VALUE, BankRules.remainingToday(capacity, config.limitPercent(Role.ADMIN), 900_000));
@@ -71,7 +71,7 @@ class BankRulesTest {
 
     @Test
     void shippedTablesMatchTheBalanceSheet() {
-        BankTiers tiers = BankTiers.parse(new BankConfig());
+        BankTiers tiers = BankTiers.parse(net.skybornmc.skyblock.economy.EconomyTestConfigs.preScale(new BankConfig()));
         assertTrue(tiers.problems().isEmpty(), tiers.problems().toString());
         assertEquals(10, tiers.maxTier());
         assertEquals(new BankTiers.PersonalTier(1, 100_000, 0, 600), tiers.tier(1), "BANK2: 4x the M3.3 cap per 8 h payout");
@@ -91,7 +91,7 @@ class BankRulesTest {
 
     @Test
     void brokenTablesFallBackToTheDefaults() {
-        BankConfig config = new BankConfig();
+        BankConfig config = net.skybornmc.skyblock.economy.EconomyTestConfigs.preScale(new BankConfig());
         config.personalTiers = List.of("100k 0 150", "50k 10k 480");
         config.islandLevels = List.of("lots of money");
         BankTiers tiers = BankTiers.parse(config);

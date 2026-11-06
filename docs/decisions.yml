@@ -94,7 +94,7 @@ decisions:
     module: economy
     file: economy.yml
     path: eco.approve-above.money
-    value: 1000000000000
+    value: 100000000000000  # money x100 (batch 10): the owner's $1T at the old scale
 
   - id: "R3-6b"
     answer: "A waiting /eco change is dropped after 10 minutes"

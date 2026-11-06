@@ -20,7 +20,7 @@ public final class TestEconomy {
         AuditLog audit = new AuditLog(db, new AuditConfig(), dir, Logger.getLogger("test"));
         EconomyStore store = new EconomyStore(db, () -> 0, clock);
         store.owners(profiles::ownerOf);
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         return new EconomyServiceImpl(store, new BalanceCache(), audit, () -> config, uuid -> null, c -> "$", () -> 0,
                 Logger.getLogger("test"), () -> profiles);
     }

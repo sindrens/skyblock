@@ -16,7 +16,7 @@ class NoteRulesTest {
 
     @Test
     void moneyAndShardsByDefault() {
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         assertTrue(NoteRules.allowed(config, Currency.MONEY));
         assertTrue(NoteRules.allowed(config, Currency.SHARDS), "R3-5b: shard notes on");
         assertFalse(NoteRules.allowed(config, Currency.CREDITS_EARNED));
@@ -26,7 +26,7 @@ class NoteRulesTest {
 
     @Test
     void crystalsAreNeverTradeableEvenWhenTheConfigSaysSo() {
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         config.tradeableCrystals = true;
         config.noteCurrencies = List.of("money", "crystals");
         assertFalse(config.tradeable(Currency.CRYSTALS), "R3-5b: hard rule in code");
@@ -36,7 +36,7 @@ class NoteRulesTest {
 
     @Test
     void untradeableCurrenciesStayBlockedEvenWhenListed() {
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         config.noteCurrencies = List.of("money", "tokens", " Shards ");
         assertFalse(NoteRules.allowed(config, Currency.CRYSTALS), "old 'tokens' = crystals, which are not tradeable (CR3)");
         assertTrue(NoteRules.allowed(config, Currency.SHARDS));
@@ -44,7 +44,7 @@ class NoteRulesTest {
 
     @Test
     void limitsAndFrozen() {
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         assertEquals(Optional.empty(), NoteRules.withdraw(config, 100, Currency.MONEY, false));
         assertEquals(Optional.of(NoteRules.Problem.BELOW_MINIMUM), NoteRules.withdraw(config, 99, Currency.MONEY, false));
         assertEquals(Optional.of(NoteRules.Problem.ABOVE_MAXIMUM),
@@ -56,7 +56,7 @@ class NoteRulesTest {
 
     @Test
     void adminNotesOnlyCheckTheMaximum() {
-        EconomyConfig config = new EconomyConfig();
+        EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
         assertEquals(Optional.empty(), NoteRules.admin(config, 1));
         assertEquals(Optional.of(NoteRules.Problem.ABOVE_MAXIMUM), NoteRules.admin(config, config.noteMaxMoney + 1));
     }

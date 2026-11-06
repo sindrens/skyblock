@@ -70,6 +70,17 @@ public final class MoneyScale {
         };
     }
 
+    /** Several fields of each line are money ({@code fields(" ", 0, 1, 2)} on {@code "100k 0 600"}). */
+    public static Rule fields(String separator, int... indexes) {
+        return (raw, f) -> {
+            Object out = raw;
+            for (int i : indexes) {
+                out = field(i, separator).apply(out, f);
+            }
+            return out;
+        };
+    }
+
     /** Lines of a list that match {@code when} get {@code rule}; the others stay (e.g. only {@code money:N} lines). */
     public static Rule onlyLines(Predicate<String> when, Rule rule) {
         return (raw, f) -> {

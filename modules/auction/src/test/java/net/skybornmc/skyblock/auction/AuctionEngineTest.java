@@ -40,7 +40,15 @@ class AuctionEngineTest {
     private AuctionEngine engine;
     private AuctionStore store;
     private final FakeEconomy economy = new FakeEconomy();
-    private final AuctionConfig config = new AuctionConfig();
+    private final AuctionConfig config = preScale(new AuctionConfig());
+
+    /** Money x100 (batch 10): these tests use the small numbers from before the scale. */
+    static AuctionConfig preScale(AuctionConfig c) {
+        c.feeMin = 1;
+        c.priceMin = 10;
+        c.priceMax = 1_000_000_000_000L;
+        return c;
+    }
     private final AtomicLong clock = new AtomicLong(1_000_000_000L);
     private final UUID seller = UUID.randomUUID();
     private final UUID buyer = UUID.randomUUID();

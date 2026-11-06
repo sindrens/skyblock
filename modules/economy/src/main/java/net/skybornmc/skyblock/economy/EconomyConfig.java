@@ -12,7 +12,7 @@ public final class EconomyConfig extends ModuleConfig {
     // ------------------------------------------------------------------ starting balances (given once per season)
 
     @Setting(path = "start.money", desc = "Money every new profile starts with (once per season and profile; owner answer 121).", min = 0, level = Setting.Level.OWNER)
-    public long startMoney = 1_000;
+    public long startMoney = 100_000;
 
     @Setting(path = "start.crystals", desc = "Island crystals a new player starts with (once per season).", min = 0,
             level = Setting.Level.OWNER)
@@ -47,7 +47,7 @@ public final class EconomyConfig extends ModuleConfig {
     // ------------------------------------------------------------------ /pay
 
     @Setting(path = "pay.min.money", desc = "Smallest /pay amount in money.", min = 1, level = Setting.Level.OWNER)
-    public long payMinMoney = 10;
+    public long payMinMoney = 1_000;
 
     @Setting(path = "pay.min.crystals", desc = "Smallest /pay amount in crystals.", min = 1, level = Setting.Level.OWNER)
     public long payMinCrystals = 1;
@@ -61,14 +61,14 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "pay.leave-flag.amount", desc = "Owner 4 Nov 2026 (island = profile): the audit log flags a profile wipe "
             + "(leave, kick, disband) when that profile sent at least this much money with /pay shortly before. 0 = off.", min = 0)
-    public long leavePayFlagAmount = 100_000;
+    public long leavePayFlagAmount = 10_000_000;
 
     @Setting(path = "pay.leave-flag.minutes", desc = "How far back before a profile wipe /pay transfers are added up for the flag.",
             min = 1, max = 1440)
     public int leavePayFlagMinutes = 10;
 
     @Setting(path = "pay.confirm-above.money", desc = "/pay asks to confirm at or above this much money. 0 = never.", min = 0)
-    public long payConfirmMoney = 1_000_000;
+    public long payConfirmMoney = 100_000_000;
 
     @Setting(path = "pay.confirm-above.crystals", desc = "/pay asks to confirm at or above this many crystals. 0 = never.", min = 0)
     public long payConfirmCrystals = 10_000;
@@ -106,7 +106,7 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "display.exact-below", desc = "Amounts below this are shown with every digit (12,500); bigger ones compact "
             + "(1.2M). Credits are always exact (C1-R2-22).", min = 1_000, max = 1_000_000_000_000L)
-    public long displayExactBelow = 100_000;
+    public long displayExactBelow = 10_000_000;
 
     // ------------------------------------------------------------------ credits (card C1)
 
@@ -165,7 +165,7 @@ public final class EconomyConfig extends ModuleConfig {
     public List<String> noteCurrencies = List.of("money", "shards");
 
     @Setting(path = "notes.min.money", desc = "Smallest money note.", min = 1, level = Setting.Level.OWNER)
-    public long noteMinMoney = 100;
+    public long noteMinMoney = 10_000;
 
     @Setting(path = "notes.min.crystals", desc = "Smallest crystals note (only if crystals are in notes.currencies).", min = 1,
             level = Setting.Level.OWNER)
@@ -176,7 +176,7 @@ public final class EconomyConfig extends ModuleConfig {
     public long noteMinShards = 1;
 
     @Setting(path = "notes.max.money", desc = "Largest money note (also the limit of /eco note).", min = 1, level = Setting.Level.OWNER)
-    public long noteMaxMoney = 1_000_000_000_000L;
+    public long noteMaxMoney = 100_000_000_000_000L;
 
     @Setting(path = "notes.max.crystals", desc = "Largest crystals note.", min = 1, level = Setting.Level.OWNER)
     public long noteMaxCrystals = 1_000_000_000L;
@@ -210,7 +210,7 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "eco.approve-above.money", desc = "Owner R3-6: an /eco change of more money than this waits until an owner or "
             + "admin clicks Allow (smaller changes apply at once and are flagged). 0 = never wait.", min = 0,
             level = Setting.Level.OWNER)
-    public long ecoApproveMoney = 1_000_000_000_000L;
+    public long ecoApproveMoney = 100_000_000_000_000L;
 
     @Setting(path = "eco.approve-above.crystals", desc = "Same for crystals. 0 = never wait.", min = 0, level = Setting.Level.OWNER)
     public long ecoApproveCrystals = 1_000_000_000L;
@@ -252,7 +252,7 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "pay-limit.tiers", desc = "Owner 6 Nov 2026 (anti-boost): money a profile may send to other players per day "
             + "(/pay, /trade, auction buys) by its account's playtime, as 'hours:limit' lines (limit -1 = no limit). Members of "
             + "your own island never count. Empty = no limit.", level = Setting.Level.OWNER)
-    public List<String> payLimitTiers = List.of("0:20k", "3:100k", "6:500k", "12:2.5M", "24:-1");
+    public List<String> payLimitTiers = List.of("0:2M", "3:10M", "6:50M", "12:250M", "24:-1");
 
     @Setting(path = "pay-limit.zone", desc = "Time zone of the pay limit's day (it resets at midnight there).", level = Setting.Level.OWNER)
     public String payLimitZone = "Europe/Oslo";
@@ -374,7 +374,7 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "sell.hot-item.min-base", desc = "The Hot Item is only picked from items worth at least this (keeps dirt out).",
             min = 0, max = 1_000_000)
-    public double hotMinBase = 5.0;
+    public double hotMinBase = 500.0;
 
     @Setting(path = "sell.hot-item.announce", desc = "Tell everyone online once per day (00:00 Oslo) which item is hot.")
     public boolean hotAnnounce = true;
@@ -386,7 +386,7 @@ public final class EconomyConfig extends ModuleConfig {
     public boolean marketTipsButton = true;
 
     @Setting(path = "sell.market-tips.min-base", desc = "Market Tips only list items worth at least this.", min = 0, max = 1_000_000)
-    public double marketTipsMinBase = 5.0;
+    public double marketTipsMinBase = 500.0;
 
     @Setting(path = "sell.market-tips.min-percent", desc = "Market Tips only list items at least this many percent above base.",
             min = 0, max = 1_000)
@@ -444,7 +444,7 @@ public final class EconomyConfig extends ModuleConfig {
 
     @Setting(path = "sell.big-sale-chat-from", desc = "Sales paying at least this much post one chat line with a hover "
             + "breakdown (SELL2); smaller sales only show an action bar line.", min = 0)
-    public long sellBigSaleChatFrom = 100_000;
+    public long sellBigSaleChatFrom = 10_000_000;
 
     @Setting(path = "autosell.interval-seconds", desc = "Owner 4 Nov 2026: an Auto-Sell Chest sells what is in it this often (Black Market item).", min = 5, max = 3600)
     public int autosellIntervalSeconds = 30;
@@ -537,6 +537,25 @@ public final class EconomyConfig extends ModuleConfig {
                 "notes.min.gems", "card C1: credits never become notes",
                 "notes.max.gems", "card C1: credits never become notes",
                 "credits.spend-attempts", "card C1 wave 1b: a credit spend locks both rows in one transaction, no re-planning");
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("start.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("pay.min.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("pay.leave-flag.amount", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("pay.confirm-above.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("display.exact-below", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("notes.min.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("notes.max.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("eco.approve-above.money", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("send-gate.required", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("pay-limit.tiers", net.skybornmc.skyblock.common.config.MoneyScale.field(1, ":")),
+                java.util.Map.entry("sell.hot-item.min-base", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("sell.market-tips.min-base", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("sell.big-sale-chat-from", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     }
 
     @Override

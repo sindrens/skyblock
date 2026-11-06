@@ -33,6 +33,14 @@ public final class LevelConfig extends ModuleConfig {
                         "caps.bank-percent", ValueChange.of(5, 0), "caps.blocks-percent", ValueChange.of(20, 0)));
     }
 
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("points.bank-base", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+                java.util.Map.entry("points.blocks-unit", net.skybornmc.skyblock.common.config.MoneyScale.number()));
+    }
+
     @Override
     public String fileName() {
         return "progression.yml";
@@ -69,13 +77,13 @@ public final class LevelConfig extends ModuleConfig {
     public double bankFactor = 4;
 
     @Setting(path = "points.bank-base", desc = "Money where the bank starts to give points (log scale).", min = 1, max = 1_000_000_000_000L, level = Setting.Level.OWNER)
-    public long bankBase = 100_000;
+    public long bankBase = 10_000_000;
 
     @Setting(path = "points.blocks-factor", desc = "Block points = blocks-factor x square root(block worth / blocks-unit) (source 8).", min = 0, max = 1000, level = Setting.Level.OWNER)
     public double blocksFactor = 1.0;
 
     @Setting(path = "points.blocks-unit", desc = "Money unit of the block worth square root.", min = 1, max = 1_000_000_000L, level = Setting.Level.OWNER)
-    public double blocksUnit = 1000;
+    public double blocksUnit = 100_000;
 
     // ------------------------------------------------------------------ caps (percent of the total, 0 = no cap)
 

@@ -341,7 +341,7 @@ public final class IslandsConfig extends ModuleConfig {
 
     @Setting(path = "lifecycle.profile-reset.join-money", desc = "Money a player has right after joining an island (topped up to this; 0 = off).",
             min = 0, max = 1_000_000_000)
-    public long joinMoney = 1_000;
+    public long joinMoney = 100_000;
 
     @Setting(path = "lifecycle.wipe-profile", desc = "Owner 4 Nov 2026 (island = profile): every way of leaving an island (leave, "
             + "kick, staff removal, disband, staff delete/reset, replacing your solo island) wipes that profile: money, items, ender "
@@ -810,6 +810,13 @@ public final class IslandsConfig extends ModuleConfig {
                 "homes", "owner answer 247: no personal member homes (shared homes come with P5-21)",
                 "upgrades.island-bank-only", "owner answer 169: upgrades always pay from the island bank (progression), no switch",
                 "members.join-cooldown-hours", "owner principle 1: no cooldowns on joining; the F10 48 h slot lock covers the island side");
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("lifecycle.profile-reset.join-money", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     }
 
     @Override

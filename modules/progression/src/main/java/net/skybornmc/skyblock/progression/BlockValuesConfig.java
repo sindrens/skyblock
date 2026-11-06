@@ -13,6 +13,13 @@ import java.util.List;
  */
 public final class BlockValuesConfig extends ModuleConfig {
 
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("spawner-tier-values", net.skybornmc.skyblock.common.config.MoneyScale.field(1, ":")));
+    }
+
     @Override
     public String fileName() {
         return "block-values.yml";
@@ -55,5 +62,5 @@ public final class BlockValuesConfig extends ModuleConfig {
             "amethyst_block: amethyst_shard 4", "quartz_block: quartz 4");
 
     @Setting(path = "spawner-tier-values", desc = "Worth of ONE spawner by tier, as 'tier: money' (default 50% of the first shop price of the tier, balance sheet 4.3).", level = Setting.Level.OWNER)
-    public List<String> spawnerTierValues = List.of("1: 58500", "2: 106500", "3: 193500", "4: 353000", "5: 1050000");
+    public List<String> spawnerTierValues = List.of("1: 5850000", "2: 10650000", "3: 19350000", "4: 35300000", "5: 105000000");
 }

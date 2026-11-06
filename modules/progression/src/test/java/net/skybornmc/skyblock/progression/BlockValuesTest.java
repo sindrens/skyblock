@@ -60,8 +60,8 @@ class BlockValuesTest {
     @Test
     void spawnerTiersDefaultToHalfTheFirstShopPrice() {
         BlockValues v = values(new BlockValuesConfig(), new ArrayList<>());
-        assertEquals(58_500, v.spawnerWorth(1, 1), 1e-9);
-        assertEquals(1_050_000 * 2, v.spawnerWorth(5, 2), 1e-9, "per spawner in a stack");
+        assertEquals(5_850_000, v.spawnerWorth(1, 1), 1e-9); // money x100
+        assertEquals(105_000_000 * 2, v.spawnerWorth(5, 2), 1e-9, "per spawner in a stack");
         assertEquals(List.of(1, 2, 3, 4, 5), v.spawnerTiers());
     }
 }

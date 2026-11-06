@@ -56,8 +56,8 @@ class CrateMathTest {
         CratesSettings s = new CratesSettings();
         long[] ref = CrateMath.longs(s.refPerMinute, "x", new ArrayList<>());
         assertEquals(12, ref.length);
-        assertEquals(833, CrateMath.money(1, 1, ref), 10, "plan: 1 min of REF is about $833 at tier 1");
-        assertEquals(42_700, CrateMath.money(1, 8, ref), 100, "plan: about $42.7k at tier 8");
+        assertEquals(83_300, CrateMath.money(1, 1, ref), 1_000, "plan: 1 min of REF is about $833 at tier 1 (x100 since batch 10)");
+        assertEquals(4_270_000, CrateMath.money(1, 8, ref), 10_000, "plan: about $42.7k at tier 8 (x100)");
     }
 
     @Test

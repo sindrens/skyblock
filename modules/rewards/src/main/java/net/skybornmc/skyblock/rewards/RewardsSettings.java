@@ -193,8 +193,8 @@ public final class RewardsSettings extends ModuleConfig {
 
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers 1-12; "
             + "'money N' pays N x this at the player's tier. Same numbers as crates-settings.yml.", level = Setting.Level.OWNER)
-    public List<String> refPerMinute = List.of("827", "1467", "2560", "4507", "7920", "13867", "24347", "42667", "122133",
-            "349333", "1000000", "2853333");
+    public List<String> refPerMinute = List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300",
+            "34933300", "100000000", "285333300");
 
     @Setting(path = "pouch.crystal-growth", desc = "Crystal Pouch growth per tier: base x growth^(tier-1) (ECONOMY_BALANCE §9.1).",
             min = 1, max = 3, level = Setting.Level.OWNER)
@@ -242,6 +242,13 @@ public final class RewardsSettings extends ModuleConfig {
     @Override
     public java.util.Map<Integer, java.util.Map<String, String>> migrations() {
         return java.util.Map.of(2, java.util.Map.of("streak.gem-every", "streak.credits-every", "streak.gems", "streak.credits"));
+    }
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("pouch.ref-per-minute", net.skybornmc.skyblock.common.config.MoneyScale.numbers()));
     }
 
     @Override

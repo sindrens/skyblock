@@ -112,8 +112,8 @@ public final class PassSettings extends ModuleConfig {
 
     @Setting(path = "pouch.ref-per-minute", desc = "Reference income per minute (REF(t)/60, ECONOMY_BALANCE §1.2) for tiers 1-12. Same "
             + "numbers as quests.yml, daily.yml and crates-settings.yml.", level = Setting.Level.OWNER)
-    public List<String> refPerMinute = List.of("827", "1467", "2560", "4507", "7920", "13867", "24347", "42667", "122133",
-            "349333", "1000000", "2853333");
+    public List<String> refPerMinute = List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300",
+            "34933300", "100000000", "285333300");
 
     @Setting(path = "pouch.crystal-growth", desc = "Crystal growth per tier: base x growth^(tier-1) (ECONOMY_BALANCE §9.1).",
             min = 1, max = 3, level = Setting.Level.OWNER)
@@ -146,6 +146,13 @@ public final class PassSettings extends ModuleConfig {
     @Setting(path = "max-xp-per-event", desc = "Most pass XP one event may add (guards against a broken source). Bigger amounts are "
             + "cut to this.", min = 1, max = 1_000_000)
     public int maxXpPerEvent = 10_000;
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("pouch.ref-per-minute", net.skybornmc.skyblock.common.config.MoneyScale.numbers()));
+    }
 
     @Override
     public String fileName() {

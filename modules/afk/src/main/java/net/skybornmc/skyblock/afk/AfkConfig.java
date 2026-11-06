@@ -101,7 +101,7 @@ public final class AfkConfig extends ModuleConfig {
     public boolean moneyEnabled = true;
 
     @Setting(path = "money.per-reward-by-tier", desc = "Money per reward at 100% for stage tiers 1-12 (whole dollars; 2.5% of the reference income per hour / 4, ECONOMY_BALANCE §7.5). The last value is used above.", level = Setting.Level.OWNER)
-    public List<String> moneyByTier = List.of("310", "550", "960", "1690", "2970", "5200", "9130", "16000", "45800", "131000", "375000", "1070000");
+    public List<String> moneyByTier = List.of("31000", "55000", "96000", "169000", "297000", "520000", "913000", "1600000", "4580000", "13100000", "37500000", "107000000");
 
     @Setting(path = "money.stage-skills", desc = "Skills whose highest level decides the player's stage tier (mining, foraging, combat, farming, fishing).")
     public List<String> stageSkills = List.of("mining", "foraging", "combat");
@@ -161,6 +161,13 @@ public final class AfkConfig extends ModuleConfig {
 
     @Setting(path = "display.key-sound", desc = "Sound name from sounds.yml played when a key milestone is reached (empty = none).")
     public String keySound = "unlock";
+
+    /** Money x100 (batch 10, docs/plans/ECONOMY_SCALE.md): the money keys of this file, scaled once on a live server. */
+    @Override
+    public java.util.Map<String, net.skybornmc.skyblock.common.config.MoneyScale.Rule> moneyKeys() {
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("money.per-reward-by-tier", net.skybornmc.skyblock.common.config.MoneyScale.numbers()));
+    }
 
     @Override
     public String fileName() {

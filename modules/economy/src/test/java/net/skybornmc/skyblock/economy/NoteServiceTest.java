@@ -41,7 +41,7 @@ class NoteServiceTest {
     private EconomyServiceImpl economy;
     private NoteService notes;
     private final AtomicLong clock = new AtomicLong(5_000_000L);
-    private final EconomyConfig config = new EconomyConfig();
+    private final EconomyConfig config = EconomyTestConfigs.preScale(new EconomyConfig());
     private final UUID steve = UUID.randomUUID();
     private final UUID alex = UUID.randomUUID();
     private final UUID duper = UUID.randomUUID();
