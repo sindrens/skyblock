@@ -272,7 +272,7 @@ grind:
   events:
     start: "<prefix><c:flame><bold>Events!</bold></c:flame> <events> <c:muted>for <seconds> s"
     separator: "<c:muted>, "
-    bar: "<event> <c:muted>· <seconds> s"
+    bar: " <c:muted>· <seconds> s"
     scoreboard-next: "in <seconds> s"
     scoreboard-live: "live · <seconds> s"
     name:

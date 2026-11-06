@@ -40,6 +40,8 @@ final class GrindEventsImpl implements GrindEvents {
     private long roundEnds;
     private long nextRound;
     private final Map<Kind, BossBar> bars = new EnumMap<>(Kind.class);
+    /** The event names of this round, parsed once at its start. */
+    private final Map<Kind, Component> names = new EnumMap<>(Kind.class);
     private final Set<UUID> viewers = new HashSet<>();
     private Scheduler.Task task;
 
@@ -160,17 +162,17 @@ final class GrindEventsImpl implements GrindEvents {
         Set<Kind> chosen = pick(kinds, ThreadLocalRandom.current().nextInt(lo, hi + 1), ThreadLocalRandom.current());
         active = Collections.unmodifiableSet(chosen);
         roundEnds = System.currentTimeMillis() + 1000L * Math.max(5, c.grindEventSeconds);
+        List<Component> list = new ArrayList<>();
         for (Kind k : chosen) {
-            bars.put(k, BossBar.bossBar(Component.empty(), 1f, color(k), BossBar.Overlay.PROGRESS));
+            Component name = msg.component(Audience.empty(), "grind.events.name." + k.id());
+            names.put(k, name);
+            list.add(name);
+            bars.put(k, BossBar.bossBar(name, 1f, color(k), BossBar.Overlay.PROGRESS));
         }
-        List<Component> names = new ArrayList<>();
-        for (Kind k : chosen) {
-            names.add(msg.component(Audience.empty(), "grind.events.name." + k.id()));
-        }
-        Component list = Component.join(net.kyori.adventure.text.JoinConfiguration.separator(
-                msg.component(Audience.empty(), "grind.events.separator")), names);
+        Component joined = Component.join(net.kyori.adventure.text.JoinConfiguration.separator(
+                msg.component(Audience.empty(), "grind.events.separator")), list);
         for (Player p : w.getPlayers()) {
-            msg.send(p, "grind.events.start", Msg.c("events", list), Msg.number("seconds", Math.max(5, c.grindEventSeconds)));
+            msg.send(p, "grind.events.start", Msg.c("events", joined), Msg.number("seconds", Math.max(5, c.grindEventSeconds)));
             core.sounds().play(p, "unlock");
         }
     }
@@ -185,6 +187,7 @@ final class GrindEventsImpl implements GrindEvents {
             }
         }
         bars.clear();
+        names.clear();
         viewers.clear();
         active = Set.of();
     }
@@ -193,16 +196,21 @@ final class GrindEventsImpl implements GrindEvents {
         if (bars.isEmpty()) {
             return;
         }
+        List<Player> players = w.getPlayers();
+        if (players.isEmpty() && viewers.isEmpty()) {
+            return; // nobody to show it to: no text work
+        }
         long total = 1000L * Math.max(5, c.grindEventSeconds);
         float progress = Math.max(0f, Math.min(1f, (roundEnds - now) / (float) total));
         long seconds = Math.max(0, (roundEnds - now + 999) / 1000);
+        // One parse per tick for the time, the names were parsed once at the round start.
+        Component time = msg.component(Audience.empty(), "grind.events.bar", Msg.number("seconds", seconds));
         for (Map.Entry<Kind, BossBar> e : bars.entrySet()) {
             e.getValue().progress(progress);
-            e.getValue().name(msg.component(Audience.empty(), "grind.events.bar", Msg.c("event",
-                    msg.component(Audience.empty(), "grind.events.name." + e.getKey().id())), Msg.number("seconds", seconds)));
+            e.getValue().name(names.getOrDefault(e.getKey(), Component.empty()).append(time));
         }
         Set<UUID> here = new HashSet<>();
-        for (Player p : w.getPlayers()) {
+        for (Player p : players) {
             here.add(p.getUniqueId());
             if (viewers.add(p.getUniqueId())) {
                 bars.values().forEach(p::showBossBar);
