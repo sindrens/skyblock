@@ -177,7 +177,12 @@ final class GrindEnchants {
      * every prestige, from {@code base} at prestige 0, never above the enchant's max). Pure.
      */
     static int cap(int max, int prestige, int base, int perPrestige) {
-        long c = (long) Math.max(1, base) + (long) Math.max(0, perPrestige) * Math.max(0, prestige);
+        return cap(max, prestige, base, perPrestige, 0);
+    }
+
+    /** {@link #cap(int, int, int, int)} plus {@code mastery} levels from the island's Farm or Mine Mastery. Pure. */
+    static int cap(int max, int prestige, int base, int perPrestige, double mastery) {
+        long c = (long) Math.max(1, base) + (long) Math.max(0, perPrestige) * Math.max(0, prestige) + (long) Math.max(0, mastery);
         return (int) Math.min(max, c);
     }
 

@@ -12,7 +12,7 @@ Written during the night while you slept. Newest at the top of each section.
 | 1 | Fixes and cleanup | **released** (update121, 02:14) |
 | 2 | Economy: playtime pay limits, island-only shards, spawner payback **released** (update121); events, contracts next release; money x100 and prices v2 planned (`plans/ECONOMY_SCALE.md`) | in progress |
 | 3 | Tools v4 core: 17 personal grind enchants per tool, personal prestige 50 + rebirths **released (update125, 03:22)**; storage rework, old tools module removal next | in progress |
-| 4 | Island v2 | |
+| 4 | Island v2: Farm and Mine Mastery (island ↔ area synergy) **released (update127)**; upgrade menu tabs, island stats next | in progress |
 | 5 | Spawners v2 | |
 | 6 | Quest line v2, menus, help, mailbox | |
 | 7 | /fish | |
@@ -41,7 +41,13 @@ Written during the night while you slept. Newest at the top of each section.
 - GitHub: the 4 dead branches (`q/econ-v2`, `docs/full-spec`, `docs/specs`, `design/gui-round1`) are deleted. Each was saved first as a tag `archive/<name>` on GitHub, so nothing is lost.
 - Old docs moved to `docs/archive/` (Depths, old PvE plan, join tutorial, pack v1 art briefs, superseded plans, the old morning report). Nothing was deleted. Still to do: merging the owner-answer files and shortening OPEN_QUESTIONS.md.
 
+## Farm and Mine Mastery (batch 4 start, update127, released)
+- Two new island masteries in `/is masteries`: **Farm Mastery** and **Mine Mastery**, 10 ranks each, paid from the island bank. Each rank needs the island's farming (or mining) pillar level and an island level, so the island has to grow to push the areas.
+- Each rank gives every member **+100 enchant levels** on that tool (cap = 20 + 20 per own prestige + 100 per mastery rank, max 1000). So a player can push enchants either by prestiging or by helping the island.
+- Not done yet (on purpose): Mastery gates on the higher crop and ore tiers. Gating them now would take tiers away from players who already have them; it comes with the 8 crops / 10 ores (Q-70).
+
 ## Released tonight
+- **update127:** Farm and Mine Mastery (island masteries that raise the members' enchant caps by 100 a rank; 20 new island tasks: harvest island wheat + mine island cobblestone).
 - **update126:** tool storage first at /farm and /mine (full = pause, no loss), storage on the scoreboard, nether wart as the fifth crop, farm thresholds in the config.
 - **update125 (03:22):** Tools v4: 17 personal grind enchants per tool, personal prestige 50 + rebirths, faster tool levels. Jar md5 b4f1700c.
 - **update121 (02:14):** batch 1 + the pay limit + spawner payback. GitHub `main` is now the release-v4 line plus tonight's work (Q-50 done). Jar md5 0a62117c.

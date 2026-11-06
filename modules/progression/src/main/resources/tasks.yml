@@ -1946,3 +1946,246 @@ tasks:
       crystals: 543
     unlocks:
       - mastery.crystal_rush.5
+  # ---------------------------------------------------------------- Area Masteries (owner 6-7 Nov 2026, FULL_PLAN.md 4)
+  # Every rank of Farm Mastery AND Mine Mastery needs both: island crops harvested and island ores/cobblestone mined
+  # (the island has to farm and mine to push /farm and /mine).
+  am1_farm:
+    tier: 1
+    type: farm
+    target: "wheat"
+    amount: 500
+    rewards:
+      crystals: 20
+      pillar: farming
+      pillar-xp: 50
+    unlocks:
+      - mastery.farm_mastery.1
+      - mastery.mine_mastery.1
+  am1_mine:
+    tier: 1
+    type: mine
+    target: "cobblestone"
+    amount: 500
+    rewards:
+      crystals: 20
+      pillar: mining
+      pillar-xp: 50
+    unlocks:
+      - mastery.farm_mastery.1
+      - mastery.mine_mastery.1
+  am2_farm:
+    tier: 2
+    type: farm
+    target: "wheat"
+    amount: 1500
+    rewards:
+      crystals: 40
+      pillar: farming
+      pillar-xp: 150
+    unlocks:
+      - mastery.farm_mastery.2
+      - mastery.mine_mastery.2
+  am2_mine:
+    tier: 2
+    type: mine
+    target: "cobblestone"
+    amount: 1500
+    rewards:
+      crystals: 40
+      pillar: mining
+      pillar-xp: 150
+    unlocks:
+      - mastery.farm_mastery.2
+      - mastery.mine_mastery.2
+  am3_farm:
+    tier: 3
+    type: farm
+    target: "wheat"
+    amount: 4000
+    rewards:
+      crystals: 70
+      pillar: farming
+      pillar-xp: 400
+    unlocks:
+      - mastery.farm_mastery.3
+      - mastery.mine_mastery.3
+  am3_mine:
+    tier: 3
+    type: mine
+    target: "cobblestone"
+    amount: 4000
+    rewards:
+      crystals: 70
+      pillar: mining
+      pillar-xp: 400
+    unlocks:
+      - mastery.farm_mastery.3
+      - mastery.mine_mastery.3
+  am4_farm:
+    tier: 4
+    type: farm
+    target: "wheat"
+    amount: 9000
+    rewards:
+      crystals: 110
+      pillar: farming
+      pillar-xp: 900
+    unlocks:
+      - mastery.farm_mastery.4
+      - mastery.mine_mastery.4
+  am4_mine:
+    tier: 4
+    type: mine
+    target: "cobblestone"
+    amount: 9000
+    rewards:
+      crystals: 110
+      pillar: mining
+      pillar-xp: 900
+    unlocks:
+      - mastery.farm_mastery.4
+      - mastery.mine_mastery.4
+  am5_farm:
+    tier: 5
+    type: farm
+    target: "wheat"
+    amount: 18000
+    rewards:
+      crystals: 160
+      pillar: farming
+      pillar-xp: 1800
+    unlocks:
+      - mastery.farm_mastery.5
+      - mastery.mine_mastery.5
+  am5_mine:
+    tier: 5
+    type: mine
+    target: "cobblestone"
+    amount: 18000
+    rewards:
+      crystals: 160
+      pillar: mining
+      pillar-xp: 1800
+    unlocks:
+      - mastery.farm_mastery.5
+      - mastery.mine_mastery.5
+  am6_farm:
+    tier: 6
+    type: farm
+    target: "wheat"
+    amount: 35000
+    rewards:
+      crystals: 220
+      pillar: farming
+      pillar-xp: 3500
+    unlocks:
+      - mastery.farm_mastery.6
+      - mastery.mine_mastery.6
+  am6_mine:
+    tier: 6
+    type: mine
+    target: "cobblestone"
+    amount: 35000
+    rewards:
+      crystals: 220
+      pillar: mining
+      pillar-xp: 3500
+    unlocks:
+      - mastery.farm_mastery.6
+      - mastery.mine_mastery.6
+  am7_farm:
+    tier: 7
+    type: farm
+    target: "wheat"
+    amount: 60000
+    rewards:
+      crystals: 300
+      pillar: farming
+      pillar-xp: 6000
+    unlocks:
+      - mastery.farm_mastery.7
+      - mastery.mine_mastery.7
+  am7_mine:
+    tier: 7
+    type: mine
+    target: "cobblestone"
+    amount: 60000
+    rewards:
+      crystals: 300
+      pillar: mining
+      pillar-xp: 6000
+    unlocks:
+      - mastery.farm_mastery.7
+      - mastery.mine_mastery.7
+  am8_farm:
+    tier: 8
+    type: farm
+    target: "wheat"
+    amount: 100000
+    rewards:
+      crystals: 400
+      pillar: farming
+      pillar-xp: 10000
+    unlocks:
+      - mastery.farm_mastery.8
+      - mastery.mine_mastery.8
+  am8_mine:
+    tier: 8
+    type: mine
+    target: "cobblestone"
+    amount: 100000
+    rewards:
+      crystals: 400
+      pillar: mining
+      pillar-xp: 10000
+    unlocks:
+      - mastery.farm_mastery.8
+      - mastery.mine_mastery.8
+  am9_farm:
+    tier: 10
+    type: farm
+    target: "wheat"
+    amount: 160000
+    rewards:
+      crystals: 480
+      pillar: farming
+      pillar-xp: 16000
+    unlocks:
+      - mastery.farm_mastery.9
+      - mastery.mine_mastery.9
+  am9_mine:
+    tier: 10
+    type: mine
+    target: "cobblestone"
+    amount: 160000
+    rewards:
+      crystals: 480
+      pillar: mining
+      pillar-xp: 16000
+    unlocks:
+      - mastery.farm_mastery.9
+      - mastery.mine_mastery.9
+  am10_farm:
+    tier: 12
+    type: farm
+    target: "wheat"
+    amount: 250000
+    rewards:
+      crystals: 543
+      pillar: farming
+      pillar-xp: 25000
+    unlocks:
+      - mastery.farm_mastery.10
+      - mastery.mine_mastery.10
+  am10_mine:
+    tier: 12
+    type: mine
+    target: "cobblestone"
+    amount: 250000
+    rewards:
+      crystals: 543
+      pillar: mining
+      pillar-xp: 25000
+    unlocks:
+      - mastery.farm_mastery.10
+      - mastery.mine_mastery.10

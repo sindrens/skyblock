@@ -410,7 +410,7 @@ enchant:
   # <enchant> <level> <prestige> <have> <cap> <next> <tool>
   locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your <tool> is level <c:value><have></c:value><c:text>."
   locked-prestige: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at prestige <c:flame><prestige></c:flame><c:text>."
-  capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Prestige the tool to raise it by 20."
+  capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Prestige the tool (+20) or get your island's Mastery (+100 a rank): <click:run_command:'/is masteries'><c:action>/is masteries</c:action></click>"
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your enchants changed on another screen. Nothing was paid; check the price and click again."
   # <enchant> <level> <max> <cost>
   bought: "<prefix><c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max></c:muted> <c:text>for <cost><c:text>."
@@ -471,7 +471,8 @@ enchant:
     capped:
       - ""
       - "<c:warning>At your cap: <cap>"
-      - "<c:muted>Prestige the tool for +20 levels."
+      - "<c:muted>Prestige: +20. Island Mastery:"
+      - "<c:muted>+100 a rank (/is masteries)."
     # <level> <max>
     level: "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
     # <now> <next>

@@ -34,7 +34,7 @@ class MasteryCatalogTest {
     @Test
     void bundledCatalogFollowsThePlan() throws Exception {
         MasteryCatalog catalog = bundled();
-        assertEquals(13, catalog.size(), "MA1-MA12 without MA5, plus Treasury and Market Contacts");
+        assertEquals(15, catalog.size(), "MA1-MA12 without MA5, plus Treasury, Market Contacts, Farm and Mine Mastery");
         MasteryCatalog.Def wings = catalog.get("wings").orElseThrow();
         assertEquals(1, wings.maxRank());
         assertEquals(20, wings.rank(1).islandLevel(), "P5-20: Wings at island level 20");
@@ -50,6 +50,11 @@ class MasteryCatalogTest {
         MasteryCatalog.Def homestead = catalog.get("homestead").orElseThrow();
         assertEquals(2, homestead.maxRank());
         assertEquals(List.of(20, 40), homestead.ranks().stream().map(MasteryCatalog.Rank::islandLevel).toList());
+        MasteryCatalog.Def farm = catalog.get("farm_mastery").orElseThrow();
+        assertEquals(10, farm.maxRank(), "Area Mastery: 10 ranks");
+        assertEquals(1000, farm.valueAt(10), "+100 enchant levels a rank, 1000 at rank 10");
+        assertEquals(Pillar.FARMING, farm.pillar());
+        assertEquals(Pillar.MINING, catalog.get("mine_mastery").orElseThrow().pillar());
         MasteryCatalog.Def market = catalog.get("market_contacts").orElseThrow();
         assertEquals(20, market.maxRank());
         assertEquals(List.of("sell_multiplier"), market.requiresMaxed());
@@ -65,7 +70,8 @@ class MasteryCatalogTest {
     void unbuiltMasteriesAreHidden() throws Exception {
         Set<String> shown = new HashSet<>();
         bundled().shown().forEach(d -> shown.add(d.id()));
-        assertEquals(Set.of("warrior", "deep_pockets", "crystal_rush", "lucky_strike", "homestead", "wings", "treasury", "market_contacts"), shown,
+        assertEquals(Set.of("warrior", "deep_pockets", "crystal_rush", "lucky_strike", "homestead", "wings", "treasury", "market_contacts",
+                "farm_mastery", "mine_mastery"), shown,
                 "GUI-2: Timber, Swift Hands, Fuel Efficiency, Beast Tamer and Angler stay hidden until their feature reads them");
     }
 

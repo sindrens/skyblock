@@ -40,7 +40,14 @@ enum MasteryEffect {
     /** Treasury (owner 169): bank withdrawal fee step ({@code IslandService#bankFeeMasteryProvider}). */
     TREASURY("treasury", true, null, null),
     /** MA5 +% sell prices (SELL family, inside the +300% sell cap). */
-    MARKET_CONTACTS("market-contacts", true, BonusFamily.SELL, null);
+    MARKET_CONTACTS("market-contacts", true, BonusFamily.SELL, null),
+    /**
+     * Owner 6-7 Nov 2026 (FULL_PLAN.md section 4, Area Masteries): raises the members' /farm hoe enchant cap by the value
+     * (islandtools reads {@code ProgressionService#masteryEffectValue}). The island <-> area synergy.
+     */
+    FARM_MASTERY("farm-mastery", true, null, null),
+    /** Owner 6-7 Nov 2026 (Area Masteries): raises the members' /mine pickaxe enchant cap by the value. */
+    MINE_MASTERY("mine-mastery", true, null, null);
 
     private final String id;
     private final boolean live;

@@ -166,7 +166,18 @@ final class EnchantProcs implements Listener {
 
     /** The highest level the player can have now (the cap rises every prestige). */
     int cap(Player p, GrindEnchants.Def def) {
-        return GrindEnchants.cap(def.max(), m.capPrestige(m.view(p, def.kind())), m.config().enchantCapBase, m.config().enchantCapPerPrestige);
+        return GrindEnchants.cap(def.max(), m.capPrestige(m.view(p, def.kind())), m.config().enchantCapBase, m.config().enchantCapPerPrestige,
+                mastery(p, def.kind()));
+    }
+
+    /** Owner 6-7 Nov 2026 (Area Masteries): the island's Farm or Mine Mastery adds enchant levels to the cap. */
+    double mastery(Player p, Kind kind) {
+        java.util.UUID island = m.island(p);
+        if (island == null) {
+            return 0;
+        }
+        return m.core().services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                .map(s -> s.masteryEffectValue(island, kind == Kind.HOE ? "farm-mastery" : "mine-mastery")).orElse(0.0);
     }
 
     /** The placeholders of a refusal message. */

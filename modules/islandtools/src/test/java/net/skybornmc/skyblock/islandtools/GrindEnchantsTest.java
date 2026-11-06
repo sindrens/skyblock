@@ -104,6 +104,8 @@ class GrindEnchantsTest {
         assertEquals(1000, GrindEnchants.cap(1000, 50, 20, 20), "1000 at prestige 50");
         assertEquals(1000, GrindEnchants.cap(1000, 500, 20, 20));
         assertEquals(5, GrindEnchants.cap(5, 0, 20, 20), "never above the enchant's max");
+        assertEquals(320, GrindEnchants.cap(1000, 0, 20, 20, 300), "Mine Mastery 3 adds 300 levels (island synergy)");
+        assertEquals(1000, GrindEnchants.cap(1000, 10, 20, 20, 1000));
     }
 
     @Test

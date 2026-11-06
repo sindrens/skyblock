@@ -32,7 +32,7 @@ class TaskCatalogTest {
         List<String> problems = new ArrayList<>();
         TaskCatalog catalog = TaskCatalog.load(bundled(), TaskCatalog.Checks.all(), problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(180, catalog.size());
+        assertEquals(200, catalog.size(), "180 + 20 Area Mastery tasks (owner 6-7 Nov 2026)");
         assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), catalog.tiers());
         // Plan example: Island Size I = mine 300 Coal Ore, chop 200 Oak Logs, harvest 100 Wheat.
         List<TaskDef> size1 = catalog.byUnlock("upgrade.island_size.1");
@@ -67,7 +67,7 @@ class TaskCatalogTest {
         assertEquals(Pillar.MINING, mine.info().pillar());
         assertEquals(50, mine.info().pillarXp(), 1e-9);
         assertEquals(20, mine.info().crystals());
-        assertEquals(15, catalog.inTier(7).size());
+        assertEquals(17, catalog.inTier(7).size());
     }
 
     @Test
