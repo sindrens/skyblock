@@ -334,6 +334,26 @@ topics:
           - "<c:text>enchant levels. Enchants, perks and"
           - "<c:text>shards stay. After 50: rebirths."
 
+  pve:
+    icon: iron_sword
+    aliases: [arena, combat, fight, mobs]
+    name: "<c:flame>PvE Arena"
+    summary: ["<c:text>Ten rings of mobs at /pve,", "<c:text>harder toward the middle."]
+    take-me-there: "pve"
+    commands: [Teleport]
+    pages:
+      - title: "<c:value>The Arena"
+        lines:
+          - "<c:text>Ring 1 (outside) has zombies,"
+          - "<c:text>ring 10 (the middle) ravagers."
+          - "<c:text>Kills in a ring open the next."
+          - "<c:text>Every kill pays and trains Combat."
+      - title: "<c:value>Safe"
+        lines:
+          - "<c:text>No PvP. Dying in the arena"
+          - "<c:text>costs nothing: you come back"
+          - "<c:text>at the start with your items."
+
   fish:
     icon: fishing_rod
     aliases: [fishing, pond, rod]

@@ -107,6 +107,9 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "grind.fish-frozen-casts", desc = "Anti-AFK: this many casts in a row from one block with the same look give nothing.", min = 2, max = 100)
     public int fishFrozenCasts = 8;
 
+    @Setting(path = "grind.pve-mobs-per-ring", desc = "Owner 6 Nov 2026: mobs kept alive in each of the ten /pve rings while a player is in the arena (0 = none).", min = 0, max = 40)
+    public int pveMobsPerRing = 6;
+
     @Setting(path = "grind.dungeon-mobs", desc = "Monsters kept alive in the /dungeon arena while players are inside.", min = 0, max = 60)
     public int grindDungeonMobs = 12;
 

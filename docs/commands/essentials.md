@@ -7,6 +7,7 @@ Settings in `essentials.yml`, texts in `messages/essentials.yml`. Every staff ac
 | `/spawn` | Teleport to spawn (warmup 3 s, cooldown 5 s) | `skyblock.player.spawn` (everyone) | ✅ |
 | `/farm` · `/mine` | Teleport to the Farm / the Mine (world `grind`, per-player crops and ores, money bonus; count for skills, island tasks and quests) | `skyblock.player.spawn` (everyone) | ✅ |
 | `/fish` | Teleport to the fishing pond (owner 6 Nov 2026): six waters unlock by catches, every catch pays, the island rod adds Fishing Shards, enchants and storage; anti-AFK (no catches without moving, max 20 a minute) | `skyblock.player.spawn` (everyone) | ✅ |
+| `/pve` | Teleport to the PvE arena (owner 6 Nov 2026): ten rings, tier 1 outside to tier 10 in the middle (zombie to ravager), kills open the next ring, every kill pays money and Combat XP, dying costs nothing | `skyblock.player.spawn` (everyone) | ✅ |
 | `/start` | The guide Rowan's menu: Island, Farm, Mine (also opened by clicking Rowan at spawn; hides the start boss bar) | `skyblock.start` (everyone) | ✅ |
 | `/tpa <player>` · `/tpahere <player>` | Ask to teleport to someone / ask them to come to you (clickable Accept/Deny, expires after 60 s). Refused like "requests off" when the target `/ignore`s you (owner answer 316) | `skyblock.player.tpa` (everyone) | ✅ |
 | `/tpaccept [player]` · `/tpdeny [player]` · `/tpcancel` | Answer or cancel requests (aliases `/tpyes`, `/tpno`) | `skyblock.player.tpa` | ✅ |

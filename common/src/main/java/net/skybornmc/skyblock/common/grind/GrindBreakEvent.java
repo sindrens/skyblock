@@ -23,6 +23,8 @@ public final class GrindBreakEvent extends PlayerEvent {
     public static final String MINE = "mine";
     /** {@link #area()} of a {@code /fish} catch (owner 6 Nov 2026): {@link #block()} is WATER, {@link #drop()} the catch. */
     public static final String FISH = "fish";
+    /** {@link #area()} of a /pve kill (owner 6 Nov 2026): {@link #block()} is the mob's spawn egg, {@link #drop()} its first drop. */
+    public static final String PVE = "pve";
 
     private static final HandlerList HANDLERS = new HandlerList();
 
@@ -57,6 +59,10 @@ public final class GrindBreakEvent extends PlayerEvent {
 
     public boolean fish() {
         return FISH.equals(area);
+    }
+
+    public boolean pve() {
+        return PVE.equals(area);
     }
 
     /** The block the player saw and broke ({@code WHEAT}, {@code CARROTS}, {@code COAL_ORE}, {@code STONE} ...). */

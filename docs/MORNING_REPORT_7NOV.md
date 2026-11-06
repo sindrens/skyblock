@@ -19,7 +19,7 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 | 5 | Spawners v2: levels per mob type, limit 4 x level, prestige, 10 s to 5 s speed, no efficiency curve (update129) | built |
 | 6 | Quest line v2: two new quest book chapters (Bramble's Farmhand, Flint's Apprentice), /mailbox, /menu → You gets Quest Book, Mailbox, Friends, Milestones (update130) | built |
 | 7 | /fish: pond, 6 waters, island rod, Fishing Shards, rod enchants, storage, anti-AFK (update131) | built |
-| 8 | /pve | |
+| 8 | /pve v1: arena with 10 rings, tier unlocks, money and Combat XP per kill, safe deaths (update132); bosses, sword, Combat Shards next | in progress |
 | 9 | Polish (crates, collection, AH, shop) | |
 | 10 | Pack v2, ranks v2 | |
 
@@ -82,6 +82,14 @@ Since about 08:00 SSH to the test server doesn't work: port 22 accepts the conne
 - Catches go into the rod's storage (full = fishing pauses, nothing lost). The scoreboard at the pond shows your water, progress, money earned, storage, events and Fishing level. Fishing and Farming now show in `/skills`.
 - **Anti-exploit**: eight casts in a row from one spot without looking around give nothing, and at most 20 catches a minute count. Bites come in 3-8 seconds; Instant Regrow events make them three times faster (Bite Frenzy).
 - Not yet: an NPC "Marla" at the pond and her quest chain, a Fish Mastery, a rod picture in the pack.
+
+## /pve v1 (batch 8, update132)
+- `/pve` takes you to a new arena in the grind world: **ten square rings**, ring 1 outside (zombies) to ring 10 in the middle (ravagers): zombie, husk, skeleton, spider, stray, drowned, piglin brute, blaze, wither skeleton, ravager. Inner mobs have more health and hit harder.
+- **Kills open the next ring** (200, 600, 1,500, 3,000, 6,000, 10,000, 16,000, 25,000, 40,000 kills in the ring before); a locked ring can't be entered.
+- Every kill pays money ($20 to $350, Golden Blocks x5), gives **Combat XP** (until now there was no way to get Combat XP: it was Depths-only) and counts for events, quests and the scoreboard. Drops go straight to your bag.
+- Six mobs per ring while someone is in the arena; they stay in their ring, don't burn in the sun and don't fight each other.
+- **No PvP; dying in the arena costs nothing** (items and levels kept, back at the start).
+- Not yet: the personal bosses with Boss Sigils, the island sword (4th tool), Combat Shards, Combat Mastery gates. The NPC "Warden Hale" and his quest chain.
 
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).

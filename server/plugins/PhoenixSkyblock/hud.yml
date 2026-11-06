@@ -58,6 +58,7 @@ places:
     - Farm=grind-farm
     - Mine=grind-mine
     - Fish=grind-fish
+    - PvE=grind-pve
   spawn:
     # Spawn worlds.
     worlds:

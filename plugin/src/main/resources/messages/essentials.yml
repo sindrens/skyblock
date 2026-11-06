@@ -291,7 +291,12 @@ grind:
     farm: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Farm</c:value><c:text>. Break ripe wheat, it grows back in seconds. Sell it with <c:value>/sell</c:value><c:text>."
     mine: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Mine</c:value><c:text>. Every block comes back a few seconds after you mine it."
     dungeon: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Dungeon</c:value><c:text>. Monsters keep coming while you're inside. Good luck!"
+    pve: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Arena</c:value><c:text>. Ten rings, the inner ones are harder. Kill mobs to open the next ring. Dying here costs nothing."
     fish: "<prefix><c:success><sym:check></c:success> <c:text>Welcome to the <c:value>Pond</c:value><c:text>. Cast your rod into the water: every catch pays, and new waters unlock as you fish."
+  # Owner 6 Nov 2026: /pve. <tier> <mob> <open> <need>
+  pve:
+    unlocked: "<prefix><c:success><sym:star></c:success> <c:text>Ring <c:value><tier></c:value> <c:text>is open: <c:value><mob></c:value><c:text>. Stronger mobs, more money."
+    locked: "<c:warning>Ring <tier> is locked.</c:warning> <c:text>Ring <open>: <c:value><need></c:value> <c:text>kills to open the next."
   # Owner 6 Nov 2026: /fish. <water> = a water's name below.
   fish:
     water:

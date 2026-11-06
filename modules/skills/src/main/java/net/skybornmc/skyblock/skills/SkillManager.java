@@ -373,6 +373,14 @@ final class SkillManager implements SkillService, Listener {
             }
             return;
         }
+        if (event.pve()) { // owner 6 Nov 2026: /pve kills train Combat (the only Combat XP while combat.only-in-depths is on)
+            String mob = event.block().getKey().getKey().replace("_spawn_egg", "");
+            double xp = tables.xp(SkillType.COMBAT, mob) * Math.max(1, event.amount());
+            if (xp > 0) {
+                addXp(player, SkillType.COMBAT, xp, "grind_kill");
+            }
+            return;
+        }
         if (event.fish()) { // owner 6 Nov 2026: /fish trains Fishing
             if (config.grindFishXp > 0) {
                 addXp(player, SkillType.FISHING, config.grindFishXp, "grind_fish");

@@ -62,6 +62,8 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     private static final org.bukkit.NamespacedKey FISHED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_fished");
     private volatile List<FishRules.Water> waters = List.of();
     private final java.util.Map<java.util.UUID, FishRules.Guard> fishGuards = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Owner 6 Nov 2026: the /pve arena. */
+    private final PveArena pve = new PveArena(this);
 
     /** Farm crops in unlock order: block, item it drops, wheat broken in total to unlock it (feedback 3 Nov 2026). */
     record Crop(Material block, Material item, long unlockAt, long bonus) {
@@ -142,6 +144,8 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "mine")));
         core.commands().register(CommandSpec.command("fish").description("Teleport to the fishing pond").category("Teleport")
                 .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "fish")));
+        core.commands().register(CommandSpec.command("pve").description("Teleport to the PvE arena").category("Teleport")
+                .permission(Perms.SPAWN).playerOnly().executes(ctx -> go(ctx.player(), "pve")));
         reloadFish();
         // Owner 3 Nov 2026 23:05: no dungeon (the arena stays built but has no command and no monsters).
         // Owner 4 Nov 2026 (plan A item 8): the /farm and /mine scoreboard shows the tier, the progress and this visit's bonus.
@@ -150,6 +154,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             case "Farm" -> name(cropFor(farmed(p)).item());
             case "Mine" -> name(oreTier(mined(p), mineUnlocks()).block());
             case "Fish" -> waterName(p, water(p));
+            case "PvE" -> pve.tierText(p);
             default -> "";
         });
         core.placeholders().registerText(MODULE, "grind_progress", p -> progressText(p));
@@ -172,6 +177,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         if (Math.abs(x - FISH_X) <= FISH_HALF + 40) {
             return "Fish";
         }
+        if (Math.abs(x - PveArena.X) <= PveArena.HALF + 20) {
+            return "PvE";
+        }
         return Math.abs(x - FARM_X) <= FARM_HALF + 40 ? "Farm" : "";
     }
 
@@ -184,6 +192,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             int i = CROPS.indexOf(crop);
             return i + 1 >= CROPS.size() ? "Max" : net.skybornmc.skyblock.common.util.Format.number(have) + " / "
                     + net.skybornmc.skyblock.common.util.Format.number(cropUnlockAt(i + 1, farmUnlocks()));
+        }
+        if (a.equals("PvE")) {
+            return pve.progressText(p);
         }
         if (a.equals("Fish")) {
             long have = fished(p);
@@ -232,6 +243,12 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
             if (world.getBlockAt(FISH_X, base, 0).getType() != Material.WATER) {
                 buildPond(); // owner 6 Nov 2026: /fish (also on worlds built before it)
             }
+            if (world.getBlockAt(PveArena.X, base, 0).getType() != Material.SEA_LANTERN) {
+                pve.build(world, base); // owner 6 Nov 2026: /pve
+                core.plugin().getLogger().info("Essentials: built the /pve arena in " + world.getName());
+            }
+            Bukkit.getPluginManager().registerEvents(pve, core.plugin());
+            core.scheduler().repeat("essentials:pve", 40L, 20L, () -> pve.tick(world, base, Math.max(0, config.pveMobsPerRing)));
             wetFarm(); // owner 5 Nov 2026: every farmland at /farm is wet, as if it had water
             fillMine(); // owner 4 Nov 2026: the real mine is all coal ore; higher tiers are each player's own view
             core.scheduler().repeat("essentials:grind-pay", 60L, 60L, this::payBonus);
@@ -252,6 +269,11 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     private void go(Player player, String area) {
         if (world == null) {
             msg.send(player, "grind.missing");
+            return;
+        }
+        if (area.equals("pve")) {
+            teleports.request(player, pve.start(world, base), TeleportReason.SPAWN, TeleportOptions.to(area,
+                    () -> msg.send(player, "grind.arrived.pve")));
             return;
         }
         int x = switch (area) {
@@ -775,6 +797,36 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     }
 
     // ------------------------------------------------------------------ /fish (owner 6 Nov 2026)
+
+    // ------------------------------------------------------------------ for the /pve arena
+
+    World grindWorld() {
+        return world;
+    }
+
+    int base() {
+        return base;
+    }
+
+    ModuleMessages msg() {
+        return msg;
+    }
+
+    Core core() {
+        return core;
+    }
+
+    /** Money for a /pve kill (Golden Blocks x5 like the other areas), paid with the grind bonus batch. */
+    void pay(Player p, long amount) {
+        boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
+        addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount);
+    }
+
+    /** Module stop: the arena mobs go. */
+    void stopPve() {
+        org.bukkit.event.HandlerList.unregisterAll(pve);
+        pve.clear();
+    }
 
     /** /skyblock reload essentials: the waters again. */
     void reloadFish() {

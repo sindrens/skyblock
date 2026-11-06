@@ -110,6 +110,7 @@ public final class EssentialsModule implements SkyblockModule {
         vanish.shutdown();
         start.shutdown();
         grind.flush(); // FX-08: bonus money still waiting is paid before the stop
+        grind.stopPve();
         if (grind.events() != null) {
             grind.events().stop();
         }
