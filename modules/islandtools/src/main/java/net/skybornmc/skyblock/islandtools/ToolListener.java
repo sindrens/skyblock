@@ -316,7 +316,7 @@ final class ToolListener implements Listener {
             m.enchants().proc(p, kind, event.getBlock(), event.getItems()); // owner 6 Nov 2026: personal grind enchants
         }
         if (!pd.area()) {
-            m.action(p, kind, pd.swept());
+            m.action(p, kind, pd.swept(), event.getBlock().getLocation());
         }
         UUID island = pd.island();
         int smelt = kind == Kind.PICKAXE ? m.effect(island, kind, Upgrades.Effect.SMELT) : 0;
@@ -486,7 +486,7 @@ final class ToolListener implements Listener {
             return;
         }
         m.enchants().proc(p, kind, event.location().getBlock(), new ArrayList<>());
-        m.action(p, kind, false);
+        m.action(p, kind, false, event.location().getBlock().getLocation());
     }
 
     /** A full rod storage pauses /fish before anything is counted or paid (owner Q-30: no loss). */
@@ -518,7 +518,7 @@ final class ToolListener implements Listener {
         }
         List<Item> drops = new ArrayList<>(List.of(caught));
         m.enchants().proc(p, kind, event.getHook().getLocation().getBlock(), drops);
-        m.action(p, kind, false);
+        m.action(p, kind, false, event.getHook().getLocation().getBlock().getLocation());
         double mult = m.core().services().optional(BonusService.class).map(b -> b.multiplier(BonusFamily.EXTRA_DROPS,
                 BonusContext.of(p, p.getInventory().getItemInMainHand(), "island_rod").withTarget(caught.getItemStack().getType().getKey().getKey())))
                 .orElse(1.0);

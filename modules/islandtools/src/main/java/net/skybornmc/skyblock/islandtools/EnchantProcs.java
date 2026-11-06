@@ -471,7 +471,11 @@ final class EnchantProcs implements Listener {
                 }
                 if (shards > 0) {
                     m.addShards(m.profile(p), kind.shards(), shards);
-                    bar(p, "enchant.proc.shards", def, Msg.mm("amount", m.shardText(kind, shards)));
+                    if (m.config().shardPopups && origin != null) {
+                        m.popup(p, origin.getLocation(), kind.shards(), shards); // owner 7 Nov 2026: shards float up from the block
+                    } else {
+                        bar(p, "enchant.proc.shards", def, Msg.mm("amount", m.shardText(kind, shards)));
+                    }
                     if (def.cooldownSeconds() > 0) {
                         m.core().sounds().play(p, "tool-lucky"); // the jackpot
                     }

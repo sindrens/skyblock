@@ -291,7 +291,7 @@ final class PveArena implements Listener {
         killer.getPersistentDataContainer().set(KILLS, PersistentDataType.LONG_ARRAY, k);
         bosses.onKill(killer, tier, k[tier - 1]); // every 200 kills a Boss Sigil
         Tier t = TIER_LIST.get(tier - 1);
-        areas.pay(killer, t.pay());
+        areas.pay(killer, t.pay(), event.getEntity().getLocation().getBlock().getLocation());
         // The drops go straight to the bag (never left on the floor of a shared arena), what doesn't fit is lost.
         for (ItemStack drop : event.getDrops()) {
             killer.getInventory().addItem(drop);

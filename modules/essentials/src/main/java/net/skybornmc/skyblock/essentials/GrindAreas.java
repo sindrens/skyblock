@@ -436,7 +436,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         Crop before = cropFor(farmed - 1);
         Crop crop = cropFor(farmed);
         p.getPersistentDataContainer().set(FARMED, PersistentDataType.LONG, farmed);
-        rollBonus(p, farmBonus(CROPS.indexOf(before)));
+        rollBonus(p, farmBonus(CROPS.indexOf(before)), b);
         Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FARM, crop.block(), crop.item(), 1, b.getLocation()));
         // The drops become the player's crop in onDrop (so tools, auto-sell and shards still see normal drops).
         if (crop != before) {
@@ -460,7 +460,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         long mined = mined(p) + 1;
         p.getPersistentDataContainer().set(MINED, PersistentDataType.LONG, mined);
         Ore tier = oreTier(mined, unlocks);
-        rollBonus(p, mineBonus(ORE_TIERS.indexOf(before)));
+        rollBonus(p, mineBonus(ORE_TIERS.indexOf(before)), b);
         Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.MINE, before.block(), before.drop(), before.amount(),
                 b.getLocation()));
         if (tier != before) {
@@ -668,11 +668,12 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     }
 
     /** Owner 4 Nov 2026: the money bonus comes now and then ({@code grind.bonus-chance-percent}) and grows with the tier. */
-    private void rollBonus(Player p, long amount) {
+    private void rollBonus(Player p, long amount, Block at) {
         // Owner 6 Nov 2026: Golden Blocks makes the bonus come every time and worth more.
         boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
         if (amount > 0 && (golden || ThreadLocalRandom.current().nextDouble(100) < config.grindBonusChance)) {
-            addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount);
+            // owner 7 Nov 2026: the bonus floats up from the crop or ore that gave it (0.5 s), not the action bar
+            moneyPopup(p, at == null ? null : at.getLocation(), addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount));
         }
     }
 
@@ -757,12 +758,13 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         }
     }
 
-    private void addBonus(Player p, long amount) {
+    private long addBonus(Player p, long amount) {
         long scaled = Math.round(amount * config.grindBonusPercent / 100.0);
         if (scaled > 0) {
             // Owner 4 Nov 2026: farm/mine progress and bonus are per profile, so the bonus is owed to this profile.
             pendingBonus.merge(net.skybornmc.skyblock.common.profile.ProfileService.of(core.services()).profileKey(p), scaled, Long::sum);
         }
+        return scaled;
     }
 
     /** Pays the bonus money still waiting (module stop). */
@@ -789,9 +791,7 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
                     .actor(net.skybornmc.skyblock.common.audit.Actor.system("grind")).reference("farm/mine bonus")
                     .idempotencyKey("grind_bonus:" + java.util.UUID.randomUUID()));
             profiles.onlinePlayer(id).ifPresent(p -> visitBonus.merge(p.getUniqueId(), amount, Long::sum));
-            profiles.onlinePlayer(id).ifPresent(p -> net.skybornmc.skyblock.common.hud.ActionBars.show(p, "bonus",
-                    msg.component(p, "grind.bonus", net.skybornmc.skyblock.common.text.Msg.p("amount",
-                            net.skybornmc.skyblock.common.util.Format.money(amount))), net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500));
+            // owner 7 Nov 2026: each bonus already floated up from its block (popup); no action bar line
         });
     }
 
@@ -821,8 +821,21 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
 
     /** Money for a /pve kill (Golden Blocks x5 like the other areas), paid with the grind bonus batch. */
     void pay(Player p, long amount) {
+        pay(p, amount, null);
+    }
+
+    /** {@link #pay(Player, long)} with the spot it floats up from (the mob; owner 7 Nov 2026: popups, no action bar). */
+    void pay(Player p, long amount, org.bukkit.Location at) {
         boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
-        addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount);
+        moneyPopup(p, at, addBonus(p, golden ? Math.round(amount * config.grindEventGolden) : amount));
+    }
+
+    /** Owner 7 Nov 2026: money from /farm, /mine, /fish and /pve floats up from where it came from (0.5 s). */
+    private void moneyPopup(Player p, org.bukkit.Location at, long paid) {
+        if (paid > 0 && at != null) {
+            net.skybornmc.skyblock.common.hud.Popups.show(core.plugin(), p, at, msg.component(p, "grind.bonus-popup",
+                    net.skybornmc.skyblock.common.text.Msg.p("amount", net.skybornmc.skyblock.common.util.Format.money(paid))));
+        }
     }
 
     int pveSigilEvery() {
@@ -900,7 +913,8 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         long fished = fished(p) + 1;
         p.getPersistentDataContainer().set(FISHED, PersistentDataType.LONG, fished);
         boolean golden = events != null && events.active(p, net.skybornmc.skyblock.common.grind.GrindEvents.Kind.GOLDEN_BLOCKS);
-        addBonus(p, golden ? Math.round(before.pay() * config.grindEventGolden) : before.pay()); // every catch pays
+        moneyPopup(p, hook.getLocation().getBlock().getLocation(),
+                addBonus(p, golden ? Math.round(before.pay() * config.grindEventGolden) : before.pay())); // every catch pays
         Bukkit.getPluginManager().callEvent(new GrindBreakEvent(p, GrindBreakEvent.FISH, Material.WATER, c.item(), c.amount(), hook.getLocation()));
         FishRules.Water after = FishRules.waterFor(waters, fished);
         if (after != before) {

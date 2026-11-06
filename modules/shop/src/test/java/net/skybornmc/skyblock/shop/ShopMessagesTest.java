@@ -45,7 +45,7 @@ class ShopMessagesTest {
                 Matcher m = LITERAL.matcher(text);
                 while (m.find()) {
                     String key = m.group(1);
-                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("shop:")) {
+                    if (key.startsWith("skyblock.") || key.endsWith(".yml") || key.startsWith("shop:") || key.startsWith("categories.")) {
                         continue;
                     }
                     if (!has(yml, key) && !yml.isConfigurationSection(key)) {

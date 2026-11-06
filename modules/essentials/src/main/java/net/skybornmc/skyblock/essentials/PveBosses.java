@@ -253,7 +253,7 @@ final class PveBosses implements Listener {
         }
         p.hideBossBar(b.bar());
         PveArena.Tier t = PveArena.TIER_LIST.get(b.tier() - 1);
-        areas.pay(p, t.pay() * PAY);
+        areas.pay(p, t.pay() * PAY, p.getLocation().getBlock().getLocation());
         for (ItemStack d : drops) {
             d.setAmount(Math.min(d.getMaxStackSize(), d.getAmount() * 5)); // a boss drops five mobs' worth
             p.getInventory().addItem(d);

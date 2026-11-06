@@ -65,8 +65,9 @@ class ShopCatalogGroupsTest {
     void spawnerGroupsAreTheFourTiers() throws Exception {
         ShopCatalog.Category tab = ShopCatalogTest.catalog().category("spawners").orElseThrow();
         assertEquals(List.of("tier1", "tier2", "tier3", "tier4"), tab.groups().stream().map(ShopCatalog.Group::id).toList());
-        tab.groups().forEach(g -> assertEquals(5, g.items().size(), g.id()));
-        assertEquals(List.of("spawner_pig", "spawner_cow", "spawner_chicken", "spawner_sheep", "spawner_rabbit"),
+        assertEquals(List.of(6, 6, 5, 3), tab.groups().stream().map(g -> g.items().size()).toList(),
+                "owner 7 Nov 2026: hoglin in tier 1, zombified piglin in tier 2");
+        assertEquals(List.of("spawner_pig", "spawner_cow", "spawner_chicken", "spawner_sheep", "spawner_rabbit", "spawner_hoglin"),
                 tab.groups().get(0).items());
     }
 

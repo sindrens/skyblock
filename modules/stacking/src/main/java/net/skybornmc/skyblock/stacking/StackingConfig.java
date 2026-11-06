@@ -150,12 +150,24 @@ public final class StackingConfig extends ModuleConfig {
     @Setting(path = "spawners.vanilla-loot", desc = "Feedback 5 Nov 2026: spawner mobs drop their full vanilla loot (cow: beef and "
             + "leather, cooked when they die burning) times the number killed and the island's Mob Loot level, instead of the "
             + "single custom item of spawners.drops. Off: the spawners.drops lines.")
-    public boolean spawnerVanillaLoot = true;
+    public boolean spawnerVanillaLoot = false; // owner 7 Nov 2026: 1 of each drop (spawners.drops), priced per tier
 
     @Setting(path = "spawners.drops", desc = "Custom drop per spawner mob: mob:item id:amount per mob (ECON-SPAWNERS S6). Spawner mobs with a line drop only this item; others keep vanilla loot.", level = Setting.Level.OWNER)
     public List<String> spawnerDrops = List.of(
-            // Owner 3 Nov 2026: each mob drops its own vanilla item; the amount per kill keeps the income of the balance
-            // model (old custom drop price / sell price of the item). Premium mobs keep their custom drop.
+            // Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): every spawner mob drops 1 of each of its vanilla drops; sell.yml
+            // mob-loot prices make a kill worth ~$280 / $700 / $1,750 / $4,200 (tiers 1-4). Premium mobs keep their drop.
+            "pig:porkchop:1", "cow:beef:1", "cow:leather:1", "chicken:chicken:1", "chicken:feather:1", "sheep:mutton:1",
+            "sheep:white_wool:1", "rabbit:rabbit:1", "rabbit:rabbit_hide:1", "hoglin:porkchop:1", "hoglin:leather:1",
+            "zombie:rotten_flesh:1", "skeleton:bone:1", "skeleton:arrow:1", "spider:string:1", "spider:spider_eye:1",
+            "cave_spider:string:1", "cave_spider:spider_eye:1", "slime:slime_ball:1", "zombified_piglin:rotten_flesh:1",
+            "zombified_piglin:gold_nugget:1", "creeper:gunpowder:1", "witch:glowstone_dust:1", "witch:sugar:1",
+            "witch:glass_bottle:1", "witch:spider_eye:1", "witch:stick:1", "drowned:rotten_flesh:1",
+            "drowned:copper_ingot:1", "husk:rotten_flesh:1", "stray:bone:1", "stray:arrow:1", "blaze:blaze_rod:1",
+            "enderman:ender_pearl:1", "guardian:prismarine_shard:1", "guardian:prismarine_crystals:1", "guardian:cod:1",
+            "iron_golem:iron_ingot:4.4", "wither_skeleton:mobdrop_wither_skeleton:1", "evoker:mobdrop_evoker:1");
+
+    /** The drops of 3-7 Nov 2026 (version 5 moves an untouched list to 1 of each drop). */
+    static final List<String> SPAWNER_DROPS_V3 = List.of(
             "pig:porkchop:0.5", "cow:beef:0.5", "chicken:chicken:0.5", "sheep:mutton:0.5", "rabbit:rabbit:0.5",
             "zombie:rotten_flesh:0.55", "skeleton:bone:0.55", "spider:string:0.55", "cave_spider:spider_eye:0.55",
             "slime:slime_ball:0.55", "creeper:gunpowder:0.48", "witch:glowstone_dust:0.48", "drowned:rotten_flesh:0.89",
@@ -198,16 +210,16 @@ public final class StackingConfig extends ModuleConfig {
     public int frozenMenuLimit = 200;
 
     @Setting(path = "spawners.tier-1", desc = "Tier 1 spawner types (owner SK3, shop).", level = Setting.Level.OWNER)
-    public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit");
+    public List<String> tier1 = List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"); // owner 7 Nov 2026: hoglin loot is tier 1 money
 
     @Setting(path = "spawners.tier-2", desc = "Tier 2 spawner types (Cave; ECON-SPAWNERS: 5 mobs, unlock by tier 1 kills).", level = Setting.Level.OWNER)
-    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "cave_spider", "slime");
+    public List<String> tier2 = List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "zombified_piglin");
 
     @Setting(path = "spawners.tier-3", desc = "Tier 3 spawner types (Wild; unlock by tier 2 kills).", level = Setting.Level.OWNER)
     public List<String> tier3 = List.of("creeper", "witch", "drowned", "husk", "stray");
 
     @Setting(path = "spawners.tier-4", desc = "Tier 4 spawner types (Nether; unlock by tier 3 kills).", level = Setting.Level.OWNER)
-    public List<String> tier4 = List.of("blaze", "enderman", "guardian", "hoglin", "zombified_piglin");
+    public List<String> tier4 = List.of("blaze", "enderman", "guardian");
 
     @Setting(path = "spawners.tier-5", desc = "Tier 5 = premium spawner types (Black Market for shards, credit shop later; never in /shop). Villager, warden, wither, ender dragon, elder guardian and allay are never allowed (SK8).", level = Setting.Level.OWNER)
     public List<String> tier5 = List.of("iron_golem", "wither_skeleton", "evoker");
@@ -299,7 +311,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -315,7 +327,14 @@ public final class StackingConfig extends ModuleConfig {
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         StackingConfig d = new StackingConfig();
-        return java.util.Map.of(4, java.util.Map.of("spawners.stack-start", ValueChange.of(8, d.spawnerStackStart),
+        return java.util.Map.of(
+                // v5 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): 1 of each drop, hoglin to tier 1, zombified piglin to tier 2
+                5, java.util.Map.of("spawners.drops", ValueChange.of(SPAWNER_DROPS_V3, d.spawnerDrops),
+                        "spawners.vanilla-loot", ValueChange.of(true, false),
+                        "spawners.tier-1", ValueChange.of(List.of("pig", "cow", "chicken", "sheep", "rabbit"), d.tier1),
+                        "spawners.tier-2", ValueChange.of(List.of("zombie", "skeleton", "spider", "cave_spider", "slime"), d.tier2),
+                        "spawners.tier-4", ValueChange.of(List.of("blaze", "enderman", "guardian", "hoglin", "zombified_piglin"), d.tier4)),
+                4, java.util.Map.of("spawners.stack-start", ValueChange.of(8, d.spawnerStackStart),
                         "spawners.stack-max", ValueChange.of(32, d.spawnerStackMax),
                         "spawners.interval-floor-seconds", ValueChange.of(4, d.spawnerIntervalFloorSeconds),
                         "spawners.speed-steps-seconds", ValueChange.of(List.of("10", "9", "8", "7", "6", "5"), d.speedSteps),

@@ -254,6 +254,7 @@ public final class SkyblockPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        net.skybornmc.skyblock.common.hud.Popups.clear(); // owner 7 Nov 2026: no floating text is left behind
         if (core != null) {
             core.menus().disable();
         }

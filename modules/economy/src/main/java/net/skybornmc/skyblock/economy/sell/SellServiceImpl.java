@@ -181,6 +181,12 @@ public final class SellServiceImpl implements SellService {
         return sc.isEmpty() || !dayPrice().enabled() ? 0 : days.count(sc, itemKey, today());
     }
 
+    /** True when the item's category never gets the day price ({@code sell.daily.exempt-categories}, e.g. mob-loot). */
+    boolean dayExempt(String itemKey) {
+        List<String> exempt = config.get().sellDailyExempt;
+        return !exempt.isEmpty() && catalog.get().get(itemKey).map(e -> exempt.contains(e.category())).orElse(false);
+    }
+
     /** This week's drift factor of an item (1.0 when the weekly drift is off). */
     double weekFactor(String itemKey) {
         return config.get().weeklyDrift().factor(WeeklyDrift.week(clock.getAsLong(), zone.get()), itemKey);
@@ -229,7 +235,7 @@ public final class SellServiceImpl implements SellService {
     @Override
     public Optional<SellPrice> price(String itemKey, UUID profileKey) {
         Optional<SellPrice> p = price(itemKey);
-        if (p.isEmpty() || profileKey == null || settings().enabled()) {
+        if (p.isEmpty() || profileKey == null || settings().enabled() || dayExempt(itemKey)) {
             return p;
         }
         return Optional.of(SaleCalculator.forSeller(p.get(), dayPrice(), soldToday(profileKey, itemKey)));
@@ -242,7 +248,7 @@ public final class SellServiceImpl implements SellService {
 
     @Override
     public java.util.OptionalLong fullPriceLeft(UUID profileKey, String itemKey) {
-        if (profileKey == null || itemKey == null || settings().enabled() || !dayPrice().enabled()) {
+        if (profileKey == null || itemKey == null || settings().enabled() || !dayPrice().enabled() || dayExempt(itemKey)) {
             return java.util.OptionalLong.empty();
         }
         return java.util.OptionalLong.of(dayPrice().fullLeft(soldToday(profileKey, itemKey)));
@@ -311,7 +317,8 @@ public final class SellServiceImpl implements SellService {
         List<String> sc = scopesOf(profileKey);
         DayPrice day = dayPrice();
         long today = today();
-        java.util.function.ToLongFunction<String> count = sc.isEmpty() || !day.enabled() ? key -> 0L : key -> days.count(sc, key, today);
+        java.util.function.ToLongFunction<String> count = key -> dayExempt(key) ? -1L
+                : sc.isEmpty() || !day.enabled() ? 0L : days.count(sc, key, today);
         return SaleCalculator.quote(keys, amounts, this::price, key -> book.get(key).impact(), count, day, settings(), bonusPercent,
                 bonusCapPercent());
     }
@@ -349,7 +356,7 @@ public final class SellServiceImpl implements SellService {
         PriceBook.Reservation reservation = settings().enabled() ? book.reserve(soldAmounts, now) : null;
         // Dynamic prices v2: the island's day count goes up now too (the next sale starts where this one ended).
         DayCounts.Reservation dayReservation = dayPrice().enabled() && !settings().enabled()
-                ? days.reserve(scopesOf(request.profileKey()), soldAmounts, today()) : DayCounts.Reservation.NONE;
+                ? days.reserve(scopesOf(request.profileKey()), counted(soldAmounts), today()) : DayCounts.Reservation.NONE;
         UUID saleId = UUID.randomUUID();
         Transaction tx = Transaction.deposit(AccountRef.player(request.profileKey()), Currency.MONEY, quote.total(), TxReason.SELL)
                 .actor(request.actor())
@@ -398,6 +405,17 @@ public final class SellServiceImpl implements SellService {
             };
             return new SellResult(status, q, stacks, null, null);
         });
+    }
+
+    /** The amounts that count for the day price (exempt categories left out). */
+    private Map<String, Long> counted(Map<String, Long> amounts) {
+        Map<String, Long> out = new LinkedHashMap<>();
+        amounts.forEach((k, v) -> {
+            if (!dayExempt(k)) {
+                out.put(k, v);
+            }
+        });
+        return out;
     }
 
     private void undo(PriceBook.Reservation reservation, DayCounts.Reservation dayReservation) {

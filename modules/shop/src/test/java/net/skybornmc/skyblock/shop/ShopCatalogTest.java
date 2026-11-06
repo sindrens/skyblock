@@ -164,10 +164,11 @@ class ShopCatalogTest {
             assertTrue(item.id().startsWith(ShopCatalog.SPAWNER_PREFIX));
             assertTrue(SPAWNER_TYPES.contains(item.mob()), item.mob());
         }
-        assertEquals(10_000_000, catalog().item("spawner_pig").orElseThrow().price());
-        assertEquals(25_000_000, catalog().item("spawner_zombie").orElseThrow().price());
-        assertEquals(50_000_000, catalog().item("spawner_creeper").orElseThrow().price());
-        assertEquals(100_000_000, catalog().item("spawner_blaze").orElseThrow().price());
+        // owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): priced by what they earn, about 50 h payback
+        assertEquals(5_000_000, catalog().item("spawner_pig").orElseThrow().price());
+        assertEquals(12_500_000, catalog().item("spawner_zombie").orElseThrow().price());
+        assertEquals(30_000_000, catalog().item("spawner_creeper").orElseThrow().price());
+        assertEquals(75_000_000, catalog().item("spawner_blaze").orElseThrow().price());
         assertEquals(20, tab.items().size());
     }
 

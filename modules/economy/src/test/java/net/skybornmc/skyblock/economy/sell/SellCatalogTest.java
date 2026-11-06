@@ -34,9 +34,9 @@ class SellCatalogTest {
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertTrue(catalog.size() > 50);
         // ECONOMY_BALANCE §4.1 / §3.1 values.
-        assertEquals(1200, catalog.get("wheat").orElseThrow().base()); // owner 3 Nov 2026 crop rebalance, money x100
+        assertEquals(700, catalog.get("wheat").orElseThrow().base()); // owner 7 Nov 2026: crops -40% (was 1200)
         assertEquals(1000, catalog.get("coal").orElseThrow().base());
-        assertEquals(87000, catalog.get("pitcher_plant").orElseThrow().base());
+        assertEquals(52000, catalog.get("pitcher_plant").orElseThrow().base());
         assertEquals(2000, catalog.get("custom:depths_coal").orElseThrow().base());
         assertEquals(382900, catalog.get("custom:depths_voidstone").orElseThrow().base());
         assertEquals("depths-mine", catalog.get("custom:depths_coal").orElseThrow().category());
@@ -55,8 +55,10 @@ class SellCatalogTest {
         SellCatalog c = SellCatalog.load(bundled(), id -> true, p -> { });
         // Ingots never above raw ore; crafted goods and storage blocks are not listed.
         assertTrue(c.get("iron_ingot").orElseThrow().base() <= c.get("raw_iron").orElseThrow().base());
+        // Owner 7 Nov 2026: white wool is listed (a spawner sheep drops it) below its recipe (4 string), so crafting loses money.
+        assertTrue(c.get("white_wool").orElseThrow().base() < 4 * c.get("string").orElseThrow().base());
         for (String crafted : List.of("arrow", "sugar", "paper", "stick", "bone_meal", "coal_block", "iron_block", "hay_block",
-                "gold_ingot", "copper_ingot", "white_wool", "bread", "melon")) {
+                "gold_ingot", "copper_ingot", "bread", "melon")) {
             assertTrue(c.get(crafted).isEmpty(), crafted + " must not be sellable (crafted from cheaper sellable items)");
         }
     }

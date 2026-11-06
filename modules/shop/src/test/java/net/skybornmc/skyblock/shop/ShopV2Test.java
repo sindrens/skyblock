@@ -159,7 +159,7 @@ class ShopV2Test {
         ShopSettings s = new ShopSettings();
         // ECON-SPAWNERS step 11: income comes from the drop's sell price; tiers 1 to 4 are sold, 0.85 dynamic factor.
         assertEquals(4, s.spawnerMaxTier);
-        assertEquals(0.85, s.spawnerDynamicFactor, 1e-9);
+        assertEquals(1.0, s.spawnerDynamicFactor, 1e-9); // owner 7 Nov 2026: spawner loot has no day price
         assertEquals(4, s.valueChanges().get(2).get("spawners.max-tier").to());
         assertTrue(s.removedKeys().containsKey("spawners.income-per-hour"));
         assertEquals(15, s.undoSeconds);

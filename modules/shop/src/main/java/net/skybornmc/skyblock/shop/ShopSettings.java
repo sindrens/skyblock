@@ -42,7 +42,7 @@ public final class ShopSettings extends ModuleConfig {
     @Setting(path = "spawners.dynamic-factor", desc = "ECON-SPAWNERS: the average dynamic sell price of spawner drops as a "
             + "share of their base price; only for the payback time in the shop lore (income = drop price x this).",
             min = 0.05, max = 2.0, level = Setting.Level.OWNER)
-    public double spawnerDynamicFactor = 0.85;
+    public double spawnerDynamicFactor = 1.0; // owner 7 Nov 2026: spawner loot has no day price (only the weekly change, avg 1.0)
 
     @Setting(path = "spawners.payback-good-hours", desc = "Owner F2: a spawner that pays back within this many hours "
             + "shows its payback time in green.", min = 1, level = Setting.Level.OWNER)
@@ -86,13 +86,14 @@ public final class ShopSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 2;
+        return 3;
     }
 
     /** ECON-SPAWNERS step 11: the shop now sells tiers 1 to 4 (an owner-chosen value stays). */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(2, java.util.Map.of("spawners.max-tier", ValueChange.of(2, 4)));
+        return java.util.Map.of(2, java.util.Map.of("spawners.max-tier", ValueChange.of(2, 4)),
+                3, java.util.Map.of("spawners.dynamic-factor", ValueChange.of(0.85, 1.0)));
     }
 
     /** REVIEW3 §3.6: the buy confirm screen is gone (SELL2 quick-buy); its threshold key is deleted on load. */

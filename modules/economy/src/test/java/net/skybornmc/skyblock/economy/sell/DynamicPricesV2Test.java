@@ -155,6 +155,15 @@ class DynamicPricesV2Test {
     }
 
     @Test
+    void anExemptItemAlwaysPaysFull() {
+        SellPrice beef = new SellPrice("beef", "mob-loot", 140, 1.0, false, 1.0, Trend.STEADY);
+        DynamicSettings off = new EconomyConfig().dynamicSettings();
+        SellQuote q = SaleCalculator.quote(List.of("beef"), List.of(10_000L), k -> Optional.of(beef), k -> 0.0, k -> -1L, D, off, 0, 300);
+        assertEquals(1_400_000, q.subtotal(), "spawner loot has no day price (owner 7 Nov 2026)");
+        assertEquals(List.of("mob-loot"), new EconomyConfig().sellDailyExempt);
+    }
+
+    @Test
     void theWeekIsTheMultiplierWhenTheOldModelIsOff() {
         DynamicSettings off = new EconomyConfig().dynamicSettings();
         SellCatalog.Entry e = new SellCatalog.Entry("wheat", "crops", 100, true);

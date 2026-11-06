@@ -72,7 +72,7 @@ public final class EssentialsConfig extends ModuleConfig {
     public double grindEventGolden = 5.0;
 
     @Setting(path = "grind.farm-bonus", desc = "Money of one /farm bonus per crop tier (wheat, carrots, potatoes, beetroot, nether wart): small at the start, bigger later.")
-    public List<Integer> grindFarmBonus = List.of(4000, 7000, 12000, 20000, 30000);
+    public List<Integer> grindFarmBonus = List.of(2000, 3500, 6000, 10000, 15000); // owner 7 Nov 2026: half (less farm money)
 
     @Setting(path = "grind.farm-unlocks", desc = "FX-09: crops harvested in total that turn the whole /farm into the next crop for you "
             + "(wheat, carrots, potatoes, beetroot, nether wart; the first is always 0; a missing entry uses the built-in number).")
@@ -276,6 +276,18 @@ public final class EssentialsConfig extends ModuleConfig {
 
 
     /** Dead-key rule (REVIEW3 §6): the menu item moved to menus.yml (menu-item.*); the old essentials keys are deleted on load. */
+    /** Version 2 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): the /farm money bonus is halved (untouched lists only). */
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("grind.farm-bonus",
+                ValueChange.of(List.of(4000, 7000, 12000, 20000, 30000), new EssentialsConfig().grindFarmBonus)));
+    }
+
     @Override
     public java.util.Map<String, String> removedKeys() {
         return java.util.Map.of("menu-item", "the menu item is configured in menus.yml (menu-item.*) now",

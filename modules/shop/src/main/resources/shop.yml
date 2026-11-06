@@ -50,6 +50,9 @@
 # Reload: /skyblock reload shop
 config-version: 7
 money-scale: 100
+# Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): seeds and crops 10x their sell price, spawners priced by what they
+# earn (~50 h payback). A live file gets these once (an edited price stays); the number below records it.
+catalog-version: 8
 
 categories:
   # Wood, planks, stone and its crafted variants, earth, Nether, End and ocean blocks, sorted by type.
@@ -229,22 +232,22 @@ categories:
   farming:
     icon: wheat_seeds
     groups:
-      seeds: [wheat_seeds, beetroot_seeds, melon_seeds, pumpkin_seeds, bone_meal]
-      crops: [carrot, potato, sugar_cane, cocoa_beans, cactus, sweet_berries]
+      seeds: [bone_meal, melon_seeds, pumpkin_seeds, wheat_seeds, beetroot_seeds]
+      crops: [sugar_cane, cactus, sweet_berries, cocoa_beans, carrot, potato]
       trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
     items:
       # Owner 3 Nov 2026: seeds and crops cost a lot: buy one, regrow it and grow the farm instead of buying many.
-      wheat_seeds: 150000
-      beetroot_seeds: 250000
-      melon_seeds: 400000
-      pumpkin_seeds: 400000
+      wheat_seeds: 7000
+      beetroot_seeds: 12000
+      melon_seeds: 6000
+      pumpkin_seeds: 6000
       bone_meal: 3000
-      carrot: 250000
-      potato: 250000
-      sugar_cane: 300000
-      cocoa_beans: 350000
-      cactus: 350000
-      sweet_berries: 400000
+      carrot: 9000
+      potato: 9000
+      sugar_cane: 2500
+      cocoa_beans: 5000
+      cactus: 3000
+      sweet_berries: 3500
       oak_sapling: 2500
       spruce_sapling: 2500
       birch_sapling: 2500
@@ -262,8 +265,8 @@ categories:
       hostile: [string, spider_eye, slime_ball, gunpowder, ender_pearl, blaze_rod]
       brewing: [magma_cream, phantom_membrane, ghast_tear]
       animal: [feather, leather, rabbit_hide, rabbit_foot]
-      meat: [porkchop, beef, chicken, mutton, rabbit]
-      ocean: [ink_sac, glow_ink_sac, nautilus_shell, prismarine_shard, prismarine_crystals]
+      meat: [beef, chicken, mutton, rabbit, porkchop]
+      ocean: [ink_sac, glow_ink_sac, prismarine_shard, prismarine_crystals, nautilus_shell]
     items:
       rotten_flesh: auto
       bone: auto
@@ -464,31 +467,31 @@ categories:
     icon: spawner
     kind: spawners
     groups:
-      tier1: [pig, cow, chicken, sheep, rabbit]
-      tier2: [zombie, skeleton, spider, cave_spider, slime]
-      tier3: [creeper, witch, drowned, husk, stray]
-      tier4: [blaze, enderman, guardian, hoglin, zombified_piglin]
+      tier1: [pig, cow, chicken, sheep, rabbit, hoglin]
+      tier2: [zombie, skeleton, spider, cave_spider, slime, zombified_piglin]
+      tier3: [husk, stray, drowned, creeper, witch]
+      tier4: [blaze, enderman, guardian]
     items:
-      pig: 10000000
-      cow: 10000000
-      chicken: 10000000
-      sheep: 10000000
-      rabbit: 10000000
-      zombie: 25000000
-      skeleton: 25000000
-      spider: 25000000
-      cave_spider: 25000000
-      slime: 25000000
-      creeper: 50000000
-      witch: 50000000
-      drowned: 50000000
-      husk: 50000000
-      stray: 50000000
-      blaze: 100000000
-      enderman: 100000000
-      guardian: 100000000
-      hoglin: 100000000
-      zombified_piglin: 100000000
+      pig: 5000000
+      cow: 5000000
+      chicken: 5000000
+      sheep: 5000000
+      rabbit: 5000000
+      zombie: 12500000
+      skeleton: 12500000
+      spider: 12500000
+      cave_spider: 12500000
+      slime: 12500000
+      creeper: 30000000
+      witch: 30000000
+      drowned: 13500000
+      husk: 12500000
+      stray: 12500000
+      blaze: 75000000
+      enderman: 75000000
+      guardian: 75000000
+      hoglin: 7500000
+      zombified_piglin: 17500000
 
 # Not sold any more (Shop v2); the price is only the block worth for the island level and trade hints.
 worth-only:

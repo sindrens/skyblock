@@ -680,6 +680,11 @@ public final class IslandToolsModule implements SkyblockModule {
      * for the island, and (unless {@code swept}) a shard roll and a Lucky roll for the player.
      */
     void action(Player p, Kind kind, boolean swept) {
+        action(p, kind, swept, null);
+    }
+
+    /** {@link #action(Player, Kind, boolean)} with the block or mob spot that gave it ({@code at}: for the shard popup; null = none). */
+    void action(Player p, Kind kind, boolean swept, org.bukkit.Location at) {
         UUID island = island(p);
         UUID profile = profile(p);
         ToolStore.Prog prog = view(island, profile, kind);
@@ -694,7 +699,8 @@ public final class IslandToolsModule implements SkyblockModule {
             double event = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                     net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_XP); // owner 6 Nov 2026: Double XP
             double combo = enchants.xpMultiplier(p, kind); // owner 6 Nov 2026: Combo (grind enchant)
-            long xp = ToolRules.roll(config.xpPerBlock * bonus * wisdom * event * combo, rnd.nextDouble());
+            double perBlock = kind == Kind.HOE ? config.xpPerBlock / Math.max(1, config.hoeXpDivisor) : config.xpPerBlock; // owner 7 Nov 2026
+            long xp = ToolRules.roll(perBlock * bonus * wisdom * event * combo, rnd.nextDouble());
             if (xp > 0) {
                 ToolStore.Prog next = prog.withXp(prog.xp() + xp);
                 personal.get(profile).put(kind, personal(profile, kind).withXp(next.xp()));
@@ -731,7 +737,17 @@ public final class IslandToolsModule implements SkyblockModule {
         }
         if (shards > 0) {
             pendingShards.computeIfAbsent(profile(p), k -> new ConcurrentHashMap<>()).merge(kind.shards(), (long) shards, Long::sum);
+            popup(p, at, kind.shards(), shards);
         }
+    }
+
+    /** Owner 7 Nov 2026: "+N shards" floats up from the block or mob that gave it (0.5 s, only this player sees it). */
+    void popup(Player p, org.bukkit.Location at, Currency currency, long amount) {
+        if (!config.shardPopups || at == null || amount <= 0) {
+            return;
+        }
+        net.skybornmc.skyblock.common.hud.Popups.show(core.plugin(), p, at,
+                msg.component(p, "shards.popup." + currency.key(), Msg.number("amount", amount)));
     }
 
     private void levelUp(Player p, UUID island, Kind kind, ToolRules.Level after, ToolStore.Prog now) {
@@ -851,8 +867,11 @@ public final class IslandToolsModule implements SkyblockModule {
                     }
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (profile.equals(profile(p))) {
-                            net.skybornmc.skyblock.common.hud.ActionBars.show(p, "shards." + currency.key(), msg.component(p, "shards.found." + currency.key(), Msg.number("amount", n)),
-                                    net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
+                            // owner 7 Nov 2026: the popups show each find; the action bar line only when popups are off
+                            if (!config.shardPopups) {
+                                net.skybornmc.skyblock.common.hud.ActionBars.show(p, "shards." + currency.key(), msg.component(p, "shards.found." + currency.key(), Msg.number("amount", n)),
+                                        net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 2500);
+                            }
                             core.sounds().play(p, "shard");
                         }
                     }

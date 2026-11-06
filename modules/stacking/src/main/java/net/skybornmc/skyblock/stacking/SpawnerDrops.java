@@ -10,8 +10,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Predicate;
 
 /**
- * ECON-SPAWNERS step 8 (pure): the custom drop of each spawner mob ({@code spawners.drops}: {@code mob:item:amount}) and the
- * amount math. Spawner mobs with a drop line drop only that item; the rest keep vanilla loot.
+ * ECON-SPAWNERS step 8 (pure): the custom drops of each spawner mob ({@code spawners.drops}: {@code mob:item:amount}) and the
+ * amount math. Spawner mobs with drop lines drop only those items; the rest keep vanilla loot. Owner 7 Nov 2026: a mob may
+ * have several lines (cow: 1 beef and 1 leather), one per item.
  */
 final class SpawnerDrops {
 
@@ -39,10 +40,12 @@ final class SpawnerDrops {
         return vanilla(item) != null ? item.toLowerCase(java.util.Locale.ROOT) : "custom:" + item;
     }
 
-    private final Map<String, Drop> byMob;
+    private final Map<String, List<Drop>> byMob;
 
-    private SpawnerDrops(Map<String, Drop> byMob) {
-        this.byMob = Collections.unmodifiableMap(byMob);
+    private SpawnerDrops(Map<String, List<Drop>> byMob) {
+        Map<String, List<Drop>> copy = new LinkedHashMap<>();
+        byMob.forEach((k, v) -> copy.put(k, List.copyOf(v)));
+        this.byMob = Collections.unmodifiableMap(copy);
     }
 
     /**
@@ -50,7 +53,7 @@ final class SpawnerDrops {
      * @param validItem true for a registered drop item id
      */
     static SpawnerDrops parse(List<String> lines, Predicate<String> validMob, Predicate<String> validItem, Consumer<String> problems) {
-        Map<String, Drop> out = new LinkedHashMap<>();
+        Map<String, List<Drop>> out = new LinkedHashMap<>();
         for (String line : lines) {
             String where = "stacking.yml → spawners.drops: '" + line + "'";
             String[] parts = line == null ? new String[0] : line.split(":");
@@ -73,20 +76,27 @@ final class SpawnerDrops {
                 problems.accept(where + " '" + mob + "' is not a mob type, skipped");
             } else if (!validItem.test(item)) {
                 problems.accept(where + " '" + item + "' is not in spawners.drop-items, skipped");
-            } else if (out.containsKey(mob)) {
-                problems.accept(where + " '" + mob + "' has a drop already, skipped");
+            } else if (out.getOrDefault(mob, List.of()).stream().anyMatch(d -> d.item().equals(item))) {
+                problems.accept(where + " '" + mob + "' drops '" + item + "' already, skipped");
             } else {
-                out.put(mob, new Drop(item, amount));
+                out.computeIfAbsent(mob, k -> new java.util.ArrayList<>()).add(new Drop(item, amount));
             }
         }
         return new SpawnerDrops(out);
     }
 
-    Optional<Drop> of(String mob) {
-        return Optional.ofNullable(byMob.get(SpawnerTiers.normalize(mob)));
+    /** Every drop of a mob, in file order (empty: no custom drops, the mob keeps vanilla loot). */
+    List<Drop> of(String mob) {
+        return byMob.getOrDefault(SpawnerTiers.normalize(mob), List.of());
     }
 
-    Map<String, Drop> all() {
+    /** The first drop of a mob (the shop lore names it). */
+    Optional<Drop> first(String mob) {
+        List<Drop> list = of(mob);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.getFirst());
+    }
+
+    Map<String, List<Drop>> all() {
         return byMob;
     }
 

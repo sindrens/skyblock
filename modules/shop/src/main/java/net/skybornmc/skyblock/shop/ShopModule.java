@@ -105,6 +105,51 @@ public final class ShopModule implements SkyblockModule, Listener {
     /** The frozen Shop v6 defaults: baseline of the v7 groups (batch 9). */
     static final String V6_DEFAULTS = "migrations/shop-v6.yml";
     /** Money x100: every shop price ({@code auto} stays auto) and the block worth of {@code worth-only}. */
+    /**
+     * shop.yml value changes (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): seeds and crops 10x their new sell price,
+     * spawners priced by what they earn, hoglin and zombified piglin in the tier 1 and 2 rows. Only untouched values.
+     */
+    static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
+            java.util.Map.of(8, java.util.Map.ofEntries(
+                    java.util.Map.entry("categories.farming.items.wheat_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(150000, 7000)),
+                    java.util.Map.entry("categories.farming.items.beetroot_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(250000, 12000)),
+                    java.util.Map.entry("categories.farming.items.melon_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(400000, 6000)),
+                    java.util.Map.entry("categories.farming.items.pumpkin_seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(400000, 6000)),
+                    java.util.Map.entry("categories.farming.items.carrot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(250000, 9000)),
+                    java.util.Map.entry("categories.farming.items.potato", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(250000, 9000)),
+                    java.util.Map.entry("categories.farming.items.sugar_cane", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(300000, 2500)),
+                    java.util.Map.entry("categories.farming.items.cocoa_beans", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(350000, 5000)),
+                    java.util.Map.entry("categories.farming.items.cactus", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(350000, 3000)),
+                    java.util.Map.entry("categories.farming.items.sweet_berries", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(400000, 3500)),
+                    java.util.Map.entry("categories.spawners.items.pig", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(10000000L, 5000000L)),
+                    java.util.Map.entry("categories.spawners.items.cow", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(10000000L, 5000000L)),
+                    java.util.Map.entry("categories.spawners.items.chicken", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(10000000L, 5000000L)),
+                    java.util.Map.entry("categories.spawners.items.sheep", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(10000000L, 5000000L)),
+                    java.util.Map.entry("categories.spawners.items.rabbit", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(10000000L, 5000000L)),
+                    java.util.Map.entry("categories.spawners.items.hoglin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100000000L, 7500000L)),
+                    java.util.Map.entry("categories.spawners.items.zombie", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(25000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.skeleton", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(25000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.spider", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(25000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.cave_spider", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(25000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.slime", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(25000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.zombified_piglin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100000000L, 17500000L)),
+                    java.util.Map.entry("categories.spawners.items.creeper", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(50000000L, 30000000L)),
+                    java.util.Map.entry("categories.spawners.items.witch", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(50000000L, 30000000L)),
+                    java.util.Map.entry("categories.spawners.items.drowned", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(50000000L, 13500000L)),
+                    java.util.Map.entry("categories.spawners.items.husk", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(50000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.stray", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(50000000L, 12500000L)),
+                    java.util.Map.entry("categories.spawners.items.blaze", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100000000L, 75000000L)),
+                    java.util.Map.entry("categories.spawners.items.enderman", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100000000L, 75000000L)),
+                    java.util.Map.entry("categories.spawners.items.guardian", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100000000L, 75000000L)),
+                    java.util.Map.entry("categories.mob-drops.groups.meat", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("porkchop", "beef", "chicken", "mutton", "rabbit"), java.util.List.of("beef", "chicken", "mutton", "rabbit", "porkchop"))),
+                    java.util.Map.entry("categories.mob-drops.groups.ocean", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("ink_sac", "glow_ink_sac", "nautilus_shell", "prismarine_shard", "prismarine_crystals"), java.util.List.of("ink_sac", "glow_ink_sac", "prismarine_shard", "prismarine_crystals", "nautilus_shell"))),
+                    java.util.Map.entry("categories.farming.groups.seeds", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("wheat_seeds", "beetroot_seeds", "melon_seeds", "pumpkin_seeds", "bone_meal"), java.util.List.of("bone_meal", "melon_seeds", "pumpkin_seeds", "wheat_seeds", "beetroot_seeds"))),
+                    java.util.Map.entry("categories.farming.groups.crops", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("carrot", "potato", "sugar_cane", "cocoa_beans", "cactus", "sweet_berries"), java.util.List.of("sugar_cane", "cactus", "sweet_berries", "cocoa_beans", "carrot", "potato"))),
+                    java.util.Map.entry("categories.spawners.groups.tier1", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("pig", "cow", "chicken", "sheep", "rabbit"), java.util.List.of("pig", "cow", "chicken", "sheep", "rabbit", "hoglin"))),
+                    java.util.Map.entry("categories.spawners.groups.tier2", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("zombie", "skeleton", "spider", "cave_spider", "slime"), java.util.List.of("zombie", "skeleton", "spider", "cave_spider", "slime", "zombified_piglin"))),
+                    java.util.Map.entry("categories.spawners.groups.tier3", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("creeper", "witch", "drowned", "husk", "stray"), java.util.List.of("husk", "stray", "drowned", "creeper", "witch"))),
+                    java.util.Map.entry("categories.spawners.groups.tier4", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(java.util.List.of("blaze", "enderman", "guardian", "hoglin", "zombified_piglin"), java.util.List.of("blaze", "enderman", "guardian")))));
+
     static final java.util.List<net.skybornmc.skyblock.common.config.CatalogScale.Path> MONEY_PATHS = java.util.List.of(
             net.skybornmc.skyblock.common.config.CatalogScale.Path.of("categories.*.items.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
             net.skybornmc.skyblock.common.config.CatalogScale.Path.of("worth-only.*", net.skybornmc.skyblock.common.config.MoneyScale.number()));
@@ -322,7 +367,12 @@ public final class ShopModule implements SkyblockModule, Listener {
                     yaml = v7.get().yaml();
                     writeMigration(file, yaml, v7.get().changes(), ShopCatalogMigration.V7);
                 }
-                if (addMissing(yaml, bundled)) {
+                int stepFrom = net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml);
+                for (String line : net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CATALOG_STEPS)) {
+                    core.plugin().getLogger().info("shop.yml: " + line);
+                }
+                boolean stepped = net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml) != stepFrom;
+                if (addMissing(yaml, bundled) || stepped) {
                     yaml.save(file);
                 }
             }

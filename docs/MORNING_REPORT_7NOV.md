@@ -188,6 +188,22 @@ The old model (one price per item for the whole server that fell with every sale
 - Contract text "Kill N Depths mobs" is now "Kill N mobs". The /help Skills topic lists all five skills and where to train them.
 - Two lore lines that were too wide for Bedrock were split (island missions without an island, the sell chest price note).
 
+## Hoe, shards, farm money and spawners (update145, plan: `docs/plans/HOE_SHARDS_SPAWNERS.md`)
+Your message after testing ("prestige 6 in 5 minutes", "so few shards", "each level should be felt"):
+- **Island Hoe levels 15x slower** (`islandtools.yml levels.hoe-xp-divisor: 15`). A level now takes 15x more crops, so it also brings 15x more shards.
+- **More shards:** 60% a ripe crop (was 40%), and the **Shard Finder** gives 3% a level (was 1%; 100 levels = 4x shards). Its lore shows only the level ("More shards", "Even more shards"), no numbers.
+- **Shards and money float up from the block**: "+2 ◆" on the crop, ore, catch or mob that gave it, gone after 0.5 s, only you see it. Same for the /farm, /mine, /fish and /pve money. The action bar lines for these are gone. At most 8 at once per player; they are never saved and never count for island entity limits.
+- **Less money from farming:** crop sell prices -40% (wheat $700, carrot/potato $900, beetroot $1,200, nether wart $1,800 ...) and the /farm bonus halved ($2,000 to $15,000).
+- **/shop seeds and crops** cost 10x their new sell price: wheat seeds $7k (was $150k), carrot and potato $9k (was $250k), melon and pumpkin seeds $6k (was $400k).
+- **Spawners drop 1 of each of their drops** (cow: 1 beef + 1 leather; zombie: 1 rotten flesh; spider: 1 string + 1 spider eye), and every spawner pays back in **about 50 hours**:
+  - Tier 1 $5M (pig, cow, chicken, sheep, rabbit; hoglin $7.5M, moved from tier 4)
+  - Tier 2 $12.5M (zombie, skeleton, spider, cave spider, slime; zombified piglin $17.5M, moved from tier 4)
+  - Tier 3 $30M (creeper, witch); drowned, husk and stray $12.5-13.5M (their loot is tier 2 loot)
+  - Tier 4 $75M (blaze, enderman, guardian)
+  - A tier's best spawners earn about 2.5x the tier below, so climbing is worth it.
+- Spawner loot (`mob-loot`) never gets the 3,000-a-day price drop.
+- Live files are updated once (sell.yml catalog-version 3, shop.yml catalog-version 8; a price you changed yourself stays). Every change is in the server log.
+
 ## Released tonight
 - **update129:** Spawners v2 (levels per mob type, limit 4 x level, prestige +5% drops, Spawner Speed 10 s to 5 s, no efficiency curve). Server copies of the island tool, progression and help texts were stale and are synced now (so the personal-prestige texts are really live).
 - **update128:** old tools module removed (C-02); Sell Wand, Auto-Sell Chest and Chunk Collector off the Black Market until you approve (Q-71).

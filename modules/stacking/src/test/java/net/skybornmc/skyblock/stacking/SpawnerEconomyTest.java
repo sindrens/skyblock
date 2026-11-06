@@ -92,6 +92,25 @@ class SpawnerEconomyTest {
         assertEquals(4, SpawnerDrops.amount(2, 2, 1.0, 1.0, () -> 0.5), "extra loot rolls count like kills");
     }
 
+    /** Prices sell.yml gets from recipes (not listed), as the live server reports them (7 Nov 2026), and unsellable arrows. */
+    static final java.util.Map<String, Double> DERIVED = java.util.Map.of("sugar", 216.0, "glass_bottle", 27.0, "stick", 6.0,
+            "copper_ingot", 55.0, "gold_nugget", 277.0, "arrow", 0.0);
+
+    static double price(YamlConfiguration sell, String item) {
+        if (DERIVED.containsKey(item)) {
+            return DERIVED.get(item);
+        }
+        if (SpawnerDrops.vanilla(item) == null) {
+            return sell.getDouble("custom-items.spawner-drops." + item, 0);
+        }
+        for (String cat : List.of("mob-loot", "fish", "ores", "crops")) {
+            if (sell.contains("categories." + cat + "." + item)) {
+                return sell.getDouble("categories." + cat + "." + item);
+            }
+        }
+        return 0;
+    }
+
     @Test
     void everyDefaultDropParsesAndIsSellable() throws Exception {
         StackingConfig c = new StackingConfig();
@@ -104,30 +123,67 @@ class SpawnerEconomyTest {
                 problems::add);
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
         assertEquals(23, drops.all().size(), "20 earned mobs + 3 premium (ECON-TABLES A)");
+        assertEquals(List.of("beef", "leather"), drops.of("cow").stream().map(SpawnerDrops.Drop::item).toList(),
+                "owner 7 Nov 2026: a cow drops 1 beef and 1 leather");
+        assertTrue(drops.of("zombie").stream().allMatch(d -> d.perMob() == 1.0));
         YamlConfiguration sell = YamlConfiguration.loadConfiguration(new File("../economy/src/main/resources/sell.yml"));
         List<String> unpriced = new ArrayList<>();
-        for (SpawnerDrops.Drop d : drops.all().values()) {
-            double price = SpawnerDrops.vanilla(d.item()) != null
-                    ? sell.getDouble("categories.mob-loot." + d.item(), 0)
-                    : sell.getDouble("custom-items.spawner-drops." + d.item(), 0);
-            if (price <= 0) {
-                unpriced.add(d.item());
+        for (List<SpawnerDrops.Drop> list : drops.all().values()) {
+            for (SpawnerDrops.Drop d : list) {
+                if (price(sell, d.item()) <= 0 && !d.item().equals("arrow")) {
+                    unpriced.add(d.item());
+                }
             }
         }
-        assertTrue(unpriced.isEmpty(), "every spawner drop has a sell.yml price: " + unpriced);
+        assertTrue(unpriced.isEmpty(), "every spawner drop has a sell price: " + unpriced);
+    }
+
+    @Test
+    void aMobOnTwoLinesKeepsBothAndADuplicateItemIsSkipped() {
+        List<String> problems = new ArrayList<>();
+        SpawnerDrops d = SpawnerDrops.parse(List.of("cow:beef:1", "cow:leather:1", "cow:beef:2"), m -> true, i -> true, problems::add);
+        assertEquals(2, d.of("cow").size());
+        assertEquals(1, problems.size());
+        assertEquals("beef", d.first("cow").orElseThrow().item());
+        assertTrue(d.of("pig").isEmpty());
+    }
+
+    /** Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): every spawner sold in /shop pays back in about 50 hours. */
+    @Test
+    void everyShopSpawnerPaysBackInAbout50Hours() {
+        StackingConfig c = new StackingConfig();
+        SpawnerDrops drops = SpawnerDrops.parse(c.spawnerDrops, m -> true, i -> true, p -> { });
+        YamlConfiguration sell = YamlConfiguration.loadConfiguration(new File("../economy/src/main/resources/sell.yml"));
+        YamlConfiguration shop = YamlConfiguration.loadConfiguration(new File("../shop/src/main/resources/shop.yml"));
+        List<String> off = new ArrayList<>();
+        java.util.Map<Integer, Double> best = new java.util.HashMap<>();
+        List<List<String>> tiers = List.of(c.tier1, c.tier2, c.tier3, c.tier4);
+        for (int t = 0; t < tiers.size(); t++) {
+            for (String mob : tiers.get(t)) {
+                double perKill = 0;
+                for (SpawnerDrops.Drop d : drops.of(mob)) {
+                    perKill += d.perMob() * price(sell, d.item());
+                }
+                double perHour = SpawnerIncome.perHour(SpawnerSteps.DEFAULTS.seconds(0), SpawnerSteps.DEFAULTS.mobs(0), 1.0, perKill);
+                double cost = shop.getDouble("categories.spawners.items." + mob, 0);
+                double hours = SpawnerIncome.paybackHours(cost, perHour);
+                if (cost <= 0 || hours < 45 || hours > 56) {
+                    off.add(mob + " $" + (long) cost + " earns $" + (long) perHour + "/h = " + Math.round(hours) + " h");
+                }
+                best.merge(t + 1, perHour, Math::max);
+            }
+        }
+        assertTrue(off.isEmpty(), "paybacks: " + off);
+        for (int t = 2; t <= 4; t++) {
+            assertTrue(best.get(t) >= 1.5 * best.get(t - 1), "tier " + t + "'s best spawner earns clearly more than tier " + (t - 1) + "'s");
+        }
+        assertEquals(List.of("blaze", "enderman", "guardian"), c.tier4);
     }
 
     // ------------------------------------------------------------------ payback (ECON-TABLES B)
 
     @Test
-    void everySoldTierPaysBackIn60To122Hours() {
-        double factor = 0.85; // shop-settings.yml spawners.dynamic-factor
-        double[][] tiers = {{100_000, 5}, {250_000, 10}, {500_000, 16}, {1_000_000, 30}};
-        for (double[] t : tiers) {
-            double perHour = SpawnerIncome.perHour(SpawnerSteps.DEFAULTS.seconds(0), SpawnerSteps.DEFAULTS.mobs(0), 1.0, t[1] * factor);
-            double hours = SpawnerIncome.paybackHours(t[0], perHour);
-            assertTrue(hours >= 60 && hours <= 122, "$" + (long) t[0] + " at $" + t[1] + " a drop pays back in " + hours + " h");
-        }
+    void incomeMath() {
         assertEquals(1_800, SpawnerIncome.perHour(10, 1, 1, 5), 1e-9, "360 spawns x $5");
         assertEquals(Double.POSITIVE_INFINITY, SpawnerIncome.paybackHours(100, 0));
         assertEquals(0, SpawnerIncome.perHour(0, 1, 1, 5));

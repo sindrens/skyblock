@@ -35,6 +35,9 @@ item:
 # Short words after a perk's value in the menus ("+1.2% shards").
 effect:
   shards: "shards"
+  # Owner 7 Nov 2026: the Shard Finder shows no numbers, only that it helps.
+  shards-more: "More shards"
+  shards-next: "Even more shards"
   drops: "drops"
   growth: "crop growth"
   items: "items"
@@ -171,12 +174,18 @@ shards:
     pickaxe: "Mining Shards"
     rod: "Fishing Shards"
     sword: "Combat Shards"
-  # Found while grinding (action bar). <amount>
+  # Found while grinding (action bar, only when shards.popups is off). <amount>
   found:
     shards: "<cur:shards>+<amount> <sym:shards> Farming Shards"
     mining_shards: "<cur:mining_shards>+<amount> <sym:mining_shards> Mining Shards"
     fishing_shards: "<cur:fishing_shards>+<amount> <sym:fishing_shards> Fishing Shards"
     combat_shards: "<cur:combat_shards>+<amount> <sym:combat_shards> Combat Shards"
+  # Owner 7 Nov 2026: the floating text on the crop, ore, catch or mob that gave the shards (0.5 s). <amount>
+  popup:
+    shards: "<cur:shards><bold>+<amount> <sym:shards>"
+    mining_shards: "<cur:mining_shards><bold>+<amount> <sym:mining_shards>"
+    fishing_shards: "<cur:fishing_shards><bold>+<amount> <sym:fishing_shards>"
+    combat_shards: "<cur:combat_shards><bold>+<amount> <sym:combat_shards>"
 
 # Sweep / Vein took more blocks along. <amount>
 sweep:
@@ -184,6 +193,8 @@ sweep:
   pickaxe: "<c:flame><bold>VEIN!</bold></c:flame> <c:text>+<amount> ores"
 
 menu:
+  # Tool item stat for the Shard Finder ({level} = its level).
+  level-short: "Level {level}"
   crumb-island: "Island"
   crumb: "Tools"
   owned: "Owned"

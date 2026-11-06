@@ -491,13 +491,15 @@ final class MobStacker implements Listener {
             if (spawnerMob) {
                 module.recordSpawnerKills(at, entity.getType(), killed); // Spawners v2: the island's level of this mob
             }
-            Optional<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrop(entity.getType()) : Optional.empty();
+            List<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrops(entity.getType()) : List.of();
             List<Drop> extras;
-            if (custom.isPresent()) {
-                // ECON-SPAWNERS S6: spawner mobs drop only their custom item (x the island's Mob Loot level).
+            if (!custom.isEmpty()) {
+                // Owner 7 Nov 2026: spawner mobs drop 1 of each of their items (x the island's Mob Loot level).
                 event.getDrops().clear();
                 extras = new ArrayList<>();
-                customDrop(custom.get(), at, entity.getType(), killed, rolls, extras);
+                for (SpawnerDrops.Drop d : custom) {
+                    customDrop(d, at, entity.getType(), killed, rolls, extras);
+                }
             } else {
                 if (spawnerMob) {
                     lootMobs = StackMath.withLoot(lootMobs, module.lootMultiplier(at, entity.getType()), true); // Mob Loot + prestige
@@ -582,11 +584,13 @@ final class MobStacker implements Listener {
             if (spawnerMob) {
                 module.recordSpawnerKills(at, stack.getType(), killed); // Spawners v2
             }
-            Optional<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrop(stack.getType()) : Optional.empty();
+            List<SpawnerDrops.Drop> custom = spawnerMob ? module.spawnerDrops(stack.getType()) : List.of();
             List<Drop> loot;
-            if (custom.isPresent()) {
+            if (!custom.isEmpty()) {
                 loot = new ArrayList<>();
-                customDrop(custom.get(), at, stack.getType(), killed, rolls, loot);
+                for (SpawnerDrops.Drop d : custom) {
+                    customDrop(d, at, stack.getType(), killed, rolls, loot);
+                }
             } else {
                 if (spawnerMob) {
                     lootMobs = StackMath.withLoot(lootMobs, module.lootMultiplier(at, stack.getType()), false);

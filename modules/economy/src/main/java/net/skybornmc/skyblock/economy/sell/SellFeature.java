@@ -77,6 +77,50 @@ public final class SellFeature implements Listener {
     public static final String PERM_SELL = "skyblock.economy.sell";
     static final String CATALOG_FILE = "sell.yml";
     /** Money x100: every price in sell.yml (the derive factors are percents and stay). */
+    /**
+     * sell.yml value changes (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): crops -40%, spawner loot priced per tier
+     * (1 of each drop). A live price that is still the old default changes once; an owner price stays.
+     */
+    static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
+            java.util.Map.of(3, java.util.Map.ofEntries(
+                    java.util.Map.entry("categories.crops.wheat", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1200, 700)),
+                    java.util.Map.entry("categories.crops.carrot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1500, 900)),
+                    java.util.Map.entry("categories.crops.potato", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1500, 900)),
+                    java.util.Map.entry("categories.crops.beetroot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(2000, 1200)),
+                    java.util.Map.entry("categories.crops.sugar_cane", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(400, 250)),
+                    java.util.Map.entry("categories.crops.melon_slice", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(200, 120)),
+                    java.util.Map.entry("categories.crops.pumpkin", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1000, 600)),
+                    java.util.Map.entry("categories.crops.cocoa_beans", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(800, 500)),
+                    java.util.Map.entry("categories.crops.cactus", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 300)),
+                    java.util.Map.entry("categories.crops.sweet_berries", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(600, 350)),
+                    java.util.Map.entry("categories.crops.nether_wart", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(3000, 1800)),
+                    java.util.Map.entry("categories.crops.torchflower", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(39600, 24000)),
+                    java.util.Map.entry("categories.crops.pitcher_plant", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(87000, 52000)),
+                    java.util.Map.entry("categories.mob-loot.porkchop", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 280)),
+                    java.util.Map.entry("categories.mob-loot.cooked_porkchop", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 280)),
+                    java.util.Map.entry("categories.mob-loot.beef", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.cooked_beef", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.chicken", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.cooked_chicken", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.mutton", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.cooked_mutton", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.rabbit", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.cooked_rabbit", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.leather", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.feather", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.rabbit_hide", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.rabbit_foot", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(100, 140)),
+                    java.util.Map.entry("categories.mob-loot.rotten_flesh", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 700)),
+                    java.util.Map.entry("categories.mob-loot.bone", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 700)),
+                    java.util.Map.entry("categories.mob-loot.string", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 350)),
+                    java.util.Map.entry("categories.mob-loot.spider_eye", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 350)),
+                    java.util.Map.entry("categories.mob-loot.slime_ball", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(500, 700)),
+                    java.util.Map.entry("categories.mob-loot.gunpowder", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(1000, 1750)),
+                    java.util.Map.entry("categories.mob-loot.blaze_rod", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(3600, 4200)),
+                    java.util.Map.entry("categories.mob-loot.ender_pearl", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(3600, 4200)),
+                    java.util.Map.entry("categories.mob-loot.prismarine_shard", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(3600, 2000)),
+                    java.util.Map.entry("categories.mob-loot.prismarine_crystals", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(3600, 2000))));
+
     static final java.util.List<net.skybornmc.skyblock.common.config.CatalogScale.Path> MONEY_PATHS = java.util.List.of(
             net.skybornmc.skyblock.common.config.CatalogScale.Path.of("categories.*.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
             net.skybornmc.skyblock.common.config.CatalogScale.Path.of("custom-items.*.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
@@ -389,7 +433,13 @@ public final class SellFeature implements Listener {
             } else {
                 // Money x100 (batch 10): a live sell.yml from before is scaled once (owner prices too), then new entries come.
                 net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, MONEY_PATHS, core.plugin().getLogger());
-                if (addMissing(yaml, bundled)) {
+                int before = net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml);
+                java.util.List<String> changed = net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CATALOG_STEPS);
+                for (String line : changed) {
+                    core.plugin().getLogger().info("sell.yml: " + line);
+                }
+                boolean stepped = net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml) != before;
+                if (addMissing(yaml, bundled) || stepped) {
                     yaml.save(file);
                 }
             }
@@ -1322,6 +1372,9 @@ public final class SellFeature implements Listener {
         UUID profile = profiles().profileKey(viewer);
         int lowest = 100;
         for (SellQuote.Line line : quote.lines()) {
+            if (service.dayExempt(line.price().itemKey())) {
+                continue; // spawner loot always sells at its full price
+            }
             long start = service.soldToday(profile, line.price().itemKey());
             lowest = Math.min(lowest, day.percent(start + Math.max(0, line.amount() - 1)));
         }

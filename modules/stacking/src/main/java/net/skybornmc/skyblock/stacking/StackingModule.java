@@ -285,10 +285,10 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
         islands().flatMap(i -> i.islandAt(at)).ifPresent(info -> unlock.record(info.id(), type.getKey().getKey(), killed));
     }
 
-    /** The custom drop of a spawner mob type, if it has one. */
-    Optional<SpawnerDrops.Drop> spawnerDrop(EntityType type) {
+    /** The custom drops of a spawner mob type (empty: vanilla loot). */
+    List<SpawnerDrops.Drop> spawnerDrops(EntityType type) {
         if (type == null || config().spawnerVanillaLoot) {
-            return Optional.empty(); // feedback 5 Nov 2026: full vanilla loot (MobStacker scales it by the Mob Loot level)
+            return List.of(); // vanilla loot (MobStacker scales it by the Mob Loot level)
         }
         return drops.of(type.getKey().getKey());
     }
@@ -636,25 +636,29 @@ public final class StackingModule implements SkyblockModule, StackingService, Li
      */
     @Override
     public double spawnerIncomePerHour(java.util.UUID island, String mob) {
-        Optional<SpawnerDrops.Drop> drop = drops.of(mob);
-        if (drop.isEmpty() || tiers == null || !tiers.sellable(mob)) {
+        List<SpawnerDrops.Drop> list = drops.of(mob);
+        if (list.isEmpty() || tiers == null || !tiers.sellable(mob)) {
             return 0;
         }
-        double base = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class)
-                .flatMap(s -> s.price(SpawnerDrops.priceKey(drop.get().item()))).map(p -> (double) p.base()).orElse(0.0);
-        if (base <= 0) {
+        // owner 7 Nov 2026: a mob drops 1 of each of its items, so the value of one kill is the sum of them
+        var sell = core.services().optional(net.skybornmc.skyblock.common.sell.SellService.class);
+        double perKill = 0;
+        for (SpawnerDrops.Drop d : list) {
+            perKill += d.perMob() * sell.flatMap(s -> s.price(SpawnerDrops.priceKey(d.item()))).map(p -> (double) p.base()).orElse(0.0);
+        }
+        if (perKill <= 0) {
             return 0;
         }
         Optional<IslandService> is = island == null ? Optional.empty() : islands();
         int speed = is.map(i -> i.spawnerSpeedLevel(island)).orElse(0);
         int mobsLevel = is.map(i -> i.spawnerMobsLevel(island)).orElse(0);
         int loot = is.map(i -> i.mobLootLevel(island)).orElse(0);
-        return SpawnerIncome.perHour(steps.seconds(speed), config.mobsPerSpawner * steps.mobs(mobsLevel), drop.get().perMob() * steps.loot(loot), base);
+        return SpawnerIncome.perHour(steps.seconds(speed), config.mobsPerSpawner * steps.mobs(mobsLevel), steps.loot(loot), perKill);
     }
 
     @Override
     public Optional<String> spawnerDropItem(String mob) {
-        return drops.of(mob).map(SpawnerDrops.Drop::item);
+        return drops.first(mob).map(SpawnerDrops.Drop::item);
     }
 
     @Override

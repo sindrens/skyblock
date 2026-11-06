@@ -386,6 +386,10 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "sell.daily.reset-hour", desc = "Hour of the daily reset (server time zone, Oslo).", min = 0, max = 23)
     public int sellDailyResetHour = 4;
 
+    @Setting(path = "sell.daily.exempt-categories", desc = "sell.yml categories the day price never touches (owner 7 Nov 2026: "
+            + "mob-loot, so spawners keep paying back as planned; spawners are limited by their price and levels).", level = Setting.Level.OWNER)
+    public List<String> sellDailyExempt = List.of("mob-loot");
+
     @Setting(path = "sell.daily.save-seconds", desc = "How often changed day counts are saved to the database (seconds).", min = 10,
             max = 3_600, restart = true)
     public int sellDailySaveSeconds = 30;

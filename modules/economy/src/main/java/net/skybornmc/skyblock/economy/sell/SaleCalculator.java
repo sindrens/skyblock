@@ -75,6 +75,7 @@ public final class SaleCalculator {
      * Dynamic prices v2 quote: {@code prices} gives this week's price (drift, Hot Item), {@code dayCount} how many of an
      * item the seller's island sold today; each line pays the day factor item by item ({@link DayPrice#sum}). While the
      * old global model is on, this is {@link #quote(List, List, Function, Function, DynamicSettings, double, double)}.
+     * A {@code dayCount} below 0 means the item has no day price (an exempt category such as mob-loot).
      */
     public static SellQuote quote(List<String> keys, List<Long> amounts, Function<String, Optional<SellPrice>> prices,
                                   Function<String, Double> impacts, java.util.function.ToLongFunction<String> dayCount, DayPrice day,
@@ -90,9 +91,11 @@ public final class SaleCalculator {
         double money = 0;
         for (Map.Entry<String, Long> e : totals.entrySet()) {
             SellPrice p = priced.get(e.getKey());
-            long start = Math.max(0, dayCount.applyAsLong(e.getKey()));
-            double value = p.base() <= 0 ? 0 : p.base() * p.hotFactor() * p.multiplier() * day.sum(start, e.getValue());
-            lines.add(new SellQuote.Line(forSeller(p, day, start), e.getValue(), value));
+            long count = dayCount.applyAsLong(e.getKey()); // below 0 = this item has no day price (exempt category)
+            long start = Math.max(0, count);
+            double items = count < 0 ? e.getValue() : day.sum(start, e.getValue());
+            double value = p.base() <= 0 ? 0 : p.base() * p.hotFactor() * p.multiplier() * items;
+            lines.add(new SellQuote.Line(count < 0 ? p : forSeller(p, day, start), e.getValue(), value));
             money += value;
         }
         long subtotal = PriceMath.roundDown(money);

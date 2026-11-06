@@ -132,6 +132,11 @@ public final class IslandToolsConfig extends ModuleConfig {
     @Setting(path = "levels.xp-per-block", desc = "Tool XP per relevant block (a ripe crop for the hoe, a natural ore or stone for the pickaxe), before the bonuses.", min = 0, max = 1000)
     public double xpPerBlock = 1;
 
+    @Setting(path = "levels.hoe-xp-divisor", desc = "Owner 7 Nov 2026: the hoe gets its tool XP per crop divided by this (15 = 15x "
+            + "slower levels and prestiges than before, so every level is felt and brings 15x more shards). 1 = like the other tools.",
+            min = 1, max = 1000, level = Setting.Level.OWNER)
+    public double hoeXpDivisor = 15;
+
     @Setting(path = "levels.title", desc = "A title on screen for the player whose block levelled the tool up (the other members get an action bar line).")
     public boolean levelTitle = true;
 
@@ -169,13 +174,17 @@ public final class IslandToolsConfig extends ModuleConfig {
     public double shardSword = 150;
 
     @Setting(path = "shards.chance-hoe", desc = "Percent chance of 1 Farming Shard per ripe crop harvested with the island hoe (over 100 = more than one).", min = 0, max = 1000)
-    public double shardHoe = 40; // feedback 5 Nov 2026: about 5x faster
+    public double shardHoe = 60; // owner 7 Nov 2026: more shards (was 40)
 
-    @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (feedback 5 Nov 2026: 1% a level, 100 levels = double shards).", min = 0, max = 20)
-    public double shardFinderPerLevel = 1.0;
+    @Setting(path = "shards.finder-per-level", desc = "Shard Finder: percent more shards per level (owner 7 Nov 2026: 3% a level, 100 levels = 4x shards; the lore shows only the level).", min = 0, max = 20)
+    public double shardFinderPerLevel = 3.0;
 
-    @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often (and shown on the action bar).", min = 1, max = 60)
+    @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often.", min = 1, max = 60)
     public int shardPayoutSeconds = 3;
+
+    @Setting(path = "shards.popups", desc = "Owner 7 Nov 2026: every shard find shows as a small floating text on the block or mob "
+            + "that gave it (gone after 0.5 s, only you see it) instead of an action bar line.")
+    public boolean shardPopups = true;
 
     @Setting(path = "auto-sell.price-percent", desc = "Auto-Sell sells drops as you break them at this percent of the sell price (the other selling bonuses apply too).", min = 1, max = 100)
     public double autoSellPercent = 90;
@@ -399,7 +408,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 11;
+        return 12;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -432,7 +441,10 @@ public final class IslandToolsConfig extends ModuleConfig {
                         "levels.prestige-factor", ValueChange.of(0.35, d.xpPrestigeFactor)),
                 // v11 (owner 6 Nov 2026): the island rod for /fish
                 11, Map.of("perks", ValueChange.of(PERKS_V9, d.perks), "enchants.list",
-                        ValueChange.of(d.enchantList.stream().filter(l -> !l.startsWith("rod:") && !l.startsWith("sword:")).toList(), d.enchantList)));
+                        ValueChange.of(d.enchantList.stream().filter(l -> !l.startsWith("rod:") && !l.startsWith("sword:")).toList(), d.enchantList)),
+                // v12 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): more shards, a Shard Finder level that matters
+                12, Map.of("shards.chance-hoe", ValueChange.of(40.0, d.shardHoe),
+                        "shards.finder-per-level", ValueChange.of(1.0, d.shardFinderPerLevel)));
     }
 
     /** Owner 4 Nov 2026: the old tier, task, axe/sword, row and put-away settings are gone. */

@@ -22,6 +22,9 @@
 # Reload: /skyblock reload economy
 config-version: 2
 money-scale: 100
+# Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): crops -40%, spawner loot 1x per drop priced per tier. A live file
+# gets these once (an edited price stays); the number below records it.
+catalog-version: 3
 
 categories:
   # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
@@ -41,19 +44,19 @@ categories:
   crops:
     # Owner 3 Nov 2026: crops you harvest with the hoe pay better per item than crops that farm themselves
     # (cactus, cane, melon, pumpkin, cocoa, berries: big automatic farms must not be OP). /farm pays a bonus on top.
-    wheat: 1200
-    carrot: 1500
-    potato: 1500
-    beetroot: 2000
-    sugar_cane: 400
-    melon_slice: 200
-    pumpkin: 1000
-    cocoa_beans: 800
-    cactus: 500
-    sweet_berries: 600
-    nether_wart: 3000
-    torchflower: 39600
-    pitcher_plant: 87000
+    wheat: 700
+    carrot: 900
+    potato: 900
+    beetroot: 1200
+    sugar_cane: 250
+    melon_slice: 120
+    pumpkin: 600
+    cocoa_beans: 500
+    cactus: 300
+    sweet_berries: 350
+    nether_wart: 1800
+    torchflower: 24000
+    pitcher_plant: 52000
 
   # Owner 6 Nov 2026 (/fish): small prices on purpose. A catch at /fish pays its water's money directly, so island
   # AFK fish farms never print money; these are only for the rod storage's "Sell all" and Golden Fish.
@@ -67,41 +70,43 @@ categories:
     nautilus_shell: 2500
     heart_of_the_sea: 20000
 
-  # Spawner mob loot. Owner plan 5 Nov 2026 (never shown): one mob is worth about $3 / $6 / $10 / $18 (spawner tiers 1-4),
-  # so a spawner pays back its shop price in about 100 h (tier 1) to 150 h (tier 4) before upgrades.
+  # Spawner mob loot. Owner 7 Nov 2026 (plans/HOE_SHARDS_SPAWNERS.md): a spawner mob drops 1 of each of its drops, and a
+  # kill is worth about $280 / $700 / $1,750 / $4,200 (tiers 1-4, 2.5x a tier), so every spawner pays back in ~50 h.
   mob-loot:
-    # Spawner tier 1 (pig, cow, chicken, sheep, rabbit): $1 per item, about $3 per mob
-    porkchop: 100
-    cooked_porkchop: 100
-    beef: 100
-    cooked_beef: 100
-    chicken: 100
-    cooked_chicken: 100
-    mutton: 100
-    cooked_mutton: 100
-    rabbit: 100
-    cooked_rabbit: 100
-    leather: 100
-    feather: 100
-    rabbit_hide: 100
-    rabbit_foot: 100
-    # Spawner tier 2 (zombie, skeleton, spider, slime): $5 per item, about $6 per mob. Arrows are not listed: 1 feather crafts 4 arrows.
-    rotten_flesh: 500
-    bone: 500
-    string: 500
-    spider_eye: 500
-    slime_ball: 500
-    # Spawner tier 3 (creeper, witch, drowned, husk): $10 per item
-    gunpowder: 1000
+    # Spawner tier 1 (pig, cow, chicken, sheep, rabbit, hoglin): $140 an item, $280 a kill (a pig drops one porkchop)
+    porkchop: 280
+    cooked_porkchop: 280
+    beef: 140
+    cooked_beef: 140
+    chicken: 140
+    cooked_chicken: 140
+    mutton: 140
+    cooked_mutton: 140
+    rabbit: 140
+    cooked_rabbit: 140
+    leather: 140
+    feather: 140
+    rabbit_hide: 140
+    rabbit_foot: 140
+    # Spawner tier 2 (zombie, skeleton, spider, slime, zombified piglin): $700 a kill. Arrows are not listed: 1 feather crafts 4 arrows.
+    rotten_flesh: 700
+    bone: 700
+    string: 350
+    spider_eye: 350
+    slime_ball: 700
+    # Spawner tier 3 (creeper; the witch drops six potion items; drowned, husk and stray drop tier 2 items)
+    gunpowder: 1750
     glowstone_dust: 1000
-    # Spawner tier 4 (blaze, enderman, guardian, piglin): $36 per item, about $18 per mob (0.5 per kill)
-    blaze_rod: 3600
-    ender_pearl: 3600
-    prismarine_shard: 3600
-    prismarine_crystals: 3600
+    # Spawner tier 4 (blaze, enderman, guardian): about $4,200 a kill
+    blaze_rod: 4200
+    ender_pearl: 4200
+    prismarine_shard: 2000
+    prismarine_crystals: 2000
     # Spawner tier 5 (iron golem, wither skeleton, shulker): $180
     shulker_shell: 18000
     wither_skeleton_skull: 18000
+    # Owner 7 Nov 2026: a spawner sheep drops 1 mutton + 1 wool, so wool has its own price (it was $643 from string).
+    white_wool: 140
     # Iron golems drop iron ingots; an ingot can't sell above raw iron (smelting), so it gets the raw iron price.
     iron_ingot: 1800
 
