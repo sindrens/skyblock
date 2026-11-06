@@ -67,6 +67,7 @@ public final class EssentialsModule implements SkyblockModule {
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind, start)) {
             group.register();
         }
+        serverEvents.register(); // /koth
         for (Listener listener : listeners()) {
             core.plugin().getServer().getPluginManager().registerEvents(listener, core.plugin());
         }

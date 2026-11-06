@@ -84,6 +84,13 @@ final class ServerEvents implements Listener {
         }
     }
 
+    // KOTH (owner 7 Nov 2026): team key (island id, or the player for players without an island) -> seconds held
+    private final Map<UUID, Integer> held = new ConcurrentHashMap<>();
+    private long kothNext;
+    private long kothEnds;
+    private BossBar kothBar;
+    private UUID kothHolder;
+
     ServerEvents(Core core, ModuleMessages msg, Supplier<EssentialsConfig> config) {
         this.core = core;
         this.msg = msg;
@@ -94,6 +101,7 @@ final class ServerEvents implements Listener {
         long now = System.currentTimeMillis();
         meteorNext = now + 60_000L * Math.max(1, config.get().meteorEveryMinutes) / 2; // the first one sooner after a restart
         contestNext = now + 60_000L * Math.max(1, config.get().contestEveryMinutes) / 2;
+        kothNext = now + 60_000L * Math.max(1, config.get().kothEveryMinutes) / 2;
         // Leftovers of a crash (non-persistent, but a chunk saved mid-event could keep them): removed once.
         World w = Bukkit.getWorld(config.get().meteorWorld);
         if (w != null) {
@@ -108,6 +116,7 @@ final class ServerEvents implements Listener {
         }
         endMeteor(false);
         endContest(false);
+        endKoth(null);
     }
 
     private void tick() {
@@ -120,6 +129,13 @@ final class ServerEvents implements Listener {
                 endMeteor(true);
             } else if (meteorEnds > 0) {
                 updateMeteorBar(now);
+            }
+        }
+        if (c.kothEnabled) {
+            if (kothEnds == 0 && now >= kothNext && !Bukkit.getOnlinePlayers().isEmpty()) {
+                startKoth(c);
+            } else if (kothEnds > 0) {
+                tickKoth(c, now);
             }
         }
         if (c.contestEnabled) {
@@ -392,6 +408,170 @@ final class ServerEvents implements Listener {
             msg.send(p, rank.isEmpty() ? "server-events.contest.nobody" : "server-events.contest.end",
                     Msg.p("first", line.getOrDefault(1, "-")), Msg.p("second", line.getOrDefault(2, "-")), Msg.p("third", line.getOrDefault(3, "-")));
         }
+    }
+
+    // ------------------------------------------------------------------ KOTH
+
+    /** {@code /koth}: to the hill while KOTH runs (the Warzone is otherwise closed). */
+    void register() {
+        core.commands().register(net.skybornmc.skyblock.common.command.CommandSpec.command("koth")
+                .description("Join King of the Hill in the Warzone while it runs").category("Teleport")
+                .permission(Perms.SPAWN).playerOnly().executes(ctx -> joinKoth(ctx.player())));
+    }
+
+    private void joinKoth(Player p) {
+        EssentialsConfig c = config.get();
+        World w = Bukkit.getWorld(c.kothWorld);
+        if (kothEnds == 0 || w == null) {
+            long in = Math.max(0, kothNext - System.currentTimeMillis()) / 60_000L;
+            msg.send(p, "server-events.koth.closed", Msg.number("minutes", in));
+            return;
+        }
+        p.teleport(new Location(w, c.kothX, c.kothY, c.kothZ + c.kothRadius + 4, 180, 0)); // a few steps in front of the hill
+        msg.send(p, "server-events.koth.joined", Msg.number("seconds", c.kothHoldSeconds));
+    }
+
+    private void startKoth(EssentialsConfig c) {
+        if (Bukkit.getWorld(c.kothWorld) == null) {
+            kothNext = System.currentTimeMillis() + 60_000L * Math.max(1, c.kothEveryMinutes);
+            return;
+        }
+        ensureArena(Bukkit.getWorld(c.kothWorld), c);
+        held.clear();
+        kothHolder = null;
+        kothEnds = System.currentTimeMillis() + 60_000L * Math.max(1, c.kothMaxMinutes);
+        kothBar = BossBar.bossBar(Component.empty(), 0f, BossBar.Color.YELLOW, BossBar.Overlay.PROGRESS);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            msg.send(p, "server-events.koth.start", Msg.number("seconds", c.kothHoldSeconds));
+        }
+    }
+
+    /**
+     * The Warzone has no build yet (a 7x7 builder platform): KOTH lays a stone brick floor around it (only into air, never
+     * over a build) and marks the hill gold. Runs once per start; cheap (~1,000 blocks).
+     */
+    private void ensureArena(World w, EssentialsConfig c) {
+        if (w == null || c.kothArenaRadius <= 0) {
+            return;
+        }
+        int cx = (int) Math.floor(c.kothX);
+        int cz = (int) Math.floor(c.kothZ);
+        int y = (int) Math.floor(c.kothY) - 1;
+        int hill = (int) Math.round(c.kothRadius);
+        for (int dx = -c.kothArenaRadius; dx <= c.kothArenaRadius; dx++) {
+            for (int dz = -c.kothArenaRadius; dz <= c.kothArenaRadius; dz++) {
+                org.bukkit.block.Block b = w.getBlockAt(cx + dx, y, cz + dz);
+                boolean onHill = Math.abs(dx) <= hill && Math.abs(dz) <= hill;
+                if (onHill && (b.getType().isAir() || b.getType() == Material.CRACKED_STONE_BRICKS)) {
+                    b.setType(Material.GOLD_BLOCK, false);
+                } else if (!onHill && b.getType().isAir()) {
+                    b.setType(Material.STONE_BRICKS, false);
+                }
+            }
+        }
+    }
+
+    /** The team of a player on the hill: their island, or themselves. */
+    private UUID team(Player p) {
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                .flatMap(s -> s.islandOf(p.getUniqueId())).map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::id)
+                .orElse(p.getUniqueId());
+    }
+
+    private void tickKoth(EssentialsConfig c, long now) {
+        World w = Bukkit.getWorld(c.kothWorld);
+        if (w == null) {
+            endKoth(null);
+            return;
+        }
+        Set<UUID> on = new java.util.HashSet<>();
+        for (Player p : w.getPlayers()) {
+            Location l = p.getLocation();
+            if (!p.isDead() && p.getGameMode() == org.bukkit.GameMode.SURVIVAL && Math.abs(l.getX() - c.kothX) <= c.kothRadius + 0.5
+                    && Math.abs(l.getZ() - c.kothZ) <= c.kothRadius + 0.5 && Math.abs(l.getY() - c.kothY) <= 4) {
+                on.add(team(p));
+            }
+        }
+        String state;
+        if (on.size() == 1) {
+            kothHolder = on.iterator().next();
+            int s = held.merge(kothHolder, 1, Integer::sum);
+            if (s >= c.kothHoldSeconds) {
+                endKoth(kothHolder);
+                return;
+            }
+            state = "holding";
+        } else {
+            state = on.isEmpty() ? "empty" : "contested";
+        }
+        if (now >= kothEnds) {
+            UUID best = held.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(null);
+            endKoth(best);
+            return;
+        }
+        String holder = kothHolder == null ? "-" : teamName(kothHolder);
+        int have = kothHolder == null ? 0 : held.getOrDefault(kothHolder, 0);
+        kothBar.name(msg.component(net.kyori.adventure.audience.Audience.empty(), "server-events.koth.bar." + state, Msg.p("holder", holder),
+                Msg.p("held", clock(have)), Msg.p("need", clock(c.kothHoldSeconds)), Msg.p("time", clock(Math.max(0, kothEnds - now) / 1000))));
+        kothBar.progress(Math.max(0f, Math.min(1f, have / (float) Math.max(1, c.kothHoldSeconds))));
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getWorld().equals(w)) {
+                p.showBossBar(kothBar);
+            } else {
+                p.hideBossBar(kothBar);
+            }
+        }
+    }
+
+    private String teamName(UUID team) {
+        Player p = Bukkit.getPlayer(team);
+        if (p != null) {
+            return p.getName();
+        }
+        return core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class).flatMap(s -> s.island(team))
+                .map(net.skybornmc.skyblock.common.island.IslandService.IslandInfo::name).orElse("?");
+    }
+
+    private void endKoth(UUID winner) {
+        if (kothBar != null) {
+            BossBar bar = kothBar;
+            Bukkit.getOnlinePlayers().forEach(p -> p.hideBossBar(bar));
+            kothBar = null;
+        }
+        boolean wasOn = kothEnds > 0;
+        kothEnds = 0;
+        kothNext = System.currentTimeMillis() + 60_000L * Math.max(1, config.get().kothEveryMinutes);
+        if (!wasOn) {
+            return;
+        }
+        EssentialsConfig c = config.get();
+        World w = Bukkit.getWorld(c.kothWorld);
+        if (winner == null || w == null) {
+            Bukkit.getOnlinePlayers().forEach(p -> msg.send(p, "server-events.koth.nobody"));
+            return;
+        }
+        String name = teamName(winner);
+        String ref = "koth:" + kothNext + ":";
+        for (Player p : w.getPlayers()) { // the winning team's players in the Warzone get the reward
+            if (!team(p).equals(winner)) {
+                continue;
+            }
+            UUID profile = ProfileService.of(core.services()).profileKey(p);
+            if (c.kothCrystals > 0) {
+                core.services().optional(EconomyService.class).ifPresent(e -> e.execute(Transaction.deposit(AccountRef.player(profile),
+                        Currency.CRYSTALS, c.kothCrystals, "koth").actor(Actor.system("essentials")).idempotencyKey(ref + profile)));
+            }
+            if (c.kothKeys > 0) {
+                core.services().optional(net.skybornmc.skyblock.common.crate.CrateKeys.class)
+                        .ifPresent(k -> k.giveKeys(profile, c.eventKeyCrate, c.kothKeys, "koth", Actor.system("essentials")));
+            }
+            msg.send(p, "server-events.koth.won", Msg.number("keys", c.kothKeys), Msg.p("crystals", Format.number(c.kothCrystals)),
+                    Msg.p("crate", c.eventKeyCrate));
+            core.sounds().play(p, "unlock");
+        }
+        core.audit().log(AuditCategory.ECONOMY, "koth_win", Actor.system("essentials"), winner.toString(), (long) held.getOrDefault(winner, 0), null,
+                Map.of("name", name));
+        Bukkit.getOnlinePlayers().forEach(p -> msg.send(p, "server-events.koth.end", Msg.p("winner", name)));
     }
 
     /** {@code 7:05}. Pure. */

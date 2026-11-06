@@ -88,6 +88,43 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "server-events.meteor.key-chance", desc = "Percent chance that a fragment also gives a key.", min = 0, max = 100)
     public double meteorKeyChance = 20;
 
+    @Setting(path = "server-events.koth.enabled", desc = "Owner 7 Nov 2026: King of the Hill in the Warzone (/koth while it runs).")
+    public boolean kothEnabled = true;
+
+    @Setting(path = "server-events.koth.every-minutes", desc = "Minutes between two KOTH events.", min = 15, max = 1440)
+    public int kothEveryMinutes = 180;
+
+    @Setting(path = "server-events.koth.max-minutes", desc = "Longest a KOTH runs; then the island that held the hill longest wins.", min = 1, max = 120)
+    public int kothMaxMinutes = 15;
+
+    @Setting(path = "server-events.koth.hold-seconds", desc = "Seconds (in total) one island must hold the hill alone to win.", min = 10, max = 3600)
+    public int kothHoldSeconds = 120;
+
+    @Setting(path = "server-events.koth.world", desc = "World of the hill (the Warzone, PvP on).")
+    public String kothWorld = "warzone";
+
+    @Setting(path = "server-events.koth.x", desc = "Centre of the hill (x).")
+    public double kothX = 0.5;
+
+    @Setting(path = "server-events.koth.y", desc = "Centre of the hill (y, the floor + 1).")
+    public double kothY = 100;
+
+    @Setting(path = "server-events.koth.z", desc = "Centre of the hill (z).")
+    public double kothZ = 0.5;
+
+    @Setting(path = "server-events.koth.radius", desc = "The hill reaches this many blocks from the centre (3 = 7x7).", min = 0, max = 30)
+    public double kothRadius = 3;
+
+    @Setting(path = "server-events.koth.arena-radius", desc = "Until the Warzone build exists: a stone brick floor this far around the hill "
+            + "(only into air, never over a build; 0 = none).", min = 0, max = 50)
+    public int kothArenaRadius = 15;
+
+    @Setting(path = "server-events.koth.keys", desc = "Keys for every player of the winning island who is in the Warzone.", min = 0, max = 100)
+    public int kothKeys = 5;
+
+    @Setting(path = "server-events.koth.crystals", desc = "Crystals for every player of the winning island who is in the Warzone.", min = 0, max = 100_000)
+    public long kothCrystals = 500;
+
     @Setting(path = "server-events.contest.enabled", desc = "Owner 7 Nov 2026: a fishing contest at /fish; most catches win.")
     public boolean contestEnabled = true;
 

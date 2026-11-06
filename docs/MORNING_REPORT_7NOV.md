@@ -218,6 +218,10 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Your picks, part 4: King of the Hill (update159)
+- **KOTH in the Warzone**, every 3 hours for up to 15 minutes: one chat line ("King of the Hill! /koth"), `/koth` takes you in front of the hill. Stand on the gold 7x7 hill with no other island on it: 2 minutes in total wins (another island on it pauses the clock; after 15 minutes the island that held it longest wins). Every player of the winning island in the Warzone gets 5 Ember keys and 500 crystals. PvP is on there; you keep your items.
+- The Warzone has no build yet (only a 7x7 builder platform), so KOTH lays a 31x31 stone brick floor around it (only into air, never over a build). When the builder makes the Warzone, set `essentials.yml server-events.koth.arena-radius: 0` and move `koth.x/y/z` to the real hill. The Gatehouse portal sign now says "Warzone · KOTH: /koth" (the portal itself stays closed until that build exists).
+
 ## Your picks, part 3: tool skins (update158)
 - The hoe, pickaxe and sword menus have a **Skins** button (bottom right): Diamond (free), Iron 250, Golden 500, Copper 500 and Netherite 1,000 credits. Bought once (with a confirm screen), switch any time; only the look changes. They are the vanilla models until the pack v2 art exists. List and prices: `islandtools.yml skins.list`.
 
