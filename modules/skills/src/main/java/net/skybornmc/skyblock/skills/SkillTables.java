@@ -36,8 +36,14 @@ public final class SkillTables {
     /** Default XP per action, per skill (written to the file when the section is missing). */
     static final Map<SkillType, Map<String, Double>> DEFAULT_XP = defaultXp();
 
-    /** Default unlock levels (tier thresholds from WORLD.md §4 and the M3.0 combat proposal). */
-    static final Map<SkillType, List<Integer>> DEFAULT_UNLOCKS = Map.of(
+    /**
+     * Default unlock levels: none. The old ones were the Depths tiers (Mine/Forest/Combat Tier II ...), which are gone
+     * (GUI pass, 7 Nov 2026); /farm and /mine unlock by amount farmed or mined, not by skill level.
+     */
+    static final Map<SkillType, List<Integer>> DEFAULT_UNLOCKS = Map.of();
+
+    /** The old Depths tier levels: an untouched list in a live file is emptied once ({@link #load}). */
+    static final Map<SkillType, List<Integer>> RETIRED_DEPTHS_UNLOCKS = Map.of(
             SkillType.MINING, List.of(5, 10, 15, 20, 25, 30, 35, 42, 50, 58, 66),
             SkillType.FORAGING, List.of(5, 10, 15, 20, 25, 30, 35, 42, 50, 58),
             SkillType.COMBAT, List.of(6, 12, 18, 24, 30, 38, 46, 55, 66));
@@ -117,6 +123,14 @@ public final class SkillTables {
         if (!yaml.contains(UNLOCKS)) {
             writeUnlockDefaults(yaml);
             changed = true;
+        }
+        // GUI pass (7 Nov 2026): the Depths tier unlocks promised things that no longer exist; untouched lists are emptied.
+        for (Map.Entry<SkillType, List<Integer>> old : RETIRED_DEPTHS_UNLOCKS.entrySet()) {
+            String path = UNLOCKS + "." + old.getKey().id();
+            if (yaml.isList(path) && yaml.getIntegerList(path).equals(old.getValue())) {
+                yaml.set(path, List.of());
+                changed = true;
+            }
         }
         Map<SkillType, Map<String, Double>> xp = new EnumMap<>(SkillType.class);
         ConfigurationSection xpSection = yaml.getConfigurationSection(XP);

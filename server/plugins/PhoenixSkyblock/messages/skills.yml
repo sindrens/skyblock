@@ -118,6 +118,10 @@ menu:
       - " <c:muted><sym:bullet></c:muted> <unlock>"
       - " <c:text>at level <c:value><level></c:value> <c:muted>(<missing> to go)"
     all-unlocked: "<c:success><sym:check> Everything unlocked"
+    # No unlocks by level for this skill (the old Depths tiers are gone): what levels do instead.
+    no-unlocks:
+      - "<c:text>Your levels raise your island's"
+      - "<c:text>level (members' average counts)."
     how-header: "<c:muted>How to earn XP"
 
 # /settings toggle (Display)

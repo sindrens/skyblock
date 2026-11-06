@@ -19,7 +19,7 @@ quest:
     where: "<c:bar>| </c:bar><c:text>In <c:info>Forest Tier <tier></c:info> <c:text>or deeper"
     short: "Chop logs"
   kill:
-    name: "<c:value>Kill <target> Depths mobs"
+    name: "<c:value>Kill <target> mobs"
     where: "<c:bar>| </c:bar><c:text>In <c:info>Combat Tier <tier></c:info> <c:text>or deeper"
     short: "Kill mobs"
   sell:

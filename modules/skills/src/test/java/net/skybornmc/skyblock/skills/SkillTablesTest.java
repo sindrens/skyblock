@@ -31,19 +31,20 @@ class SkillTablesTest {
             double ratio = mine.get(i) / mine.get(i - 1);
             assertTrue(ratio > 1.3 && ratio < 1.75, "tier " + (i + 1) + " ratio " + ratio);
         }
-        // Combat thresholds (ECONOMY_BALANCE §3.2 proposal).
-        assertEquals(List.of(6, 12, 18, 24, 30, 38, 46, 55, 66), t.unlocks(SkillType.COMBAT));
-        assertEquals(66, t.unlocks(SkillType.MINING).getLast());
+        // GUI pass 7 Nov 2026: no unlocks by level (the Depths tiers are gone).
+        assertTrue(t.unlocks(SkillType.COMBAT).isEmpty());
+        assertTrue(t.unlocks(SkillType.MINING).isEmpty());
     }
 
     @Test
     void nextUnlock() {
-        SkillTables t = SkillTables.defaults();
+        SkillTables t = new SkillTables(java.util.Map.of(), SkillTables.RETIRED_DEPTHS_UNLOCKS);
         assertEquals(5, t.nextUnlock(SkillType.MINING, 0));
         assertEquals(10, t.nextUnlock(SkillType.MINING, 5));
         assertEquals(42, t.nextUnlock(SkillType.MINING, 36));
         assertEquals(-1, t.nextUnlock(SkillType.MINING, 66));
         assertEquals(-1, t.nextUnlock(SkillType.FARMING, 0));
+        assertEquals(-1, SkillTables.defaults().nextUnlock(SkillType.MINING, 0), "no unlocks by default");
     }
 
     @Test
@@ -55,7 +56,20 @@ class SkillTablesTest {
         assertTrue(problems.isEmpty(), problems.toString());
         assertEquals(40, loaded.tables().xp(SkillType.MINING, "nether_quartz_ore"));
         assertEquals(1.5, yaml.getDouble("xp.mining.copper_ore"));
-        assertEquals(List.of(6, 12, 18, 24, 30, 38, 46, 55, 66), yaml.getIntegerList("unlocks.combat"));
+        assertEquals(List.of(), yaml.getIntegerList("unlocks.combat"));
+    }
+
+    @Test
+    void untouchedDepthsUnlocksAreEmptiedOnce() {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.createSection("xp");
+        yaml.set("unlocks.mining", List.of(5, 10, 15, 20, 25, 30, 35, 42, 50, 58, 66));
+        yaml.set("unlocks.combat", List.of(10, 20));
+        SkillTables.Loaded loaded = SkillTables.load(yaml, "skills.yml", (s, id) -> true, p -> { });
+        assertTrue(loaded.changed());
+        assertTrue(loaded.tables().unlocks(SkillType.MINING).isEmpty());
+        assertEquals(List.of(10, 20), loaded.tables().unlocks(SkillType.COMBAT), "an owner list stays");
+        assertFalse(SkillTables.load(yaml, "skills.yml", (s, id) -> true, p -> { }).changed(), "once");
     }
 
     @Test

@@ -183,6 +183,8 @@ The old model (one price per item for the whole server that fell with every sale
 - **/titles**: titles nobody can earn any more (Deep Diver, Tycoon, Reborn: their achievements are off) are hidden unless you already have them (`cosmetics.yml titles.hidden-unless-owned`).
 - **Spawn portal**: the old "The Depths" sign over the portal that leads to the farm and mine world now says **Farm & Mine · /farm /mine** (the hologram updates on the next build apply or restart).
 - **FX-15**: profile switching is blocked in the /farm and /mine world (it was blocked in the Depths world, which no longer exists).
+- **/skills** no longer promises "Next unlock: Mine Tier II · Copper" and the like (those were Depths tiers, which are gone; /farm and /mine unlock by amount). Each skill now says its levels raise the island level. An owner-edited unlock list stays as it is.
+- Contract text "Kill N Depths mobs" is now "Kill N mobs".
 - Two lore lines that were too wide for Bedrock were split (island missions without an island, the sell chest price note).
 
 ## Released tonight

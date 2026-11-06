@@ -150,6 +150,8 @@ final class SkillsMenu extends Menu {
         if (next > 0 && next <= curve.maxLevel()) {
             lore.addAll(lines("menu.skill.next-unlock", Msg.c("unlock", manager.unlockText(viewer, skill, next)),
                     Msg.p("level", next), Msg.p("missing", next - level)));
+        } else if (manager.tables().unlocks(skill).isEmpty()) {
+            lore.addAll(lines("menu.skill.no-unlocks")); // nothing unlocks by level: say what levels do
         } else {
             lore.addAll(lines("menu.skill.all-unlocked"));
         }
