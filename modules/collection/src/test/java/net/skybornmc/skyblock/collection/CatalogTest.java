@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CatalogTest {
 
-    private static final Set<String> ITEMS = Set.of("depths_coal", "depths_copper", "depths_oak_log", "depths_bone");
+    private static final Set<String> ITEMS = Set.of("wheat", "carrot", "coal", "raw_iron", "cod", "zombie_spawn_egg", "husk_spawn_egg");
 
     private static List<CrateKeys.RewardInfo> rewards(String crate) {
         return switch (crate) {
@@ -29,10 +29,11 @@ class CatalogTest {
     }
 
     private static Catalog build(List<String> problems, boolean topOnly) {
-        return Catalog.build(List.of("mine", "forest", "combat", "crates", "fishing"),
-                Map.of("mine", List.of("1: depths_coal", "2: depths_copper", "3: depths_unknown", "x: depths_coal", "4 depths_iron"),
-                        "forest", List.of("1: depths_oak_log", "2: depths_coal"),
-                        "combat", List.of("2: depths_bone")),
+        return Catalog.build(List.of("farm", "mine", "fish", "mobs", "crates", "forest"),
+                Map.of("farm", List.of("wheat", "carrot", "pumpkin", "Wheat", "bad id!"),
+                        "mine", List.of("coal", "raw_iron"),
+                        "fish", List.of("cod"),
+                        "mobs", List.of("zombie", "husk")),
                 List.of("ember", "cinder", "nope"), topOnly, CatalogTest::rewards, ITEMS::contains, problems::add);
     }
 
@@ -40,13 +41,28 @@ class CatalogTest {
     void buildsPagesInOrderAndSkipsBrokenLines() {
         List<String> problems = new ArrayList<>();
         Catalog c = build(problems, true);
-        assertEquals(List.of("mine", "forest", "combat", "crates"), c.pages().stream().map(Catalog.Page::id).toList());
-        assertEquals(List.of("depths_coal", "depths_copper"), c.page("mine").entries().stream().map(Catalog.Entry::id).toList());
-        // depths_coal is already on the Mine page: one entry per item in the whole log.
-        assertEquals(List.of("depths_oak_log"), c.page("forest").entries().stream().map(Catalog.Entry::id).toList());
+        assertEquals(List.of("farm", "mine", "fish", "mobs", "crates"), c.pages().stream().map(Catalog.Page::id).toList());
+        assertEquals(List.of("farm.wheat", "farm.carrot"), c.page("farm").entries().stream().map(Catalog.Entry::id).toList());
+        assertEquals(List.of("mine.coal", "mine.raw_iron"), c.page("mine").entries().stream().map(Catalog.Entry::id).toList());
         assertEquals(2, c.page("mine").entries().get(1).tier());
-        // unknown item, bad tier, missing colon, duplicate, unknown page, unknown crate
-        assertEquals(6, problems.size(), problems.toString());
+        // every ring mob brings its boss, after the mobs
+        assertEquals(List.of("mob.zombie", "mob.husk", "boss.1", "boss.2"), c.page("mobs").entries().stream().map(Catalog.Entry::id).toList());
+        assertEquals("husk_spawn_egg", c.entry("boss.2").icon());
+        // unknown item, duplicate, bad id, unknown page, unknown crate
+        assertEquals(5, problems.size(), problems.toString());
+    }
+
+    @Test
+    void theBundledSettingsBuildWithoutProblems() {
+        CollectionSettings s = new CollectionSettings();
+        List<String> problems = new ArrayList<>();
+        Catalog c = Catalog.build(s.pageOrder, Map.of("farm", s.farm, "mine", s.mine, "fish", s.fish, "mobs", s.mobs), List.of(),
+                true, x -> List.of(), id -> org.bukkit.Material.getMaterial(id.toUpperCase(java.util.Locale.ROOT)) != null, problems::add);
+        assertEquals(List.of(), problems);
+        assertEquals(5, c.page("farm").entries().size());
+        assertEquals(7, c.page("mine").entries().size());
+        assertEquals(9, c.page("fish").entries().size());
+        assertEquals(20, c.page("mobs").entries().size(), "10 ring mobs and their 10 bosses");
     }
 
     @Test
@@ -66,15 +82,15 @@ class CatalogTest {
     @Test
     void countsFoundPerPageAndIgnoresStaleIds() {
         Catalog c = build(new ArrayList<>(), true);
-        Set<String> found = Set.of("depths_coal", "crate.ember.cinder_key", "removed_entry");
+        Set<String> found = Set.of("mine.coal", "crate.ember.cinder_key", "removed_entry");
         assertEquals(1, Catalog.found(c.page("mine"), found));
         assertEquals(2, c.found(found));
-        assertEquals(6, c.total());
+        assertEquals(11, c.total());
     }
 
     @Test
     void emptyPagesStayInTheCatalogButAreNotVisible() {
-        Catalog c = Catalog.build(List.of("mine", "crates"), Map.of("mine", List.of("1: depths_coal")), List.of(), true,
+        Catalog c = Catalog.build(List.of("mine", "crates"), Map.of("mine", List.of("coal")), List.of(), true,
                 x -> List.of(), ITEMS::contains, p -> { });
         assertEquals(2, c.pages().size());
         assertEquals(1, c.visible().size());

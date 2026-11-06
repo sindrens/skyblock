@@ -124,9 +124,10 @@ final class CollectionMenu extends PagedMenu<Catalog.Entry> {
 
     private static Material pageIcon(Catalog.PageKind kind) {
         return switch (kind) {
+            case FARM -> Material.IRON_HOE;
             case MINE -> Material.IRON_PICKAXE;
-            case FOREST -> Material.IRON_AXE;
-            case COMBAT -> Material.IRON_SWORD;
+            case FISH -> Material.FISHING_ROD;
+            case MOBS -> Material.IRON_SWORD;
             case CRATES -> Material.TRIPWIRE_HOOK;
         };
     }
@@ -181,7 +182,8 @@ final class CollectionMenu extends PagedMenu<Catalog.Entry> {
         Component name = m.entryName(viewer, e);
         ItemStack item = service.item(new ItemStack(m.entryIcon(e)), service.text(viewer, CollectionModule.ID, "menu.entry.found.name",
                 Msg.c("item", name)), service.lines(viewer, CollectionModule.ID, "menu.entry.found.lore", Msg.c("hint", hint),
-                Msg.p("ago", Format.duration(java.time.Duration.ofMillis(Math.max(0, System.currentTimeMillis() - f.at())))), Msg.c("source", source(f.source()))));
+                Msg.p("ago", Format.duration(java.time.Duration.ofMillis(Math.max(0, System.currentTimeMillis() - f.at())))), Msg.c("source", source(f.source())),
+                Msg.p("amount", Format.number(log.amount(e.id())))));
         item.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
         return MenuButton.display(item);
     }

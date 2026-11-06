@@ -23,8 +23,16 @@ final class CollectionStore {
     static final String FAILED = "failed";
     static final String REVIEW = "review";
 
-    /** One find to save. */
-    record EntryRow(UUID profile, String entry, long at, String source) {
+    /** One find to save: {@code amount} more of the entry (at and source are only kept the first time). */
+    record EntryRow(UUID profile, String entry, long at, String source, long amount) {
+
+        EntryRow(UUID profile, String entry, long at, String source) {
+            this(profile, entry, at, source, 1);
+        }
+
+        EntryRow plus(long more) {
+            return new EntryRow(profile, entry, at, source, amount + more);
+        }
     }
 
     /** One hand-out row ({@code collection_grants}). */
@@ -50,22 +58,32 @@ final class CollectionStore {
         return out;
     }
 
+    /** Batch 9: how many of each entry the profile found. */
+    static Map<String, Long> amounts(Connection c, UUID profile) throws SQLException {
+        Map<String, Long> out = new HashMap<>();
+        for (Object[] row : Sql.query(c, "SELECT entry_id, amount FROM collection_entries WHERE profile_key = ?",
+                rs -> new Object[]{rs.getString(1), rs.getLong(2)}, profile)) {
+            out.put((String) row[0], (Long) row[1]);
+        }
+        return out;
+    }
+
     static Set<String> milestones(Connection c, UUID profile) throws SQLException {
         return new HashSet<>(Sql.query(c, "SELECT milestone_id FROM collection_milestones WHERE profile_key = ?", rs -> rs.getString(1),
                 profile));
     }
 
-    /** Saves finds; an entry the profile already has keeps its first time (no error, nothing changes). */
+    /** Saves finds; an entry the profile already has keeps its first time and source, its amount grows. */
     static void insertEntries(Connection c, List<EntryRow> rows) throws SQLException {
         if (rows.isEmpty()) {
             return;
         }
         List<Object[]> params = new ArrayList<>(rows.size());
         for (EntryRow r : rows) {
-            params.add(new Object[]{r.profile(), cut(r.entry(), 64), r.at(), cut(r.source(), 24)});
+            params.add(new Object[]{r.profile(), cut(r.entry(), 64), r.at(), cut(r.source(), 24), Math.max(0, r.amount())});
         }
-        Sql.batch(c, "INSERT INTO collection_entries (profile_key, entry_id, first_at, found_source) VALUES (?, ?, ?, ?) "
-                + "ON DUPLICATE KEY UPDATE first_at = first_at", params);
+        Sql.batch(c, "INSERT INTO collection_entries (profile_key, entry_id, first_at, found_source, amount) VALUES (?, ?, ?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)", params);
     }
 
     /** Inserts a milestone; false (nothing written) when the profile has it already. */

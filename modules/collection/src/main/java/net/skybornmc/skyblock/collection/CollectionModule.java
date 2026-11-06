@@ -13,7 +13,6 @@ import net.skybornmc.skyblock.common.crate.CrateOpenedEvent;
 import net.skybornmc.skyblock.common.db.MainThread;
 import net.skybornmc.skyblock.common.db.Migrations;
 import net.skybornmc.skyblock.common.island.IslandService;
-import net.skybornmc.skyblock.common.item.ItemDefinition;
 import net.skybornmc.skyblock.common.item.Rarity;
 import net.skybornmc.skyblock.common.menu.Menu;
 import net.skybornmc.skyblock.common.module.SkyblockModule;
@@ -193,9 +192,10 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
 
     private Catalog buildCatalog(List<String> problems) {
         Optional<CrateKeys> keys = core.services().optional(CrateKeys.class);
-        return Catalog.build(settings.pageOrder, Map.of("mine", settings.mine, "forest", settings.forest, "combat", settings.combat),
+        return Catalog.build(settings.pageOrder, Map.of("farm", settings.farm, "mine", settings.mine, "fish", settings.fish,
+                        "mobs", settings.mobs),
                 settings.crates, settings.cratesTopOnly, crate -> keys.map(k -> k.rewards(crate)).orElse(List.of()),
-                id -> core.items().get(id).isPresent(), problems::add);
+                id -> Material.matchMaterial(id) != null, problems::add);
     }
 
     /** Page titles and Keeper of Ashes exist in tags-titles.yml (added once; staff edits stay). */
@@ -332,21 +332,32 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         return msg.component(viewer, "pages." + page + ".name");
     }
 
-    /** Display name of an entry: the custom item's own name, or the crate reward's name. */
+    /** Display name of an entry: the crate reward's name, the boss's name, or the vanilla item or mob name. */
     Component entryName(Player viewer, Catalog.Entry e) {
         if (e.nameMini() != null) {
             return mini(viewer, e.nameMini());
         }
-        return mini(viewer, core.items().get(e.id()).map(ItemDefinition::name).orElse(e.id()));
+        if (e.id().startsWith("boss.")) {
+            return msg.component(viewer, "bosses." + e.tier());
+        }
+        if (e.id().startsWith("mob.")) {
+            org.bukkit.entity.EntityType type = org.bukkit.Registry.ENTITY_TYPE.get(org.bukkit.NamespacedKey.minecraft(e.id().substring(4)));
+            return type == null ? Component.text(e.id()) : Component.translatable(type.translationKey());
+        }
+        Material item = e.icon() == null ? null : Material.matchMaterial(e.icon());
+        return item == null ? Component.text(e.id()) : Component.translatable(item.translationKey());
     }
 
-    /** Icon of an entry: the custom item's material, or the crate reward's icon. */
+    /** Icon of an entry: the item, the mob's spawn egg (a boss: its head-like skull), or the crate reward's icon. */
     Material entryIcon(Catalog.Entry e) {
+        if (e.id().startsWith("boss.")) {
+            return Material.WITHER_SKELETON_SKULL;
+        }
         if (e.icon() != null) {
             Material m = Material.matchMaterial(e.icon());
             return m != null && m.isItem() && !m.isAir() ? m : Material.CHEST;
         }
-        return core.items().get(e.id()).map(ItemDefinition::material).filter(m -> m.isItem() && !m.isAir()).orElse(Material.PAPER);
+        return Material.PAPER;
     }
 
     /** How to get a locked entry ("Mine tier 3 in the Depths", "Star reward of the Blaze crate"). */
@@ -354,6 +365,9 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
         if (e.crate() != null) {
             String crate = core.services().optional(CrateKeys.class).map(k -> k.crateNameMini(e.crate())).orElse(e.crate());
             return msg.component(viewer, "hint.crates", Msg.c("crate", mini(viewer, crate)));
+        }
+        if (e.id().startsWith("boss.")) {
+            return msg.component(viewer, "hint.boss", Msg.number("tier", e.tier()));
         }
         return msg.component(viewer, "hint." + e.page(), Msg.number("tier", e.tier()));
     }
@@ -368,6 +382,7 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
                 yield msg.component(viewer, "reward.key", Msg.number("amount", g.amount()), Msg.c("crate", mini(viewer, crate)));
             }
             case Milestones.SET -> msg.component(viewer, "reward.set");
+            case Milestones.CRYSTALS -> msg.component(viewer, "reward.crystals", Msg.number("amount", g.amount()));
             default -> Component.text(g.ref());
         };
     }
@@ -431,6 +446,34 @@ public final class CollectionModule implements SkyblockModule, Listener, Collect
     }
 
     /** Crate star rewards that were really given (not a crystal fallback). */
+    /** Batch 9: every crop, ore, catch and kill in the four grind areas counts (first find + amount). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGrind(net.skybornmc.skyblock.common.grind.GrindBreakEvent event) {
+        if (!settings.enabled) {
+            return;
+        }
+        String entry = grindEntry(event.area(), event.block(), event.drop());
+        if (entry == null) {
+            return;
+        }
+        Player p = event.getPlayer();
+        long amount = event.area().equals(net.skybornmc.skyblock.common.grind.GrindBreakEvent.PVE) ? 1 : Math.max(1, event.amount());
+        recorder.found(profiles().profileKey(p), p, entry, event.area(), amount);
+    }
+
+    /** The log entry of a grind event (pure): farm/mine/fish by the drop, pve by the mob (its spawn egg). Null = none. */
+    static String grindEntry(String area, Material block, Material drop) {
+        if (area == null) {
+            return null;
+        }
+        return switch (area) {
+            case "farm", "mine", "fish" -> drop == null ? null : Catalog.areaEntryId(area, drop.name());
+            case "pve" -> block == null || !block.name().endsWith("_SPAWN_EGG") ? null
+                    : Catalog.areaEntryId("mob", block.name().substring(0, block.name().length() - "_SPAWN_EGG".length()));
+            default -> null;
+        };
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onCrateOpened(CrateOpenedEvent event) {
         if (!settings.enabled) {

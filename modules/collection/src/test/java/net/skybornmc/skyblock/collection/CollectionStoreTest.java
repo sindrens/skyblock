@@ -123,4 +123,17 @@ class CollectionStoreTest {
         commit(profileA, List.of(), List.of("mine:100", Milestones.ALL));
         assertEquals(1, db.blocking(CollectionStore::pageMilestoneCounts).get(profileA));
     }
+
+    /** Batch 9: amounts add up in one row; the first time and source stay. */
+    @Test
+    void amountsAddUpAndTheFirstFindStays() {
+        db.blockingTransaction(c -> {
+            CollectionStore.insertEntries(c, List.of(new CollectionStore.EntryRow(profileA, "farm.wheat", 10, "farm", 3)));
+            CollectionStore.insertEntries(c, List.of(new CollectionStore.EntryRow(profileA, "farm.wheat", 50, "crate", 40),
+                    new CollectionStore.EntryRow(profileA, "fish.cod", 60, "fish")));
+            return true;
+        });
+        assertEquals(Map.of("farm.wheat", 43L, "fish.cod", 1L), db.blocking(c -> CollectionStore.amounts(c, profileA)));
+        assertEquals(new ProfileLog.Found(10, "farm"), db.blocking(c -> CollectionStore.entries(c, profileA)).get("farm.wheat"));
+    }
 }

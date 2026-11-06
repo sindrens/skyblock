@@ -10,7 +10,8 @@ import java.util.function.Consumer;
 /**
  * Page milestones and what they pay (pure, unit tested; PHASE-10 M10.10, P10-33).
  * <ul>
- *   <li>{@code <page>:<percent>} for every configured percent (25/50/75/100): one island level point each.</li>
+ *   <li>{@code <page>:<percent>} for every configured percent (25/50/75/100): one island level point each, and (batch 9)
+ *       {@code rewards.milestone-crystals} crystals.</li>
  *   <li>{@code <page>:100} also pays the page title and a Blaze key.</li>
  *   <li>{@code all} (every configured page at 100%, none of them empty) pays Keeper of Ashes, a Phoenix key and the secret
  *       set token once one exists.</li>
@@ -26,6 +27,8 @@ final class Milestones {
     static final String KEY = "key";
     static final String TITLE = "title";
     static final String SET = "set";
+    /** Batch 9: crystals on every page milestone ({@code ref} = "crystals"). */
+    static final String CRYSTALS = "crystals";
 
     /** One hand-out of a milestone. {@code ref}: crate id, title id or set id. */
     record Grant(String kind, String ref, long amount) {
@@ -33,11 +36,15 @@ final class Milestones {
 
     /** Reward settings snapshot (from {@code collection.yml}). */
     record Rewards(boolean pageTitles, String pageKeyCrate, int pageKeys, String logTitle, String logKeyCrate, int logKeys,
-                   String logSet) {
+                   String logSet, int milestoneCrystals) {
+
+        Rewards(boolean pageTitles, String pageKeyCrate, int pageKeys, String logTitle, String logKeyCrate, int logKeys, String logSet) {
+            this(pageTitles, pageKeyCrate, pageKeys, logTitle, logKeyCrate, logKeys, logSet, 0);
+        }
 
         static Rewards of(CollectionSettings s) {
             return new Rewards(s.pageTitles, clean(s.pageKeyCrate), s.pageKeys, clean(s.logTitle), clean(s.logKeyCrate), s.logKeys,
-                    clean(s.logSet));
+                    clean(s.logSet), Math.max(0, s.milestoneCrystals));
         }
 
         private static String clean(String s) {
@@ -144,6 +151,9 @@ final class Milestones {
                 out.add(new Grant(SET, r.logSet(), 1));
             }
             return out;
+        }
+        if (percentOf(milestone) > 0 && r.milestoneCrystals() > 0) {
+            out.add(new Grant(CRYSTALS, CRYSTALS, r.milestoneCrystals()));
         }
         if (percentOf(milestone) != FULL) {
             return out;

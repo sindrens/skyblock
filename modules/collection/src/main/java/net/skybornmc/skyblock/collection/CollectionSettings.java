@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Typed settings of the collection log ({@code collection.yml}, PHASE-10-REWARDS.md M10.10). Every number is a default
  * the owner can change; texts are in {@code messages/collection.yml}. Only pages with a live source exist (principle 0:
- * fun first, less is more); Farming, Fishing, Bosses, Events, Pets and the Black Market join when they are built.
+ * fun first, less is more): the four grind areas (farm, ores, fish, mobs and bosses) and the crates.
  */
 public final class CollectionSettings extends ModuleConfig {
 
@@ -17,27 +17,29 @@ public final class CollectionSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ pages
 
-    @Setting(path = "pages.order", desc = "The pages (tabs) in order. Known pages: mine, forest, combat, crates. Remove one to hide "
+    @Setting(path = "pages.order", desc = "The pages (tabs) in order. Known pages: farm, mine, fish, mobs, crates. Remove one to hide "
             + "it (its finds stay saved). A page with no entries is hidden and the whole log can't be completed while it is empty.",
             level = Setting.Level.OWNER)
-    public List<String> pageOrder = List.of("mine", "forest", "combat", "crates");
+    public List<String> pageOrder = PAGES_V2;
 
-    @Setting(path = "pages.mine", desc = "Mine page: '<Depths mine tier>: <drop item id>' (drop-items in depths.yml). Found the first "
-            + "time the item drops for you in the Depths.", level = Setting.Level.OWNER)
-    public List<String> mine = List.of("1: depths_coal", "2: depths_copper", "3: depths_iron", "4: depths_gold", "5: depths_redstone",
-            "6: depths_lapis", "7: depths_diamond", "8: depths_emerald", "9: depths_amethyst", "10: depths_quartz",
-            "11: depths_netherite", "12: depths_voidstone");
+    static final List<String> PAGES_V1 = List.of("mine", "forest", "combat", "crates");
+    static final List<String> PAGES_V2 = List.of("farm", "mine", "fish", "mobs", "crates");
 
-    @Setting(path = "pages.forest", desc = "Forest page: '<Depths forest tier>: <drop item id>'.", level = Setting.Level.OWNER)
-    public List<String> forest = List.of("1: depths_oak_log", "2: depths_birch_log", "3: depths_spruce_log", "4: depths_jungle_log",
-            "5: depths_acacia_log", "6: depths_dark_oak_log", "7: depths_mangrove_log", "8: depths_cherry_log", "9: depths_pale_oak_log",
-            "10: depths_crimson_stem", "11: depths_warped_stem");
+    @Setting(path = "pages.farm", desc = "Farm page: crops harvested at /farm (vanilla item ids, in unlock order). Each counts "
+            + "every harvest.", level = Setting.Level.OWNER)
+    public List<String> farm = List.of("wheat", "carrot", "potato", "beetroot", "nether_wart");
 
-    @Setting(path = "pages.combat", desc = "Combat page: '<Depths combat tier>: <mob drop item id>' (drop-items in mobs.yml).",
-            level = Setting.Level.OWNER)
-    public List<String> combat = List.of("1: depths_rotten_flesh", "2: depths_bone", "3: depths_spider_eye", "4: depths_slime_ball",
-            "5: depths_prismarine", "6: depths_glowstone", "7: depths_raider_scrap", "8: depths_blaze_rod", "9: depths_wither_ash",
-            "10: depths_warlord_sigil");
+    @Setting(path = "pages.mine", desc = "Ores page: drops mined at /mine (vanilla item ids, in unlock order).", level = Setting.Level.OWNER)
+    public List<String> mine = List.of("coal", "raw_iron", "raw_gold", "redstone", "lapis_lazuli", "diamond", "emerald");
+
+    @Setting(path = "pages.fish", desc = "Fish page: catches at /fish (vanilla item ids, in water order).", level = Setting.Level.OWNER)
+    public List<String> fish = List.of("cod", "salmon", "ink_sac", "tropical_fish", "pufferfish", "prismarine_crystals",
+            "glow_ink_sac", "nautilus_shell", "heart_of_the_sea");
+
+    @Setting(path = "pages.mobs", desc = "Mobs page: the /pve ring mobs (vanilla mob ids, ring 1 first). Each mob also gives its "
+            + "ring's boss an entry (/pve boss; names in messages/collection.yml bosses.<ring>).", level = Setting.Level.OWNER)
+    public List<String> mobs = List.of("zombie", "husk", "skeleton", "spider", "stray", "drowned", "piglin_brute", "blaze",
+            "wither_skeleton", "ravager");
 
     @Setting(path = "pages.crates", desc = "Crates whose rewards are on the Crates page, in order. Eclipse (new rewards every month) "
             + "and Conqueror (KOTH, not built) are left out so the page can be finished.", level = Setting.Level.OWNER)
@@ -113,9 +115,36 @@ public final class CollectionSettings extends ModuleConfig {
     @Setting(path = "delivery.keep-days", desc = "Days delivered hand-out rows are kept (history stays in /logs).", min = 1, max = 365)
     public int keepDays = 14;
 
+    @Setting(path = "rewards.milestone-crystals", desc = "Crystals every page milestone (25/50/75/100%) gives (batch 9: 5, so a "
+            + "page is worth 20). 0 = none.", min = 0, max = 1_000, level = Setting.Level.OWNER)
+    public int milestoneCrystals = 5;
+
     @Override
     public String fileName() {
         return "collection.yml";
+    }
+
+    @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (batch 9, 7 Nov 2026, FX-20): the pages of the four grind areas replace the Depths pages. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("pages.order", ValueChange.of(PAGES_V1, PAGES_V2),
+                "pages.mine", ValueChange.of(MINE_V1, new CollectionSettings().mine)));
+    }
+
+    /** The Depths mine page (before v2). */
+    static final List<String> MINE_V1 = List.of("1: depths_coal", "2: depths_copper", "3: depths_iron", "4: depths_gold",
+            "5: depths_redstone", "6: depths_lapis", "7: depths_diamond", "8: depths_emerald", "9: depths_amethyst", "10: depths_quartz",
+            "11: depths_netherite", "12: depths_voidstone");
+
+    @Override
+    public java.util.Map<String, String> removedKeys() {
+        return java.util.Map.of("pages.forest", "the Depths are gone (batch 9): no forest page",
+                "pages.combat", "the Depths are gone (batch 9): the mobs page counts /pve kills");
     }
 
     @Override

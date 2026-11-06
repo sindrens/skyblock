@@ -21,9 +21,12 @@ import java.util.function.Predicate;
  */
 final class Catalog {
 
-    /** Pages with a live source today. Their id is the lowercase name (config, messages, milestone ids). */
+    /**
+     * Pages with a live source today. Their id is the lowercase name (config, messages, milestone ids). Batch 9 (7 Nov
+     * 2026): the four grind areas; MINE keeps its id so old mine milestones and the title stay.
+     */
     enum PageKind {
-        MINE, FOREST, COMBAT, CRATES;
+        FARM, MINE, FISH, MOBS, CRATES;
 
         String id() {
             return name().toLowerCase(Locale.ROOT);
@@ -44,10 +47,10 @@ final class Catalog {
      *
      * @param id       stored id ({@code collection_entries.entry_id}); also the key sources report
      * @param page     page id
-     * @param tier     Depths tier (mine/forest/combat), 0 for crates
+     * @param tier     place on the page (crop, ore, ring number), 0 for crates
      * @param crate    crate id (Crates page), else null
-     * @param icon     vanilla item id for crate rewards; null = the custom item's own look
-     * @param nameMini display name for crate rewards (MiniMessage); null = the custom item's own name
+     * @param icon     vanilla item id of the entry's look (area pages: the item; mobs: the spawn egg)
+     * @param nameMini display name for crate rewards (MiniMessage); null = the vanilla name of the item or mob
      */
     record Entry(String id, String page, int tier, String crate, String icon, String nameMini) {
     }
@@ -132,6 +135,11 @@ final class Catalog {
         return n;
     }
 
+    /** Stored id of an area entry: {@code farm.wheat}, {@code mine.diamond}, {@code fish.cod}, {@code mob.zombie}, {@code boss.3}. */
+    static String areaEntryId(String prefix, String id) {
+        return prefix + "." + id.toLowerCase(Locale.ROOT);
+    }
+
     /** Stored id of a crate reward entry. */
     static String crateEntryId(String crate, String reward) {
         return "crate." + crate + "." + reward;
@@ -141,11 +149,11 @@ final class Catalog {
      * Builds the catalog.
      *
      * @param order      page ids in order ({@code pages.order})
-     * @param tierLines  page id → lines {@code "<tier>: <item id>"} (mine, forest, combat)
+     * @param tierLines  page id → vanilla ids in order (farm, mine, fish: items; mobs: mob types, each with its boss)
      * @param crates     crates on the Crates page, in order
      * @param topOnly    only star rewards on the Crates page
      * @param rewards    crate id → its rewards (empty when the crates module is missing)
-     * @param knownItem  whether a custom item id exists (unknown ones are skipped with a problem)
+     * @param knownItem  whether a vanilla item id exists (unknown ones are skipped with a problem)
      */
     static Catalog build(List<String> order, Map<String, List<String>> tierLines, List<String> crates, boolean topOnly,
                          Function<String, List<CrateKeys.RewardInfo>> rewards, Predicate<String> knownItem, Consumer<String> problem) {
@@ -154,7 +162,7 @@ final class Catalog {
         for (String raw : order) {
             PageKind kind = PageKind.byId(raw);
             if (kind == null) {
-                problem.accept("collection.yml -> pages.order: '" + raw + "' is not a page (mine, forest, combat, crates), skipped");
+                problem.accept("collection.yml -> pages.order: '" + raw + "' is not a page (farm, mine, fish, mobs, crates), skipped");
                 continue;
             }
             if (pages.containsKey(kind)) {
@@ -171,35 +179,32 @@ final class Catalog {
     private static List<Entry> tierEntries(PageKind kind, List<String> lines, Predicate<String> knownItem, Set<String> used,
                                            Consumer<String> problem) {
         List<Entry> out = new ArrayList<>();
+        List<Entry> bosses = new ArrayList<>();
+        int tier = 0;
         for (String line : lines) {
+            String id = line == null ? "" : line.trim().toLowerCase(Locale.ROOT);
             String where = "collection.yml -> pages." + kind.id() + " '" + line + "'";
-            int colon = line == null ? -1 : line.indexOf(':');
-            if (colon < 1) {
-                problem.accept(where + ": write '<tier>: <item id>', skipped");
+            if (id.isEmpty() || id.length() > 48 || !id.matches("[a-z0-9_]+")) {
+                problem.accept(where + ": write a vanilla " + (kind == PageKind.MOBS ? "mob" : "item") + " id, skipped");
                 continue;
             }
-            int tier;
-            try {
-                tier = Integer.parseInt(line.substring(0, colon).trim());
-            } catch (NumberFormatException e) {
-                problem.accept(where + ": the tier is not a number, skipped");
+            String icon = kind == PageKind.MOBS ? id + "_spawn_egg" : id;
+            if (!knownItem.test(icon)) {
+                problem.accept(where + ": '" + icon + "' is not a vanilla item, skipped");
                 continue;
             }
-            String item = line.substring(colon + 1).trim().toLowerCase(Locale.ROOT);
-            if (tier < 1 || item.isEmpty() || item.length() > 64) {
-                problem.accept(where + ": tier must be 1 or more and the item id 1-64 characters, skipped");
+            String entry = areaEntryId(kind == PageKind.MOBS ? "mob" : kind.id(), id);
+            if (!used.add(entry)) {
+                problem.accept(where + ": '" + id + "' is already on the page, skipped");
                 continue;
             }
-            if (!knownItem.test(item)) {
-                problem.accept(where + ": '" + item + "' is not a custom item (is the depths module on?), skipped");
-                continue;
+            tier++;
+            out.add(new Entry(entry, kind.id(), tier, null, icon, null));
+            if (kind == PageKind.MOBS) { // every ring mob has its boss (/pve boss), after the mobs
+                bosses.add(new Entry(areaEntryId("boss", String.valueOf(tier)), kind.id(), tier, null, icon, null));
             }
-            if (!used.add(item)) {
-                problem.accept(where + ": '" + item + "' is already in the log, skipped");
-                continue;
-            }
-            out.add(new Entry(item, kind.id(), tier, null, null, null));
         }
+        out.addAll(bosses);
         return out;
     }
 

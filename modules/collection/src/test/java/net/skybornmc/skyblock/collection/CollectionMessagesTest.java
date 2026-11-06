@@ -62,14 +62,14 @@ class CollectionMessagesTest {
     void dynamicKeysExist() {
         YamlConfiguration yml = yml();
         List<String> keys = new ArrayList<>(List.of("text", "disabled", "titles.log", "hint.crates", "sources.other",
-                "reward.title", "reward.key", "reward.set", "reward.none", "reward.separator", "menu.loading.name", "menu.empty.name",
+                "reward.title", "reward.key", "reward.set", "reward.crystals", "hint.boss", "sources.boss", "bosses.1", "bosses.10", "reward.none", "reward.separator", "menu.loading.name", "menu.empty.name",
                 "menu.info", "menu.title", "menu.entry.locked"));
         for (Catalog.PageKind k : Catalog.PageKind.values()) {
             keys.add("pages." + k.id() + ".name");
             keys.add("titles." + k.id());
             if (k != Catalog.PageKind.CRATES) {
                 keys.add("hint." + k.id());
-                keys.add("sources.depths_" + k.id());
+                keys.add("sources." + (k == Catalog.PageKind.MOBS ? "pve" : k.id()));
             }
         }
         for (String screen : List.of("found.screen", "milestone.screen", "milestone.page-done.screen", "milestone.all.screen")) {

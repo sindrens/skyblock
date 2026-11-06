@@ -96,6 +96,9 @@ public final class TxReason {
     /** Money and crystals from daily/weekly quests and island missions (PHASE-10 M10.7); new currency. */
     public static final String QUEST_REWARD = "quest_reward";
 
+    /** Crystals from collection page milestones (batch 9, 7 Nov 2026); new currency. */
+    public static final String COLLECTION_REWARD = "collection_reward";
+
     /** Money and crystals from battle pass tiers (PHASE-10 M10.8); new currency. */
     public static final String PASS_REWARD = "pass_reward";
     /** Shards (or credits for an Island Charter) paid at the Black Market (PHASE-10 M10.11); a sink. */

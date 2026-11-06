@@ -77,7 +77,8 @@ final class Grants {
         return m.core.database().async(c -> {
             List<CollectionStore.GrantRow> reviewed = new ArrayList<>();
             for (CollectionStore.GrantRow row : CollectionStore.grants(c, CollectionStore.SENDING, 10_000)) {
-                String to = Milestones.TITLE.equals(row.kind()) ? CollectionStore.PENDING : CollectionStore.REVIEW;
+                String to = Milestones.TITLE.equals(row.kind()) || Milestones.CRYSTALS.equals(row.kind()) // both idempotent
+                        ? CollectionStore.PENDING : CollectionStore.REVIEW;
                 if (CollectionStore.move(c, row.id(), CollectionStore.SENDING, to, now) && to.equals(CollectionStore.REVIEW)) {
                     reviewed.add(row);
                 }
@@ -103,6 +104,7 @@ final class Grants {
             case Milestones.KEY -> m.core.services().has(CrateKeys.class);
             case Milestones.TITLE -> m.cosmetics().isPresent();
             case Milestones.SET -> m.core.services().has(WardrobeService.class);
+            case Milestones.CRYSTALS -> m.core.services().has(net.skybornmc.skyblock.common.economy.EconomyService.class);
             default -> false;
         };
     }
@@ -207,6 +209,23 @@ final class Grants {
                     return ItemBox.of(m.core.services()).map(b -> b.deliver(row.profile(), List.of(token), BoxSource.REWARDS, actor)
                             .thenApply(d -> Result.DELIVERED)).orElse(CompletableFuture.completedFuture(Result.FAILED));
                 }, m.main());
+            }
+            case Milestones.CRYSTALS -> {
+                Optional<net.skybornmc.skyblock.common.economy.EconomyService> economy =
+                        m.core.services().optional(net.skybornmc.skyblock.common.economy.EconomyService.class);
+                if (economy.isEmpty()) {
+                    yield CompletableFuture.completedFuture(Result.RETRY);
+                }
+                // The grant id is the idempotency key: a retried hand-out can never pay twice.
+                yield economy.get().execute(net.skybornmc.skyblock.common.economy.Transaction.deposit(
+                                net.skybornmc.skyblock.common.economy.AccountRef.player(row.profile()),
+                                net.skybornmc.skyblock.common.economy.Currency.CRYSTALS, Math.max(1, row.amount()),
+                                net.skybornmc.skyblock.common.economy.TxReason.COLLECTION_REWARD)
+                        .actor(actor).reference(origin).idempotencyKey("collection_grant:" + row.id())
+                        .detail("milestone", row.milestone()))
+                        .thenApply(r -> r.ok() || r.status() == net.skybornmc.skyblock.common.economy.TxResult.Status.DUPLICATE
+                                ? Result.DELIVERED : r.status() == net.skybornmc.skyblock.common.economy.TxResult.Status.ERROR
+                                ? Result.RETRY : Result.FAILED);
             }
             default -> CompletableFuture.completedFuture(Result.FAILED);
         };

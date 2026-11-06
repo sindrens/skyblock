@@ -7,34 +7,41 @@ text: "<text>"
 disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The collection log is turned off right now."
 
 pages:
+  farm:
+    name: "<c:success>Farm"
   mine:
-    name: "<c:sky_ice>Mine"
-  forest:
-    name: "<c:success>Forest"
-  combat:
-    name: "<c:error>Combat"
+    name: "<c:sky_ice>Ores"
+  fish:
+    name: "<c:sky_ice>Fish"
+  mobs:
+    name: "<c:error>Mobs"
   crates:
     name: "<c:flame>Crates"
 
 # Titles (account-wide, added to tags-titles.yml once). A full page gives its page title, the whole log gives "log".
 titles:
+  farm: "<rarity:epic>Master Farmer"
   mine: "<rarity:epic>Deep Miner"
-  forest: "<rarity:epic>Woodwarden"
-  combat: "<rarity:epic>Monster Hunter"
+  fish: "<rarity:epic>Old Salt"
+  mobs: "<rarity:epic>Monster Hunter"
   crates: "<rarity:epic>Lucky Hand"
   log: "<grad:mythic>Keeper of Ashes</grad>"
 
 # How to get a locked entry (shown in its name, so Bedrock sees it too).
 hint:
-  mine: "<c:text>Mine tier <tier> in the Depths"
-  forest: "<c:text>Forest tier <tier> in the Depths"
-  combat: "<c:text>Combat tier <tier> in the Depths"
+  farm: "<c:text>Crop <tier> at /farm"
+  mine: "<c:text>Ore <tier> at /mine"
+  fish: "<c:text>Catch it at /fish"
+  mobs: "<c:text>Ring <tier> at /pve"
+  boss: "<c:text>Ring <tier> boss: /pve boss"
   crates: "<c:text>Star reward of the <crate> <c:text>crate"
 
 sources:
-  depths_mine: "<c:text>Depths mine"
-  depths_forest: "<c:text>Depths forest"
-  depths_combat: "<c:text>Depths combat"
+  farm: "<c:text>/farm"
+  mine: "<c:text>/mine"
+  fish: "<c:text>/fish"
+  pve: "<c:text>/pve"
+  boss: "<c:text>A /pve boss"
   crate: "<c:text>Crate"
   other: "<c:text>Found it yourself"
 
@@ -77,6 +84,7 @@ reward:
   title: "<c:text>title</c:text> <title>"
   key: "<c:value><amount>x</c:value> <crate> <c:value>Key"
   set: "<c:enchant>a secret set token"
+  crystals: "<c:value><amount></c:value> <c:text>crystals"
   none: "<c:muted>island level points"
   separator: "<c:text>, "
 
@@ -122,5 +130,19 @@ menu:
       name: "<c:success><sym:check></c:success> <item>"
       lore:
         - "<hint>"
-        - "<c:text>Found <c:value><ago></c:value> <c:text>ago"
+        - "<c:text>Found: <c:value><amount>"
+        - "<c:text>First <c:value><ago></c:value> <c:text>ago"
         - "<c:text>From: <source>"
+
+# Batch 9: the ring bosses on the Mobs page (same names as /pve boss).
+bosses:
+  1: "<c:error>Rotting King"
+  2: "<c:error>Desert Tyrant"
+  3: "<c:error>Bone Archer"
+  4: "<c:error>Brood Mother"
+  5: "<c:error>Frost Wraith"
+  6: "<c:error>Tide Caller"
+  7: "<c:error>Bastion Warlord"
+  8: "<c:error>Infernal Core"
+  9: "<c:error>Wither Knight"
+  10: "<c:error>Ravager Alpha"

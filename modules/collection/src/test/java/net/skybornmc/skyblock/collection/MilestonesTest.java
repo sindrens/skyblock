@@ -17,8 +17,8 @@ class MilestonesTest {
     private static final List<Integer> P = List.of(25, 50, 75, 100);
 
     private static Catalog catalog() {
-        return Catalog.build(List.of("mine", "forest"),
-                Map.of("mine", List.of("1: a", "2: b", "3: c", "4: d"), "forest", List.of("1: e", "2: f", "3: g")),
+        return Catalog.build(List.of("mine", "fish"),
+                Map.of("mine", List.of("a", "b", "c", "d"), "fish", List.of("e", "f", "g")),
                 List.of(), true, x -> List.of(), id -> true, p -> { });
     }
 
@@ -48,7 +48,7 @@ class MilestonesTest {
     @Test
     void newlyReachedSkipsWhatIsStored() {
         Catalog c = catalog();
-        Set<String> found = new HashSet<>(Set.of("a", "b"));
+        Set<String> found = new HashSet<>(Set.of("mine.a", "mine.b"));
         assertEquals(List.of("mine:25", "mine:50"), Milestones.reachedNow(c, found, P));
         assertEquals(List.of("mine:50"), Milestones.newlyReached(c, found, Set.of("mine:25"), P));
     }
@@ -56,16 +56,16 @@ class MilestonesTest {
     @Test
     void wholeLogNeedsEveryPageFull() {
         Catalog c = catalog();
-        Set<String> found = new HashSet<>(Set.of("a", "b", "c", "d"));
+        Set<String> found = new HashSet<>(Set.of("mine.a", "mine.b", "mine.c", "mine.d"));
         assertFalse(Milestones.reachedNow(c, found, P).contains(Milestones.ALL));
-        found.addAll(Set.of("e", "f", "g"));
+        found.addAll(Set.of("fish.e", "fish.f", "fish.g"));
         List<String> all = Milestones.reachedNow(c, found, P);
         assertEquals(Milestones.ALL, all.getLast());
         assertEquals(9, all.size());
         // A configured page without entries (e.g. crates module off) blocks the whole log.
-        Catalog withEmpty = Catalog.build(List.of("mine", "crates"), Map.of("mine", List.of("1: a")), List.of(), true,
+        Catalog withEmpty = Catalog.build(List.of("mine", "crates"), Map.of("mine", List.of("a")), List.of(), true,
                 x -> List.of(), id -> true, p -> { });
-        assertFalse(Milestones.reachedNow(withEmpty, Set.of("a"), P).contains(Milestones.ALL));
+        assertFalse(Milestones.reachedNow(withEmpty, Set.of("mine.a"), P).contains(Milestones.ALL));
     }
 
     @Test
@@ -80,6 +80,11 @@ class MilestonesTest {
         assertEquals(List.of(), Milestones.grants("mine:100", withSet));
         assertEquals(List.of(new Milestones.Grant(Milestones.KEY, "phoenix", 2), new Milestones.Grant(Milestones.SET, "ashen", 1)),
                 Milestones.grants(Milestones.ALL, withSet));
+        // batch 9: every page milestone also pays crystals, the whole log does not
+        Milestones.Rewards crystals = new Milestones.Rewards(true, "blaze", 1, "", "", 0, "", 5);
+        assertEquals(List.of(new Milestones.Grant(Milestones.CRYSTALS, Milestones.CRYSTALS, 5)), Milestones.grants("mine:25", crystals));
+        assertEquals(new Milestones.Grant(Milestones.CRYSTALS, Milestones.CRYSTALS, 5), Milestones.grants("mine:100", crystals).getFirst());
+        assertEquals(List.of(), Milestones.grants(Milestones.ALL, crystals));
     }
 
     @Test

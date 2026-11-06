@@ -29,7 +29,8 @@ final class Recorder {
 
     private final CollectionModule m;
     private final Map<UUID, ProfileLog> logs = new HashMap<>();
-    private final Map<UUID, List<CollectionStore.EntryRow>> pending = new LinkedHashMap<>();
+    /** Finds waiting for the batch save, one row per profile and entry (batch 9: amounts add up in the row). */
+    private final Map<UUID, Map<String, CollectionStore.EntryRow>> pending = new LinkedHashMap<>();
     /** Page milestones per profile (island level provider; read on the main thread, written here). */
     private final Map<UUID, Integer> pageMilestones = new ConcurrentHashMap<>();
     private long lastSaveWarning;
@@ -88,7 +89,8 @@ final class Recorder {
 
     private void fetch(ProfileLog log) {
         UUID profile = log.profile();
-        m.core.database().async(c -> new Stored(CollectionStore.entries(c, profile), CollectionStore.milestones(c, profile)))
+        m.core.database().async(c -> new Stored(CollectionStore.entries(c, profile), CollectionStore.amounts(c, profile),
+                        CollectionStore.milestones(c, profile)))
                 .whenCompleteAsync((stored, e) -> {
                     if (logs.get(profile) != log) {
                         return; // forgotten or replaced meanwhile
@@ -105,10 +107,12 @@ final class Recorder {
                     }
                     Map<String, ProfileLog.Found> found = new HashMap<>(stored.entries());
                     // Finds saved in the batch that is still waiting (e.g. an offline crate open a moment ago) count as stored.
-                    for (CollectionStore.EntryRow row : pending.getOrDefault(profile, List.of())) {
-                        found.putIfAbsent(row.entry(), new ProfileLog.Found(row.at(), row.source()));
+                    for (CollectionStore.EntryRow row : pending.getOrDefault(profile, Map.of()).values()) {
+                        if (!log.waiting(row.entry())) { // a find made while loading is checked by the log itself
+                            found.putIfAbsent(row.entry(), new ProfileLog.Found(row.at(), row.source()));
+                        }
                     }
-                    for (ProfileLog.NewFind f : log.loaded(found, stored.milestones())) {
+                    for (ProfileLog.NewFind f : log.loaded(found, stored.amounts(), stored.milestones())) {
                         announce(log, f);
                     }
                     checkMilestones(log);
@@ -116,7 +120,7 @@ final class Recorder {
                 }, m.main());
     }
 
-    private record Stored(Map<String, ProfileLog.Found> entries, Set<String> milestones) {
+    private record Stored(Map<String, ProfileLog.Found> entries, Map<String, Long> amounts, Set<String> milestones) {
     }
 
     /** The player left this profile (quit or switch): its cache goes; waiting finds are still saved by the batch. */
@@ -143,19 +147,24 @@ final class Recorder {
      * @param player the player who found it when online on that profile, else null
      */
     void found(UUID profile, Player player, String entryId, String source) {
-        if (profile == null || m.catalog().entry(entryId) == null) {
+        found(profile, player, entryId, source, 1);
+    }
+
+    /** {@link #found(UUID, Player, String, String)} of {@code amount} at once (batch 9: the log counts every one). */
+    void found(UUID profile, Player player, String entryId, String source, long amount) {
+        if (profile == null || amount <= 0 || m.catalog().entry(entryId) == null) {
             return;
         }
         long now = System.currentTimeMillis();
+        queue(new CollectionStore.EntryRow(profile, entryId, now, source, amount)); // saved in the next batch, new or not
         ProfileLog log = logs.get(profile);
         if (log == null) {
             if (player == null) {
-                queue(new CollectionStore.EntryRow(profile, entryId, now, source)); // offline: milestones checked at the next load
-                return;
+                return; // offline: milestones checked at the next load
             }
             log = start(profile);
         }
-        ProfileLog.NewFind f = log.add(entryId, now, source);
+        ProfileLog.NewFind f = log.add(entryId, now, source, amount);
         if (f != null) {
             announce(log, f);
             checkMilestones(log);
@@ -163,10 +172,9 @@ final class Recorder {
         }
     }
 
-    /** A new find: saved in the next batch, logged and shown. */
+    /** A new find (already waiting for the batch save): logged and shown. */
     private void announce(ProfileLog log, ProfileLog.NewFind f) {
         UUID profile = log.profile();
-        queue(new CollectionStore.EntryRow(profile, f.entry(), f.at(), f.source()));
         Map<String, Object> d = new LinkedHashMap<>();
         d.put("entry", f.entry());
         d.put("source", f.source());
@@ -179,7 +187,7 @@ final class Recorder {
     }
 
     private void queue(CollectionStore.EntryRow row) {
-        pending.computeIfAbsent(row.profile(), k -> new ArrayList<>()).add(row);
+        pending.computeIfAbsent(row.profile(), k -> new LinkedHashMap<>()).merge(row.entry(), row, (old, add) -> old.plus(add.amount()));
     }
 
     // ================================================================== milestones
@@ -196,8 +204,8 @@ final class Recorder {
         }
         UUID profile = log.profile();
         UUID player = m.profiles().ownerOf(profile);
-        List<CollectionStore.EntryRow> entries = pending.remove(profile);
-        List<CollectionStore.EntryRow> rows = entries == null ? List.of() : entries;
+        Map<String, CollectionStore.EntryRow> entries = pending.remove(profile);
+        List<CollectionStore.EntryRow> rows = entries == null ? List.of() : new ArrayList<>(entries.values());
         Milestones.Rewards rewards = m.rewards();
         long now = System.currentTimeMillis();
         m.core.database().transaction(c -> CollectionStore.commit(c, profile, player, rows, ids, id -> Milestones.grants(id, rewards), now))
@@ -290,7 +298,7 @@ final class Recorder {
 
     private List<CollectionStore.EntryRow> drain() {
         List<CollectionStore.EntryRow> rows = new ArrayList<>();
-        pending.values().forEach(rows::addAll);
+        pending.values().forEach(byEntry -> rows.addAll(byEntry.values()));
         pending.clear();
         return rows;
     }
