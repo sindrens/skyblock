@@ -27,6 +27,7 @@
 #
 # Prices: tools/gen_upgrades_catalog.py from the balance model (ECONOMY_BALANCE.md 4.2 and 5.2); tuned in M5.9.
 
+money-scale: 100
 upgrades:
   island_size:
     tab: island
@@ -36,13 +37,13 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 3350
+        cost: 335000
         value: 5
       - tier: 3
-        cost: 22900
+        cost: 2290000
         value: 7
       - tier: 5
-        cost: 157000
+        cost: 15700000
         value: 9
   member_slots:
     tab: island
@@ -52,16 +53,16 @@ upgrades:
     enabled: true
     levels:
       - tier: 2
-        cost: 7010
+        cost: 701000
         value: 6
       - tier: 4
-        cost: 47900
+        cost: 4790000
         value: 7
       - tier: 6
-        cost: 328000
+        cost: 32800000
         value: 8
       - tier: 8
-        cost: 2240000
+        cost: 224000000
         value: 9
   warp_slots:
     tab: island
@@ -71,22 +72,22 @@ upgrades:
     enabled: true
     levels:
       - tier: 2
-        cost: 4380
+        cost: 438000
         value: 4
       - tier: 4
-        cost: 30000
+        cost: 3000000
         value: 5
       - tier: 6
-        cost: 205000
+        cost: 20500000
         value: 6
       - tier: 8
-        cost: 1400000
+        cost: 140000000
         value: 7
       - tier: 10
-        cost: 25400000
+        cost: 2540000000
         value: 8
       - tier: 12
-        cost: 462000000
+        cost: 46200000000
         value: 9
   island_vault:
     tab: island
@@ -96,19 +97,19 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 2010
+        cost: 201000
         value: 2
       - tier: 3
-        cost: 13700
+        cost: 1370000
         value: 3
       - tier: 5
-        cost: 94000
+        cost: 9400000
         value: 4
       - tier: 7
-        cost: 643000
+        cost: 64300000
         value: 5
       - tier: 9
-        cost: 7160000
+        cost: 716000000
         value: 6
   entity_limits:
     tab: island
@@ -118,7 +119,7 @@ upgrades:
     enabled: true
     levels:
       - tier: 5
-        cost: 157000
+        cost: 15700000
         value: 50
   bank_capacity:
     tab: economy
@@ -128,34 +129,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 3690
+        cost: 369000
         value: 1
       - tier: 2
-        cost: 9640
+        cost: 964000
         value: 2
       - tier: 3
-        cost: 25200
+        cost: 2520000
         value: 3
       - tier: 4
-        cost: 65900
+        cost: 6590000
         value: 4
       - tier: 5
-        cost: 172000
+        cost: 17200000
         value: 5
       - tier: 6
-        cost: 451000
+        cost: 45100000
         value: 6
       - tier: 7
-        cost: 1180000
+        cost: 118000000
         value: 7
       - tier: 8
-        cost: 3080000
+        cost: 308000000
         value: 8
       - tier: 9
-        cost: 13100000
+        cost: 1310000000
         value: 9
       - tier: 10
-        cost: 55900000
+        cost: 5590000000
         value: 10
   bank_interest:
     tab: economy
@@ -165,34 +166,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 4020
+        cost: 402000
         value: 1
       - tier: 2
-        cost: 10500
+        cost: 1050000
         value: 2
       - tier: 3
-        cost: 27500
+        cost: 2750000
         value: 3
       - tier: 4
-        cost: 71900
+        cost: 7190000
         value: 4
       - tier: 5
-        cost: 188000
+        cost: 18800000
         value: 5
       - tier: 6
-        cost: 492000
+        cost: 49200000
         value: 6
       - tier: 7
-        cost: 1290000
+        cost: 129000000
         value: 7
       - tier: 8
-        cost: 3360000
+        cost: 336000000
         value: 8
       - tier: 9
-        cost: 14300000
+        cost: 1430000000
         value: 9
       - tier: 10
-        cost: 61000000
+        cost: 6100000000
         value: 10
   sell_multiplier:
     tab: economy
@@ -202,40 +203,40 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 6030
+        cost: 603000
         value: 5
       - tier: 2
-        cost: 15800
+        cost: 1580000
         value: 10
       - tier: 3
-        cost: 41200
+        cost: 4120000
         value: 15
       - tier: 4
-        cost: 108000
+        cost: 10800000
         value: 20
       - tier: 5
-        cost: 282000
+        cost: 28200000
         value: 25
       - tier: 6
-        cost: 737000
+        cost: 73700000
         value: 30
       - tier: 7
-        cost: 1930000
+        cost: 193000000
         value: 35
       - tier: 8
-        cost: 5040000
+        cost: 504000000
         value: 40
       - tier: 9
-        cost: 21500000
+        cost: 2150000000
         value: 45
       - tier: 10
-        cost: 91600000
+        cost: 9160000000
         value: 50
       - tier: 11
-        cost: 390000000
+        cost: 39000000000
         value: 55
       - tier: 12
-        cost: 1660000000
+        cost: 166000000000
         value: 60
   mine_fortune:
     # Owner 4 Nov 2026: the island's mine boost for the island pickaxe (on the island and at /mine), way above its own perks.
@@ -246,40 +247,40 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 4690
+        cost: 469000
         value: 12
       - tier: 2
-        cost: 12300
+        cost: 1230000
         value: 24
       - tier: 3
-        cost: 32100
+        cost: 3210000
         value: 36
       - tier: 4
-        cost: 83900
+        cost: 8390000
         value: 48
       - tier: 5
-        cost: 219000
+        cost: 21900000
         value: 60
       - tier: 6
-        cost: 573000
+        cost: 57300000
         value: 72
       - tier: 7
-        cost: 1500000
+        cost: 150000000
         value: 84
       - tier: 8
-        cost: 3920000
+        cost: 392000000
         value: 96
       - tier: 9
-        cost: 16700000
+        cost: 1670000000
         value: 108
       - tier: 10
-        cost: 71200000
+        cost: 7120000000
         value: 120
       - tier: 11
-        cost: 303000000
+        cost: 30300000000
         value: 132
       - tier: 12
-        cost: 1290000000
+        cost: 129000000000
         value: 144
   lumberjack:
     tab: depths
@@ -289,40 +290,40 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 3020
+        cost: 302000
         value: 2
       - tier: 2
-        cost: 7880
+        cost: 788000
         value: 4
       - tier: 3
-        cost: 20600
+        cost: 2060000
         value: 6
       - tier: 4
-        cost: 53900
+        cost: 5390000
         value: 8
       - tier: 5
-        cost: 141000
+        cost: 14100000
         value: 10
       - tier: 6
-        cost: 369000
+        cost: 36900000
         value: 12
       - tier: 7
-        cost: 964000
+        cost: 96400000
         value: 14
       - tier: 8
-        cost: 2520000
+        cost: 252000000
         value: 16
       - tier: 9
-        cost: 10700000
+        cost: 1070000000
         value: 18
       - tier: 10
-        cost: 45800000
+        cost: 4580000000
         value: 20
       - tier: 11
-        cost: 195000000
+        cost: 19500000000
         value: 22
       - tier: 12
-        cost: 831000000
+        cost: 83100000000
         value: 24
   xp_boost:
     tab: depths
@@ -332,40 +333,40 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 3020
+        cost: 302000
         value: 2
       - tier: 2
-        cost: 7880
+        cost: 788000
         value: 4
       - tier: 3
-        cost: 20600
+        cost: 2060000
         value: 6
       - tier: 4
-        cost: 53900
+        cost: 5390000
         value: 8
       - tier: 5
-        cost: 141000
+        cost: 14100000
         value: 10
       - tier: 6
-        cost: 369000
+        cost: 36900000
         value: 12
       - tier: 7
-        cost: 964000
+        cost: 96400000
         value: 14
       - tier: 8
-        cost: 2520000
+        cost: 252000000
         value: 16
       - tier: 9
-        cost: 10700000
+        cost: 1070000000
         value: 18
       - tier: 10
-        cost: 45800000
+        cost: 4580000000
         value: 20
       - tier: 11
-        cost: 195000000
+        cost: 19500000000
         value: 22
       - tier: 12
-        cost: 831000000
+        cost: 83100000000
         value: 24
   spawner_stack_limit:
     tab: production
@@ -375,40 +376,40 @@ upgrades:
     enabled: false # Spawners v2 (7 Nov 2026): the limit is per mob type now (Q-72); bought levels are kept
     levels:
       - tier: 1
-        cost: 3350
+        cost: 335000
         value: 16
       - tier: 2
-        cost: 8760
+        cost: 876000
         value: 32
       - tier: 3
-        cost: 22900
+        cost: 2290000
         value: 48
       - tier: 4
-        cost: 59900
+        cost: 5990000
         value: 64
       - tier: 5
-        cost: 157000
+        cost: 15700000
         value: 96
       - tier: 6
-        cost: 410000
+        cost: 41000000
         value: 128
       - tier: 7
-        cost: 1070000
+        cost: 107000000
         value: 160
       - tier: 8
-        cost: 2800000
+        cost: 280000000
         value: 208
       - tier: 9
-        cost: 11900000
+        cost: 1190000000
         value: 256
       - tier: 10
-        cost: 50900000
+        cost: 5090000000
         value: 352
       - tier: 11
-        cost: 217000000
+        cost: 21700000000
         value: 432
       - tier: 12
-        cost: 924000000
+        cost: 92400000000
         value: 512
   spawner_rate:
     tab: production
@@ -418,34 +419,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 2500
+        cost: 250000
         value: 5
       - tier: 1
-        cost: 9280
+        cost: 928000
         value: 11
       - tier: 2
-        cost: 34500
+        cost: 3450000
         value: 18
       - tier: 3
-        cost: 128000
+        cost: 12800000
         value: 25
       - tier: 4
-        cost: 475000
+        cost: 47500000
         value: 33
       - tier: 5
-        cost: 1760000
+        cost: 176000000
         value: 43
       - tier: 6
-        cost: 6550000
+        cost: 655000000
         value: 54
       - tier: 6
-        cost: 24300000
+        cost: 2430000000
         value: 67
       - tier: 7
-        cost: 90300000
+        cost: 9030000000
         value: 82
       - tier: 8
-        cost: 335000000
+        cost: 33500000000
         value: 100
   mob_loot:
     tab: production
@@ -455,34 +456,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 3250
+        cost: 325000
         value: 12
       - tier: 2
-        cost: 12100
+        cost: 1210000
         value: 24
       - tier: 2
-        cost: 44800
+        cost: 4480000
         value: 36
       - tier: 3
-        cost: 166000
+        cost: 16600000
         value: 48
       - tier: 4
-        cost: 618000
+        cost: 61800000
         value: 60
       - tier: 5
-        cost: 2290000
+        cost: 229000000
         value: 72
       - tier: 6
-        cost: 8510000
+        cost: 851000000
         value: 84
       - tier: 7
-        cost: 31600000
+        cost: 3160000000
         value: 96
       - tier: 7
-        cost: 117000000
+        cost: 11700000000
         value: 108
       - tier: 8
-        cost: 436000000
+        cost: 43600000000
         value: 120
   crop_growth:
     tab: production
@@ -492,34 +493,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 4220
+        cost: 422000
         value: 12
       - tier: 2
-        cost: 15700
+        cost: 1570000
         value: 24
       - tier: 3
-        cost: 58200
+        cost: 5820000
         value: 36
       - tier: 3
-        cost: 216000
+        cost: 21600000
         value: 48
       - tier: 4
-        cost: 803000
+        cost: 80300000
         value: 60
       - tier: 5
-        cost: 2980000
+        cost: 298000000
         value: 72
       - tier: 6
-        cost: 11100000
+        cost: 1110000000
         value: 84
       - tier: 7
-        cost: 41100000
+        cost: 4110000000
         value: 96
       - tier: 8
-        cost: 153000000
+        cost: 15300000000
         value: 108
       - tier: 8
-        cost: 567000000
+        cost: 56700000000
         value: 120
   harvest_yield:
     tab: production
@@ -529,34 +530,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 5490
+        cost: 549000
         value: 12
       - tier: 2
-        cost: 20400
+        cost: 2040000
         value: 24
       - tier: 3
-        cost: 75700
+        cost: 7570000
         value: 36
       - tier: 4
-        cost: 281000
+        cost: 28100000
         value: 48
       - tier: 4
-        cost: 1040000
+        cost: 104000000
         value: 60
       - tier: 5
-        cost: 3880000
+        cost: 388000000
         value: 72
       - tier: 6
-        cost: 14400000
+        cost: 1440000000
         value: 84
       - tier: 7
-        cost: 53400000
+        cost: 5340000000
         value: 96
       - tier: 8
-        cost: 198000000
+        cost: 19800000000
         value: 108
       - tier: 9
-        cost: 737000000
+        cost: 73700000000
         value: 120
   generator:
     tab: production
@@ -566,34 +567,34 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 7140
+        cost: 714000
         value: 1
       - tier: 2
-        cost: 26500
+        cost: 2650000
         value: 2
       - tier: 3
-        cost: 98400
+        cost: 9840000
         value: 3
       - tier: 4
-        cost: 365000
+        cost: 36500000
         value: 4
       - tier: 5
-        cost: 1360000
+        cost: 136000000
         value: 5
       - tier: 5
-        cost: 5040000
+        cost: 504000000
         value: 6
       - tier: 6
-        cost: 18700000
+        cost: 1870000000
         value: 7
       - tier: 7
-        cost: 69500000
+        cost: 6950000000
         value: 8
       - tier: 8
-        cost: 258000000
+        cost: 25800000000
         value: 9
       - tier: 9
-        cost: 958000000
+        cost: 95800000000
         value: 10
   fuel_tank:
     tab: production
@@ -603,38 +604,38 @@ upgrades:
     enabled: true
     levels:
       - tier: 1
-        cost: 2680
+        cost: 268000
         value: 1
       - tier: 2
-        cost: 7010
+        cost: 701000
         value: 2
       - tier: 3
-        cost: 18300
+        cost: 1830000
         value: 3
       - tier: 4
-        cost: 47900
+        cost: 4790000
         value: 4
       - tier: 5
-        cost: 125000
+        cost: 12500000
         value: 5
       - tier: 6
-        cost: 328000
+        cost: 32800000
         value: 6
       - tier: 7
-        cost: 857000
+        cost: 85700000
         value: 7
       - tier: 8
-        cost: 2240000
+        cost: 224000000
         value: 8
       - tier: 9
-        cost: 9550000
+        cost: 955000000
         value: 9
       - tier: 10
-        cost: 40700000
+        cost: 4070000000
         value: 10
       - tier: 11
-        cost: 173000000
+        cost: 17300000000
         value: 11
       - tier: 12
-        cost: 739000000
+        cost: 73900000000
         value: 12

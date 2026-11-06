@@ -275,6 +275,8 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
         try {
             if (file.exists()) {
                 yaml.load(file);
+                // Money x100 (batch 10): a live file from before is scaled once (owner prices too), then marked.
+                net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, java.util.List.of(net.skybornmc.skyblock.common.config.CatalogScale.Path.when("achievements.*.goals", "metric", java.util.Set.of("money_earned", "balance_peak", "best_sale"), net.skybornmc.skyblock.common.config.MoneyScale.numbers()), net.skybornmc.skyblock.common.config.CatalogScale.Path.when("island-achievements.*.goals", "metric", java.util.Set.of("money_earned", "balance_peak", "best_sale"), net.skybornmc.skyblock.common.config.MoneyScale.numbers())), core.plugin().getLogger());
             }
         } catch (IOException | InvalidConfigurationException e) {
             core.plugin().getLogger().warning(AchievementRegistry.FILE + " is not valid YAML, using the bundled achievements. "

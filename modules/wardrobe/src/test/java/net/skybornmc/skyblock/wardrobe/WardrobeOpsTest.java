@@ -97,7 +97,7 @@ class WardrobeOpsTest {
         db.blocking(c -> {
             Sql.update(c, "CREATE TABLE test_balance (owner BINARY(16) NOT NULL, cur VARCHAR(16) NOT NULL, balance BIGINT NOT NULL, PRIMARY KEY (owner, cur))");
             for (UUID p : List.of(profile1, profile2)) {
-                Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", p, "money", 50_000L);
+                Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", p, "money", 5_000_000L); // money x100
                 Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", p, "crystals", 30_000L);
             }
             Sql.update(c, "INSERT INTO test_balance (owner, cur, balance) VALUES (?, ?, ?)", player, "credits", 1_000L);
@@ -126,14 +126,14 @@ class WardrobeOpsTest {
     void buyWithMoneyAddsTheSetAndPaysOnce() {
         WardrobeOps.Result r = ops.buy(who1, Fixtures.def("delver"), 0).join();
         assertEquals(WardrobeOps.Status.OK, r.status());
-        assertEquals(30_000, balance(profile1, "money"));
-        assertEquals(30_000L, r.balance());
+        assertEquals(3_000_000, balance(profile1, "money"));
+        assertEquals(3_000_000L, r.balance());
         assertEquals(List.of("delver"), entries(profile1).stream().map(WardrobeStore.Entry::setId).toList());
         assertEquals("money", entries(profile1).getFirst().origin());
 
         WardrobeOps.Result again = ops.buy(who1, Fixtures.def("delver"), 0).join();
         assertEquals(WardrobeOps.Status.OWNED, again.status(), "one copy per set per profile (WD6)");
-        assertEquals(30_000, balance(profile1, "money"), "nothing paid for a refused purchase");
+        assertEquals(3_000_000, balance(profile1, "money"), "nothing paid for a refused purchase");
         assertEquals(1, entries(profile1).size());
     }
 
@@ -141,7 +141,7 @@ class WardrobeOpsTest {
     void notEnoughMoneyChangesNothing() {
         WardrobeOps.Result r = ops.buy(who1, Fixtures.def("coinmaster"), 0).join();
         assertEquals(WardrobeOps.Status.NOT_ENOUGH, r.status());
-        assertEquals(50_000, balance(profile1, "money"));
+        assertEquals(5_000_000, balance(profile1, "money"));
         assertTrue(entries(profile1).isEmpty(), "the row rolled back with the failed payment");
     }
 
@@ -168,8 +168,8 @@ class WardrobeOpsTest {
     void profilesOwnSetsSeparately() {
         assertTrue(ops.buy(who1, Fixtures.def("delver"), 0).join().ok());
         assertTrue(ops.buy(who2, Fixtures.def("delver"), 0).join().ok(), "the other profile buys its own copy (P2)");
-        assertEquals(30_000, balance(profile1, "money"));
-        assertEquals(30_000, balance(profile2, "money"));
+        assertEquals(3_000_000, balance(profile1, "money"));
+        assertEquals(3_000_000, balance(profile2, "money"));
         assertEquals(1, entries(profile2).size());
     }
 

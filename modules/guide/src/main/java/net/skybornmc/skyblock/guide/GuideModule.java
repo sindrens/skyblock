@@ -146,6 +146,12 @@ public final class GuideModule implements SkyblockModule, Listener {
             core.plugin().saveResource(GuideCatalog.FILE, false);
         }
         org.bukkit.configuration.file.YamlConfiguration yaml = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file);
+        // Money x100 (batch 10): the money reward lines of a live file from before are scaled once.
+        if (!yaml.getKeys(false).isEmpty()) {
+            net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, java.util.List.of(net.skybornmc.skyblock.common.config.CatalogScale.Path.of("story", net.skybornmc.skyblock.common.config.CatalogScale.mapList("rewards", net.skybornmc.skyblock.common.config.CatalogScale.moneyLines())),
+                    net.skybornmc.skyblock.common.config.CatalogScale.Path.of("errands", net.skybornmc.skyblock.common.config.CatalogScale.mapList("rewards", net.skybornmc.skyblock.common.config.CatalogScale.moneyLines())),
+                    net.skybornmc.skyblock.common.config.CatalogScale.Path.of("trades", net.skybornmc.skyblock.common.config.CatalogScale.mapList("gives", net.skybornmc.skyblock.common.config.CatalogScale.moneyLines()))), core.plugin().getLogger());
+        }
         java.util.function.Predicate<String> item = id -> {
             org.bukkit.Material mat = org.bukkit.Material.matchMaterial(id);
             return mat != null && mat.isItem() && !mat.isAir();

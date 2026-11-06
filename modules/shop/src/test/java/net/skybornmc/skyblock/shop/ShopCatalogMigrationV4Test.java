@@ -50,7 +50,7 @@ class ShopCatalogMigrationV4Test {
         assertEquals(999, c.item("hopper").orElseThrow().price());
         assertEquals(900, c.item("jukebox").orElseThrow().price());
         assertFalse(c.item("oak_log").orElseThrow().enabled());
-        assertEquals(5, c.item("oak_leaves").orElseThrow().price(), "auto: 10 x $0.50");
+        assertEquals(500, c.item("oak_leaves").orElseThrow().price(), "auto: 10 x $0.50");
     }
 
     @Test

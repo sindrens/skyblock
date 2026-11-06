@@ -48,20 +48,20 @@ class ShopListRulesTest {
             Object raw = yaml.get("categories." + item.category() + ".items." + item.id());
             if (ShopCatalog.isAuto(ShopCatalogMigration.priceValue(raw))) {
                 auto++;
-                assertTrue(item.price() >= 5, item.id() + " costs " + item.price());
+                assertTrue(item.price() >= 500, item.id() + " costs " + item.price());
             }
         }
         assertEquals(46 + 19 + 4, auto, "ECON-TABLES D3 plus the 19 mob drops plus 4 of batch 9");
-        assertEquals(5, c.item("oak_leaves").orElseThrow().price(), "10 x $0.50");
-        assertEquals(10, c.item("blue_orchid").orElseThrow().price(), "10 x $1");
-        assertEquals(15, c.item("peony").orElseThrow().price(), "10 x $1.50, rounded up");
-        assertEquals(20, c.item("crimson_fungus").orElseThrow().price());
+        assertEquals(500, c.item("oak_leaves").orElseThrow().price(), "10 x $0.50");
+        assertEquals(1_000, c.item("blue_orchid").orElseThrow().price(), "10 x $1");
+        assertEquals(1_500, c.item("peony").orElseThrow().price(), "10 x $1.50, rounded up");
+        assertEquals(2_000, c.item("crimson_fungus").orElseThrow().price());
     }
 
     @Test
     void ownerPricesStay() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog();
-        assertEquals(Map.of("hopper", 2_500L, "bone_meal", 30L, "flint_and_steel", 40L),
+        assertEquals(Map.of("hopper", 250_000L, "bone_meal", 3_000L, "flint_and_steel", 4_000L),
                 Map.of("hopper", c.item("hopper").orElseThrow().price(), "bone_meal", c.item("bone_meal").orElseThrow().price(),
                         "flint_and_steel", c.item("flint_and_steel").orElseThrow().price()));
         assertTrue(OWNER_PRICES.stream().noneMatch(REMOVED::contains));
@@ -96,11 +96,11 @@ class ShopListRulesTest {
         ShopCatalog c = ShopCatalog.load(ShopCatalogTest.bundled(), ShopCatalogTest::realItem,
                 ShopCatalogTest.SPAWNER_TYPES::contains, doubled, problems::add);
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
-        assertEquals(5_000, c.item("hopper").orElseThrow().price());
-        assertEquals(10, c.item("oak_leaves").orElseThrow().price());
-        assertEquals(2_000_000, c.item("spawner_blaze").orElseThrow().price());
-        assertEquals(7_000, c.item("cactus").orElseThrow().price(), "3,500 x 2");
-        assertEquals(2_500, c.worth("hopper").orElseThrow(), "block worth stays at the base price");
+        assertEquals(500_000, c.item("hopper").orElseThrow().price());
+        assertEquals(1_000, c.item("oak_leaves").orElseThrow().price());
+        assertEquals(200_000_000, c.item("spawner_blaze").orElseThrow().price());
+        assertEquals(700_000, c.item("cactus").orElseThrow().price(), "3,500 x 2");
+        assertEquals(250_000, c.worth("hopper").orElseThrow(), "block worth stays at the base price");
         ShopCatalog.Pricing odd = new ShopCatalog.Pricing(base.sellBase(), 10, 1.3);
         assertEquals(620, odd.scale(475), "617.5 -> 2 significant figures");
         assertEquals(10, odd.scale(8), "10.4 -> 10");

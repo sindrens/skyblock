@@ -52,12 +52,13 @@ final class PveArena implements Listener {
     record Tier(EntityType mob, double health, double damage, long pay, long next) {
     }
 
+    // Money x100 (batch 10): pay per kill is x100 (ring 1 $2,000 ... ring 10 $35,000).
     static final List<Tier> TIER_LIST = List.of(
-            new Tier(EntityType.ZOMBIE, 1.0, 1.0, 20, 200), new Tier(EntityType.HUSK, 1.4, 1.2, 30, 600),
-            new Tier(EntityType.SKELETON, 1.8, 1.4, 45, 1_500), new Tier(EntityType.SPIDER, 2.4, 1.6, 65, 3_000),
-            new Tier(EntityType.STRAY, 3.0, 1.8, 90, 6_000), new Tier(EntityType.DROWNED, 3.8, 2.0, 120, 10_000),
-            new Tier(EntityType.PIGLIN_BRUTE, 4.6, 2.2, 160, 16_000), new Tier(EntityType.BLAZE, 5.6, 2.4, 210, 25_000),
-            new Tier(EntityType.WITHER_SKELETON, 6.8, 2.7, 270, 40_000), new Tier(EntityType.RAVAGER, 8.0, 3.0, 350, 0));
+            new Tier(EntityType.ZOMBIE, 1.0, 1.0, 2000, 200), new Tier(EntityType.HUSK, 1.4, 1.2, 3000, 600),
+            new Tier(EntityType.SKELETON, 1.8, 1.4, 4500, 1_500), new Tier(EntityType.SPIDER, 2.4, 1.6, 6500, 3_000),
+            new Tier(EntityType.STRAY, 3.0, 1.8, 9000, 6_000), new Tier(EntityType.DROWNED, 3.8, 2.0, 12000, 10_000),
+            new Tier(EntityType.PIGLIN_BRUTE, 4.6, 2.2, 16000, 16_000), new Tier(EntityType.BLAZE, 5.6, 2.4, 21000, 25_000),
+            new Tier(EntityType.WITHER_SKELETON, 6.8, 2.7, 27000, 40_000), new Tier(EntityType.RAVAGER, 8.0, 3.0, 35000, 0));
 
     private final GrindAreas areas;
     /** Owner 7 Nov 2026: the personal bosses. */

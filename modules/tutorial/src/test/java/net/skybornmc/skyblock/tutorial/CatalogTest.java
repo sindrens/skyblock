@@ -43,7 +43,7 @@ class CatalogTest {
             assertEquals(List.of(), warnings, ch.id());
             assertFalse(r.isEmpty(), ch.id() + " pays something");
         }
-        assertEquals(List.of("money 500"), c.chapter("welcome").orElseThrow().rewards());
+        assertEquals(List.of("money 50000"), c.chapter("welcome").orElseThrow().rewards());
         assertEquals(List.of("shards 100"), c.chapter("farm").orElseThrow().rewards());
         assertEquals(List.of("mining_shards 100"), c.chapter("mine").orElseThrow().rewards());
         assertEquals(List.of("key ember 1"), c.chapter("together").orElseThrow().rewards());

@@ -70,9 +70,9 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
     }
 
     /** {@code bonus}: money paid per harvest on top of the crop (the Farm pays better than an island farm). */
-    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 6), new Crop(Material.CARROTS, Material.CARROT, 3_000, 9),
-            new Crop(Material.POTATOES, Material.POTATO, 12_000, 12), new Crop(Material.BEETROOTS, Material.BEETROOT, 40_000, 16), // owner 5 Nov: carrots take much longer
-            new Crop(Material.NETHER_WART, Material.NETHER_WART, 60_000, 300)); // 7 Nov 2026 (batch 3): a fifth crop that sells for more
+    static final List<Crop> CROPS = List.of(new Crop(Material.WHEAT, Material.WHEAT, 0, 600), new Crop(Material.CARROTS, Material.CARROT, 3_000, 900),
+            new Crop(Material.POTATOES, Material.POTATO, 12_000, 1200), new Crop(Material.BEETROOTS, Material.BEETROOT, 40_000, 1600), // owner 5 Nov: carrots take much longer
+            new Crop(Material.NETHER_WART, Material.NETHER_WART, 60_000, 30000)); // 7 Nov 2026 (batch 3): a fifth crop that sells for more
     private static final org.bukkit.NamespacedKey FARMED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_farmed");
 
     /** Pure: the crop a player with {@code farmed} harvests has unlocked ({@code unlocks}: grind.farm-unlocks). */
@@ -598,13 +598,13 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
      * (owner: "break enough coal to get it FULL iron ore"), gold ... emerald. The real blocks are coal ore; a higher tier is each player's own client-side view.
      */
     static final List<Ore> ORE_TIERS = List.of(
-            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 30),
-            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 400, 60),
-            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 120),
-            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 4_000, 160),
-            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 8_000, 240),
-            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 15_000, 450),
-            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 25_000, 800));
+            new Ore(Material.COAL_ORE, Material.COAL, 1, 0, 3000),
+            new Ore(Material.IRON_ORE, Material.RAW_IRON, 1, 400, 6000),
+            new Ore(Material.GOLD_ORE, Material.RAW_GOLD, 1, 1_500, 12000),
+            new Ore(Material.REDSTONE_ORE, Material.REDSTONE, 4, 4_000, 16000),
+            new Ore(Material.LAPIS_ORE, Material.LAPIS_LAZULI, 4, 8_000, 24000),
+            new Ore(Material.DIAMOND_ORE, Material.DIAMOND, 1, 15_000, 45000),
+            new Ore(Material.EMERALD_ORE, Material.EMERALD, 1, 25_000, 80000));
     static final Material BASE_ORE = Material.COAL_ORE;
     private static final org.bukkit.NamespacedKey MINED = net.skybornmc.skyblock.common.item.ItemKeys.key("grind_mined");
 

@@ -55,7 +55,7 @@ final class SanctionRules {
                 EnumSet.of(SanctionService.Use.PAY, SanctionService.Use.NOTE, SanctionService.Use.AUCTION_LIST,
                         SanctionService.Use.AUCTION_BUY, SanctionService.Use.TRADE),
                 Set.of("pay", "trade", "ah_buy", "note_withdraw"),
-                1_000_000_000_000L, true, "exploiting");
+                100_000_000_000_000L, true, "exploiting"); // money x100 (batch 10)
 
         Set<SanctionService.Use> blocks(Sanction.Kind kind) {
             return switch (kind) {

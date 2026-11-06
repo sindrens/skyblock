@@ -31,6 +31,7 @@
 #
 # Prices: tools/gen_masteries_catalog.py from the balance model (ECONOMY_BALANCE.md 5.2, 5.4, 5.5); tuned in M5.9.
 
+money-scale: 100
 masteries:
   timber:
     icon: "golden_axe"
@@ -40,23 +41,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 2
-        cost: 5260
+        cost: 526000
         value: 4
         pillar-level: 10
       - tier: 4
-        cost: 35900
+        cost: 3590000
         value: 8
         pillar-level: 20
       - tier: 7
-        cost: 643000
+        cost: 64300000
         value: 12
         pillar-level: 35
       - tier: 10
-        cost: 30500000
+        cost: 3050000000
         value: 16
         pillar-level: 50
       - tier: 12
-        cost: 554000000
+        cost: 55400000000
         value: 20
         pillar-level: 60
   swift_hands:
@@ -67,23 +68,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 2
-        cost: 5260
+        cost: 526000
         value: 4
         pillar-level: 10
       - tier: 4
-        cost: 35900
+        cost: 3590000
         value: 8
         pillar-level: 20
       - tier: 7
-        cost: 643000
+        cost: 64300000
         value: 12
         pillar-level: 35
       - tier: 10
-        cost: 30500000
+        cost: 3050000000
         value: 16
         pillar-level: 50
       - tier: 12
-        cost: 554000000
+        cost: 55400000000
         value: 20
         pillar-level: 60
   warrior:
@@ -94,23 +95,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 2
-        cost: 5260
+        cost: 526000
         value: 4
         pillar-level: 10
       - tier: 4
-        cost: 35900
+        cost: 3590000
         value: 8
         pillar-level: 20
       - tier: 7
-        cost: 643000
+        cost: 64300000
         value: 12
         pillar-level: 35
       - tier: 10
-        cost: 30500000
+        cost: 3050000000
         value: 16
         pillar-level: 50
       - tier: 12
-        cost: 554000000
+        cost: 55400000000
         value: 20
         pillar-level: 60
   deep_pockets:
@@ -121,23 +122,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 1
-        cost: 1680
+        cost: 168000
         value: 10
         pillar-level: 5
       - tier: 3
-        cost: 11500
+        cost: 1150000
         value: 20
         pillar-level: 15
       - tier: 6
-        cost: 205000
+        cost: 20500000
         value: 30
         pillar-level: 30
       - tier: 9
-        cost: 5970000
+        cost: 597000000
         value: 40
         pillar-level: 45
       - tier: 12
-        cost: 462000000
+        cost: 46200000000
         value: 50
         pillar-level: 60
   crystal_rush:
@@ -147,23 +148,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 2
-        cost: 6130
+        cost: 613000
         value: 3
         island-level: 10
       - tier: 4
-        cost: 41900
+        cost: 4190000
         value: 6
         island-level: 20
       - tier: 7
-        cost: 750000
+        cost: 75000000
         value: 9
         island-level: 35
       - tier: 10
-        cost: 35600000
+        cost: 3560000000
         value: 12
         island-level: 50
       - tier: 12
-        cost: 647000000
+        cost: 64700000000
         value: 15
         island-level: 70
   lucky_strike:
@@ -173,23 +174,23 @@ masteries:
     enabled: true
     ranks:
       - tier: 3
-        cost: 16000
+        cost: 1600000
         value: 4
         island-level: 15
       - tier: 5
-        cost: 110000
+        cost: 11000000
         value: 8
         island-level: 30
       - tier: 8
-        cost: 1960000
+        cost: 196000000
         value: 12
         island-level: 45
       - tier: 10
-        cost: 35600000
+        cost: 3560000000
         value: 16
         island-level: 60
       - tier: 12
-        cost: 647000000
+        cost: 64700000000
         value: 20
         island-level: 80
   fuel_efficiency:
@@ -200,15 +201,15 @@ masteries:
     enabled: true
     ranks:
       - tier: 5
-        cost: 62700
+        cost: 6270000
         value: 10
         pillar-level: 25
       - tier: 9
-        cost: 4770000
+        cost: 477000000
         value: 20
         pillar-level: 45
       - tier: 12
-        cost: 369000000
+        cost: 36900000000
         value: 30
         pillar-level: 60
   beast_tamer:
@@ -219,19 +220,19 @@ masteries:
     enabled: true
     ranks:
       - tier: 2
-        cost: 3500
+        cost: 350000
         value: 5
         pillar-level: 10
       - tier: 5
-        cost: 62700
+        cost: 6270000
         value: 10
         pillar-level: 25
       - tier: 8
-        cost: 1120000
+        cost: 112000000
         value: 15
         pillar-level: 40
       - tier: 12
-        cost: 369000000
+        cost: 36900000000
         value: 20
         pillar-level: 60
   angler:
@@ -242,19 +243,19 @@ masteries:
     enabled: true
     ranks:
       - tier: 3
-        cost: 9160
+        cost: 916000
         value: 5
         pillar-level: 15
       - tier: 6
-        cost: 164000
+        cost: 16400000
         value: 10
         pillar-level: 30
       - tier: 9
-        cost: 4770000
+        cost: 477000000
         value: 15
         pillar-level: 45
       - tier: 12
-        cost: 369000000
+        cost: 36900000000
         value: 20
         pillar-level: 60
   homestead:
@@ -264,11 +265,11 @@ masteries:
     enabled: true
     ranks:
       - tier: 4
-        cost: 30000
+        cost: 3000000
         value: 1
         island-level: 20
       - tier: 8
-        cost: 1400000
+        cost: 140000000
         value: 2
         island-level: 40
   wings:
@@ -278,7 +279,7 @@ masteries:
     enabled: true
     ranks:
       - tier: 4
-        cost: 59900
+        cost: 5990000
         value: 1
         island-level: 20
   treasury:
@@ -288,15 +289,15 @@ masteries:
     enabled: true
     ranks:
       - tier: 3
-        cost: 22900
+        cost: 2290000
         value: 1
         island-level: 15
       - tier: 7
-        cost: 1070000
+        cost: 107000000
         value: 2
         island-level: 35
       - tier: 12
-        cost: 924000000
+        cost: 92400000000
         value: 3
         island-level: 60
   market_contacts:
@@ -308,64 +309,64 @@ masteries:
     enabled: true
     ranks:
       - tier: 12
-        cost: 686000000
+        cost: 68600000000
         value: 2
       - tier: 12
-        cost: 769000000
+        cost: 76900000000
         value: 4
       - tier: 12
-        cost: 861000000
+        cost: 86100000000
         value: 6
       - tier: 12
-        cost: 964000000
+        cost: 96400000000
         value: 8
       - tier: 12
-        cost: 1080000000
+        cost: 108000000000
         value: 10
       - tier: 12
-        cost: 1210000000
+        cost: 121000000000
         value: 12
       - tier: 12
-        cost: 1350000000
+        cost: 135000000000
         value: 14
       - tier: 12
-        cost: 1520000000
+        cost: 152000000000
         value: 16
       - tier: 12
-        cost: 1700000000
+        cost: 170000000000
         value: 18
       - tier: 12
-        cost: 1900000000
+        cost: 190000000000
         value: 20
       - tier: 12
-        cost: 2130000000
+        cost: 213000000000
         value: 22
       - tier: 12
-        cost: 2390000000
+        cost: 239000000000
         value: 24
       - tier: 12
-        cost: 2670000000
+        cost: 267000000000
         value: 26
       - tier: 12
-        cost: 2990000000
+        cost: 299000000000
         value: 28
       - tier: 12
-        cost: 3350000000
+        cost: 335000000000
         value: 30
       - tier: 12
-        cost: 3760000000
+        cost: 376000000000
         value: 32
       - tier: 12
-        cost: 4210000000
+        cost: 421000000000
         value: 34
       - tier: 12
-        cost: 4710000000
+        cost: 471000000000
         value: 36
       - tier: 12
-        cost: 5280000000
+        cost: 528000000000
         value: 38
       - tier: 12
-        cost: 5910000000
+        cost: 591000000000
         value: 40
   # Owner 6-7 Nov 2026 (FULL_PLAN.md section 4): Farm Mastery: every rank +100 levels on the members' /farm hoe enchant cap. Needs the island's farming pillar (island crops) and island level.
   farm_mastery:
@@ -376,52 +377,52 @@ masteries:
     enabled: true
     ranks:
       - tier: 1
-        cost: 15000
+        cost: 1500000
         value: 100
         pillar-level: 5
         island-level: 2
       - tier: 2
-        cost: 60000
+        cost: 6000000
         value: 200
         pillar-level: 10
         island-level: 5
       - tier: 3
-        cost: 200000
+        cost: 20000000
         value: 300
         pillar-level: 15
         island-level: 8
       - tier: 4
-        cost: 600000
+        cost: 60000000
         value: 400
         pillar-level: 20
         island-level: 12
       - tier: 5
-        cost: 1800000
+        cost: 180000000
         value: 500
         pillar-level: 25
         island-level: 16
       - tier: 6
-        cost: 5000000
+        cost: 500000000
         value: 600
         pillar-level: 30
         island-level: 21
       - tier: 7
-        cost: 14000000
+        cost: 1400000000
         value: 700
         pillar-level: 35
         island-level: 27
       - tier: 8
-        cost: 40000000
+        cost: 4000000000
         value: 800
         pillar-level: 40
         island-level: 34
       - tier: 10
-        cost: 110000000
+        cost: 11000000000
         value: 900
         pillar-level: 45
         island-level: 42
       - tier: 12
-        cost: 300000000
+        cost: 30000000000
         value: 1000
         pillar-level: 50
         island-level: 50
@@ -434,52 +435,52 @@ masteries:
     enabled: true
     ranks:
       - tier: 1
-        cost: 15000
+        cost: 1500000
         value: 100
         pillar-level: 5
         island-level: 2
       - tier: 2
-        cost: 60000
+        cost: 6000000
         value: 200
         pillar-level: 10
         island-level: 5
       - tier: 3
-        cost: 200000
+        cost: 20000000
         value: 300
         pillar-level: 15
         island-level: 8
       - tier: 4
-        cost: 600000
+        cost: 60000000
         value: 400
         pillar-level: 20
         island-level: 12
       - tier: 5
-        cost: 1800000
+        cost: 180000000
         value: 500
         pillar-level: 25
         island-level: 16
       - tier: 6
-        cost: 5000000
+        cost: 500000000
         value: 600
         pillar-level: 30
         island-level: 21
       - tier: 7
-        cost: 14000000
+        cost: 1400000000
         value: 700
         pillar-level: 35
         island-level: 27
       - tier: 8
-        cost: 40000000
+        cost: 4000000000
         value: 800
         pillar-level: 40
         island-level: 34
       - tier: 10
-        cost: 110000000
+        cost: 11000000000
         value: 900
         pillar-level: 45
         island-level: 42
       - tier: 12
-        cost: 300000000
+        cost: 30000000000
         value: 1000
         pillar-level: 50
         island-level: 50
@@ -491,43 +492,43 @@ masteries:
     enabled: true
     ranks:
       - tier: 1
-        cost: 15000
+        cost: 1500000
         value: 100
         island-level: 2
       - tier: 2
-        cost: 60000
+        cost: 6000000
         value: 200
         island-level: 5
       - tier: 3
-        cost: 200000
+        cost: 20000000
         value: 300
         island-level: 8
       - tier: 4
-        cost: 600000
+        cost: 60000000
         value: 400
         island-level: 12
       - tier: 5
-        cost: 1800000
+        cost: 180000000
         value: 500
         island-level: 16
       - tier: 6
-        cost: 5000000
+        cost: 500000000
         value: 600
         island-level: 21
       - tier: 7
-        cost: 14000000
+        cost: 1400000000
         value: 700
         island-level: 27
       - tier: 8
-        cost: 40000000
+        cost: 4000000000
         value: 800
         island-level: 34
       - tier: 10
-        cost: 110000000
+        cost: 11000000000
         value: 900
         island-level: 42
       - tier: 12
-        cost: 300000000
+        cost: 30000000000
         value: 1000
         island-level: 50
   # Owner 7 Nov 2026 (FULL_PLAN.md section 4): Combat Mastery: every rank +100 levels on the members' /pve sword enchant cap. Needs the island's combat pillar and island level.
@@ -539,52 +540,52 @@ masteries:
     enabled: true
     ranks:
       - tier: 1
-        cost: 15000
+        cost: 1500000
         value: 100
         pillar-level: 5
         island-level: 2
       - tier: 2
-        cost: 60000
+        cost: 6000000
         value: 200
         pillar-level: 10
         island-level: 5
       - tier: 3
-        cost: 200000
+        cost: 20000000
         value: 300
         pillar-level: 15
         island-level: 8
       - tier: 4
-        cost: 600000
+        cost: 60000000
         value: 400
         pillar-level: 20
         island-level: 12
       - tier: 5
-        cost: 1800000
+        cost: 180000000
         value: 500
         pillar-level: 25
         island-level: 16
       - tier: 6
-        cost: 5000000
+        cost: 500000000
         value: 600
         pillar-level: 30
         island-level: 21
       - tier: 7
-        cost: 14000000
+        cost: 1400000000
         value: 700
         pillar-level: 35
         island-level: 27
       - tier: 8
-        cost: 40000000
+        cost: 4000000000
         value: 800
         pillar-level: 40
         island-level: 34
       - tier: 10
-        cost: 110000000
+        cost: 11000000000
         value: 900
         pillar-level: 45
         island-level: 42
       - tier: 12
-        cost: 300000000
+        cost: 30000000000
         value: 1000
         pillar-level: 50
         island-level: 50

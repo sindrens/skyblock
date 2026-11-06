@@ -75,6 +75,11 @@ public final class SellFeature implements Listener {
 
     public static final String PERM_SELL = "skyblock.economy.sell";
     static final String CATALOG_FILE = "sell.yml";
+    /** Money x100: every price in sell.yml (the derive factors are percents and stay). */
+    static final java.util.List<net.skybornmc.skyblock.common.config.CatalogScale.Path> MONEY_PATHS = java.util.List.of(
+            net.skybornmc.skyblock.common.config.CatalogScale.Path.of("categories.*.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+            net.skybornmc.skyblock.common.config.CatalogScale.Path.of("custom-items.*.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+            net.skybornmc.skyblock.common.config.CatalogScale.Path.of("roots.*", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     static final int STORAGE_SLOTS = 36;
 
     /** Stack reading for {@link ChestFill}. */
@@ -316,8 +321,12 @@ public final class SellFeature implements Listener {
                     }
                 }
                 yaml = bundled;
-            } else if (addMissing(yaml, bundled)) {
-                yaml.save(file);
+            } else {
+                // Money x100 (batch 10): a live sell.yml from before is scaled once (owner prices too), then new entries come.
+                net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, MONEY_PATHS, core.plugin().getLogger());
+                if (addMissing(yaml, bundled)) {
+                    yaml.save(file);
+                }
             }
         } catch (IOException e) {
             core.plugin().getLogger().log(Level.WARNING, "Could not write sell.yml", e);

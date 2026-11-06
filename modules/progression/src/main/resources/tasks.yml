@@ -22,6 +22,7 @@
 # Anti-abuse: blocks placed by players count nothing, kills only by your own hit or arrow, the AFK pool does not
 # count for sell/earn. Generated defaults (tools/gen_tasks_catalog.py), tuned in the M5.9 balance pass.
 
+money-scale: 100
 tasks:
   # ---------------------------------------------------------------- tier 1
   t1_mine:
@@ -118,7 +119,7 @@ tasks:
   t1_earn:
     tier: 1
     type: earn
-    amount: 25000
+    amount: 2500000
     rewards:
       crystals: 20
     unlocks:
@@ -127,7 +128,7 @@ tasks:
   t1_deposit:
     tier: 1
     type: deposit
-    amount: 20000
+    amount: 2000000
     rewards:
       crystals: 20
     unlocks:
@@ -279,7 +280,7 @@ tasks:
   t2_earn:
     tier: 2
     type: earn
-    amount: 44000
+    amount: 4400000
     rewards:
       crystals: 27
     unlocks:
@@ -290,7 +291,7 @@ tasks:
   t2_deposit:
     tier: 2
     type: deposit
-    amount: 35000
+    amount: 3500000
     rewards:
       crystals: 27
     unlocks:
@@ -449,7 +450,7 @@ tasks:
   t3_earn:
     tier: 3
     type: earn
-    amount: 77000
+    amount: 7700000
     rewards:
       crystals: 36
     unlocks:
@@ -459,7 +460,7 @@ tasks:
   t3_deposit:
     tier: 3
     type: deposit
-    amount: 62000
+    amount: 6200000
     rewards:
       crystals: 36
     unlocks:
@@ -613,7 +614,7 @@ tasks:
   t4_earn:
     tier: 4
     type: earn
-    amount: 140000
+    amount: 14000000
     rewards:
       crystals: 49
     unlocks:
@@ -624,7 +625,7 @@ tasks:
   t4_deposit:
     tier: 4
     type: deposit
-    amount: 110000
+    amount: 11000000
     rewards:
       crystals: 49
     unlocks:
@@ -787,7 +788,7 @@ tasks:
   t5_earn:
     tier: 5
     type: earn
-    amount: 240000
+    amount: 24000000
     rewards:
       crystals: 66
     unlocks:
@@ -796,7 +797,7 @@ tasks:
   t5_deposit:
     tier: 5
     type: deposit
-    amount: 190000
+    amount: 19000000
     rewards:
       crystals: 66
     unlocks:
@@ -947,7 +948,7 @@ tasks:
   t6_earn:
     tier: 6
     type: earn
-    amount: 420000
+    amount: 42000000
     rewards:
       crystals: 90
     unlocks:
@@ -957,7 +958,7 @@ tasks:
   t6_deposit:
     tier: 6
     type: deposit
-    amount: 330000
+    amount: 33000000
     rewards:
       crystals: 90
     unlocks:
@@ -1108,7 +1109,7 @@ tasks:
   t7_earn:
     tier: 7
     type: earn
-    amount: 730000
+    amount: 73000000
     rewards:
       crystals: 121
     unlocks:
@@ -1119,7 +1120,7 @@ tasks:
   t7_deposit:
     tier: 7
     type: deposit
-    amount: 580000
+    amount: 58000000
     rewards:
       crystals: 121
     unlocks:
@@ -1276,7 +1277,7 @@ tasks:
   t8_earn:
     tier: 8
     type: earn
-    amount: 1300000
+    amount: 130000000
     rewards:
       crystals: 163
     unlocks:
@@ -1286,7 +1287,7 @@ tasks:
   t8_deposit:
     tier: 8
     type: deposit
-    amount: 1000000
+    amount: 100000000
     rewards:
       crystals: 163
     unlocks:
@@ -1430,7 +1431,7 @@ tasks:
   t9_earn:
     tier: 9
     type: earn
-    amount: 3700000
+    amount: 370000000
     rewards:
       crystals: 221
     unlocks:
@@ -1439,7 +1440,7 @@ tasks:
   t9_deposit:
     tier: 9
     type: deposit
-    amount: 2900000
+    amount: 290000000
     rewards:
       crystals: 221
     unlocks:
@@ -1580,7 +1581,7 @@ tasks:
   t10_earn:
     tier: 10
     type: earn
-    amount: 10000000
+    amount: 1000000000
     rewards:
       crystals: 298
     unlocks:
@@ -1590,7 +1591,7 @@ tasks:
   t10_deposit:
     tier: 10
     type: deposit
-    amount: 8400000
+    amount: 840000000
     rewards:
       crystals: 298
     unlocks:
@@ -1725,7 +1726,7 @@ tasks:
   t11_earn:
     tier: 11
     type: earn
-    amount: 30000000
+    amount: 3000000000
     rewards:
       crystals: 402
     unlocks:
@@ -1733,7 +1734,7 @@ tasks:
   t11_deposit:
     tier: 11
     type: deposit
-    amount: 24000000
+    amount: 2400000000
     rewards:
       crystals: 402
     unlocks: []
@@ -1875,7 +1876,7 @@ tasks:
   t12_earn:
     tier: 12
     type: earn
-    amount: 86000000
+    amount: 8600000000
     rewards:
       crystals: 543
     unlocks:
@@ -1885,7 +1886,7 @@ tasks:
   t12_deposit:
     tier: 12
     type: deposit
-    amount: 69000000
+    amount: 6900000000
     rewards:
       crystals: 543
     unlocks:

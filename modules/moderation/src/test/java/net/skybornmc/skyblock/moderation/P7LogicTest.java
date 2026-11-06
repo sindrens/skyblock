@@ -385,7 +385,7 @@ class P7LogicTest {
                 TestData.ICONS).ok());
         assertFalse(PunishConfigParser.parse(base.replace("freeze-currencies: [money]", "freeze-currencies: [gold]"),
                 TestData.ICONS).ok());
-        assertFalse(PunishConfigParser.parse(base.replace("money-max: 1000000000000", "money-max: -5"), TestData.ICONS).ok());
+        assertFalse(PunishConfigParser.parse(base.replace("money-max: 100000000000000", "money-max: -5"), TestData.ICONS).ok());
         assertFalse(PunishConfigParser.parse(base.replace("\"coop-block 7d\", \"ban 7d\"]", "\"coop-blok 7d\", \"ban 7d\"]"),
                 TestData.ICONS).ok(), "a typo in an island step");
         assertFalse(PunishConfigParser.parse(base.replace("\"sanction money\"", "\"sanction gold\""), TestData.ICONS).ok());

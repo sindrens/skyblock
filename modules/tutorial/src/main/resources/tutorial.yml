@@ -18,11 +18,12 @@
 # A step whose NPC is not placed at spawn yet counts as done, so a missing NPC never blocks anyone.
 # Steps finish only from real events (a click, a menu, a sale ...), never from typing a command.
 
+money-scale: 100
 chapters:
   welcome:
     name: "Welcome to Phoenix"
     icon: nether_star
-    rewards: ["money 500"]
+    rewards: ["money 50000"]
     steps:
       rowan:
         type: npc
@@ -54,7 +55,7 @@ chapters:
   island:
     name: "Your Island"
     icon: grass_block
-    rewards: ["money 1000"]
+    rewards: ["money 100000"]
     steps:
       chest:
         type: chest
@@ -188,7 +189,7 @@ chapters:
   money:
     name: "Money Matters"
     icon: emerald
-    rewards: ["money 2500"]
+    rewards: ["money 250000"]
     steps:
       juniper:
         type: npc
@@ -293,7 +294,7 @@ chapters:
   next:
     name: "What's Next"
     icon: experience_bottle
-    rewards: ["money 5000", "tag harvest"]
+    rewards: ["money 500000", "tag harvest"]
     steps:
       sage:
         type: npc

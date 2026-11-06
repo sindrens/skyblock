@@ -49,6 +49,7 @@
 # once (worth-only entries move back into their tab; groups follow when you never edited them).
 # Reload: /skyblock reload shop
 config-version: 7
+money-scale: 100
 
 categories:
   # Wood, planks, stone and its crafted variants, earth, Nether, End and ocean blocks, sorted by type.
@@ -67,92 +68,92 @@ categories:
       ocean: [prismarine, prismarine_bricks, dark_prismarine]
       rare: [snow_block, ice, mycelium, amethyst_block, copper_block, obsidian, crying_obsidian]
     items:
-      oak_log: 8
-      spruce_log: 8
-      birch_log: 8
-      jungle_log: 8
-      acacia_log: 8
-      dark_oak_log: 8
-      mangrove_log: 8
-      cherry_log: 8
-      pale_oak_log: 8
-      crimson_stem: 8
-      warped_stem: 8
-      bamboo_block: 8
-      dirt: 4
-      mud: 5
+      oak_log: 800
+      spruce_log: 800
+      birch_log: 800
+      jungle_log: 800
+      acacia_log: 800
+      dark_oak_log: 800
+      mangrove_log: 800
+      cherry_log: 800
+      pale_oak_log: 800
+      crimson_stem: 800
+      warped_stem: 800
+      bamboo_block: 800
+      dirt: 400
+      mud: 500
       rooted_dirt: auto
-      grass_block: 8
-      podzol: 8
-      clay: 12
-      sand: 4
-      gravel: 4
-      red_sand: 5
-      tuff: 5
-      diorite: 5
-      granite: 5
-      calcite: 6
-      cobblestone: 8
-      stone: { price: 8, contains: { cobblestone: 1 } }
-      bricks: 12
-      cobbled_deepslate: 5
+      grass_block: 800
+      podzol: 800
+      clay: 1200
+      sand: 400
+      gravel: 400
+      red_sand: 500
+      tuff: 500
+      diorite: 500
+      granite: 500
+      calcite: 600
+      cobblestone: 800
+      stone: { price: 800, contains: { cobblestone: 1 } }
+      bricks: 1200
+      cobbled_deepslate: 500
       pointed_dripstone: auto
-      deepslate: 6
+      deepslate: 600
       dripstone_block: auto
-      netherrack: 3
-      basalt: 6
-      blackstone: 6
-      soul_sand: 8
-      soul_soil: 8
-      nether_bricks: 10
-      red_nether_bricks: 12
+      netherrack: 300
+      basalt: 600
+      blackstone: 600
+      soul_sand: 800
+      soul_soil: 800
+      nether_bricks: 1000
+      red_nether_bricks: 1200
       magma_block: auto
       crimson_nylium: auto
       warped_nylium: auto
       warped_wart_block: auto
-      end_stone: 10
-      purpur_block: 15
-      quartz_block: 20
-      smooth_quartz: 22
-      prismarine: 20
-      prismarine_bricks: 24
-      dark_prismarine: 28
-      snow_block: 5
-      ice: 8
-      mycelium: 10
-      amethyst_block: 30
-      copper_block: 40
-      obsidian: 60
-      crying_obsidian: 80
+      end_stone: 1000
+      purpur_block: 1500
+      quartz_block: 2000
+      smooth_quartz: 2200
+      prismarine: 2000
+      prismarine_bricks: 2400
+      dark_prismarine: 2800
+      snow_block: 500
+      ice: 800
+      mycelium: 1000
+      amethyst_block: 3000
+      copper_block: 4000
+      obsidian: 6000
+      crying_obsidian: 8000
       # Batch 9 (Q-42): planks and crafted stone are back
-      oak_planks: 2
-      spruce_planks: 2
-      birch_planks: 2
-      jungle_planks: 2
-      acacia_planks: 2
-      dark_oak_planks: 2
-      mangrove_planks: 2
-      cherry_planks: 2
-      pale_oak_planks: 2
-      crimson_planks: 2
-      warped_planks: 2
-      bamboo_planks: 2
-      stone_bricks: 9
-      mossy_stone_bricks: 10
-      mossy_cobblestone: 9
-      andesite: 5
-      polished_andesite: 6
-      polished_diorite: 6
-      polished_granite: 6
-      sandstone: 6
-      polished_deepslate: 7
-      deepslate_bricks: 8
-      polished_blackstone: 7
-      polished_blackstone_bricks: 8
-      end_stone_bricks: 12
-      quartz_bricks: 22
-      quartz_pillar: 22
-      coarse_dirt: 4
+      oak_planks: 200
+      spruce_planks: 200
+      birch_planks: 200
+      jungle_planks: 200
+      acacia_planks: 200
+      dark_oak_planks: 200
+      mangrove_planks: 200
+      cherry_planks: 200
+      pale_oak_planks: 200
+      crimson_planks: 200
+      warped_planks: 200
+      bamboo_planks: 200
+      stone_bricks: 900
+      mossy_stone_bricks: 1000
+      mossy_cobblestone: 900
+      andesite: 500
+      polished_andesite: 600
+      polished_diorite: 600
+      polished_granite: 600
+      sandstone: 600
+      polished_deepslate: 700
+      deepslate_bricks: 800
+      polished_blackstone: 700
+      polished_blackstone_bricks: 800
+      end_stone_bricks: 1200
+      quartz_bricks: 2200
+      quartz_pillar: 2200
+      coarse_dirt: 400
   # Leaves, grass, flowers, moss and the plants of lush caves and the Nether.
   nature:
     icon: oak_leaves
@@ -180,9 +181,9 @@ categories:
       short_grass: auto
       fern: auto
       dead_bush: auto
-      dandelion: 8
-      poppy: 8
-      cornflower: 10
+      dandelion: 800
+      poppy: 800
+      cornflower: 1000
       blue_orchid: auto
       allium: auto
       azure_bluet: auto
@@ -192,21 +193,21 @@ categories:
       pink_tulip: auto
       oxeye_daisy: auto
       lily_of_the_valley: auto
-      sunflower: 15
+      sunflower: 1500
       lilac: auto
       rose_bush: auto
       peony: auto
-      moss_block: 8
-      azalea: 20
-      flowering_azalea: 25
-      spore_blossom: 40
-      vine: 5
-      kelp: 8
-      bamboo: 10
-      lily_pad: 10
-      brown_mushroom: 10
-      red_mushroom: 10
-      glow_berries: 15
+      moss_block: 800
+      azalea: 2000
+      flowering_azalea: 2500
+      spore_blossom: 4000
+      vine: 500
+      kelp: 800
+      bamboo: 1000
+      lily_pad: 1000
+      brown_mushroom: 1000
+      red_mushroom: 1000
+      glow_berries: 1500
       glow_lichen: auto
       hanging_roots: auto
       mangrove_roots: auto
@@ -221,9 +222,9 @@ categories:
       crimson_fungus: auto
       warped_fungus: auto
       # Batch 9 (Q-42)
-      moss_carpet: 4
-      packed_ice: 12
-      blue_ice: 30
+      moss_carpet: 400
+      packed_ice: 1200
+      blue_ice: 3000
   # Seeds, crops and saplings. Crops that are their own seed sell with /sell, so they cost more than 7.5x their sell price; buy one and grow more.
   farming:
     icon: wheat_seeds
@@ -233,26 +234,26 @@ categories:
       trees: [oak_sapling, spruce_sapling, birch_sapling, jungle_sapling, acacia_sapling, dark_oak_sapling, cherry_sapling, pale_oak_sapling, mangrove_propagule]
     items:
       # Owner 3 Nov 2026: seeds and crops cost a lot: buy one, regrow it and grow the farm instead of buying many.
-      wheat_seeds: 1500
-      beetroot_seeds: 2500
-      melon_seeds: 4000
-      pumpkin_seeds: 4000
-      bone_meal: 30
-      carrot: 2500
-      potato: 2500
-      sugar_cane: 3000
-      cocoa_beans: 3500
-      cactus: 3500
-      sweet_berries: 4000
-      oak_sapling: 25
-      spruce_sapling: 25
-      birch_sapling: 25
-      jungle_sapling: 30
-      acacia_sapling: 30
-      dark_oak_sapling: 30
-      cherry_sapling: 35
-      pale_oak_sapling: 35
-      mangrove_propagule: 35
+      wheat_seeds: 150000
+      beetroot_seeds: 250000
+      melon_seeds: 400000
+      pumpkin_seeds: 400000
+      bone_meal: 3000
+      carrot: 250000
+      potato: 250000
+      sugar_cane: 300000
+      cocoa_beans: 350000
+      cactus: 350000
+      sweet_berries: 400000
+      oak_sapling: 2500
+      spruce_sapling: 2500
+      birch_sapling: 2500
+      jungle_sapling: 3000
+      acacia_sapling: 3000
+      dark_oak_sapling: 3000
+      cherry_sapling: 3500
+      pale_oak_sapling: 3500
+      mangrove_propagule: 3500
   # Mob drops (price: auto = 10x the sell base). Spawner drops are sold with /sell, not bought here.
   mob-drops:
     icon: bone
@@ -284,11 +285,11 @@ categories:
       prismarine_shard: auto
       prismarine_crystals: auto
       # Batch 9 (7 Nov 2026): what the /pve and /fish finds lack, and the brewing drops of mobs that don't spawn here.
-      arrow: 6
+      arrow: 600
       wither_skeleton_skull: auto
-      magma_cream: 80
-      ghast_tear: 250
-      phantom_membrane: 120
+      magma_cream: 8000
+      ghast_tear: 25000
+      phantom_membrane: 12000
       ink_sac: auto
       glow_ink_sac: auto
       nautilus_shell: auto
@@ -301,58 +302,58 @@ categories:
       glass: [white_stained_glass, orange_stained_glass, magenta_stained_glass, light_blue_stained_glass, yellow_stained_glass, lime_stained_glass, pink_stained_glass, gray_stained_glass, light_gray_stained_glass, cyan_stained_glass, purple_stained_glass, blue_stained_glass, brown_stained_glass, green_stained_glass, red_stained_glass, black_stained_glass]
       terracotta: [white_terracotta, orange_terracotta, magenta_terracotta, light_blue_terracotta, yellow_terracotta, lime_terracotta, pink_terracotta, gray_terracotta, light_gray_terracotta, cyan_terracotta, purple_terracotta, blue_terracotta, brown_terracotta, green_terracotta, red_terracotta, black_terracotta]
     items:
-      white_concrete: 6
-      orange_concrete: 6
-      magenta_concrete: 6
-      light_blue_concrete: 6
-      yellow_concrete: 6
-      lime_concrete: 6
-      pink_concrete: 6
-      gray_concrete: 6
-      light_gray_concrete: 6
-      cyan_concrete: 6
-      purple_concrete: 6
-      blue_concrete: 6
-      brown_concrete: 6
-      green_concrete: 6
-      red_concrete: 6
-      black_concrete: 6
-      white_stained_glass: 6
-      orange_stained_glass: 6
-      magenta_stained_glass: 6
-      light_blue_stained_glass: 6
-      yellow_stained_glass: 6
-      lime_stained_glass: 6
-      pink_stained_glass: 6
-      gray_stained_glass: 6
-      light_gray_stained_glass: 6
-      cyan_stained_glass: 6
-      purple_stained_glass: 6
-      blue_stained_glass: 6
-      brown_stained_glass: 6
-      green_stained_glass: 6
-      red_stained_glass: 6
-      black_stained_glass: 6
-      white_terracotta: 6
-      orange_terracotta: 6
-      magenta_terracotta: 6
-      light_blue_terracotta: 6
-      yellow_terracotta: 6
-      lime_terracotta: 6
-      pink_terracotta: 6
-      gray_terracotta: 6
-      light_gray_terracotta: 6
-      cyan_terracotta: 6
-      purple_terracotta: 6
-      blue_terracotta: 6
-      brown_terracotta: 6
-      green_terracotta: 6
-      red_terracotta: 6
-      black_terracotta: 6
-      glass: 5
-      tinted_glass: 30
-      terracotta: 5
-      white_wool: 50
+      white_concrete: 600
+      orange_concrete: 600
+      magenta_concrete: 600
+      light_blue_concrete: 600
+      yellow_concrete: 600
+      lime_concrete: 600
+      pink_concrete: 600
+      gray_concrete: 600
+      light_gray_concrete: 600
+      cyan_concrete: 600
+      purple_concrete: 600
+      blue_concrete: 600
+      brown_concrete: 600
+      green_concrete: 600
+      red_concrete: 600
+      black_concrete: 600
+      white_stained_glass: 600
+      orange_stained_glass: 600
+      magenta_stained_glass: 600
+      light_blue_stained_glass: 600
+      yellow_stained_glass: 600
+      lime_stained_glass: 600
+      pink_stained_glass: 600
+      gray_stained_glass: 600
+      light_gray_stained_glass: 600
+      cyan_stained_glass: 600
+      purple_stained_glass: 600
+      blue_stained_glass: 600
+      brown_stained_glass: 600
+      green_stained_glass: 600
+      red_stained_glass: 600
+      black_stained_glass: 600
+      white_terracotta: 600
+      orange_terracotta: 600
+      magenta_terracotta: 600
+      light_blue_terracotta: 600
+      yellow_terracotta: 600
+      lime_terracotta: 600
+      pink_terracotta: 600
+      gray_terracotta: 600
+      light_gray_terracotta: 600
+      cyan_terracotta: 600
+      purple_terracotta: 600
+      blue_terracotta: 600
+      brown_terracotta: 600
+      green_terracotta: 600
+      red_terracotta: 600
+      black_terracotta: 600
+      glass: 500
+      tinted_glass: 3000
+      terracotta: 500
+      white_wool: 5000
   # Lights and display blocks.
   decoration:
     icon: lantern
@@ -360,24 +361,24 @@ categories:
       light: [soul_torch, candle, end_rod, campfire, shroomlight, lantern, ochre_froglight, verdant_froglight, pearlescent_froglight, soul_lantern]
       display: [flower_pot, iron_bars, decorated_pot, item_frame, white_banner, glow_item_frame, chiseled_bookshelf]
     items:
-      soul_torch: 5
-      candle: 15
-      end_rod: 30
-      campfire: 30
-      shroomlight: 30
-      lantern: 40
-      ochre_froglight: 40
-      verdant_froglight: 40
-      pearlescent_froglight: 40
-      soul_lantern: 45
-      flower_pot: 10
-      iron_bars: 10
-      decorated_pot: 20
-      item_frame: 25
-      glow_item_frame: 40
+      soul_torch: 500
+      candle: 1500
+      end_rod: 3000
+      campfire: 3000
+      shroomlight: 3000
+      lantern: 4000
+      ochre_froglight: 4000
+      verdant_froglight: 4000
+      pearlescent_froglight: 4000
+      soul_lantern: 4500
+      flower_pot: 1000
+      iron_bars: 1000
+      decorated_pot: 2000
+      item_frame: 2500
+      glow_item_frame: 4000
       # Batch 9 (Q-42): back in the shop
-      chiseled_bookshelf: 70
-      white_banner: 25
+      chiseled_bookshelf: 7000
+      white_banner: 2500
   # Advanced workstations, buckets, tools and food. Crafting table, furnace, chest and other simple crafts are made by the
   # player (ECON-TABLES D1).
   essentials:
@@ -389,35 +390,35 @@ categories:
       storage: [ladder, glass_pane, composter, chest, barrel, painting, armor_stand]
     items:
       # Feedback 5 Nov 2026 ("a lot of items missing, such as repeater"): workstations, storage and redstone parts are back.
-      crafting_table: 10
-      furnace: 15
-      smoker: 30
-      grindstone: 40
-      chest: 15
-      barrel: 15
-      composter: 10
-      ladder: 3
-      glass_pane: 3
-      painting: 20
-      armor_stand: 40
-      blast_furnace: 40
-      stonecutter: 30
-      anvil: 400
-      enchanting_table: 1500
-      bookshelf: 60
-      brewing_stand: 300
-      cauldron: 60
-      bucket: 400
-      water_bucket: 450
-      lava_bucket: 500
-      flint_and_steel: 40
-      shears: 60
-      fishing_rod: 150
-      torch: 4
-      scaffolding: 5
-      white_bed: 30
-      bread: 15
-      baked_potato: 15
+      crafting_table: 1000
+      furnace: 1500
+      smoker: 3000
+      grindstone: 4000
+      chest: 1500
+      barrel: 1500
+      composter: 1000
+      ladder: 300
+      glass_pane: 300
+      painting: 2000
+      armor_stand: 4000
+      blast_furnace: 4000
+      stonecutter: 3000
+      anvil: 40000
+      enchanting_table: 150000
+      bookshelf: 6000
+      brewing_stand: 30000
+      cauldron: 6000
+      bucket: 40000
+      water_bucket: 45000
+      lava_bucket: 50000
+      flint_and_steel: 4000
+      shears: 6000
+      fishing_rod: 15000
+      torch: 400
+      scaffolding: 500
+      white_bed: 3000
+      bread: 1500
+      baked_potato: 1500
   # Redstone dust is also an island generator drop and sells with /sell, so it costs more than 7.5x its sell price. Hoppers are priced so many aren't worth it (owner S6).
   redstone:
     icon: redstone
@@ -427,34 +428,34 @@ categories:
       inputs: [stone_button, oak_button, lever, stone_pressure_plate, tripwire_hook, trapped_chest, heavy_weighted_pressure_plate, target, note_block, light_weighted_pressure_plate]
       rails: [rail, detector_rail, activator_rail, powered_rail, minecart]
     items:
-      redstone: 260
-      redstone_torch: 20
-      repeater: 60
-      dropper: 30
-      lever: 5
-      stone_button: 3
-      oak_button: 3
-      stone_pressure_plate: 5
-      note_block: 30
-      comparator: 60
-      piston: 50
-      sticky_piston: 70
-      observer: 60
-      hopper: 2500
-      dispenser: 40
-      crafter: 80
-      light_weighted_pressure_plate: 40
-      heavy_weighted_pressure_plate: 30
-      tripwire_hook: 15
-      daylight_detector: 40
-      target: 30
-      redstone_lamp: 60
-      rail: 8
-      powered_rail: 60
-      detector_rail: 30
-      activator_rail: 30
-      minecart: 60
-      trapped_chest: 15
+      redstone: 26000
+      redstone_torch: 2000
+      repeater: 6000
+      dropper: 3000
+      lever: 500
+      stone_button: 300
+      oak_button: 300
+      stone_pressure_plate: 500
+      note_block: 3000
+      comparator: 6000
+      piston: 5000
+      sticky_piston: 7000
+      observer: 6000
+      hopper: 250000
+      dispenser: 4000
+      crafter: 8000
+      light_weighted_pressure_plate: 4000
+      heavy_weighted_pressure_plate: 3000
+      tripwire_hook: 1500
+      daylight_detector: 4000
+      target: 3000
+      redstone_lamp: 6000
+      rail: 800
+      powered_rail: 6000
+      detector_rail: 3000
+      activator_rail: 3000
+      minecart: 6000
+      trapped_chest: 1500
   # Spawners (ECON-SPAWNERS): tiers 1 to 4, 5 mobs each, one round price per tier (shop-settings.yml spawners.max-tier;
   # tier 5 is Black Market only, legacy mobs are never sold). Keys are mob types from stacking.yml spawners.tier-N.
   # A tier unlocks per island by kills of the previous tier (stacking.yml spawners.unlock.*). The lore shows the drop,
@@ -468,120 +469,120 @@ categories:
       tier3: [creeper, witch, drowned, husk, stray]
       tier4: [blaze, enderman, guardian, hoglin, zombified_piglin]
     items:
-      pig: 100000
-      cow: 100000
-      chicken: 100000
-      sheep: 100000
-      rabbit: 100000
-      zombie: 250000
-      skeleton: 250000
-      spider: 250000
-      cave_spider: 250000
-      slime: 250000
-      creeper: 500000
-      witch: 500000
-      drowned: 500000
-      husk: 500000
-      stray: 500000
-      blaze: 1000000
-      enderman: 1000000
-      guardian: 1000000
-      hoglin: 1000000
-      zombified_piglin: 1000000
+      pig: 10000000
+      cow: 10000000
+      chicken: 10000000
+      sheep: 10000000
+      rabbit: 10000000
+      zombie: 25000000
+      skeleton: 25000000
+      spider: 25000000
+      cave_spider: 25000000
+      slime: 25000000
+      creeper: 50000000
+      witch: 50000000
+      drowned: 50000000
+      husk: 50000000
+      stray: 50000000
+      blaze: 100000000
+      enderman: 100000000
+      guardian: 100000000
+      hoglin: 100000000
+      zombified_piglin: 100000000
 
 # Not sold any more (Shop v2); the price is only the block worth for the island level and trade hints.
 worth-only:
-  packed_mud: 6
-  mud_bricks: 8
-  cut_sandstone: 8
-  smooth_sandstone: 8
-  red_sandstone: 8
-  smooth_red_sandstone: 10
-  cut_copper: 12
-  stripped_oak_log: 9
-  stripped_spruce_log: 9
-  stripped_birch_log: 9
-  stripped_jungle_log: 9
-  stripped_acacia_log: 9
-  stripped_dark_oak_log: 9
-  stripped_mangrove_log: 9
-  stripped_cherry_log: 9
-  stripped_pale_oak_log: 9
-  smooth_stone: 9
-  cracked_stone_bricks: 10
-  chiseled_stone_bricks: 10
-  deepslate_tiles: 8
-  polished_tuff: 6
-  tuff_bricks: 8
-  smooth_basalt: 7
-  orange_wool: 6
-  magenta_wool: 6
-  light_blue_wool: 6
-  yellow_wool: 6
-  lime_wool: 6
-  pink_wool: 6
-  gray_wool: 6
-  light_gray_wool: 6
-  cyan_wool: 6
-  purple_wool: 6
-  blue_wool: 6
-  brown_wool: 6
-  green_wool: 6
-  red_wool: 6
-  black_wool: 6
-  white_dye: 4
-  orange_dye: 4
-  magenta_dye: 4
-  light_blue_dye: 4
-  yellow_dye: 4
-  lime_dye: 4
-  pink_dye: 4
-  gray_dye: 4
-  light_gray_dye: 4
-  cyan_dye: 4
-  purple_dye: 4
-  blue_dye: 4
-  brown_dye: 4
-  green_dye: 4
-  red_dye: 4
-  black_dye: 4
-  white_carpet: 3
-  orange_carpet: 3
-  magenta_carpet: 3
-  light_blue_carpet: 3
-  yellow_carpet: 3
-  lime_carpet: 3
-  pink_carpet: 3
-  gray_carpet: 3
-  light_gray_carpet: 3
-  cyan_carpet: 3
-  purple_carpet: 3
-  blue_carpet: 3
-  brown_carpet: 3
-  green_carpet: 3
-  red_carpet: 3
-  black_carpet: 3
-  blue_orchid: 10
-  allium: 10
-  azure_bluet: 10
-  red_tulip: 10
-  orange_tulip: 10
-  white_tulip: 10
-  pink_tulip: 10
-  oxeye_daisy: 10
-  lily_of_the_valley: 10
-  lilac: 15
-  rose_bush: 15
-  peony: 15
-  short_grass: 4
-  fern: 4
-  dead_bush: 4
-  redstone_block: 2400
-  sea_pickle: 10
-  smithing_table: 30
-  loom: 20
-  cartography_table: 25
-  fletching_table: 20
-  lectern: 50
-  ender_chest: 1500
+  packed_mud: 600
+  mud_bricks: 800
+  cut_sandstone: 800
+  smooth_sandstone: 800
+  red_sandstone: 800
+  smooth_red_sandstone: 1000
+  cut_copper: 1200
+  stripped_oak_log: 900
+  stripped_spruce_log: 900
+  stripped_birch_log: 900
+  stripped_jungle_log: 900
+  stripped_acacia_log: 900
+  stripped_dark_oak_log: 900
+  stripped_mangrove_log: 900
+  stripped_cherry_log: 900
+  stripped_pale_oak_log: 900
+  smooth_stone: 900
+  cracked_stone_bricks: 1000
+  chiseled_stone_bricks: 1000
+  deepslate_tiles: 800
+  polished_tuff: 600
+  tuff_bricks: 800
+  smooth_basalt: 700
+  orange_wool: 600
+  magenta_wool: 600
+  light_blue_wool: 600
+  yellow_wool: 600
+  lime_wool: 600
+  pink_wool: 600
+  gray_wool: 600
+  light_gray_wool: 600
+  cyan_wool: 600
+  purple_wool: 600
+  blue_wool: 600
+  brown_wool: 600
+  green_wool: 600
+  red_wool: 600
+  black_wool: 600
+  white_dye: 400
+  orange_dye: 400
+  magenta_dye: 400
+  light_blue_dye: 400
+  yellow_dye: 400
+  lime_dye: 400
+  pink_dye: 400
+  gray_dye: 400
+  light_gray_dye: 400
+  cyan_dye: 400
+  purple_dye: 400
+  blue_dye: 400
+  brown_dye: 400
+  green_dye: 400
+  red_dye: 400
+  black_dye: 400
+  white_carpet: 300
+  orange_carpet: 300
+  magenta_carpet: 300
+  light_blue_carpet: 300
+  yellow_carpet: 300
+  lime_carpet: 300
+  pink_carpet: 300
+  gray_carpet: 300
+  light_gray_carpet: 300
+  cyan_carpet: 300
+  purple_carpet: 300
+  blue_carpet: 300
+  brown_carpet: 300
+  green_carpet: 300
+  red_carpet: 300
+  black_carpet: 300
+  blue_orchid: 1000
+  allium: 1000
+  azure_bluet: 1000
+  red_tulip: 1000
+  orange_tulip: 1000
+  white_tulip: 1000
+  pink_tulip: 1000
+  oxeye_daisy: 1000
+  lily_of_the_valley: 1000
+  lilac: 1500
+  rose_bush: 1500
+  peony: 1500
+  short_grass: 400
+  fern: 400
+  dead_bush: 400
+  redstone_block: 240000
+  sea_pickle: 1000
+  smithing_table: 3000
+  loom: 2000
+  cartography_table: 2500
+  fletching_table: 2000
+  lectern: 5000
+  ender_chest: 150000
   # Shop v4 (ECON-SELL-SHOP-AH B1, ECON-TABLES D1): crafted from shop items, so players craft them; still sellable.

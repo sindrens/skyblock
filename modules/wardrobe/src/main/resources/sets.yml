@@ -18,6 +18,7 @@
 #   death_loss, crop_growth. text: key under bonus-text in messages/wardrobe.yml.
 # Reload: /skyblock reload wardrobe
 
+money-scale: 100
 sets:
   delver:
     name: "Delver's Garb"
@@ -25,7 +26,7 @@ sets:
     activity: mining
     tier: 1
     look: {base: chainmail, trim-pattern: wayfinder, trim-material: copper, upgraded-trim-material: gold}
-    source: {type: money, price: 20000}
+    source: {type: money, price: 2000000}
     bonuses:
       two:
         - {family: speed, value: 4, activities: [mining], text: mining-speed}
@@ -37,7 +38,7 @@ sets:
     activity: foraging
     tier: 1
     look: {base: leather, dye: "#5E7D32", trim-pattern: wild, trim-material: emerald, upgraded-trim-material: diamond}
-    source: {type: money, price: 20000}
+    source: {type: money, price: 2000000}
     bonuses:
       two:
         - {family: speed, value: 4, activities: [foraging], text: chopping-speed}
@@ -49,7 +50,7 @@ sets:
     activity: farming
     tier: 1
     look: {base: leather, dye: "#D9B45A", trim-pattern: shaper, trim-material: gold, upgraded-trim-material: emerald}
-    source: {type: money, price: 20000}
+    source: {type: money, price: 2000000}
     bonuses:
       two:
         - {family: skill_xp, value: 8, activities: [farming], text: farming-xp}
@@ -61,7 +62,7 @@ sets:
     activity: combat
     tier: 1
     look: {base: iron, trim-pattern: sentry, trim-material: redstone, upgraded-trim-material: gold}
-    source: {type: money, price: 20000}
+    source: {type: money, price: 2000000}
     bonuses:
       two:
         - {family: damage_reduction, value: 4, activities: [combat], text: mob-damage-taken}
@@ -74,7 +75,7 @@ sets:
     tier: 1
     enabled-from: fishing
     look: {base: leather, dye: "#3F76A8", trim-pattern: coast, trim-material: lapis, upgraded-trim-material: diamond}
-    source: {type: money, price: 20000}
+    source: {type: money, price: 2000000}
     bonuses:
       two:
         - {family: speed, value: 5, activities: [fishing], text: bite-wait}
@@ -87,7 +88,7 @@ sets:
     tier: 2
     enabled-from: conquest
     look: {base: iron, trim-pattern: raiser, trim-material: redstone, upgraded-trim-material: gold}
-    source: {type: money, price: 2500000, crates: [conqueror]}
+    source: {type: money, price: 250000000, crates: [conqueror]}
     gate: {wing: any, tier: 5}
     bonuses:
       two:
@@ -180,7 +181,7 @@ sets:
     activity: selling
     tier: 3
     look: {base: leather, dye: "#5B2A86", trim-pattern: eye, trim-material: gold, upgraded-trim-material: diamond}
-    source: {type: money, price: 40000000, crates: [black_market]}
+    source: {type: money, price: 4000000000, crates: [black_market]}
     gate: {wing: any, tier: 8}
     bonuses:
       two:

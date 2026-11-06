@@ -21,386 +21,387 @@
 #  - Island items sell for half the Depths item of the same tier (the Depths stay the main money place).
 # Reload: /skyblock reload economy
 config-version: 2
+money-scale: 100
 
 categories:
   # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
   ores:
-    cobblestone: 1
-    coal: 10
-    raw_copper: 14
-    raw_iron: 18
-    raw_gold: 25
-    redstone: 33
-    lapis_lazuli: 45
-    diamond: 61
+    cobblestone: 100
+    coal: 1000
+    raw_copper: 1400
+    raw_iron: 1800
+    raw_gold: 2500
+    redstone: 3300
+    lapis_lazuli: 4500
+    diamond: 6100
     # Off until villager trading is limited: fletchers turn free sticks into emeralds (docs/OPEN_QUESTIONS.md).
-    emerald: { price: 82, sellable: false }
+    emerald: { price: 8200, sellable: false }
 
   # Island crops by Farming unlock tier (ECONOMY_BALANCE §4.1).
   crops:
     # Owner 3 Nov 2026: crops you harvest with the hoe pay better per item than crops that farm themselves
     # (cactus, cane, melon, pumpkin, cocoa, berries: big automatic farms must not be OP). /farm pays a bonus on top.
-    wheat: 12
-    carrot: 15
-    potato: 15
-    beetroot: 20
-    sugar_cane: 4
-    melon_slice: 2
-    pumpkin: 10
-    cocoa_beans: 8
-    cactus: 5
-    sweet_berries: 6
-    nether_wart: 30
-    torchflower: 396
-    pitcher_plant: 870
+    wheat: 1200
+    carrot: 1500
+    potato: 1500
+    beetroot: 2000
+    sugar_cane: 400
+    melon_slice: 200
+    pumpkin: 1000
+    cocoa_beans: 800
+    cactus: 500
+    sweet_berries: 600
+    nether_wart: 3000
+    torchflower: 39600
+    pitcher_plant: 87000
 
   # Owner 6 Nov 2026 (/fish): small prices on purpose. A catch at /fish pays its water's money directly, so island
   # AFK fish farms never print money; these are only for the rod storage's "Sell all" and Golden Fish.
   fish:
-    cod: 3
-    salmon: 4
-    tropical_fish: 6
-    pufferfish: 8
-    ink_sac: 2
-    glow_ink_sac: 10
-    nautilus_shell: 25
-    heart_of_the_sea: 200
+    cod: 300
+    salmon: 400
+    tropical_fish: 600
+    pufferfish: 800
+    ink_sac: 200
+    glow_ink_sac: 1000
+    nautilus_shell: 2500
+    heart_of_the_sea: 20000
 
   # Spawner mob loot. Owner plan 5 Nov 2026 (never shown): one mob is worth about $3 / $6 / $10 / $18 (spawner tiers 1-4),
   # so a spawner pays back its shop price in about 100 h (tier 1) to 150 h (tier 4) before upgrades.
   mob-loot:
     # Spawner tier 1 (pig, cow, chicken, sheep, rabbit): $1 per item, about $3 per mob
-    porkchop: 1
-    cooked_porkchop: 1
-    beef: 1
-    cooked_beef: 1
-    chicken: 1
-    cooked_chicken: 1
-    mutton: 1
-    cooked_mutton: 1
-    rabbit: 1
-    cooked_rabbit: 1
-    leather: 1
-    feather: 1
-    rabbit_hide: 1
-    rabbit_foot: 1
+    porkchop: 100
+    cooked_porkchop: 100
+    beef: 100
+    cooked_beef: 100
+    chicken: 100
+    cooked_chicken: 100
+    mutton: 100
+    cooked_mutton: 100
+    rabbit: 100
+    cooked_rabbit: 100
+    leather: 100
+    feather: 100
+    rabbit_hide: 100
+    rabbit_foot: 100
     # Spawner tier 2 (zombie, skeleton, spider, slime): $5 per item, about $6 per mob. Arrows are not listed: 1 feather crafts 4 arrows.
-    rotten_flesh: 5
-    bone: 5
-    string: 5
-    spider_eye: 5
-    slime_ball: 5
+    rotten_flesh: 500
+    bone: 500
+    string: 500
+    spider_eye: 500
+    slime_ball: 500
     # Spawner tier 3 (creeper, witch, drowned, husk): $10 per item
-    gunpowder: 10
-    glowstone_dust: 10
+    gunpowder: 1000
+    glowstone_dust: 1000
     # Spawner tier 4 (blaze, enderman, guardian, piglin): $36 per item, about $18 per mob (0.5 per kill)
-    blaze_rod: 36
-    ender_pearl: 36
-    prismarine_shard: 36
-    prismarine_crystals: 36
+    blaze_rod: 3600
+    ender_pearl: 3600
+    prismarine_shard: 3600
+    prismarine_crystals: 3600
     # Spawner tier 5 (iron golem, wither skeleton, shulker): $180
-    shulker_shell: 180
-    wither_skeleton_skull: 180
+    shulker_shell: 18000
+    wither_skeleton_skull: 18000
     # Iron golems drop iron ingots; an ingot can't sell above raw iron (smelting), so it gets the raw iron price.
-    iron_ingot: 18
+    iron_ingot: 1800
 
 custom-items:
   # Custom island generator ores (PHASE-7 M7.2, generators.yml; ECONOMY_BALANCE §4.1: half the Depths ore one tier up:
   # Ashstone = half of Depths amethyst, Emberite = half of Depths quartz). Only an island generator at level 9 / 10 makes them.
   island-ores:
-    ashstone: 180
-    emberite: 396
+    ashstone: 18000
+    emberite: 39600
   # Depths mine drops (ECONOMY_BALANCE §3.1). The ids are proposals for M4.9 (drops are not built yet); M4.9 renames them
   # here if it picks other ids. Vanilla coal from an island generator is NOT these items.
   depths-mine:
-    depths_coal: 20
-    depths_copper: 27
-    depths_iron: 36
-    depths_gold: 49
-    depths_redstone: 66
-    depths_lapis: 90
-    depths_diamond: 121
-    depths_emerald: 163
-    depths_amethyst: 360
-    depths_quartz: 791
-    depths_netherite: 1740
-    depths_voidstone: 3829
+    depths_coal: 2000
+    depths_copper: 2700
+    depths_iron: 3600
+    depths_gold: 4900
+    depths_redstone: 6600
+    depths_lapis: 9000
+    depths_diamond: 12100
+    depths_emerald: 16300
+    depths_amethyst: 36000
+    depths_quartz: 79100
+    depths_netherite: 174000
+    depths_voidstone: 382900
   # Depths forest drops (ECONOMY_BALANCE §3.2: same price as the ore of the same tier).
   depths-forest:
-    depths_oak_log: 20
-    depths_birch_log: 27
-    depths_spruce_log: 36
-    depths_jungle_log: 49
-    depths_acacia_log: 66
-    depths_dark_oak_log: 90
-    depths_mangrove_log: 121
-    depths_cherry_log: 163
-    depths_pale_oak_log: 360
-    depths_crimson_stem: 791
-    depths_warped_stem: 1740
+    depths_oak_log: 2000
+    depths_birch_log: 2700
+    depths_spruce_log: 3600
+    depths_jungle_log: 4900
+    depths_acacia_log: 6600
+    depths_dark_oak_log: 9000
+    depths_mangrove_log: 12100
+    depths_cherry_log: 16300
+    depths_pale_oak_log: 36000
+    depths_crimson_stem: 79100
+    depths_warped_stem: 174000
   # Depths combat drops (ECONOMY_BALANCE §3.2: ~4 drops per kill, drop value per kill = the combat table, M4.8).
   depths-combat:
-    depths_rotten_flesh: 26
-    depths_bone: 44
-    depths_spider_eye: 66
-    depths_slime_ball: 109
-    depths_prismarine: 162
-    depths_glowstone: 241
-    depths_raider_scrap: 400
-    depths_blaze_rod: 575
-    depths_wither_ash: 1400
-    depths_warlord_sigil: 3675
+    depths_rotten_flesh: 2600
+    depths_bone: 4400
+    depths_spider_eye: 6600
+    depths_slime_ball: 10900
+    depths_prismarine: 16200
+    depths_glowstone: 24100
+    depths_raider_scrap: 40000
+    depths_blaze_rod: 57500
+    depths_wither_ash: 140000
+    depths_warlord_sigil: 367500
   # ECON-SPAWNERS step 8 / ECON-TABLES A: the custom drop of every spawner mob (mobdrop_<mob>). One round price per tier on
   # purpose (equal income = equal payback): tier 1 $5, 2 $10, 3 $16, 4 $30, premium $80. Placeholders (owner: exact prices
   # later). Without these the spawner income on the shop tile is 0.
   spawner-drops:
-    mobdrop_pig: 5
-    mobdrop_cow: 5
-    mobdrop_chicken: 5
-    mobdrop_sheep: 5
-    mobdrop_rabbit: 5
-    mobdrop_zombie: 10
-    mobdrop_skeleton: 10
-    mobdrop_spider: 10
-    mobdrop_cave_spider: 10
-    mobdrop_slime: 10
-    mobdrop_creeper: 16
-    mobdrop_witch: 16
-    mobdrop_drowned: 16
-    mobdrop_husk: 16
-    mobdrop_stray: 16
-    mobdrop_blaze: 30
-    mobdrop_enderman: 30
-    mobdrop_guardian: 30
-    mobdrop_hoglin: 30
-    mobdrop_zombified_piglin: 30
-    mobdrop_iron_golem: 80
-    mobdrop_wither_skeleton: 80
-    mobdrop_evoker: 80
+    mobdrop_pig: 500
+    mobdrop_cow: 500
+    mobdrop_chicken: 500
+    mobdrop_sheep: 500
+    mobdrop_rabbit: 500
+    mobdrop_zombie: 1000
+    mobdrop_skeleton: 1000
+    mobdrop_spider: 1000
+    mobdrop_cave_spider: 1000
+    mobdrop_slime: 1000
+    mobdrop_creeper: 1600
+    mobdrop_witch: 1600
+    mobdrop_drowned: 1600
+    mobdrop_husk: 1600
+    mobdrop_stray: 1600
+    mobdrop_blaze: 3000
+    mobdrop_enderman: 3000
+    mobdrop_guardian: 3000
+    mobdrop_hoglin: 3000
+    mobdrop_zombified_piglin: 3000
+    mobdrop_iron_golem: 8000
+    mobdrop_wither_skeleton: 8000
+    mobdrop_evoker: 8000
 
 # ECON-SELL-SHOP-AH A2 / ECON-TABLES E: uncraftable blocks and plants (id: price, decimals allowed, at least 0.01).
 # Everything listed above keeps its price. Placeholders for the balance run (owner: exact prices later).
 roots:
-  dirt: 0.5
-  grass_block: 0.5
-  rooted_dirt: 0.5
-  mud: 0.5
-  sand: 0.5
-  red_sand: 0.5
-  gravel: 0.5
-  netherrack: 0.39  # below shop price / 7.5 until ECON Part B auto prices
-  short_grass: 0.5
-  fern: 0.5
-  dead_bush: 0.5
-  hanging_roots: 0.5
-  mangrove_roots: 0.5
-  vine: 0.5
-  glow_lichen: 0.5
-  pointed_dripstone: 0.5
-  oak_leaves: 0.5
-  spruce_leaves: 0.5
-  birch_leaves: 0.5
-  jungle_leaves: 0.5
-  acacia_leaves: 0.5
-  dark_oak_leaves: 0.5
-  mangrove_leaves: 0.5
-  cherry_leaves: 0.5
-  pale_oak_leaves: 0.5
-  azalea_leaves: 0.5
-  flowering_azalea_leaves: 0.5
-  stone: 1.0
-  cobbled_deepslate: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  deepslate: 0.79  # below shop price / 7.5 until ECON Part B auto prices
-  tuff: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  calcite: 0.79  # below shop price / 7.5 until ECON Part B auto prices
-  diorite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  granite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  andesite: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  basalt: 0.79  # below shop price / 7.5 until ECON Part B auto prices
-  blackstone: 0.79  # below shop price / 7.5 until ECON Part B auto prices
-  dripstone_block: 1.0
-  snow_block: 0.66  # below shop price / 7.5 until ECON Part B auto prices
-  ice: 1.0
-  soul_sand: 1.0
-  soul_soil: 1.0
-  podzol: 1.0
-  clay: 1.0
-  mycelium: 1.0
-  moss_block: 1.0
-  oak_log: 1.0
-  spruce_log: 1.0
-  birch_log: 1.0
-  jungle_log: 1.0
-  acacia_log: 1.0
-  dark_oak_log: 1.0
-  mangrove_log: 1.0
-  cherry_log: 1.0
-  pale_oak_log: 1.0
-  crimson_stem: 1.0
-  warped_stem: 1.0
-  bamboo_block: 1.0
-  end_stone: 1.32  # below shop price / 7.5 until ECON Part B auto prices
-  magma_block: 1.5
-  warped_wart_block: 2
-  crimson_nylium: 2
-  warped_nylium: 2
-  obsidian: 6
-  crying_obsidian: 8
-  dandelion: 1.0
-  poppy: 1.0
-  blue_orchid: 1.0
-  allium: 1.0
-  azure_bluet: 1.0
-  red_tulip: 1.0
-  orange_tulip: 1.0
-  white_tulip: 1.0
-  pink_tulip: 1.0
-  oxeye_daisy: 1.0
-  cornflower: 1.0
-  lily_of_the_valley: 1.0
-  wither_rose: 1.0
-  sunflower: 1.5
-  lilac: 1.5
-  rose_bush: 1.5
-  peony: 1.5
+  dirt: 50
+  grass_block: 50
+  rooted_dirt: 50
+  mud: 50
+  sand: 50
+  red_sand: 50
+  gravel: 50
+  netherrack: 39  # below shop price / 7.5 until ECON Part B auto prices
+  short_grass: 50
+  fern: 50
+  dead_bush: 50
+  hanging_roots: 50
+  mangrove_roots: 50
+  vine: 50
+  glow_lichen: 50
+  pointed_dripstone: 50
+  oak_leaves: 50
+  spruce_leaves: 50
+  birch_leaves: 50
+  jungle_leaves: 50
+  acacia_leaves: 50
+  dark_oak_leaves: 50
+  mangrove_leaves: 50
+  cherry_leaves: 50
+  pale_oak_leaves: 50
+  azalea_leaves: 50
+  flowering_azalea_leaves: 50
+  stone: 100
+  cobbled_deepslate: 66  # below shop price / 7.5 until ECON Part B auto prices
+  deepslate: 79  # below shop price / 7.5 until ECON Part B auto prices
+  tuff: 66  # below shop price / 7.5 until ECON Part B auto prices
+  calcite: 79  # below shop price / 7.5 until ECON Part B auto prices
+  diorite: 66  # below shop price / 7.5 until ECON Part B auto prices
+  granite: 66  # below shop price / 7.5 until ECON Part B auto prices
+  andesite: 66  # below shop price / 7.5 until ECON Part B auto prices
+  basalt: 79  # below shop price / 7.5 until ECON Part B auto prices
+  blackstone: 79  # below shop price / 7.5 until ECON Part B auto prices
+  dripstone_block: 100
+  snow_block: 66  # below shop price / 7.5 until ECON Part B auto prices
+  ice: 100
+  soul_sand: 100
+  soul_soil: 100
+  podzol: 100
+  clay: 100
+  mycelium: 100
+  moss_block: 100
+  oak_log: 100
+  spruce_log: 100
+  birch_log: 100
+  jungle_log: 100
+  acacia_log: 100
+  dark_oak_log: 100
+  mangrove_log: 100
+  cherry_log: 100
+  pale_oak_log: 100
+  crimson_stem: 100
+  warped_stem: 100
+  bamboo_block: 100
+  end_stone: 132  # below shop price / 7.5 until ECON Part B auto prices
+  magma_block: 150
+  warped_wart_block: 200
+  crimson_nylium: 200
+  warped_nylium: 200
+  obsidian: 600
+  crying_obsidian: 800
+  dandelion: 100
+  poppy: 100
+  blue_orchid: 100
+  allium: 100
+  azure_bluet: 100
+  red_tulip: 100
+  orange_tulip: 100
+  white_tulip: 100
+  pink_tulip: 100
+  oxeye_daisy: 100
+  cornflower: 100
+  lily_of_the_valley: 100
+  wither_rose: 100
+  sunflower: 150
+  lilac: 150
+  rose_bush: 150
+  peony: 150
   # Plants the shop sells (ECON-TABLES D3): vines and roots are bulk (0.5); the rest at the D3 base.
-  weeping_vines: 0.5
-  twisting_vines: 0.5
-  crimson_roots: 0.5
-  warped_roots: 0.5
-  big_dripleaf: 1.0
-  small_dripleaf: 1.0
-  sea_pickle: 1.0
-  crimson_fungus: 2
-  warped_fungus: 2
+  weeping_vines: 50
+  twisting_vines: 50
+  crimson_roots: 50
+  warped_roots: 50
+  big_dripleaf: 100
+  small_dripleaf: 100
+  sea_pickle: 100
+  crimson_fungus: 200
+  warped_fungus: 200
   # Crafted (mud + mangrove roots, 90%): listed at its derived price so the shop's auto price has a base.
-  muddy_mangrove_roots: 0.9
+  muddy_mangrove_roots: 90
   # Owner 3 Nov 2026 ("everything has to have a price"): every /shop item without one, at its shop price / 8 (always under
   # the shop's 7.5x rule). Crafted ones are still lowered to their recipe price by derive (no craft-sell loops).
-  acacia_sapling: 3.75
-  activator_rail: 3.75
-  amethyst_block: 3.75
-  azalea: 2.5
-  bamboo: 1.25
-  beetroot_seeds: 1.87
-  birch_sapling: 3.12
-  black_concrete: 0.75
-  black_stained_glass: 0.75
-  black_terracotta: 0.75
-  blast_furnace: 5
-  blue_concrete: 0.75
-  blue_stained_glass: 0.75
-  blue_terracotta: 0.75
-  bookshelf: 7.5
-  brewing_stand: 37.5
-  bricks: 1.5
-  brown_concrete: 0.75
-  brown_mushroom: 1.25
-  brown_stained_glass: 0.75
-  brown_terracotta: 0.75
-  campfire: 3.75
-  candle: 1.87
-  cauldron: 7.5
-  cherry_sapling: 4.37
-  comparator: 7.5
-  copper_block: 5
-  crafter: 10
-  cyan_concrete: 0.75
-  cyan_stained_glass: 0.75
-  cyan_terracotta: 0.75
-  dark_oak_sapling: 3.75
-  dark_prismarine: 3.5
-  daylight_detector: 5
-  decorated_pot: 2.5
-  detector_rail: 3.75
-  dispenser: 5
-  end_rod: 3.75
-  flower_pot: 1.25
-  flowering_azalea: 3.12
-  glass: 0.62
-  glow_berries: 1.87
-  glow_item_frame: 5
-  gray_concrete: 0.75
-  gray_stained_glass: 0.75
-  gray_terracotta: 0.75
-  green_concrete: 0.75
-  green_stained_glass: 0.75
-  green_terracotta: 0.75
-  heavy_weighted_pressure_plate: 3.75
-  hopper: 312.5
-  iron_bars: 1.25
-  item_frame: 3.12
-  jungle_sapling: 3.75
-  kelp: 1
-  lantern: 5
-  light_blue_concrete: 0.75
-  light_blue_stained_glass: 0.75
-  light_blue_terracotta: 0.75
-  light_gray_concrete: 0.75
-  light_gray_stained_glass: 0.75
-  light_gray_terracotta: 0.75
-  light_weighted_pressure_plate: 5
-  lily_pad: 1.25
-  lime_concrete: 0.75
-  lime_stained_glass: 0.75
-  lime_terracotta: 0.75
-  magenta_concrete: 0.75
-  magenta_stained_glass: 0.75
-  magenta_terracotta: 0.75
-  mangrove_propagule: 4.37
-  melon_seeds: 5
-  minecart: 7.5
-  nether_bricks: 1.25
-  oak_sapling: 3.12
-  observer: 7.5
-  ochre_froglight: 5
-  orange_concrete: 0.75
-  orange_stained_glass: 0.75
-  orange_terracotta: 0.75
-  pale_oak_sapling: 4.37
-  pearlescent_froglight: 5
-  pink_concrete: 0.75
-  pink_stained_glass: 0.75
-  pink_terracotta: 0.75
-  piston: 6.25
-  powered_rail: 7.5
-  prismarine: 2.5
-  prismarine_bricks: 3
-  pumpkin_seeds: 5
-  purple_concrete: 0.75
-  purple_stained_glass: 0.75
-  purple_terracotta: 0.75
-  purpur_block: 1.87
-  quartz_block: 2.5
-  rail: 1
-  red_concrete: 0.75
-  red_mushroom: 1.25
-  red_nether_bricks: 1.5
-  red_stained_glass: 0.75
-  red_terracotta: 0.75
-  redstone_lamp: 7.5
-  scaffolding: 0.62
-  shroomlight: 3.75
-  smooth_quartz: 2.75
-  soul_lantern: 5.62
-  soul_torch: 0.62
-  spore_blossom: 5
-  spruce_sapling: 3.12
-  sticky_piston: 8.75
-  stonecutter: 3.75
-  target: 3.75
-  terracotta: 0.62
-  tinted_glass: 3.75
-  torch: 0.5
-  tripwire_hook: 1.87
-  verdant_froglight: 5
-  wheat_seeds: 1.25
-  white_concrete: 0.75
-  white_stained_glass: 0.75
-  white_terracotta: 0.75
-  yellow_concrete: 0.75
-  yellow_stained_glass: 0.75
-  yellow_terracotta: 0.75
+  acacia_sapling: 375
+  activator_rail: 375
+  amethyst_block: 375
+  azalea: 250
+  bamboo: 125
+  beetroot_seeds: 187
+  birch_sapling: 312
+  black_concrete: 75
+  black_stained_glass: 75
+  black_terracotta: 75
+  blast_furnace: 500
+  blue_concrete: 75
+  blue_stained_glass: 75
+  blue_terracotta: 75
+  bookshelf: 750
+  brewing_stand: 3750
+  bricks: 150
+  brown_concrete: 75
+  brown_mushroom: 125
+  brown_stained_glass: 75
+  brown_terracotta: 75
+  campfire: 375
+  candle: 187
+  cauldron: 750
+  cherry_sapling: 437
+  comparator: 750
+  copper_block: 500
+  crafter: 1000
+  cyan_concrete: 75
+  cyan_stained_glass: 75
+  cyan_terracotta: 75
+  dark_oak_sapling: 375
+  dark_prismarine: 350
+  daylight_detector: 500
+  decorated_pot: 250
+  detector_rail: 375
+  dispenser: 500
+  end_rod: 375
+  flower_pot: 125
+  flowering_azalea: 312
+  glass: 62
+  glow_berries: 187
+  glow_item_frame: 500
+  gray_concrete: 75
+  gray_stained_glass: 75
+  gray_terracotta: 75
+  green_concrete: 75
+  green_stained_glass: 75
+  green_terracotta: 75
+  heavy_weighted_pressure_plate: 375
+  hopper: 31250
+  iron_bars: 125
+  item_frame: 312
+  jungle_sapling: 375
+  kelp: 100
+  lantern: 500
+  light_blue_concrete: 75
+  light_blue_stained_glass: 75
+  light_blue_terracotta: 75
+  light_gray_concrete: 75
+  light_gray_stained_glass: 75
+  light_gray_terracotta: 75
+  light_weighted_pressure_plate: 500
+  lily_pad: 125
+  lime_concrete: 75
+  lime_stained_glass: 75
+  lime_terracotta: 75
+  magenta_concrete: 75
+  magenta_stained_glass: 75
+  magenta_terracotta: 75
+  mangrove_propagule: 437
+  melon_seeds: 500
+  minecart: 750
+  nether_bricks: 125
+  oak_sapling: 312
+  observer: 750
+  ochre_froglight: 500
+  orange_concrete: 75
+  orange_stained_glass: 75
+  orange_terracotta: 75
+  pale_oak_sapling: 437
+  pearlescent_froglight: 500
+  pink_concrete: 75
+  pink_stained_glass: 75
+  pink_terracotta: 75
+  piston: 625
+  powered_rail: 750
+  prismarine: 250
+  prismarine_bricks: 300
+  pumpkin_seeds: 500
+  purple_concrete: 75
+  purple_stained_glass: 75
+  purple_terracotta: 75
+  purpur_block: 187
+  quartz_block: 250
+  rail: 100
+  red_concrete: 75
+  red_mushroom: 125
+  red_nether_bricks: 150
+  red_stained_glass: 75
+  red_terracotta: 75
+  redstone_lamp: 750
+  scaffolding: 62
+  shroomlight: 375
+  smooth_quartz: 275
+  soul_lantern: 562
+  soul_torch: 62
+  spore_blossom: 500
+  spruce_sapling: 312
+  sticky_piston: 875
+  stonecutter: 375
+  target: 375
+  terracotta: 62
+  tinted_glass: 375
+  torch: 50
+  tripwire_hook: 187
+  verdant_froglight: 500
+  wheat_seeds: 125
+  white_concrete: 75
+  white_stained_glass: 75
+  white_terracotta: 75
+  yellow_concrete: 75
+  yellow_stained_glass: 75
+  yellow_terracotta: 75
 
 # Prices of crafted and smelted items come from their parts: price = cheapest recipe (sum of the parts / output count)
 # x factor. A recipe with an unpriced part stays unsellable. A listed price above its derived price is lowered (no craft-

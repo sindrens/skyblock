@@ -49,10 +49,10 @@ class SetRegistryTest {
     void pricesAndSourcesFollowThePlan() {
         SetRegistry r = Fixtures.registry();
         for (String id : List.of("delver", "woodsman", "tiller", "footman", "netcaster")) {
-            assertSource(r, id, SetDef.SourceType.MONEY, 20_000);
+            assertSource(r, id, SetDef.SourceType.MONEY, 2_000_000); // money x100
         }
-        assertSource(r, "banneret", SetDef.SourceType.MONEY, 2_500_000);
-        assertSource(r, "coinmaster", SetDef.SourceType.MONEY, 40_000_000);
+        assertSource(r, "banneret", SetDef.SourceType.MONEY, 250_000_000);
+        assertSource(r, "coinmaster", SetDef.SourceType.MONEY, 4_000_000_000L);
         for (String id : List.of("deepforge", "cropwarden", "dreadguard")) {
             assertSource(r, id, SetDef.SourceType.CRYSTALS, 25_000);
         }

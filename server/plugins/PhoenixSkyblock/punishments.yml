@@ -346,7 +346,7 @@ extras:
     freeze-exempt-reasons: [admin_take, admin_set, admin_reset, sanction_remove]   # staff may still take money
     freeze-receive-reasons: [bank_withdraw]   # a frozen player can't take money out of an island bank either
     trade-reasons: [pay, trade, ah_buy, note_withdraw]   # refused when either side is trade-blocked (economy safety net)
-    money-max: 1000000000000             # most money one "remove money" takes (never more than the balance)
+    money-max: 100000000000000           # most money one "remove money" takes (never more than the balance)
     dupe-suggestion:                     # a detected dupe suggests a punishment to staff (never applied by itself)
       enabled: true
       reason: exploiting                 # reason id above whose ladder is suggested (exploiting: ban 7d first)

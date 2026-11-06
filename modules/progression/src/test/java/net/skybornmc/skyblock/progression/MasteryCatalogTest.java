@@ -38,7 +38,7 @@ class MasteryCatalogTest {
         MasteryCatalog.Def wings = catalog.get("wings").orElseThrow();
         assertEquals(1, wings.maxRank());
         assertEquals(20, wings.rank(1).islandLevel(), "P5-20: Wings at island level 20");
-        assertEquals(60_000, wings.rank(1).cost(), 1_000, "P5-20: about $60k");
+        assertEquals(6_000_000, wings.rank(1).cost(), 100_000, "P5-20: about $60k, x100 since batch 10");
         MasteryCatalog.Def treasury = catalog.get("treasury").orElseThrow();
         assertEquals(List.of(15, 35, 60), treasury.ranks().stream().map(MasteryCatalog.Rank::islandLevel).toList(), "P5-19");
         assertEquals(List.of(1.0, 2.0, 3.0), treasury.ranks().stream().map(MasteryCatalog.Rank::value).toList());

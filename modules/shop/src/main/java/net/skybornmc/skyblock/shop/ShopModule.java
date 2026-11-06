@@ -104,6 +104,10 @@ public final class ShopModule implements SkyblockModule, Listener {
     static final String V4_DEFAULTS = "migrations/shop-v4.yml";
     /** The frozen Shop v6 defaults: baseline of the v7 groups (batch 9). */
     static final String V6_DEFAULTS = "migrations/shop-v6.yml";
+    /** Money x100: every shop price ({@code auto} stays auto) and the block worth of {@code worth-only}. */
+    static final java.util.List<net.skybornmc.skyblock.common.config.CatalogScale.Path> MONEY_PATHS = java.util.List.of(
+            net.skybornmc.skyblock.common.config.CatalogScale.Path.of("categories.*.items.*", net.skybornmc.skyblock.common.config.MoneyScale.number()),
+            net.skybornmc.skyblock.common.config.CatalogScale.Path.of("worth-only.*", net.skybornmc.skyblock.common.config.MoneyScale.number()));
     /** /settings toggle ids (F14). */
     static final String SETTING_UNDO = "shop-undo";
     static final String SETTING_BIG_BUY = "shop-big-buy";
@@ -311,6 +315,8 @@ public final class ShopModule implements SkyblockModule, Listener {
                     yaml = v6.get().yaml();
                     writeMigration(file, yaml, v6.get().changes(), ShopCatalogMigration.V6);
                 }
+                // Money x100 (batch 10): after the old-scale steps above, before v7 brings bundled (x100) prices in.
+                net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, MONEY_PATHS, core.plugin().getLogger());
                 Optional<ShopCatalogMigration.Result> v7 = ShopCatalogMigration.itemsV7(yaml, bundled, bundled(V6_DEFAULTS));
                 if (v7.isPresent()) {
                     yaml = v7.get().yaml();

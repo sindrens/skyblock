@@ -38,16 +38,16 @@ class UpgradeCatalogTest {
         assertEquals(18, c.size());
         UpgradeCatalog.Def size = c.get("island_size").orElseThrow();
         assertEquals(List.of(5.0, 7.0, 9.0), size.levels().stream().map(UpgradeCatalog.Level::value).toList(), "3x3 -> 9x9 (owner 157)");
-        assertEquals(List.of(3_350L, 22_900L, 157_000L), size.levels().stream().map(UpgradeCatalog.Level::cost).toList());
+        assertEquals(List.of(335_000L, 2_290_000L, 15_700_000L), size.levels().stream().map(UpgradeCatalog.Level::cost).toList());
         assertEquals(List.of(1, 3, 5), size.levels().stream().map(UpgradeCatalog.Level::tier).toList());
         UpgradeCatalog.Def slots = c.get("member_slots").orElseThrow();
         assertEquals(4, slots.maxLevel());
         assertEquals(9.0, slots.valueAt(4), "8 members + leader (owner 242)");
-        assertEquals(7_010L, slots.level(1).cost());
+        assertEquals(701_000L, slots.level(1).cost()); // money x100
         assertEquals(12, c.get("sell_multiplier").orElseThrow().maxLevel());
         assertEquals(60.0, c.get("sell_multiplier").orElseThrow().valueAt(12));
-        assertEquals(157_000L, c.get("entity_limits").orElseThrow().level(1).cost());
-        assertEquals(2_500L, c.get("spawner_rate").orElseThrow().level(1).cost(), "production: C_p(1)");
+        assertEquals(15_700_000L, c.get("entity_limits").orElseThrow().level(1).cost());
+        assertEquals(250_000L, c.get("spawner_rate").orElseThrow().level(1).cost(), "production: C_p(1)");
         // Features that don't exist yet: shown as coming soon, not buyable.
         for (String id : List.of("island_vault", "mob_loot", "generator", "fuel_tank", "lumberjack", "xp_boost", "spawner_stack_limit")) {
             assertFalse(c.get(id).orElseThrow().buyable(), id);

@@ -51,6 +51,7 @@ class DeadConfigKeysTest {
      */
     private static final Map<String, String> YML_ALLOWED = Map.of(
             "config-version", "written by ConfigManager in every typed config",
+            "money-scale", "money x100 marker (MoneyScale / CatalogScale), written by the loaders",
             "motd.yml:brand", "MotdModule reads the brand line straight from the yml (catalog part of the file)",
             "motd.yml:motds", "MotdModule reads the MOTD catalog (motds.<id>.line1/line2) straight from the yml",
             "worlds.yml:worlds", "WorldsModule reads one section per world (create, biome, spawn, border, gamerules)",

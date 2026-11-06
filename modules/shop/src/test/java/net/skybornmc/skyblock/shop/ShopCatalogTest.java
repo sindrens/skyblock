@@ -131,14 +131,14 @@ class ShopCatalogTest {
     @Test
     void ownerPriceDecisions() throws Exception {
         ShopCatalog c = catalog();
-        assertEquals(2_500, c.item("hopper").orElseThrow().price(), "S6");
-        assertEquals(30, c.item("bone_meal").orElseThrow().price(), "S7");
-        assertEquals(40, c.item("flint_and_steel").orElseThrow().price(), "S4");
-        assertEquals(150, c.item("fishing_rod").orElseThrow().price());
-        assertEquals(60, c.item("shears").orElseThrow().price());
-        assertEquals(15, c.item("bread").orElseThrow().price());
-        assertEquals(15, c.worth("baked_potato").orElseThrow(), "removed in Shop v4: its price is block worth only");
-        assertEquals(4, c.item("dirt").orElseThrow().price(), "unchanged prices stay");
+        assertEquals(250_000, c.item("hopper").orElseThrow().price(), "S6");
+        assertEquals(3_000, c.item("bone_meal").orElseThrow().price(), "S7");
+        assertEquals(4_000, c.item("flint_and_steel").orElseThrow().price(), "S4");
+        assertEquals(15_000, c.item("fishing_rod").orElseThrow().price());
+        assertEquals(6_000, c.item("shears").orElseThrow().price());
+        assertEquals(1_500, c.item("bread").orElseThrow().price());
+        assertEquals(1_500, c.worth("baked_potato").orElseThrow(), "removed in Shop v4: its price is block worth only");
+        assertEquals(400, c.item("dirt").orElseThrow().price(), "unchanged prices stay");
         assertEquals(1, c.item("stone").orElseThrow().contains().get("cobblestone"));
     }
 
@@ -150,9 +150,9 @@ class ShopCatalogTest {
             assertTrue(c.item(gone).isEmpty(), gone + " is not sold");
         }
         assertTrue(c.item("white_wool").isPresent(), "white wool stays (Colors)");
-        assertEquals(2_400, c.worth("redstone_block").orElseThrow(), "removed items keep their block worth");
-        assertEquals(1_500, c.worth("ender_chest").orElseThrow());
-        assertEquals(2_500, c.worth("hopper").orElseThrow(), "sold items: their shop price");
+        assertEquals(240_000, c.worth("redstone_block").orElseThrow(), "removed items keep their block worth");
+        assertEquals(150_000, c.worth("ender_chest").orElseThrow());
+        assertEquals(250_000, c.worth("hopper").orElseThrow(), "sold items: their shop price");
         assertTrue(c.worth("spawner_pig").isEmpty(), "spawners are no block worth");
     }
 
@@ -164,10 +164,10 @@ class ShopCatalogTest {
             assertTrue(item.id().startsWith(ShopCatalog.SPAWNER_PREFIX));
             assertTrue(SPAWNER_TYPES.contains(item.mob()), item.mob());
         }
-        assertEquals(100_000, catalog().item("spawner_pig").orElseThrow().price());
-        assertEquals(250_000, catalog().item("spawner_zombie").orElseThrow().price());
-        assertEquals(500_000, catalog().item("spawner_creeper").orElseThrow().price());
-        assertEquals(1_000_000, catalog().item("spawner_blaze").orElseThrow().price());
+        assertEquals(10_000_000, catalog().item("spawner_pig").orElseThrow().price());
+        assertEquals(25_000_000, catalog().item("spawner_zombie").orElseThrow().price());
+        assertEquals(50_000_000, catalog().item("spawner_creeper").orElseThrow().price());
+        assertEquals(100_000_000, catalog().item("spawner_blaze").orElseThrow().price());
         assertEquals(20, tab.items().size());
     }
 

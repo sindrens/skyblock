@@ -64,8 +64,8 @@ class ShopOverridesTest {
     void theCatalogHidesSwitchedOffItems() throws Exception {
         ShopCatalog c = ShopCatalogTest.catalog().withDisabled(Set.of("hopper", "no_such_item"));
         assertFalse(c.item("hopper").orElseThrow().enabled());
-        assertEquals(2_500, c.item("hopper").orElseThrow().price(), "price kept");
-        assertEquals(2_500, c.worth("hopper").orElseThrow(), "block worth kept");
+        assertEquals(250_000, c.item("hopper").orElseThrow().price(), "price kept");
+        assertEquals(250_000, c.worth("hopper").orElseThrow(), "block worth kept");
         assertTrue(c.item("dirt").orElseThrow().enabled());
         assertEquals(ShopCatalogTest.catalog().size(), c.size());
     }

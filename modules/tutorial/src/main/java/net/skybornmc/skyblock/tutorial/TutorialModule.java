@@ -165,6 +165,11 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
     private void loadCatalog() {
         File file = new File(core.plugin().getDataFolder(), Catalog.FILE);
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        // Money x100 (batch 10): the money rewards of a live file from before are scaled once.
+        if (!yaml.getKeys(false).isEmpty()) {
+            net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, java.util.List.of(net.skybornmc.skyblock.common.config.CatalogScale.Path.of("chapters.*.rewards", net.skybornmc.skyblock.common.config.CatalogScale.moneyLines())),
+                    core.plugin().getLogger());
+        }
         catalog = Catalog.load(yaml, w -> core.plugin().getLogger().warning(w));
         places = Places.parse(config.places, w -> core.plugin().getLogger().warning(w));
         auditWanted = AuditSignals.wanted(catalog);

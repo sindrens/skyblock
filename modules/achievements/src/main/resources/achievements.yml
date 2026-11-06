@@ -53,6 +53,7 @@
 #   crops_harvested, blocks_mined, logs_chopped, mobs_killed   all members together (all-time /is stats)
 #   visitors              unique visitors, all time          team_active         members active the same day (best day)
 
+money-scale: 100
 categories:
   skills:
     name: "<c:flame>Skills"
@@ -253,7 +254,7 @@ achievements:
     icon: gold_ingot
     category: economy
     metric: money_earned
-    goals: [100000, 1000000, 10000000, 100000000, 1000000000]
+    goals: [10000000, 100000000, 1000000000, 10000000000, 100000000000]
     title: {id: mogul, display: "<cur:money>Mogul", rarity: legendary}
   millionaire:
     name: "<cur:money>Millionaire"
@@ -261,15 +262,15 @@ achievements:
     icon: gold_block
     category: economy
     metric: balance_peak
-    goals: [1000000, 10000000, 100000000]
+    goals: [100000000, 1000000000, 10000000000]
   tycoon:
     enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<cur:money>Tycoon"
-    description: ["<c:text>Hold <cur:money>$1B</cur:money><c:text> at once."]
+    description: ["<c:text>Hold <cur:money>$100B</cur:money><c:text> at once."]
     icon: emerald_block
     category: economy
     metric: balance_peak
-    goals: [1000000000]
+    goals: [100000000000]
     title: tycoon
   jackpot:
     name: "<cur:money>Jackpot"
@@ -277,7 +278,7 @@ achievements:
     icon: sunflower
     category: economy
     metric: best_sale
-    goals: [1000000]
+    goals: [100000000]
     title: {id: jackpot, display: "<cur:money>Jackpot", rarity: epic}
     hidden: true
   dealmaker:
@@ -393,7 +394,7 @@ achievements:
     icon: gold_nugget
     category: economy
     metric: balance_peak
-    goals: [10000, 100000]
+    goals: [1000000, 10000000]
   green_fingers:
     enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<pillar:farming>Green Fingers"

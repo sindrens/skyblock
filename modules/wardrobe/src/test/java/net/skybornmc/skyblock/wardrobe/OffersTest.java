@@ -79,7 +79,7 @@ class OffersTest {
         Offers.Offer buy = offer("delver", false, false, false, true, true);
         assertEquals(Offers.Kind.BUY, buy.kind());
         assertEquals(Currency.MONEY, buy.currency());
-        assertEquals(20_000, buy.price());
+        assertEquals(2_000_000, buy.price()); // money x100
         assertEquals(Currency.CRYSTALS, offer("deepforge", false, false, false, true, true).currency());
         assertEquals(Offers.Kind.OWNED, offer("delver", true, false, false, true, true).kind());
         assertEquals(Offers.Kind.LOCKED, offer("coinmaster", false, false, false, false, true).kind());

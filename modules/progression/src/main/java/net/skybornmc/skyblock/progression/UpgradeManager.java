@@ -228,6 +228,8 @@ final class UpgradeManager implements Listener {
         try {
             if (file.exists()) {
                 yaml.load(file);
+                // Money x100 (batch 10): a live file from before is scaled once (owner prices too), then marked.
+                net.skybornmc.skyblock.common.config.CatalogScale.applyToFile(file, yaml, java.util.List.of(net.skybornmc.skyblock.common.config.CatalogScale.Path.of("upgrades.*.levels", net.skybornmc.skyblock.common.config.CatalogScale.mapList("cost", net.skybornmc.skyblock.common.config.MoneyScale.number()))), core.plugin().getLogger());
             }
         } catch (IOException | InvalidConfigurationException e) {
             core.plugin().getLogger().warning(UpgradeCatalog.FILE + " is not valid YAML, using the bundled upgrades. "

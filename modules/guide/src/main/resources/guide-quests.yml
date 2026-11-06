@@ -5,47 +5,48 @@
 # level = the island level needed before Kindle offers it.
 
 # Kindle's story: one quest at a time, in this order, shared by the whole island (any member hands in).
+money-scale: 100
 story:
-  - {id: first_wheat, ask: {wheat: 30}, level: 0, rewards: ["money 750", "crystals 10"]}
-  - {id: carrots, ask: {carrot: 48}, level: 0, rewards: ["money 1500", "crystals 15"]}
-  - {id: logs, ask: {oak_log: 64}, level: 0, rewards: ["money 1200", "item bone_meal 32"]}
-  - {id: cobble, ask: {cobblestone: 256}, level: 1, rewards: ["money 1000", "crystals 20"]}
-  - {id: cane, ask: {sugar_cane: 64}, level: 2, rewards: ["money 4000", "key ember 1"]}
-  - {id: potatoes, ask: {potato: 128}, level: 3, rewards: ["money 4500", "crystals 30"]}
-  - {id: pumpkins, ask: {pumpkin: 64}, level: 5, rewards: ["money 5500", "crystals 40"]}
-  - {id: melons, ask: {melon_slice: 128}, level: 5, rewards: ["money 10000", "key cinder 1"]}
-  - {id: coal, ask: {coal: 128}, level: 8, rewards: ["money 3200", "crystals 50"]}
-  - {id: iron, ask: {iron_ingot: 64}, level: 8, rewards: ["money 3000", "crystals 60"]}
-  - {id: bones, ask: {bone: 64, rotten_flesh: 64}, level: 10, rewards: ["money 6000", "crystals 70"]}
-  - {id: redstone, ask: {redstone: 128}, level: 12, rewards: ["money 10000", "crystals 80"]}
-  - {id: cactus, ask: {cactus: 64}, level: 15, rewards: ["money 10000", "key blaze 1"]}
-  - {id: gunpowder, ask: {gunpowder: 64}, level: 15, rewards: ["money 5500", "crystals 100"]}
-  - {id: lapis, ask: {lapis_lazuli: 128}, level: 20, rewards: ["money 14000", "crystals 120"]}
-  - {id: cocoa, ask: {cocoa_beans: 128}, level: 25, rewards: ["money 14000", "crystals 140"]}
-  - {id: diamonds, ask: {diamond: 64}, level: 30, rewards: ["money 10000", "key inferno 1"]}
-  - {id: blaze_rods, ask: {blaze_rod: 64}, level: 35, rewards: ["money 10000", "crystals 200"]}
-  - {id: nether_wart, ask: {nether_wart: 128}, level: 40, rewards: ["money 55000", "crystals 250"]}
-  - {id: grand_harvest, ask: {wheat: 512, carrot: 512, potato: 512}, level: 50, rewards: ["money 60000", "key phoenix 1"]}
+  - {id: first_wheat, ask: {wheat: 30}, level: 0, rewards: ["money 75000", "crystals 10"]}
+  - {id: carrots, ask: {carrot: 48}, level: 0, rewards: ["money 150000", "crystals 15"]}
+  - {id: logs, ask: {oak_log: 64}, level: 0, rewards: ["money 120000", "item bone_meal 32"]}
+  - {id: cobble, ask: {cobblestone: 256}, level: 1, rewards: ["money 100000", "crystals 20"]}
+  - {id: cane, ask: {sugar_cane: 64}, level: 2, rewards: ["money 400000", "key ember 1"]}
+  - {id: potatoes, ask: {potato: 128}, level: 3, rewards: ["money 450000", "crystals 30"]}
+  - {id: pumpkins, ask: {pumpkin: 64}, level: 5, rewards: ["money 550000", "crystals 40"]}
+  - {id: melons, ask: {melon_slice: 128}, level: 5, rewards: ["money 1000000", "key cinder 1"]}
+  - {id: coal, ask: {coal: 128}, level: 8, rewards: ["money 320000", "crystals 50"]}
+  - {id: iron, ask: {iron_ingot: 64}, level: 8, rewards: ["money 300000", "crystals 60"]}
+  - {id: bones, ask: {bone: 64, rotten_flesh: 64}, level: 10, rewards: ["money 600000", "crystals 70"]}
+  - {id: redstone, ask: {redstone: 128}, level: 12, rewards: ["money 1000000", "crystals 80"]}
+  - {id: cactus, ask: {cactus: 64}, level: 15, rewards: ["money 1000000", "key blaze 1"]}
+  - {id: gunpowder, ask: {gunpowder: 64}, level: 15, rewards: ["money 550000", "crystals 100"]}
+  - {id: lapis, ask: {lapis_lazuli: 128}, level: 20, rewards: ["money 1400000", "crystals 120"]}
+  - {id: cocoa, ask: {cocoa_beans: 128}, level: 25, rewards: ["money 1400000", "crystals 140"]}
+  - {id: diamonds, ask: {diamond: 64}, level: 30, rewards: ["money 1000000", "key inferno 1"]}
+  - {id: blaze_rods, ask: {blaze_rod: 64}, level: 35, rewards: ["money 1000000", "crystals 200"]}
+  - {id: nether_wart, ask: {nether_wart: 128}, level: 40, rewards: ["money 5500000", "crystals 250"]}
+  - {id: grand_harvest, ask: {wheat: 512, carrot: 512, potato: 512}, level: 50, rewards: ["money 6000000", "key phoenix 1"]}
 
 # Errands: fresh ones every guide.yml errands.hours (3 h, never announced as a timer: Kindle just says he has new
 # quests). errands.count of them per player, picked by weight from those your island level allows. Each once per rotation.
 errands:
-  - {id: wheat, ask: {wheat: 64}, level: 0, weight: 10, rewards: ["money 1500"]}
-  - {id: carrots, ask: {carrot: 64}, level: 0, weight: 10, rewards: ["money 2000"]}
-  - {id: logs, ask: {oak_log: 64}, level: 0, weight: 8, rewards: ["money 1000", "crystals 5"]}
-  - {id: cobble, ask: {cobblestone: 128}, level: 0, weight: 8, rewards: ["money 500", "crystals 5"]}
-  - {id: potatoes, ask: {potato: 64}, level: 2, weight: 8, rewards: ["money 2000"]}
-  - {id: cane, ask: {sugar_cane: 32}, level: 2, weight: 8, rewards: ["money 2000"]}
-  - {id: pumpkins, ask: {pumpkin: 32}, level: 5, weight: 7, rewards: ["money 2500", "crystals 5"]}
-  - {id: melons, ask: {melon_slice: 64}, level: 5, weight: 7, rewards: ["money 5000"]}
-  - {id: coal, ask: {coal: 64}, level: 8, weight: 6, rewards: ["money 1500", "crystals 10"]}
-  - {id: iron, ask: {iron_ingot: 32}, level: 8, weight: 6, rewards: ["money 1500", "crystals 10"]}
-  - {id: mob_drops, ask: {bone: 32, string: 32}, level: 10, weight: 6, rewards: ["money 3000", "crystals 10"]}
-  - {id: redstone, ask: {redstone: 64}, level: 12, weight: 5, rewards: ["money 5000", "crystals 10"]}
-  - {id: cactus, ask: {cactus: 32}, level: 15, weight: 5, rewards: ["money 5000", "crystals 15"]}
-  - {id: lapis, ask: {lapis_lazuli: 64}, level: 20, weight: 4, rewards: ["money 7000", "crystals 15"]}
-  - {id: diamonds, ask: {diamond: 16}, level: 30, weight: 3, rewards: ["money 2500", "crystals 25"]}
-  - {id: nether_wart, ask: {nether_wart: 32}, level: 40, weight: 3, rewards: ["money 15000", "crystals 25"]}
+  - {id: wheat, ask: {wheat: 64}, level: 0, weight: 10, rewards: ["money 150000"]}
+  - {id: carrots, ask: {carrot: 64}, level: 0, weight: 10, rewards: ["money 200000"]}
+  - {id: logs, ask: {oak_log: 64}, level: 0, weight: 8, rewards: ["money 100000", "crystals 5"]}
+  - {id: cobble, ask: {cobblestone: 128}, level: 0, weight: 8, rewards: ["money 50000", "crystals 5"]}
+  - {id: potatoes, ask: {potato: 64}, level: 2, weight: 8, rewards: ["money 200000"]}
+  - {id: cane, ask: {sugar_cane: 32}, level: 2, weight: 8, rewards: ["money 200000"]}
+  - {id: pumpkins, ask: {pumpkin: 32}, level: 5, weight: 7, rewards: ["money 250000", "crystals 5"]}
+  - {id: melons, ask: {melon_slice: 64}, level: 5, weight: 7, rewards: ["money 500000"]}
+  - {id: coal, ask: {coal: 64}, level: 8, weight: 6, rewards: ["money 150000", "crystals 10"]}
+  - {id: iron, ask: {iron_ingot: 32}, level: 8, weight: 6, rewards: ["money 150000", "crystals 10"]}
+  - {id: mob_drops, ask: {bone: 32, string: 32}, level: 10, weight: 6, rewards: ["money 300000", "crystals 10"]}
+  - {id: redstone, ask: {redstone: 64}, level: 12, weight: 5, rewards: ["money 500000", "crystals 10"]}
+  - {id: cactus, ask: {cactus: 32}, level: 15, weight: 5, rewards: ["money 500000", "crystals 15"]}
+  - {id: lapis, ask: {lapis_lazuli: 64}, level: 20, weight: 4, rewards: ["money 700000", "crystals 15"]}
+  - {id: diamonds, ask: {diamond: 16}, level: 30, weight: 3, rewards: ["money 250000", "crystals 25"]}
+  - {id: nether_wart, ask: {nether_wart: 32}, level: 40, weight: 3, rewards: ["money 1500000", "crystals 25"]}
 
 # Kindle's finds: trades.count of these per player every rotation (same clock as errands), each once per rotation,
 # picked by weight from those your island level allows. Paid in items, never money. 
