@@ -62,6 +62,7 @@ public final class EssentialsModule implements SkyblockModule {
         noHunger = new NoHunger(config);
         grind = new GrindAreas(core, config, msg, core.services().get(TeleportService.class));
         start = new StartGuide(core, config, msg);
+        serverEvents = new ServerEvents(core, msg, () -> config); // owner 7 Nov 2026: meteor at spawn, fishing contest
 
         for (CommandGroup group : List.of(teleportCommands, staff, vanish, views, protection, grind, start)) {
             group.register();
@@ -72,6 +73,7 @@ public final class EssentialsModule implements SkyblockModule {
         teleportCommands.start();
         powers.start();
         grind.start();
+        serverEvents.start();
         // DEPTHSPROT: /build mode also lifts the worlds module's protection flags in the protected worlds (spawn).
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class)
                 .ifPresent(flags -> flags.addBypass(id(), protection::buildModeIn));
@@ -79,12 +81,13 @@ public final class EssentialsModule implements SkyblockModule {
     }
 
     private NoHunger noHunger;
+    private ServerEvents serverEvents;
     private GrindAreas grind;
     private StartGuide start;
 
     private List<Listener> listeners() {
         return List.of(teleportCommands, staff, vanish, views, join, protection, powers, dropGuard, autoRefill, commandHints,
-                noHunger, grind, start);
+                noHunger, grind, start, serverEvents);
     }
 
     @Override
@@ -104,6 +107,9 @@ public final class EssentialsModule implements SkyblockModule {
         }
         teleportCommands.stop();
         powers.stop();
+        if (serverEvents != null) {
+            serverEvents.stop();
+        }
         core.services().optional(net.skybornmc.skyblock.common.region.RegionFlags.class).ifPresent(flags -> flags.removeBypass(id()));
         settings.unregister();
         views.shutdown();

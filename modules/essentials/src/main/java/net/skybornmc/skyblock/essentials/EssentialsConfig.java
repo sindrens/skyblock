@@ -38,6 +38,74 @@ public final class EssentialsConfig extends ModuleConfig {
             + "harvest and /mine ore (was every block).", min = 0, max = 100)
     public double grindBonusChance = 4;
 
+    // ------------------------------------------------------------------ owner 7 Nov 2026: meteor at spawn, fishing contest
+
+    @Setting(path = "server-events.key-crate", desc = "Crate of the keys the meteor and the fishing contest give.")
+    public String eventKeyCrate = "ember";
+
+    @Setting(path = "server-events.meteor.enabled", desc = "Owner 7 Nov 2026: a meteor lands on the spawn plaza; hit its fragments for loot.")
+    public boolean meteorEnabled = true;
+
+    @Setting(path = "server-events.meteor.every-minutes", desc = "Minutes between two meteors.", min = 5, max = 1440)
+    public int meteorEveryMinutes = 60;
+
+    @Setting(path = "server-events.meteor.seconds", desc = "How long the fragments stay.", min = 10, max = 1800)
+    public int meteorSeconds = 120;
+
+    @Setting(path = "server-events.meteor.world", desc = "World of the meteor (the spawn world).")
+    public String meteorWorld = "spawn";
+
+    @Setting(path = "server-events.meteor.x", desc = "Centre of the fragments (x). Checked open: the plaza north of the spawn point.")
+    public double meteorX = 0.5;
+
+    @Setting(path = "server-events.meteor.y", desc = "Centre of the fragments (y, the floor + 1).")
+    public double meteorY = 100;
+
+    @Setting(path = "server-events.meteor.z", desc = "Centre of the fragments (z).")
+    public double meteorZ = -6.5;
+
+    @Setting(path = "server-events.meteor.radius", desc = "Ring of fragments around the centre (blocks).", min = 0, max = 10)
+    public double meteorRadius = 3;
+
+    @Setting(path = "server-events.meteor.fragments", desc = "Fragments per meteor.", min = 1, max = 20)
+    public int meteorFragments = 5;
+
+    @Setting(path = "server-events.meteor.hits", desc = "Hits to break one fragment (everyone can help; the last hit gets the loot).", min = 1, max = 500)
+    public int meteorHits = 25;
+
+    @Setting(path = "server-events.meteor.money-min", desc = "Fewest money from one fragment.", min = 0, max = 1_000_000_000L)
+    public long meteorMoneyMin = 25_000;
+
+    @Setting(path = "server-events.meteor.money-max", desc = "Most money from one fragment.", min = 0, max = 1_000_000_000L)
+    public long meteorMoneyMax = 150_000;
+
+    @Setting(path = "server-events.meteor.crystals-min", desc = "Fewest crystals from one fragment.", min = 0, max = 100_000)
+    public long meteorCrystalsMin = 10;
+
+    @Setting(path = "server-events.meteor.crystals-max", desc = "Most crystals from one fragment.", min = 0, max = 100_000)
+    public long meteorCrystalsMax = 40;
+
+    @Setting(path = "server-events.meteor.key-chance", desc = "Percent chance that a fragment also gives a key.", min = 0, max = 100)
+    public double meteorKeyChance = 20;
+
+    @Setting(path = "server-events.contest.enabled", desc = "Owner 7 Nov 2026: a fishing contest at /fish; most catches win.")
+    public boolean contestEnabled = true;
+
+    @Setting(path = "server-events.contest.every-minutes", desc = "Minutes between two contests (start to start).", min = 15, max = 1440)
+    public int contestEveryMinutes = 120;
+
+    @Setting(path = "server-events.contest.minutes", desc = "How long a contest runs.", min = 1, max = 120)
+    public int contestMinutes = 10;
+
+    @Setting(path = "server-events.contest.world", desc = "World of /fish (catches only count there; the boss bar shows there).")
+    public String contestWorld = "grind";
+
+    @Setting(path = "server-events.contest.keys", desc = "Keys for #1, #2 and #3.")
+    public List<Integer> contestKeys = List.of(3, 2, 1);
+
+    @Setting(path = "server-events.contest.crystals", desc = "Crystals for #1, #2 and #3.")
+    public List<Long> contestCrystals = List.of(300L, 200L, 100L);
+
     // ------------------------------------------------------------------ owner 6 Nov 2026: grind-area events
 
     @Setting(path = "grind.events.enabled", desc = "Owner 6 Nov 2026: short random events at /farm and /mine (2 to 4 at once, about 30 s, then a break).")

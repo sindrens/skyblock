@@ -218,6 +218,11 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Your picks, part 2 (update157)
+- **Meteor at spawn**, every hour: one chat line ("A meteor landed at spawn: /spawn"), a title at spawn, five glowing fragments on the plaza north of the spawn point and one boss bar. Hit a fragment 25 times (everyone can help); whoever breaks it gets $25k-150k, 10-40 crystals and a 20% chance at an Ember key. Gone after 2 minutes. No blocks change.
+- **Fishing Contest** at /fish, every 2 hours for 10 minutes: one chat line to start, a boss bar at the pond ("7:12 · You: 12 (#3)"), most catches win: #1 3 Ember keys + 300 crystals, #2 2 + 200, #3 1 + 100. One chat line with the top 3 at the end.
+- Every number is in `essentials.yml server-events.*`.
+
 ## Your picks, part 1 (update156, plan: `docs/plans/OWNER_PICKS_7NOV.md`)
 - **Shard Finder shows its number again** ("+111% shards") on the tool and in the perk menu.
 - **Top Tools board** in the Hall of Heroes (the old Foraging board): players by tool prestiges, a rebirth counts 50.

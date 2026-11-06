@@ -398,3 +398,38 @@ start:
     mine:
       name: "<c:flame><bold>Mine</bold>"
       lore: ["<c:text>Mine ores for money and XP.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to go to the mine"]
+
+# Owner 7 Nov 2026 (OWNER_PICKS_7NOV.md): the meteor at spawn and the fishing contest.
+server-events:
+  meteor:
+    landed: "<prefix><c:flame><bold>A meteor landed at spawn!</bold></c:flame> <c:text>Break its fragments for loot: </c:text><click:run_command:'/spawn'><c:action>/spawn</c:action></click>"
+    title:
+      title: "<grad:flame><bold>METEOR!"
+      subtitle: "<c:text>Hit the glowing fragments"
+      fade-in: 5
+      stay: 40
+      fade-out: 10
+    # <left> fragments, <time>
+    bar: "<c:flame><bold>Meteor</bold></c:flame> <c:muted>· <c:value><left></c:value> fragments · <time>"
+    # <hp> hits left
+    hit: "<c:flame>Fragment</c:flame> <c:muted>· <c:value><hp></c:value> hits left"
+    # <money> <crystals> <crate>
+    loot: "<prefix><c:success><sym:check></c:success> <c:text>Meteor loot: <cur:money>+<money></cur:money><c:text>, <c:value><crystals></c:value> <c:text>crystals."
+    loot-key: "<prefix><c:success><sym:check></c:success> <c:text>Meteor loot: <cur:money>+<money></cur:money><c:text>, <c:value><crystals></c:value> <c:text>crystals and a <c:value><crate></c:value> <c:text>key!"
+    gone: "<c:muted>The meteor cooled down."
+  contest:
+    # <minutes>
+    start: "<prefix><c:flame><bold>Fishing Contest!</bold></c:flame> <c:text>Most catches in <minutes> minutes wins keys: </c:text><click:run_command:'/fish'><c:action>/fish</c:action></click>"
+    title:
+      title: "<grad:flame><bold>FISHING CONTEST"
+      subtitle: "<c:text>Most catches in <minutes> minutes wins"
+      fade-in: 5
+      stay: 40
+      fade-out: 10
+    # <time> <catches> <place>
+    bar: "<c:value><bold>Fishing Contest</bold></c:value> <c:muted>· <time> · You: <c:value><catches></c:value> <c:muted>(<place>)"
+    # <first> <second> <third>: "Name (12)"
+    end: "<prefix><c:flame><bold>Fishing Contest over!</bold></c:flame> <c:text>#1 <c:value><first></c:value><c:text>, #2 <c:value><second></c:value><c:text>, #3 <c:value><third></c:value>"
+    nobody: "<prefix><c:muted>The fishing contest ended without a catch."
+    # <place> <keys> <crystals> <crate>
+    won: "<prefix><c:success><sym:star></c:success> <c:text>You came <c:value>#<place></c:value><c:text>: <c:value><keys></c:value> <c:text><crate> keys and <c:value><crystals></c:value> <c:text>crystals."

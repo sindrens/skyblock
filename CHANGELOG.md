@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Owner picks 2 (update157):** meteor at spawn every hour, fishing contest every 2 hours.
 - **Owner picks 1 (update156):** Shard Finder number, Top Tools board, Auto-Compactor perk (blocks sell as 9 items).
 - **/fish and /pve contracts (update154).**
 - **Quests and leftovers (update153):** tool-level steps count levels you have, the invite step has a solo path, grind enchants count for enchant contracts, do-nothing masteries hidden.
