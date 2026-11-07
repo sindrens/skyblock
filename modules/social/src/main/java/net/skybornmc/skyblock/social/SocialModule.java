@@ -335,7 +335,13 @@ public final class SocialModule implements SkyblockModule, Listener, IgnoreServi
                 .executes(ctx -> broadcast(ctx.sender(), ctx.get(broadcastText))));
 
         link("discord", "Get the Discord invite", () -> config.discordUrl);
-        link("store", "Open the store", () -> config.storeUrl, "buy");
+        // Owner 7 Nov 2026: /store and /buy open the in-game credit shop (economy); the webstore link moved to /webstore.
+        commands.register(CommandSpec.command("webstore")
+                .description("The webstore link (credit packs)")
+                .category("Info")
+                .permission(PERM_LINKS)
+                .aliases("tebex")
+                .executes(ctx -> sendLink(ctx.sender(), "store", "links.store", config.storeUrl)));
         // /vote moved to the rewards module (M10.5): the vote menu with every site, the streak and the vote party.
         link("website", "Open the website", () -> config.websiteUrl, "web");
         commands.register(CommandSpec.command("rules")
