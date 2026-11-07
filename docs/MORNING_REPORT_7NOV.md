@@ -218,6 +218,18 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Hoe plan, part 1: the enchant core (update165, plan: `docs/plans/HOE_IMPROVEMENTS.md`)
+- **Milestones instead of breakthroughs:** every level is stronger (a fast start: Shard Burst 100 → 110 at level 2 → 385 at level 100), and every 4% of the track an **extra +10%** that stays (25 per enchant: every 100 levels of 2,500, 40 of 1,000, 20 of 500). Area and timed enchants get the extra chance instead (no lag). Every milestone: action bar + sound; every 5th: a title. The tile shows "Next boost: +10% at level 300 (14 to go)" with a bar.
+- **Shard Finder** milestones too: +10% extra every 25 levels.
+- **Buy Max** (x1 → x10 → x100 → Max) and an **On / Off mode** in the enchant menu (switch an enchant off, its levels stay).
+- **One action bar line** for all procs at once, with the **combo counter** ("x84 · +8.4% shards · +6% XP").
+- **Never a full-bag pause** at /farm and /mine: what does not fit drops on the ground **for you only** (nobody else sees or takes it).
+- **Storage warning** at 90% (once), the storage tile turns orange. The tool tile shows the **next crop or ore** ("Carrots: 1,240 / 3,000").
+- **Sweep and Vein** without a prestige (tool level 30).
+- Shard bonus cap **+1,000%** (was +300%).
+- **Prestige reward** on every tool: a Blaze key, a Phoenix key at every 10th prestige and every rebirth. **Hoe titles:** Farmhand (1), Harvester (10), Field Lord (25), Harvest King (50), Reborn Reaper (first rebirth).
+- **Juicy hits:** big procs pop with particles and a chime that rises with your streak (only you).
+
 ## Tools v6: compound shards and 9 new enchants (update164, plan: `docs/plans/TOOLS_V6_COMPOUND.md`)
 - **Shard Finder:** +3% a level on top of the last level (compound), 250 levels (about 1,600x shards at the max). The menu shows only the level. Its price grows +3.5% a level, so every level costs about the same number of blocks.
 - **More shards:** 10 a block (was 6), the rod 300 a catch (was 200), the sword 80 a kill (was 50). Shards are **always rounded up** (10.3 is 11).

@@ -37,6 +37,97 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "a second area enchant), shard_rain (shards for you and every island member online). Values compound from level 1 to max.",
             level = Setting.Level.OWNER)
     public List<String> enchantList = List.of(
+            // tools v6 round 3 (owner 7 Nov 2026, plans/HOE_IMPROVEMENTS.md): fast-start growth to the listed max value, then
+            // a milestone (+10%) every 4% of the track on the amount (or on the chance of area and timed enchants)
+            "pickaxe:blast:2500:200:0.3:0.6:4:18:0:1:0",
+            "pickaxe:shard_burst:2500:200:0.4:1.0:100:2500:0:1:0",
+            "pickaxe:scholar:2500:200:0:0:5:25:0:1:0",
+            "pickaxe:rich_vein:2500:200:1:5:1:5:0:1:0",
+            "pickaxe:quick_study:2500:200:1:5:1:5:0:1:0",
+            "pickaxe:combo:2500:200:0:0:5:25:0:5:0",
+            "pickaxe:cash_vein:1000:300:0.5:2.0:2:10:0:9:0",
+            "pickaxe:duplicator:1000:300:0.1:0.5:5:15:0:13:0",
+            "pickaxe:compound_interest:1000:300:0:0:5:50:0:16:0",
+            "pickaxe:shard_echo:1000:300:0:0:10:100:0:19:0",
+            "pickaxe:lightning:1000:300:0.03:0.08:9:30:20:22:0",
+            "pickaxe:golden_touch:1000:300:0.1:0.5:5:15:0:25:0",
+            "pickaxe:motherlode:1000:300:0.2:0.6:10:50:0:28:0",
+            "pickaxe:xp_surge:1000:300:0.2:0.8:20:100:0:30:0",
+            "pickaxe:lucky_streak:1000:300:0:0:100:30:0:32:0",
+            "pickaxe:frenzy:1000:300:0.05:0.2:5:20:30:34:0",
+            "pickaxe:shard_storm:1000:400:0.02:0.1:3:10:60:36:0",
+            "pickaxe:geode:500:400:0.02:0.1:1:1:0:38:0",
+            "pickaxe:keyfinder:500:500:0.001:0.02:1:1:0:40:0",
+            "pickaxe:shard_rain:1000:400:0.1:0.5:50:1250:0:42:0",
+            "pickaxe:meteor:500:500:0.02:0.05:15:40:20:43:0",
+            "pickaxe:crystal_find:500:500:0.005:0.05:1:3:0:44:0",
+            "pickaxe:chain_reaction:1000:400:0:0:5:50:0:45:0",
+            "pickaxe:booster_find:500:600:0.001:0.01:60:180:300:46:0",
+            "pickaxe:shard_jackpot:500:600:0.01:0.04:2000:50000:0:47:0",
+            "pickaxe:nuke:500:800:0.002:0.006:40:100:300:48:0",
+            "hoe:explode:2500:200:0.3:0.6:4:18:0:1:0",
+            "hoe:shard_burst:2500:200:0.4:1.0:100:2500:0:1:0",
+            "hoe:scholar:2500:200:0:0:5:25:0:1:0",
+            "hoe:bountiful:2500:200:1:5:1:5:0:1:0",
+            "hoe:quick_study:2500:200:1:5:1:5:0:1:0",
+            "hoe:combo:2500:200:0:0:5:25:0:5:0",
+            "hoe:cash_crop:1000:300:0.5:2.0:2:10:0:9:0",
+            "hoe:duplicator:1000:300:0.1:0.5:5:15:0:13:0",
+            "hoe:compound_interest:1000:300:0:0:5:50:0:16:0",
+            "hoe:shard_echo:1000:300:0:0:10:100:0:19:0",
+            "hoe:row_reaper:1000:300:0.2:0.5:4:12:0:22:0",
+            "hoe:golden_touch:1000:300:0.1:0.5:5:15:0:25:0",
+            "hoe:golden_crop:1000:300:0.1:0.4:2:10:0:28:0",
+            "hoe:xp_surge:1000:300:0.2:0.8:20:100:0:30:0",
+            "hoe:lucky_streak:1000:300:0:0:100:30:0:32:0",
+            "hoe:frenzy:1000:300:0.05:0.2:5:20:30:34:0",
+            "hoe:shard_storm:1000:400:0.02:0.1:3:10:60:36:0",
+            "hoe:harvest_basket:500:400:0.02:0.1:1:1:0:38:0",
+            "hoe:keyfinder:500:500:0.001:0.02:1:1:0:40:0",
+            "hoe:shard_rain:1000:400:0.1:0.5:50:1250:0:42:0",
+            "hoe:tornado:500:500:0.02:0.05:20:40:20:43:0",
+            "hoe:crystal_find:500:500:0.005:0.05:1:3:0:44:0",
+            "hoe:chain_reaction:1000:400:0:0:5:50:0:45:0",
+            "hoe:booster_find:500:600:0.001:0.01:60:180:300:46:0",
+            "hoe:shard_jackpot:500:600:0.01:0.04:2000:50000:0:47:0",
+            "hoe:meteor_shower:500:800:0.005:0.015:12:36:60:48:0",
+            "rod:shard_burst:2500:20:4:10:400:10000:0:1:0",
+            "rod:scholar:2500:20:0:0:5:25:0:1:0",
+            "rod:big_catch:2500:20:10:40:1:5:0:1:0",
+            "rod:quick_study:2500:20:5:20:1:5:0:1:0",
+            "rod:combo:2500:20:0:0:5:25:0:5:0",
+            "rod:golden_fish:1000:30:5:20:2:10:0:9:0",
+            "rod:duplicator:1000:30:1:5:3:10:0:13:0",
+            "rod:compound_interest:1000:30:0:0:5:50:0:16:0",
+            "rod:shard_echo:1000:30:0:0:10:100:0:19:0",
+            "rod:golden_touch:1000:30:1:5:3:10:0:25:0",
+            "rod:xp_surge:1000:30:2:8:20:100:0:30:0",
+            "rod:lucky_streak:1000:30:0:0:30:10:0:32:0",
+            "rod:shard_storm:1000:40:0.2:1:10:30:60:36:0",
+            "rod:treasure_chest:500:40:0.2:1:1:1:0:38:0",
+            "rod:keyfinder:500:50:0.01:0.2:1:1:0:40:0",
+            "rod:shard_rain:1000:40:1:5:100:2500:0:42:0",
+            "rod:crystal_find:500:50:0.05:0.5:1:3:0:44:0",
+            "rod:booster_find:500:60:0.01:0.1:60:180:300:46:0",
+            "rod:shard_jackpot:500:60:0.1:0.4:5000:125000:0:47:0",
+            "sword:shard_burst:2500:20:2:6:150:3750:0:1:0",
+            "sword:scholar:2500:20:0:0:5:25:0:1:0",
+            "sword:combo:2500:20:0:0:5:25:0:5:0",
+            "sword:duplicator:1000:30:1:5:3:10:0:13:0",
+            "sword:compound_interest:1000:30:0:0:5:50:0:16:0",
+            "sword:shard_echo:1000:30:0:0:10:100:0:19:0",
+            "sword:xp_surge:1000:30:1:4:20:100:0:30:0",
+            "sword:lucky_streak:1000:30:0:0:50:15:0:32:0",
+            "sword:frenzy:1000:30:0.2:1:5:20:30:34:0",
+            "sword:shard_storm:1000:40:0.1:0.5:5:15:60:36:0",
+            "sword:keyfinder:500:50:0.005:0.1:1:1:0:40:0",
+            "sword:shard_rain:1000:40:0.5:2:50:1250:0:42:0",
+            "sword:crystal_find:500:50:0.02:0.2:1:3:0:44:0",
+            "sword:booster_find:500:60:0.005:0.05:60:180:300:46:0",
+            "sword:shard_jackpot:500:60:0.05:0.2:3000:75000:0:47:0");
+
+    /** The enchant list of update164 (version 18 moves an untouched list to the milestone values). */
+    static final List<String> ENCHANTS_V17 = List.of(
             // tools v6 (owner 7 Nov 2026, plans/TOOLS_V6_COMPOUND.md): 2,500 / 1,000 / 500 levels by relevance, values compound
             // (x15 from level 1 to max), 9 new enchants, unlocks over the tool levels 1-48 (closer together near the top)
             "pickaxe:blast:2500:200:0.5:1.0:4:18:0:1:0",
@@ -245,11 +336,19 @@ public final class IslandToolsConfig extends ModuleConfig {
             "sword:keyfinder:1000:5:0.005:0.1:1:1:0:36:0",
             "sword:shard_jackpot:1000:6:0.05:0.2:40:100:0:1:10");
 
-    @Setting(path = "enchants.breakthroughs", desc = "Owner 7 Nov 2026: breakthroughs as 'percent:multiplier'. From that percent of an "
-            + "enchant's max level on, its main number (the chance of a proc, the value of a steady enchant) is that many times the "
-            + "normal curve: slow growth between them, a jump at each one. 10:2 = at level 50 of 500 (10 of 100) it doubles.",
-            level = Setting.Level.OWNER)
-    public List<String> enchantBreakthroughs = List.of("2:1.5", "10:2", "30:2.5", "100:3");
+    @Setting(path = "enchants.growth-shape", desc = "Tools v6 (owner 7 Nov 2026): how an enchant grows between level 1 and its max: 1 = even "
+            + "steps, below 1 = the most per level at the start and still growing to the end (0.7: level 2 +10%, level 100 about 4x for Shard Burst).",
+            min = 0.05, max = 3, level = Setting.Level.OWNER)
+    public double enchantGrowthShape = 0.7;
+
+    @Setting(path = "enchants.milestone-every-percent", desc = "Tools v6: a milestone every this many percent of an enchant's track "
+            + "(4 = 25 milestones: every 100 levels of 2,500, 40 of 1,000, 20 of 500).", min = 0.5, max = 100, level = Setting.Level.OWNER)
+    public double enchantMilestoneEvery = 4;
+
+    @Setting(path = "enchants.milestone-bonus-percent", desc = "Tools v6: the extra boost of every milestone, in percent, compounding "
+            + "(10 = x1.1 per milestone, about x11 after 25). It raises the amount, or the chance of area and timed enchants.",
+            min = 0, max = 100, level = Setting.Level.OWNER)
+    public double enchantMilestoneBonus = 10;
 
     @Setting(path = "enchants.cap-base", desc = "Lowest grind enchant level cap (a new tool).", min = 1, max = 100_000)
     public int enchantCapBase = 20;
@@ -275,7 +374,7 @@ public final class IslandToolsConfig extends ModuleConfig {
     public int enchantEchoSeconds = 10;
 
     @Setting(path = "enchants.shard-bonus-cap", desc = "Shard Echo and Compound Interest together give at most this many percent more shards (events come on top).", min = 0, max = 1000)
-    public double enchantShardCap = 300; // tools v6: Compound Interest up to 75% + Shard Echo up to 150% (x15 tracks)
+    public double enchantShardCap = 1000; // owner 7 Nov 2026: "more than 300%, we will have a high economy"
 
     @Setting(path = "enchants.area-per-tick", desc = "Area enchants break at most this many blocks per tick (the rest follow next ticks).", min = 1, max = 500)
     public int enchantAreaPerTick = 30;
@@ -353,6 +452,18 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "a level on top of the last, 250 levels = about 1,600x shards; shards are always rounded up; the lore shows only the level).", min = 0, max = 20)
     public double shardFinderPerLevel = 3.0;
 
+    @Setting(path = "shards.finder-milestone-every", desc = "Tools v6: Shard Finder gets an extra boost every this many levels (25 = ten up to 250).", min = 1, max = 10_000)
+    public int shardFinderMilestoneEvery = 25;
+
+    @Setting(path = "shards.finder-milestone-bonus", desc = "Tools v6: the extra boost of a Shard Finder milestone, in percent, compounding.", min = 0, max = 100)
+    public double shardFinderMilestoneBonus = 10;
+
+    @Setting(path = "prestige.key-crate", desc = "Owner 7 Nov 2026: crate key every prestige (and rebirth) of a player's own tool (empty = none).")
+    public String prestigeKeyCrate = "blaze";
+
+    @Setting(path = "prestige.key-crate-tenth", desc = "Owner 7 Nov 2026: crate key instead at every 10th prestige and every rebirth.")
+    public String prestigeKeyCrateTenth = "phoenix";
+
     @Setting(path = "shards.payout-seconds", desc = "Found shards are paid in one batch this often.", min = 1, max = 60)
     public int shardPayoutSeconds = 3;
 
@@ -386,6 +497,26 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "(island crop growth, hoe), sweep (hoe Sweep / pickaxe Vein), wisdom (more tool XP), sell (Sell Bonus), lucky (Shard Pouch finds), compact (Auto-Compactor: 9 items become a block). "
             + "Magnet is built in (drops go straight to the inventory). Prices are paid in the tool's own shards.")
     public List<String> perks = List.of( // tools v6: Shard Finder 250 levels, +3% compound each, price +3.5% a level (tools v5: personal long tracks)
+            "hoe:shard_finder:shards:250:1:150*3.5", "hoe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
+            "hoe:extra_drops:drops:1000:3:120+16", "hoe:fortune:enchant=fortune:3:5:3000/16000/60000",
+            "hoe:wisdom:wisdom:500:5:160+20", "hoe:growth:growth:500:10:200+20", "hoe:storage:storage:500:10:120+12",
+            "hoe:haste:haste:2:15:10000/60000", "hoe:auto_sell:autosell:1:20:40000", "hoe:sell_bonus:sell:500:25:400+40",
+            "hoe:lucky:lucky:1000:30:600+50", "hoe:sweep:sweep:100:30:6000+200", "hoe:compactor:compact:1:15:40000",
+            "pickaxe:shard_finder:shards:250:1:150*3.5", "pickaxe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
+            "pickaxe:extra_drops:drops:1000:3:120+16", "pickaxe:fortune:enchant=fortune:3:5:3000/16000/60000",
+            "pickaxe:wisdom:wisdom:500:5:160+20", "pickaxe:smelter:smelt:100:10:200+20", "pickaxe:storage:storage:500:10:120+12",
+            "pickaxe:haste:haste:2:15:10000/60000", "pickaxe:auto_sell:autosell:1:20:40000", "pickaxe:sell_bonus:sell:500:25:400+40",
+            "pickaxe:lucky:lucky:1000:30:600+50", "pickaxe:vein:sweep:100:30:6000+200", "pickaxe:compactor:compact:1:15:40000",
+            "rod:shard_finder:shards:250:1:150*3.5", "rod:lure:enchant=lure:3:1:600/4000/18000",
+            "rod:extra_drops:drops:1000:3:120+16", "rod:luck:enchant=luck_of_the_sea:3:5:3000/16000/60000",
+            "rod:wisdom:wisdom:500:5:160+20", "rod:storage:storage:500:10:120+12", "rod:auto_sell:autosell:1:20:40000",
+            "rod:sell_bonus:sell:500:25:400+40", "rod:lucky:lucky:1000:30:600+50",
+            "sword:shard_finder:shards:250:1:150*3.5", "sword:sharpness:enchant=sharpness:5:1:300/1200/4000/12000/30000",
+            "sword:looting:enchant=looting:3:5:3000/16000/60000", "sword:wisdom:wisdom:500:5:160+20",
+            "sword:sweeping:enchant=sweeping_edge:3:10:2000/10000/40000", "sword:lucky:lucky:1000:30:600+50");
+
+    /** {@code perks} v17 (before Sweep and Vein lost their prestige gate). */
+    static final List<String> PERKS_V17 = List.of( // tools v6: Shard Finder 250 levels, +3% compound each, price +3.5% a level (tools v5: personal long tracks)
             "hoe:shard_finder:shards:250:1:150*3.5", "hoe:efficiency:enchant=efficiency:5:1:300/1200/4000/12000/30000",
             "hoe:extra_drops:drops:1000:3:120+16", "hoe:fortune:enchant=fortune:3:5:3000/16000/60000",
             "hoe:wisdom:wisdom:500:5:160+20", "hoe:growth:growth:500:10:200+20", "hoe:storage:storage:500:10:120+12",
@@ -617,7 +748,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Setting(path = "sweep.bands", desc = "Owner 4 Nov 2026: Sweep (hoe) and Vein (pickaxe) per prestige band, 'prestige:extra-blocks:chance-at-max-level'. "
             + "Locked below the first band; the 100 levels raise the chance inside the current band.")
-    public List<String> sweepBands = List.of("1:2:10", "2:3:15", "3:4:20", "5:6:30");
+    public List<String> sweepBands = List.of("0:2:10", "2:3:15", "3:4:20", "5:6:30"); // owner 7 Nov 2026: Sweep without a prestige
 
     @Setting(path = "sweep.radius", desc = "Sweep/Vein look this many blocks around the broken one for ripe crops / the same ore.", min = 1, max = 4)
     public int sweepRadius = 2;
@@ -728,7 +859,7 @@ public final class IslandToolsConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 17;
+        return 18;
     }
 
     /** Changed defaults (a value the owner chose is kept). */
@@ -796,7 +927,12 @@ public final class IslandToolsConfig extends ModuleConfig {
                 Map.entry("shards.chance-pickaxe", ValueChange.of(600.0, d.shardPickaxe)),
                 Map.entry("shards.chance-rod", ValueChange.of(20000.0, d.shardRod)),
                 Map.entry("shards.chance-sword", ValueChange.of(5000.0, d.shardSword)),
-                Map.entry("enchants.shard-bonus-cap", ValueChange.of(65.0, d.enchantShardCap))));
+                Map.entry("enchants.shard-bonus-cap", ValueChange.of(65.0, 300.0))));
+        // v18 (owner 7 Nov 2026, plans/HOE_IMPROVEMENTS.md): milestones instead of breakthroughs, Sweep without a prestige
+        out.put(18, Map.ofEntries(Map.entry("perks", ValueChange.of(PERKS_V17, d.perks)),
+                Map.entry("enchants.list", ValueChange.of(ENCHANTS_V17, d.enchantList)),
+                Map.entry("enchants.shard-bonus-cap", ValueChange.of(300.0, d.enchantShardCap)),
+                Map.entry("sweep.bands", ValueChange.of(List.of("1:2:10", "2:3:15", "3:4:20", "5:6:30"), d.sweepBands))));
         return out;
     }
 
@@ -806,6 +942,7 @@ public final class IslandToolsConfig extends ModuleConfig {
         String gone = "island tools rework 4 Nov 2026";
         return Map.ofEntries(Map.entry("prestige.roles", "owner 6-7 Nov 2026: every player prestiges their own tool"),
                 Map.entry("enchants.cap-per-prestige", "tools v6: the cap grows with the tool's lifetime levels (enchants.cap-full-levels)"),
+                Map.entry("enchants.breakthroughs", "owner 7 Nov 2026: milestones (enchants.milestone-*) replace the breakthroughs"),
                 Map.entry("tier-costs", gone + ": the tools start at diamond"), Map.entry("tier-money", gone + ": no tiers"),
                 Map.entry("tasks", gone + ": tool levels replace the island tasks"),
                 Map.entry("shards.chance-axe", gone + ": no island axe"),

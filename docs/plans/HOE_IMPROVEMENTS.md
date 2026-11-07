@@ -53,7 +53,32 @@ their block counts and get the milestone chance boost.
 20. **Milestone progress bar** on each enchant tile.
 21. **Top Harvesters board** at /farm: the top 10 this week, no prizes, resets on Monday.
 
-## Still open (asked in chat, 7 Nov 2026)
-- The steady growth speed: +1% of level 1 every level (suggested) or half as fast.
-- The seven round 1 points without an answer: combo counter, next crop progress, Sweep without a prestige, hoe level
-  speed, storage warning at 90%, prestige reward, the +300% shard bonus cap.
+## Decided (owner answers, round 3)
+22. **Combo counter** in the action bar ("x84 · +8.4% shards").
+23. **Next crop progress:** the /farm scoreboard already shows it; the tool menu's hoe tile shows "Carrots: 1,240 / 3,000"
+    too (the item lore can't change on every crop).
+24. **Sweep without a prestige:** unlocks at tool level 30.
+25. **Hoe levels stay 15x slower** (crops break much faster than blocks). Later, own plan: mining easier and faster, a
+    cheaper Efficiency.
+26. **Storage warning at 90%:** one action bar line, the storage tile turns orange.
+27. **Prestige reward:** a Blaze key every prestige, a Phoenix key every 10th (every tool, the same rule).
+28. **Shard bonus cap higher than +300%** ("we will have a high economy"): **+1,000%**.
+29. **Growth: "something better"** (Claude's pick): a **fast start that keeps going**. Steady growth follows a curve that
+    gives the most per level at the start and still grows to the end (shape 0.7), plus the milestones:
+
+| Shard Burst level | 1 | 2 | 10 | 50 | 100 | 250 | 500 | 1,000 | 2,500 |
+|---|---|---|---|---|---|---|---|---|---|
+| even steps (+1% a level) | 100 | 101 | 109 | 149 | 219 | 422 | 965 | 2,852 | 28,170 |
+| **built: fast start** | 100 | 110 | 147 | 253 | 385 | 699 | 1,412 | 3,536 | 27,087 |
+
+    Level 2 is already +10%, level 10 +47%, level 100 almost 4x, and the milestones make the second half fly.
+    Milestones raise: the amount (shards, items, money, progress, XP, streak and echo bonuses, crystals, rain, Golden
+    Touch and Duplicator drops); the chance (area enchants, Shard Storm, Frenzy, Booster Find, Geode/Basket); nothing
+    (Keyfinder stays rare, Lucky Streak, Chain Reaction).
+
+## Releases
+- **update165, the enchant core:** 1-9, 22-29 (milestones, the growth curve, Buy Max, on/off, one action bar line,
+  combo counter, full bag drops for you only, Sweep at level 30, +1,000% cap, prestige keys, hoe titles, juicy hits,
+  milestone bar, Shard Finder milestones, next crop on the hoe tile, storage warning).
+- **update166, /farm fun:** 11-17 and 21 (pick your crop, Hot Crop, Fresh Field, Crop Golem, Combo Fever, Lucky Clover,
+  Fertilizer, Top Harvesters board).

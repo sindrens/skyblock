@@ -937,7 +937,9 @@ public final class IslandToolsModule implements SkyblockModule {
             case ROD -> config.shardRod;
             case SWORD -> config.shardSword;
         } / 100.0;
-        double finder = ToolRules.compound(config.shardFinderPerLevel, effect(island, profile, kind, Upgrades.Effect.SHARDS)); // tools v6
+        int finderLv = effect(island, profile, kind, Upgrades.Effect.SHARDS);
+        double finder = ToolRules.compound(config.shardFinderPerLevel, finderLv) // tools v6: +3% a level, compound
+                * ToolRules.compound(config.shardFinderMilestoneBonus, finderLv / Math.max(1, config.shardFinderMilestoneEvery)); // + milestones
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
         double streak = enchants.shardMultiplier(p, kind); // owner 6 Nov 2026: Shard Echo + Compound Interest
@@ -1370,6 +1372,43 @@ public final class IslandToolsModule implements SkyblockModule {
                 }));
     }
 
+    /** Owner 7 Nov 2026 (plans/HOE_IMPROVEMENTS.md 18, 27): a key every prestige, and the hoe's titles. */
+    private void prestigeRewards(Player p, UUID profile, Kind kind, ToolStore.Personal now, boolean rebirth) {
+        String crate = rebirth || now.prestige() % 10 == 0 ? config.prestigeKeyCrateTenth : config.prestigeKeyCrate;
+        if (crate != null && !crate.isBlank()) {
+            core.services().optional(net.skybornmc.skyblock.common.crate.CrateKeys.class).ifPresent(k ->
+                    k.giveKeys(profile, crate, 1, "tool_prestige", Actor.player(p)));
+            if (p.isOnline()) {
+                msg.send(p, "prestige.key", Msg.p("crate", raw("enchant.crate." + crate)));
+            }
+        }
+        String title = hoeTitle(kind, now.prestige(), rebirth, now.rebirth());
+        if (title != null) {
+            core.services().optional(net.skybornmc.skyblock.common.cosmetics.Cosmetics.class).ifPresent(c ->
+                    c.grantTitle(p.getUniqueId(), title, "tool_prestige:" + kind.id()).exceptionally(e -> {
+                        core.plugin().getLogger().warning("Island tools: title " + title + " could not be given: " + e.getMessage());
+                        return false;
+                    }));
+        }
+    }
+
+    /** The hoe's prestige titles: Farmhand 1, Harvester 10, Field Lord 25, Harvest King 50, Reborn Reaper (first rebirth). Pure. */
+    static String hoeTitle(Kind kind, int prestige, boolean rebirth, int rebirths) {
+        if (kind != Kind.HOE) {
+            return null;
+        }
+        if (rebirth) {
+            return rebirths == 1 ? "reborn_reaper" : null;
+        }
+        return switch (prestige) {
+            case 1 -> "farmhand";
+            case 10 -> "harvester_hoe";
+            case 25 -> "field_lord";
+            case 50 -> "harvest_king";
+            default -> null;
+        };
+    }
+
     private void prestiged(Player p, UUID profile, Kind kind, ToolStore.Personal before, boolean rebirth) {
         Map<Kind, ToolStore.Personal> map = personal.get(profile);
         if (map != null) {
@@ -1397,6 +1436,7 @@ public final class IslandToolsModule implements SkyblockModule {
             }
             core.sounds().play(p, "tool-prestige");
         }
+        prestigeRewards(p, profile, kind, now, rebirth);
         // Milestones are worth telling the island and the server about (psychology: others see the progress).
         if (rebirth || now.prestige() % 10 == 0) {
             for (Player other : Bukkit.getOnlinePlayers()) {

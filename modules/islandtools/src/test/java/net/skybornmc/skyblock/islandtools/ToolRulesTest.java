@@ -66,8 +66,9 @@ class ToolRulesTest {
     void sweepBandsFollowThePrestige() {
         List<ToolRules.Band> bands = ToolRules.bands(C.sweepBands);
         assertEquals(4, bands.size());
-        assertNull(ToolRules.band(bands, 0), "locked until prestige 1");
-        assertEquals(new ToolRules.Band(1, 2, 10), ToolRules.band(bands, 1));
+        assertEquals(new ToolRules.Band(0, 2, 10), ToolRules.band(bands, 0), "owner 7 Nov 2026: no prestige needed");
+        assertEquals(new ToolRules.Band(0, 2, 10), ToolRules.band(bands, 1));
+        assertNull(ToolRules.band(List.of(new ToolRules.Band(1, 2, 10)), 0));
         assertEquals(4, ToolRules.band(bands, 4).blocks(), "prestige 4 keeps the prestige 3 band");
         assertEquals(new ToolRules.Band(5, 6, 30), ToolRules.band(bands, 9));
         assertEquals(5.0, ToolRules.sweepChance(ToolRules.band(bands, 1), 50, 100), 1e-9);
@@ -86,9 +87,10 @@ class ToolRulesTest {
         assertTrue(u.get(Kind.HOE, "magnet").isEmpty(), "owner 4 Nov 2026: Magnet is built in");
         assertTrue(u.get(Kind.HOE, "row").isEmpty(), "Row became Sweep");
         Upgrades.Def sweep = u.get(Kind.HOE, "sweep").orElseThrow();
-        assertEquals(1, sweep.prestige());
+        assertEquals(0, sweep.prestige(), "owner 7 Nov 2026: Sweep without a prestige");
+        assertEquals(30, sweep.unlock());
         assertEquals(100, sweep.max());
-        assertEquals(1, u.get(Kind.PICKAXE, "vein").orElseThrow().prestige());
+        assertEquals(0, u.get(Kind.PICKAXE, "vein").orElseThrow().prestige());
         // Feedback 5 Nov 2026: fewer, bigger steps (100 levels of 1% instead of 1,000 of 0.1%); the first level is cheap.
         assertEquals(250, u.get(Kind.HOE, "shard_finder").orElseThrow().max(), "tools v6: 250 compound levels");
         assertEquals(1, u.get(Kind.HOE, "shard_finder").orElseThrow().unlock(), "Shard Finder from level 1");

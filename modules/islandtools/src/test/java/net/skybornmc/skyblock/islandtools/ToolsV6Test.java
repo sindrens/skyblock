@@ -73,4 +73,27 @@ class ToolsV6Test {
         assertEquals(2, EnchantMenu.group(g.get(Kind.PICKAXE, "keyfinder").orElseThrow()));
         assertEquals(3, EnchantMenu.group(g.get(Kind.PICKAXE, "frenzy").orElseThrow()));
     }
+
+    @Test
+    void hoeImprovementsRound1To3() {
+        GrindEnchants g = GrindEnchants.parse(C.enchantList, w -> { });
+        GrindEnchants.Def burst = g.get(Kind.HOE, "shard_burst").orElseThrow();
+        assertEquals(1, EnchantMenu.affordable(burst, 0, 10, burst.priceOf(1)), "Buy Max: exactly one level");
+        assertEquals(0, EnchantMenu.affordable(burst, 0, 10, burst.priceOf(1) - 1));
+        assertEquals(3, EnchantMenu.affordable(burst, 5, 3, Long.MAX_VALUE / 4), "never past the cap");
+        assertEquals("<c:success>|||||</c:success><c:muted>|||||</c:muted>", EnchantMenu.bar(50, 100));
+        assertEquals("farmhand", IslandToolsModule.hoeTitle(Kind.HOE, 1, false, 0));
+        assertEquals("harvest_king", IslandToolsModule.hoeTitle(Kind.HOE, 50, false, 0));
+        assertEquals("reborn_reaper", IslandToolsModule.hoeTitle(Kind.HOE, 0, true, 1));
+        assertEquals(null, IslandToolsModule.hoeTitle(Kind.HOE, 0, true, 2));
+        assertEquals(null, IslandToolsModule.hoeTitle(Kind.PICKAXE, 1, false, 0), "titles are the hoe's");
+        java.util.Map<String, Integer> rows = new java.util.HashMap<>(java.util.Map.of("hoe:shard_burst", 50));
+        assertFalse(EnchantProcs.off(rows, burst));
+        rows.put("hoe:off.shard_burst", 1);
+        assertTrue(EnchantProcs.off(rows, burst), "switched off, the level stays");
+        assertEquals(50, rows.get("hoe:shard_burst"));
+        assertEquals(1000.0, C.enchantShardCap);
+        assertEquals("blaze", C.prestigeKeyCrate);
+        assertEquals("phoenix", C.prestigeKeyCrateTenth);
+    }
 }

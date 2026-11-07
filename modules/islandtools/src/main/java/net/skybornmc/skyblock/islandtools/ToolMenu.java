@@ -99,6 +99,11 @@ final class ToolMenu extends Menu {
                 Msg.p("bonus", pct(prog.prestige() * m.config().prestigeBonus + prog.rebirth() * m.config().rebirthBonus)),
                 Msg.p("discount", pct(100 - 100 * m.priceFactor(prog))),
                 Msg.p("boost", pct(m.islandBoost(viewer, kind))), Msg.p("shards", m.raw("shards.name." + kind.id()))));
+        String next = m.core().services().optional(net.skybornmc.skyblock.common.grind.GrindProgress.class)
+                .map(g -> g.nextUnlock(viewer, EnchantProcs.area(kind))).orElse(""); // owner 7 Nov 2026: the next crop / ore
+        if (!next.isEmpty()) {
+            info.addAll(service.lines(viewer, IslandToolsModule.ID, "menu.next-unlock", Msg.p("next", next)));
+        }
         set(SLOT_TOOL, service.item(m.items().create(kind, island, m.profile(viewer)),
                 m.msg().component(viewer, "menu.tool-name", Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("stars", stars)), info));
         set(SLOT_PRESTIGE, prestigeButton(prog, lv), click -> prestige(click.player()));
@@ -108,7 +113,9 @@ final class ToolMenu extends Menu {
         }
         long used = m.storage().used(m.profile(viewer), kind);
         long cap = m.storage().capacity(viewer, kind);
-        set(SLOT_STORAGE, service.item(Material.BARREL, viewer, IslandToolsModule.ID, "menu.storage",
+        boolean almost = cap > 0 && used * 10 >= cap * 9; // owner 7 Nov 2026: orange from 90% full
+        set(SLOT_STORAGE, service.item(almost ? Material.ORANGE_SHULKER_BOX : Material.BARREL, viewer, IslandToolsModule.ID,
+                almost ? "menu.storage-almost" : "menu.storage",
                 Msg.p("tool", m.raw("item.name." + kind.id())), Msg.p("used", Format.number(used)), Msg.p("cap", Format.number(cap)),
                 Msg.mm("bar", StorageMenu.bar(used, cap))), click -> openChild(new StorageMenu(m, kind)));
         List<GrindEnchants.Def> grind = m.enchants().defs().of(kind);

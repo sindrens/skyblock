@@ -136,6 +136,8 @@ prestige:
     fade-out: 20
   # Owner 6-7 Nov 2026: your own prestige. <tool> <stars> <prestige> <bonus> <cap>
   chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value><tool></c:value> <c:text>is prestige <c:flame><stars></c:flame><c:text>: +<bonus>% XP and shards for good, enchants open to <c:value><cap>%</c:value> <c:text>of their levels."
+  # owner 7 Nov 2026: the key every prestige. <crate>
+  key: "<prefix><c:success><sym:check></c:success> <c:text>Prestige reward: +1 <c:value><crate> Key</c:value><c:text>. Open it in</c:text> <c:action>/crates</c:action><c:text>."
   # Every 10th prestige, to everyone else. <player> <tool> <prestige>
   broadcast: "<prefix><c:value><player></c:value> <c:text>reached prestige <c:flame><prestige></c:flame> <c:text>on their <tool>!"
   confirm-crumb: "Confirm Prestige"
@@ -306,6 +308,20 @@ menu:
       - "<c:bar>| </c:bar><bar>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # owner 7 Nov 2026: the same tile from 90% full (orange)
+  storage-almost:
+    name: "<bold><c:warning>Storage almost full"
+    lore:
+      - "<c:muted>Sell it soon: /sell or open it."
+      - ""
+      - "<bold><c:header>| Storage</c:header></bold>"
+      - "<c:bar>| </c:bar><c:text>Stored: </c:text><c:value><used></c:value><c:muted>/<cap>"
+      - "<c:bar>| </c:bar><bar>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  # owner 7 Nov 2026: under the tool tile. <next> = "Carrots: 1,240 / 3,000"
+  next-unlock:
+    - "<c:bar>| </c:bar><c:text>Next: </c:text><c:value><next>"
 
   # Owner 6 Nov 2026: the button to your own grind enchants. <area> <owned> <total>
   enchants:
@@ -342,6 +358,8 @@ upgrade:
   vein: {name: "Vein", icon: raw_iron, lore: ["<c:muted>A chance to mine nearby ores of", "<c:muted>the same kind. Better every prestige."]}
 
 storage:
+  # owner 7 Nov 2026: once at 90% full. <tool> <percent>
+  almost: "<c:warning><sym:cross> <tool> storage <percent>% full</c:warning> <c:muted>· /sell"
   crumb: "Storage"
   info:
     - "<c:text>At /farm and /mine every drop lands"
@@ -458,15 +476,21 @@ enchant:
   # <enchant> <level> <max> <cost>
   # Action bar (tools v5: no chat line per click)
   bought: "<c:success><sym:check></c:success> <c:value><enchant> <level></c:value><c:muted>/<max> · </c:muted><cost>"
-  # owner 7 Nov 2026: a breakthrough. <enchant> <multiplier> <level>
-  breakthrough:
+  # owner 7 Nov 2026: a milestone (every 4% of the track). <enchant> <milestone> <multiplier>
+  milestone:
+    bar: "<c:flame><sym:star></c:flame> <c:value><enchant></c:value> <c:text>milestone <c:value><milestone></c:value><c:text>: </c:text><c:value>x<multiplier></c:value>"
+    # every 5th milestone
     title:
-      title: "<grad:flame><bold>BREAKTHROUGH!"
-      subtitle: "<c:value><enchant></c:value> <c:muted>· <c:value>x<multiplier></c:value> <c:text>as strong"
+      title: "<grad:flame><bold>MILESTONE <milestone>!"
+      subtitle: "<c:value><enchant></c:value> <c:muted>· <c:value>x<multiplier></c:value> <c:text>extra"
       fade-in: 5
-      stay: 50
+      stay: 40
       fade-out: 15
-    chat: "<prefix><c:success><sym:star></c:success> <c:text>Breakthrough! </c:text><c:value><enchant></c:value> <c:text>is now </c:text><c:value>x<multiplier></c:value> <c:text>as strong (level <level>)."
+  # <enchant>
+  toggled-off: "<c:muted><sym:cross> <enchant> is off"
+  toggled-on: "<c:success><sym:check> <enchant> is on"
+  # The streak while Combo / Compound Interest run. <streak> <shards> <xp> (percent)
+  streak-line: "<c:flame><bold>x<streak></bold></c:flame> <c:muted>· <c:text>+<shards>% shards <c:muted>· <c:text>+<xp>% XP"
   # Action bar when an enchant procs. <enchant> <amount>
   proc:
     area: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> blocks"
@@ -549,7 +573,8 @@ enchant:
       name: "<bold><area:neutral>Buy <amount> at a time"
       lore:
         - "<c:text>A click on an enchant buys"
-        - "<c:value><amount></c:value> <c:text>levels (or what is left)."
+        - "<c:value><amount></c:value> <c:text>levels (or what is left; Max = as"
+        - "<c:text>many as your shards pay for)."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>for <c:value><next></c:value> <c:text>at a time"
     # <name> <level>
@@ -581,8 +606,34 @@ enchant:
     # <seconds>
     cooldown: "<c:bar>| </c:bar><c:muted>At most once every <seconds> s"
     # owner 7 Nov 2026: <multiplier> <level> <left> (the next breakthrough) / <now> (all reached)
-    breakthrough: "<c:bar>| </c:bar><c:text>Breakthrough: </c:text><c:value>x<multiplier></c:value> <c:muted>at <level> (<left> to go)"
-    breakthrough-done: "<c:bar>| </c:bar><c:success>All breakthroughs: x<now>"
+    # owner 7 Nov 2026: <bonus> <level> <left> <bar> <now> (the boost so far)
+    milestone:
+      - "<c:bar>| </c:bar><c:text>Next boost: </c:text><c:value>+<bonus>%</c:value> <c:muted>at <level> (<left> to go)"
+      - "<c:bar>| </c:bar><bar> <c:muted>· now x<now>"
+    milestone-done: "<c:bar>| </c:bar><c:success>All milestones: x<now>"
+    switched-off:
+      - "<c:locked><sym:cross> Switched off (levels kept)"
+    switch-off:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch it off"
+    switch-on:
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch it on"
+    name-off: "<bold><c:muted><name> <level> (off)"
+    amount-max: "Max"
+    mode-buy:
+      name: "<bold><area:neutral>Mode: Buy"
+      lore:
+        - "<c:text>A click on an enchant buys levels."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to switch enchants on or off"
+    mode-switch:
+      name: "<bold><area:neutral>Mode: On / Off"
+      lore:
+        - "<c:text>A click on an enchant switches it"
+        - "<c:text>on or off. Its levels stay."
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy again"
     # What one proc gives. {value} {crate}
     gives:
       area: "{value} blocks"

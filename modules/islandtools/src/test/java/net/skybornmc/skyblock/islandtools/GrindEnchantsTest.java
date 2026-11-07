@@ -89,19 +89,15 @@ class GrindEnchantsTest {
     void chancesGrowEvenlyAndValuesCompound() {
         GrindEnchants.Def blast = defaults(new ArrayList<>()).get(Kind.PICKAXE, "blast").orElseThrow();
         assertEquals(0, blast.chance(0));
-        assertEquals(0.5, blast.chance(1), 1e-9);
+        assertEquals(0.3, blast.chance(1), 1e-9);
         assertEquals(2500, blast.max(), "tools v6: everyday enchants go to 2,500");
-        assertEquals(1.0, blast.chance(2500), 1e-9);
-        assertEquals(0.75, blast.chance(1250), 0.002);
+        assertEquals(0.45 * Math.pow(1.1, 12), blast.chance(1250), 0.002, "even steps times the chance milestones");
         assertEquals(4, blast.value(1), 1e-9);
         assertEquals(18, blast.value(2500), 1e-9);
         assertEquals(18, blast.value(25_000), 1e-9, "above the max counts as the max");
         assertEquals(Math.sqrt(4 * 18), GrindEnchants.grow(4, 18, 1250, 2499), 1e-9, "halfway is the geometric middle");
         GrindEnchants.Def burst = defaults(new ArrayList<>()).get(Kind.PICKAXE, "shard_burst").orElseThrow();
-        assertEquals(100, burst.value(1), 1e-9, "tools v6: a Burst gives 100 at level 1");
-        assertEquals(1500, burst.value(2500), 1e-9, "x15 at the max");
-        double step = burst.value(101) / burst.value(100);
-        assertEquals(step, burst.value(2001) / burst.value(2000), 1e-9, "the same few tenths of a percent every level");
+        assertEquals(100, burst.value(1), 1e-9, "a Burst gives 100 at level 1");
         assertEquals(7, GrindEnchants.lerp(3, 7, 1, 1), 1e-9, "a one-level enchant is at its max at once");
         assertEquals(5, GrindEnchants.grow(0, 10, 2, 3), 1e-9, "a zero end grows evenly");
         GrindEnchants.Def pity = defaults(new ArrayList<>()).get(Kind.HOE, "lucky_streak").orElseThrow();
@@ -199,7 +195,8 @@ class GrindEnchantsTest {
         }
         assertEquals(10, EnchantMenu.nextAmount(1));
         assertEquals(100, EnchantMenu.nextAmount(10));
-        assertEquals(1, EnchantMenu.nextAmount(100));
+        assertEquals(EnchantMenu.MAX, EnchantMenu.nextAmount(100), "owner 7 Nov 2026: Buy Max");
+        assertEquals(1, EnchantMenu.nextAmount(EnchantMenu.MAX));
         assertEquals("4.5", EnchantMenu.num(4.49));
         assertEquals("1,250", EnchantMenu.num(1250));
     }
@@ -228,38 +225,48 @@ class GrindEnchantsTest {
     }
 
     @Test
-    void breakthroughsJumpThenFlatten() {
-        List<String> problems = new ArrayList<>();
-        List<GrindEnchants.Breakthrough> b = GrindEnchants.Breakthrough.parse(C.enchantBreakthroughs, problems::add);
-        assertEquals(List.of(), problems);
-        GrindEnchants g = GrindEnchants.parse(C.enchantList, b, problems::add);
-        GrindEnchants.Def blast = g.get(Kind.PICKAXE, "meteor").orElseThrow(); // a 500-level area enchant
-        assertEquals(List.of(10, 50, 150, 500), b.stream().map(x -> x.level(500)).toList(), "a 500-level enchant");
-        assertEquals(List.of(2, 10, 30, 100), b.stream().map(x -> x.level(100)).toList(), "a 100-level enchant");
-        assertEquals(1, blast.boost(9));
-        assertEquals(1.5, blast.boost(10));
-        assertEquals(2, blast.boost(149));
-        assertEquals(3, blast.boost(500));
-        assertEquals(blast.chance(9) * 1.5, blast.chance(10), 0.01, "a jump at the breakthrough");
-        assertEquals(0.08 * 3, blast.chance(500), 1e-9, "x3 at the max");
-        assertEquals(40, blast.value(500), 1e-9, "a proc's amount stays (its chance grows)");
-        assertTrue(blast.crosses(49, 50));
-        assertFalse(blast.crosses(50, 120));
-        assertEquals(50, blast.next(12).orElseThrow().level(500));
-        assertTrue(blast.next(500).isEmpty());
-        GrindEnchants.Def combo = g.get(Kind.PICKAXE, "combo").orElseThrow();
-        assertEquals(225, combo.value(2500), 1e-9, "a steady enchant: its value x3");
+    void milestonesGiveAnExtraBoostEveryFourPercent() {
+        GrindEnchants g = GrindEnchants.parse(C.enchantList, new GrindEnchants.Growth(C.enchantGrowthShape, C.enchantMilestoneEvery,
+                C.enchantMilestoneBonus), w -> { });
+        GrindEnchants.Def burst = g.get(Kind.PICKAXE, "shard_burst").orElseThrow();
+        assertEquals(100, burst.step(), "every 100 levels of 2,500");
+        assertEquals(40, g.get(Kind.PICKAXE, "cash_vein").orElseThrow().step(), "every 40 of 1,000");
+        assertEquals(20, g.get(Kind.PICKAXE, "meteor").orElseThrow().step(), "every 20 of 500");
+        assertEquals(0, burst.milestones(99));
+        assertEquals(1, burst.milestones(100));
+        assertEquals(25, burst.milestones(2500));
+        assertEquals(1.1, burst.boost(100), 1e-9);
+        assertEquals(Math.pow(1.1, 25), burst.boost(2500), 1e-9);
+        assertEquals(100, burst.value(1), 1e-9);
+        assertEquals(110, burst.value(2), 1, "owner: a fast start, level 2 is already about +10%");
+        assertEquals(385, burst.value(100), 2, "level 100 almost 4x");
+        assertEquals(2500 * Math.pow(1.1, 25), burst.value(2500), 1e-6);
+        for (int l = 1; l < 2500; l++) {
+            assertTrue(burst.value(l + 1) > burst.value(l), "every level is better: " + l);
+        }
+        assertEquals(java.util.OptionalInt.of(300), burst.nextMilestone(215));
+        assertTrue(burst.nextMilestone(2500).isEmpty());
+        assertEquals(2, burst.crossed(150, 320));
+        assertTrue(burst.crosses(99, 100));
+        assertFalse(burst.crosses(100, 199));
+        GrindEnchants.Def blast = g.get(Kind.PICKAXE, "blast").orElseThrow();
+        assertEquals(GrindEnchants.Target.CHANCE, blast.target(), "area enchants: more chance, not more blocks");
+        assertEquals(18, blast.value(2500), 1e-9);
+        assertEquals(0.6 * Math.pow(1.1, 25), blast.chance(2500), 1e-9);
+        GrindEnchants.Def key = g.get(Kind.PICKAXE, "keyfinder").orElseThrow();
+        assertEquals(GrindEnchants.Target.NONE, key.target(), "Keyfinder stays rare");
+        assertEquals(1, key.boost(500), 1e-9);
+        assertTrue(key.nextMilestone(1).isEmpty());
         GrindEnchants.Def pity = g.get(Kind.PICKAXE, "lucky_streak").orElseThrow();
         assertEquals(30, pity.value(pity.max()), 1e-9, "Lucky Streak's block count is not boosted");
-        GrindEnchants.Def rod = g.get(Kind.ROD, "big_catch").orElseThrow();
-        assertTrue(rod.chance(rod.max()) <= 100, "never above 100%");
-        assertEquals(1, GrindEnchants.Breakthrough.parse(List.of("10:2", "x:1", "0:2", "50:0.5"), problems::add).size());
-        assertEquals(3, problems.size());
+        assertEquals(1, GrindEnchants.curve(0, 1, 2500, 2500, 0.7), 1e-12);
+        assertEquals(0.5, GrindEnchants.curve(0, 1, 2, 3, 1), 1e-12, "shape 1 = even steps");
+        assertTrue(GrindEnchants.curve(0, 1, 2, 3, 0.7) > 0.5, "shape below 1 = more at the start");
     }
 
     @Test
     void shardsAreTenTimesBiggerWithTheSameValue() {
-        GrindEnchants now = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V16, w -> { });
+        GrindEnchants now = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V16, w -> { }); // the shards x10 list before tools v6
         GrindEnchants old = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V13, w -> { });
         for (Kind k : Kind.values()) {
             for (GrindEnchants.Def d : now.of(k)) {
@@ -271,10 +278,14 @@ class GrindEnchantsTest {
         }
         assertEquals(1000, C.shardHoe, "tools v6: 10 shards a crop");
         assertEquals(2_500, C.luckyMax);
-        assertEquals(17, C.version());
+        assertEquals(18, C.version());
         var v17 = C.valueChanges().get(17);
         assertEquals(IslandToolsConfig.ENCHANTS_V16, v17.get("enchants.list").from());
-        assertEquals(C.enchantList, v17.get("enchants.list").to());
         assertEquals(IslandToolsConfig.PERKS_V16, v17.get("perks").from());
+        var v18 = C.valueChanges().get(18);
+        assertEquals(IslandToolsConfig.ENCHANTS_V17, v18.get("enchants.list").from());
+        assertEquals(C.enchantList, v18.get("enchants.list").to());
+        assertEquals(IslandToolsConfig.PERKS_V17, v18.get("perks").from());
+        assertEquals(1000.0, C.enchantShardCap, "owner: more than +300%");
     }
 }

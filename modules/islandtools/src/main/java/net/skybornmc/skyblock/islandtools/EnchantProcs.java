@@ -81,7 +81,8 @@ final class EnchantProcs implements Listener {
 
     void parse(List<String> lines) {
         java.util.function.Consumer<String> warn = w -> m.core().plugin().getLogger().warning(w);
-        defs = GrindEnchants.parse(lines, GrindEnchants.Breakthrough.parse(m.config().enchantBreakthroughs, warn), warn);
+        IslandToolsConfig c = m.config();
+        defs = GrindEnchants.parse(lines, new GrindEnchants.Growth(c.enchantGrowthShape, c.enchantMilestoneEvery, c.enchantMilestoneBonus), warn);
     }
 
     GrindEnchants defs() {
@@ -266,12 +267,18 @@ final class EnchantProcs implements Listener {
             // FINISH_PLAN batch A: buying grind enchant levels counts for "enchant" contracts (one per purchase)
             Bukkit.getPluginManager().callEvent(new net.skybornmc.skyblock.common.quest.GameActionEvent(p,
                     net.skybornmc.skyblock.common.quest.GameActionEvent.ENCHANT, 1));
-            if (def.crosses(have, have + n)) { // owner 7 Nov 2026: a breakthrough is a moment
+            int crossed = def.crossed(have, have + n);
+            if (crossed > 0) { // owner 7 Nov 2026: every milestone is a small moment, every 5th a title
+                int now = def.milestones(have + n);
                 String x = EnchantMenu.num(def.boost(have + n));
-                m.msg().title(p, "enchant.breakthrough.title", Msg.p("enchant", name(def)), Msg.p("multiplier", x));
-                m.msg().send(p, "enchant.breakthrough.chat", Msg.p("enchant", name(def)), Msg.p("multiplier", x),
-                        Msg.number("level", have + n));
-                m.core().sounds().play(p, "tool-max");
+                m.msg().actionBar(p, "enchant.milestone.bar", Msg.p("enchant", name(def)), Msg.number("milestone", now),
+                        Msg.p("multiplier", x));
+                m.core().sounds().play(p, "tool-level-up");
+                if (now / 5 > def.milestones(have) / 5) {
+                    m.msg().title(p, "enchant.milestone.title", Msg.p("enchant", name(def)), Msg.number("milestone", now),
+                            Msg.p("multiplier", x));
+                    m.core().sounds().play(p, "tool-max");
+                }
             }
         }
         m.core().audit().logPlayer(AuditCategory.ITEM, "grind_enchant", Actor.player(p), p.getUniqueId(), p.getName(), cost,
@@ -330,7 +337,7 @@ final class EnchantProcs implements Listener {
         // Lucky Streak: after enough blocks without a rare find, the rare chances double until one comes.
         double pity = 1;
         GrindEnchants.Def pityDef = passive(kind, GrindEnchants.Effect.PITY);
-        int pityLv = pityDef == null ? 0 : Math.min(pityDef.max(), have.getOrDefault(pityDef.key(), 0));
+        int pityLv = pityDef == null || off(have, pityDef) ? 0 : Math.min(pityDef.max(), have.getOrDefault(pityDef.key(), 0));
         if (pityLv > 0 && st.sinceRare >= Math.max(1, Math.round(pityDef.value(pityLv)))) {
             pity = 2;
         }
@@ -340,7 +347,7 @@ final class EnchantProcs implements Listener {
         double areaValue = 0;
         for (GrindEnchants.Def def : defs.of(kind)) {
             int lv = Math.min(def.max(), have.getOrDefault(def.key(), 0));
-            if (lv <= 0 || def.effect().passive()) {
+            if (lv <= 0 || def.effect().passive() || off(have, def)) {
                 continue;
             }
             // Proc Frenzy doubles every proc but Keyfinder (owner: keys stay rare).
@@ -368,11 +375,12 @@ final class EnchantProcs implements Listener {
             }
             apply(p, kind, def, def.value(lv), origin, drops, rnd, st, have, now);
         }
+        combo(p, kind, st, have);
         if (area != null) {
             apply(p, kind, area, areaValue, origin, drops, rnd, st, have, now);
             // Tools v6: Chain Reaction, a second area enchant right after the first.
             GrindEnchants.Def chain = passive(kind, GrindEnchants.Effect.CHAIN);
-            int chainLv = chain == null ? 0 : Math.min(chain.max(), have.getOrDefault(chain.key(), 0));
+            int chainLv = chain == null || off(have, chain) ? 0 : Math.min(chain.max(), have.getOrDefault(chain.key(), 0));
             if (chainLv > 0 && rnd.nextDouble(100) < chain.value(chainLv)) {
                 apply(p, kind, area, areaValue, origin, drops, rnd, st, have, now);
                 bar(p, "enchant.proc.chain", chain, Msg.p("amount", name(area)));
@@ -409,6 +417,74 @@ final class EnchantProcs implements Listener {
                 }
             }
         }
+    }
+
+    /** Owner 7 Nov 2026: an enchant the player switched off (the {@code off.<id>} row; levels stay). */
+    static boolean off(Map<String, Integer> have, GrindEnchants.Def def) {
+        return have.getOrDefault(def.kind().id() + ":off." + def.id(), 0) > 0;
+    }
+
+    boolean off(Player p, GrindEnchants.Def def) {
+        Map<String, Integer> map = levels.get(m.profile(p));
+        return map != null && off(map, def);
+    }
+
+    /** Switches an enchant on or off (one guarded row write, like a purchase). */
+    void toggle(Player p, GrindEnchants.Def def, Runnable done) {
+        UUID profile = m.profile(p);
+        Map<String, Integer> map = levels.get(profile);
+        if (map == null || !busy.add(p.getUniqueId())) {
+            return;
+        }
+        int was = off(map, def) ? 1 : 0;
+        int to = 1 - was;
+        m.core().database().transaction(c -> EnchantStore.set(c, profile, def.kind(), "off." + def.id(), was, to))
+                .whenComplete((ok, error) -> Bukkit.getScheduler().runTask(m.core().plugin(), () -> {
+                    busy.remove(p.getUniqueId());
+                    if (error == null && Boolean.TRUE.equals(ok)) {
+                        map.put(def.kind().id() + ":off." + def.id(), to);
+                        m.msg().actionBar(p, to == 1 ? "enchant.toggled-off" : "enchant.toggled-on", Msg.p("enchant", name(def)));
+                        m.core().sounds().play(p, "click");
+                    } else {
+                        if (error != null) {
+                            m.core().plugin().getLogger().log(Level.WARNING, "Island tools: switching an enchant of " + p.getName() + " failed", error);
+                        }
+                        levels.remove(profile);
+                        load(p);
+                        m.msg().send(p, "enchant.changed");
+                    }
+                    if (done != null && p.isOnline()) {
+                        done.run();
+                    }
+                }));
+    }
+
+    /** Owner 7 Nov 2026: the running streak in the action bar (with the procs), every 10th block. */
+    private void combo(Player p, Kind kind, State st, Map<String, Integer> have) {
+        GrindEnchants.Def combo = passive(kind, GrindEnchants.Effect.STREAK_XP);
+        GrindEnchants.Def compound = passive(kind, GrindEnchants.Effect.STREAK_SHARDS);
+        int comboLv = combo == null || off(have, combo) ? 0 : Math.min(combo.max(), have.getOrDefault(combo.key(), 0));
+        int compoundLv = compound == null || off(have, compound) ? 0 : Math.min(compound.max(), have.getOrDefault(compound.key(), 0));
+        int streak = Math.max(st.shardStreak, st.xpStreak);
+        if ((comboLv <= 0 && compoundLv <= 0) || streak < 10 || streak % 10 != 0) {
+            return;
+        }
+        double shards = compoundLv <= 0 ? 0 : GrindEnchants.streak(st.shardStreak, m.config().enchantStreakStep, compound.value(compoundLv));
+        double xp = comboLv <= 0 ? 0 : GrindEnchants.streak(st.xpStreak, m.config().enchantStreakStep, combo.value(comboLv));
+        net.skybornmc.skyblock.common.hud.ActionBars.show(p, "combo", m.msg().component(p, "enchant.streak-line", Msg.number("streak", streak),
+                        Msg.p("shards", EnchantMenu.num(shards)), Msg.p("xp", EnchantMenu.num(xp))),
+                net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 1500);
+    }
+
+    /** Owner 7 Nov 2026 (juicy hits): a big proc pops on the block with a sound that rises with the streak, only for you. */
+    private void juicy(Player p, Block origin, State st) {
+        if (origin == null) {
+            return;
+        }
+        org.bukkit.Location at = origin.getLocation().add(0.5, 0.7, 0.5);
+        p.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, at, 12, 0.3, 0.3, 0.3, 0.25);
+        float pitch = (float) Math.min(2.0, 0.8 + Math.max(st.shardStreak, st.xpStreak) / 250.0);
+        p.playSound(at, org.bukkit.Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.8f, pitch);
     }
 
     private State state(Player p, Kind kind) {
@@ -459,7 +535,7 @@ final class EnchantProcs implements Listener {
     }
 
     private int levelOf(Player p, GrindEnchants.Def def) {
-        return def == null ? 0 : level(p, def);
+        return def == null || off(p, def) ? 0 : level(p, def);
     }
 
     /**
@@ -527,7 +603,7 @@ final class EnchantProcs implements Listener {
                 if (def.id().equals("shard_burst")) {
                     // Shard Echo: a Burst starts (or refreshes) a few seconds of more shards.
                     GrindEnchants.Def echo = passive(kind, GrindEnchants.Effect.ECHO);
-                    int lv = echo == null ? 0 : Math.min(echo.max(), have.getOrDefault(echo.key(), 0));
+                    int lv = echo == null || off(have, echo) ? 0 : Math.min(echo.max(), have.getOrDefault(echo.key(), 0));
                     if (lv > 0) {
                         st.echoUntil = now + m.config().enchantEchoSeconds * 1000L;
                         st.echoPercent = echo.value(lv);
@@ -535,6 +611,7 @@ final class EnchantProcs implements Listener {
                 }
                 if (shards > 0) {
                     m.addShards(m.profile(p), kind.shards(), shards);
+                    juicy(p, origin, st);
                     if (m.config().shardPopups && origin != null) {
                         m.popup(p, origin.getLocation(), kind.shards(), shards); // owner 7 Nov 2026: shards float up from the block
                     } else {
@@ -587,6 +664,7 @@ final class EnchantProcs implements Listener {
                 bar(p, "enchant.proc.frenzy", def, Msg.p("amount", EnchantMenu.num(value)));
             }
             case GOLDEN -> {
+                juicy(p, origin, st);
                 st.goldenLeft += (int) Math.max(1, Math.round(value));
                 bar(p, "enchant.proc.golden", def, Msg.number("amount", Math.round(value)));
             }
@@ -626,6 +704,7 @@ final class EnchantProcs implements Listener {
                     others++;
                 }
                 m.addShards(m.profile(p), kind.shards(), shards);
+                juicy(p, origin, st);
                 bar(p, "enchant.proc.rain", def, Msg.number("amount", others));
             }
             case SKILL_XP, ECHO, STREAK_SHARDS, STREAK_XP, PITY, CHAIN -> {
@@ -694,7 +773,7 @@ final class EnchantProcs implements Listener {
             return;
         }
         for (GrindEnchants.Def def : defs.of(kind)) {
-            if (def.effect() == GrindEnchants.Effect.SKILL_XP) {
+            if (def.effect() == GrindEnchants.Effect.SKILL_XP && !off(event.getPlayer(), def)) {
                 int lv = level(event.getPlayer(), def);
                 if (lv > 0) {
                     event.setAmount(event.getAmount() * (1 + def.value(lv) / 100.0));
@@ -778,7 +857,7 @@ final class EnchantProcs implements Listener {
     }
 
     private void bar(Player p, String key, GrindEnchants.Def def, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver amount) {
-        net.skybornmc.skyblock.common.hud.ActionBars.show(p, "enchant", m.msg().component(p, key, Msg.p("enchant", name(def)), amount),
+        net.skybornmc.skyblock.common.hud.ActionBars.show(p, "enchant." + def.id(), m.msg().component(p, key, Msg.p("enchant", name(def)), amount),
                 net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 1500);
     }
 }

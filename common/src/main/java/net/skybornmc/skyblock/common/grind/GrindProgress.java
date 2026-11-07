@@ -23,6 +23,11 @@ public interface GrindProgress {
     /** Geode / Harvest Basket: the items of every crop ({@code farm}) or ore ({@code mine}) the player has unlocked. */
     java.util.List<org.bukkit.Material> unlockedDrops(Player player, String area);
 
+    /** Owner 7 Nov 2026: the next crop / ore / water and how far ("Carrots: 1,240 / 3,000"); empty at the last one. */
+    default String nextUnlock(Player player, String area) {
+        return "";
+    }
+
     /** Players whose breaks right now are drops only (main thread). */
     Set<UUID> DROPS_ONLY = new HashSet<>();
 

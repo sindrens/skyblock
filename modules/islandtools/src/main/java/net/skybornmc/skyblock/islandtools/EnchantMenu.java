@@ -31,11 +31,16 @@ final class EnchantMenu extends Menu {
 
     static final int SLOT_HEADER = 3;
     static final int SLOT_AMOUNT = 5;
-    static final int[] AMOUNTS = {1, 10, 100};
+    /** Owner 7 Nov 2026: buy or switch on/off mode (Bedrock-safe: one plain click per mode). */
+    static final int SLOT_MODE = 6;
+    /** {@link #MAX} = as many levels as your shards pay for (owner 7 Nov 2026: Buy Max). */
+    static final int MAX = -1;
+    static final int[] AMOUNTS = {1, 10, 100, MAX};
 
     private final IslandToolsModule m;
     private final Kind kind;
     private int amount = 1;
+    private boolean switching;
 
     EnchantMenu(IslandToolsModule m, Kind kind) {
         this.m = m;
@@ -69,7 +74,27 @@ final class EnchantMenu extends Menu {
         return "tools";
     }
 
-    /** The next buy amount after {@code now} (1 → 10 → 100 → 1). Pure. */
+    /** "1", "10", "100" or "Max". */
+    private String amountText(int a) {
+        return a == MAX ? m.raw("enchant.menu.amount-max") : String.valueOf(a);
+    }
+
+    /** Buy Max: how many levels after {@code have} (at most {@code room}) {@code balance} shards pay for. Pure. */
+    static int affordable(GrindEnchants.Def d, int have, int room, long balance) {
+        int n = 0;
+        long sum = 0;
+        while (n < room) {
+            long next = d.priceOf(have + n + 1);
+            if (sum + next > balance) {
+                break;
+            }
+            sum += next;
+            n++;
+        }
+        return n;
+    }
+
+    /** The next buy amount after {@code now} (1 → 10 → 100 → Max → 1). Pure. */
     static int nextAmount(int now) {
         for (int i = 0; i < AMOUNTS.length; i++) {
             if (AMOUNTS[i] == now) {
@@ -90,9 +115,15 @@ final class EnchantMenu extends Menu {
                 m.msg().component(viewer, "enchant.menu.header.name", Msg.p("tool", m.raw("item.name." + kind.id()))),
                 service.lines(viewer, IslandToolsModule.ID, "enchant.menu.header.lore", Msg.p("area", area),
                         Msg.p("shards", m.raw("shards.name." + kind.id())), Msg.mm("balance", m.shardText(kind, balance)))));
-        set(SLOT_AMOUNT, service.item(Material.HOPPER, viewer, IslandToolsModule.ID, "enchant.menu.amount", Msg.number("amount", amount),
-                Msg.number("next", nextAmount(amount))), click -> {
+        set(SLOT_AMOUNT, service.item(Material.HOPPER, viewer, IslandToolsModule.ID, "enchant.menu.amount", Msg.p("amount", amountText(amount)),
+                Msg.p("next", amountText(nextAmount(amount)))), click -> {
             amount = nextAmount(amount);
+            m.core().sounds().play(click.player(), "click");
+            refresh();
+        });
+        set(SLOT_MODE, service.item(switching ? Material.LEVER : Material.EMERALD, viewer, IslandToolsModule.ID,
+                switching ? "enchant.menu.mode-switch" : "enchant.menu.mode-buy"), click -> {
+            switching = !switching;
             m.core().sounds().play(click.player(), "click");
             refresh();
         });
@@ -150,13 +181,25 @@ final class EnchantMenu extends Menu {
     private void place(List<GrindEnchants.Def> defs, int rowStart) {
         for (int i = 0; i < defs.size() && i < 8; i++) {
             GrindEnchants.Def d = defs.get(i);
-            MenuButton button = MenuButton.of(item(d), click -> buy(click, d, amount))
-                    .withShift(click -> buy(click, d, 10)).withRight(click -> buy(click, d, 100));
+            MenuButton button = MenuButton.of(item(d), click -> {
+                if (switching) {
+                    m.enchants().toggle(click.player(), d, () -> { if (isOpen()) { refresh(); } });
+                } else {
+                    buy(click, d, amount);
+                }
+            }).withShift(click -> buy(click, d, 10)).withRight(click -> buy(click, d, 100));
             set(rowStart + i, button);
         }
     }
 
     private void buy(MenuClick click, GrindEnchants.Def d, int count) {
+        if (count == MAX) {
+            EnchantProcs e = m.enchants();
+            long balance = m.core().services().optional(EconomyService.class)
+                    .map(s -> s.cached(viewer.getUniqueId(), kind.shards()).orElse(0L)).orElse(0L);
+            int lv = e.level(viewer, d);
+            count = Math.max(1, affordable(d, lv, Math.max(0, e.cap(viewer, d) - lv), balance)); // 1 = the "too poor" message
+        }
         m.enchants().buy(click.player(), kind, d.id(), count, () -> {
             if (isOpen()) {
                 refresh();
@@ -190,20 +233,31 @@ final class EnchantMenu extends Menu {
         if (d.cooldownSeconds() > 0) {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.cooldown", Msg.number("seconds", d.cooldownSeconds())));
         }
-        GrindEnchants.Breakthrough nextBreak = d.next(lv).orElse(null); // owner 7 Nov 2026: the next goal is always in sight
-        if (nextBreak != null) {
-            int at = nextBreak.level(d.max());
-            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.breakthrough", Msg.p("multiplier", num(nextBreak.multiplier())),
-                    Msg.number("level", at), Msg.number("left", at - lv)));
+        java.util.OptionalInt nextBoost = d.nextMilestone(lv); // owner 7 Nov 2026: the next extra boost is always in sight
+        if (nextBoost.isPresent()) {
+            int at = nextBoost.getAsInt();
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.milestone",
+                    Msg.p("bonus", num(m.config().enchantMilestoneBonus)), Msg.number("level", at), Msg.number("left", at - lv),
+                    Msg.mm("bar", bar(lv - d.milestones(lv) * d.step(), d.step())), Msg.p("now", num(d.boost(lv)))));
         } else if (d.boost(lv) > 1) {
-            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.breakthrough-done", Msg.p("now", num(d.boost(lv)))));
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.milestone-done", Msg.p("now", num(d.boost(lv)))));
+        }
+        boolean off = e.off(viewer, d);
+        if (off) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.switched-off"));
+        }
+        if (switching) {
+            lore.addAll(service.lines(viewer, IslandToolsModule.ID, off ? "enchant.menu.switch-on" : "enchant.menu.switch-off"));
+            return finish(d, lv, off, lore);
         }
         if (lv >= d.max()) {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.max"));
         } else if (max) {
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.capped", e.refusalTags(viewer, d)));
         } else {
-            int n = Math.max(0, Math.min(amount, cap - lv));
+            long balance = m.core().services().optional(EconomyService.class)
+                    .map(s -> s.cached(viewer.getUniqueId(), kind.shards()).orElse(0L)).orElse(0L);
+            int n = amount == MAX ? Math.max(1, affordable(d, lv, cap - lv, balance)) : Math.max(0, Math.min(amount, cap - lv));
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.price", Msg.number("amount", n),
                     Msg.mm("cost", m.shardText(kind, d.price(lv, n)))));
             lore.add(Component.empty());
@@ -212,11 +266,22 @@ final class EnchantMenu extends Menu {
                     Msg.mm("cost100", m.shardText(kind, d.price(lv, Math.max(0, Math.min(100, cap - lv)))))));
             lore.addAll(service.lines(viewer, IslandToolsModule.ID, "enchant.menu.buy", Msg.number("amount", n)));
         }
+        return finish(d, lv, e.off(viewer, d), lore);
+    }
+
+    private ItemStack finish(GrindEnchants.Def d, int lv, boolean off, List<Component> lore) {
+        EnchantProcs e = m.enchants();
         Material icon = Material.matchMaterial(m.raw("enchant." + d.id() + ".icon"));
         ItemStack base = new ItemStack(icon == null || !icon.isItem() ? Material.ENCHANTED_BOOK : icon);
         base.setAmount(1);
-        return service.item(base, m.msg().component(viewer, lv > 0 ? "enchant.menu.name" : "enchant.menu.name-new",
+        return service.item(base, m.msg().component(viewer, off ? "enchant.menu.name-off" : lv > 0 ? "enchant.menu.name" : "enchant.menu.name-new",
                 Msg.p("name", e.name(d)), Msg.number("level", lv)), lore);
+    }
+
+    /** A 10-part bar to the next milestone ({@code done} of {@code total} levels). Pure. */
+    static String bar(int done, int total) {
+        int filled = total <= 0 ? 10 : (int) Math.min(10, Math.max(0, Math.floor(done * 10.0 / total)));
+        return "<c:success>" + "|".repeat(filled) + "</c:success><c:muted>" + "|".repeat(10 - filled) + "</c:muted>";
     }
 
     private String chance(GrindEnchants.Def d, int lv) {

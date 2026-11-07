@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Hoe plan part 1 (update165):** milestones instead of breakthroughs (fast-start growth, +10% every 4% of the track), Buy Max, enchant on/off, one action bar line with a combo counter, private drops when full, storage warning, Sweep without prestige, +1,000% shard cap, prestige keys and hoe titles, juicy hits.
 - **Tools v6 (update164):** compound Shard Finder (+3% a level, 250 levels), 10 shards a block, always rounded up, half price for /farm and /mine items, 2,500-level compounding enchants, 9 new enchants (26 on the pickaxe and hoe), no prestige gates, banner rows in the enchant menu, Auto-Sell and Auto-Compactor once for all tools, Angler mastery island-level gates.
 - **Whole list, batch 4 (update163):** Island Vault: `/is storage`, one shared chest per island (2-6 rows from the upgrade), task hand-in from it.
 - **Whole list, batch 3 (update162):** tool-style lore rows in 21 menus, Title Case menu titles, the carrots hint reads the config.

@@ -29,7 +29,7 @@ class OwnerPicksTest {
         assertEquals(Material.IRON_BLOCK, Compact.BLOCK_OF.get(Material.IRON_INGOT));
         assertEquals(9, Compact.SIZE);
         assertEquals(50, c.rebirthBoardWeight);
-        assertEquals(17, c.version());
+        assertEquals(18, c.version());
     }
 
     @Test

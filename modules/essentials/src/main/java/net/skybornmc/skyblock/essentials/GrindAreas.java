@@ -185,6 +185,25 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
         return Math.abs(x - FARM_X) <= FARM_HALF + 40 ? "Farm" : "";
     }
 
+    /** Owner 7 Nov 2026: "Carrots: 1,240 / 3,000" toward the next crop (farm), ore (mine) or water (fish); empty at the last. */
+    @Override
+    public String nextUnlock(Player p, String areaId) {
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.FARM.equals(areaId)) {
+            long have = farmed(p);
+            int i = CROPS.indexOf(cropFor(have));
+            return i + 1 >= CROPS.size() ? "" : name(CROPS.get(i + 1).item()) + ": " + net.skybornmc.skyblock.common.util.Format.number(have)
+                    + " / " + net.skybornmc.skyblock.common.util.Format.number(cropUnlockAt(i + 1, farmUnlocks()));
+        }
+        if (net.skybornmc.skyblock.common.grind.GrindBreakEvent.MINE.equals(areaId)) {
+            long have = mined(p);
+            List<Long> unlocks = mineUnlocks();
+            int i = ORE_TIERS.indexOf(oreTier(have, unlocks));
+            return i + 1 >= ORE_TIERS.size() ? "" : name(ORE_TIERS.get(i + 1).block()) + ": " + net.skybornmc.skyblock.common.util.Format.number(have)
+                    + " / " + net.skybornmc.skyblock.common.util.Format.number(unlockAt(i + 1, unlocks));
+        }
+        return "";
+    }
+
     /** "1,234 / 3,000" toward the next crop or ore, "Max" at the last one. */
     private String progressText(Player p) {
         String a = area(p);

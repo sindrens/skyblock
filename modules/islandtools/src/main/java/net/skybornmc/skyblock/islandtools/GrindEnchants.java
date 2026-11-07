@@ -14,8 +14,8 @@ import java.util.function.Consumer;
  * shared island set. Pure: definitions, chance and value per level, prices.
  *
  * <p>Definition line ({@code enchants.list}):
- * {@code kind:id:max:cost:chance1:chanceMax:value1:valueMax:cooldownSeconds[:unlockLevel:unlockPrestige]}. Chance and
- * value grow linearly from level 1 to the max level (the enchant pages' rule). Cost of level L: {@code cost x L^1.2}
+ * {@code kind:id:max:cost:chance1:chanceMax:value1:valueMax:cooldownSeconds[:unlockLevel:unlockPrestige]}. Chance grows
+ * evenly, the value on a fast-start curve, and milestones add an extra boost every 4% of the track (tools v6). Cost of level L: {@code cost x L^1.2}
  * shards (level 1 costs about {@code cost}). The unlock is the tool level (and prestige) the enchant needs.</p>
  */
 final class GrindEnchants {
@@ -72,73 +72,65 @@ final class GrindEnchants {
     }
 
     /**
-     * A breakthrough (owner 7 Nov 2026, plans/SHARDS_X10_BREAKTHROUGHS.md): from {@code percent} of an enchant's max level
-     * on, its main number (the chance of a proc, the value of a steady enchant) is {@code multiplier} times the normal
-     * curve. Slow growth between breakthroughs, a jump at each one.
+     * Tools v6 milestones (owner 7 Nov 2026: "progress all the time, and an EXTRA boost every x levels"; replaces the
+     * breakthroughs): steady growth on a curve that gives the most per level at the start ({@code shape} below 1), and
+     * every {@code everyPercent} of the track an extra {@code bonusPercent} that stays (compounding). Pure.
      */
-    record Breakthrough(double percent, double multiplier) {
-
-        /** The level of this breakthrough for an enchant with {@code max} levels (at least 1). Pure. */
-        int level(int max) {
-            return (int) Math.max(1, Math.min(max, Math.ceil(max * percent / 100.0 - 1e-9)));
-        }
-
-        /** Parses "percent:multiplier" lines, sorted by percent; bad lines are reported and skipped. Pure. */
-        static List<Breakthrough> parse(List<String> lines, Consumer<String> problems) {
-            List<Breakthrough> out = new ArrayList<>();
-            for (String raw : lines) {
-                String[] p = raw.strip().split(":");
-                try {
-                    Breakthrough b = new Breakthrough(Double.parseDouble(p[0].strip()), Double.parseDouble(p[1].strip()));
-                    if (p.length != 2 || b.percent() <= 0 || b.percent() > 100 || b.multiplier() < 1) {
-                        throw new NumberFormatException();
-                    }
-                    out.add(b);
-                } catch (RuntimeException e) {
-                    problems.accept("enchants.breakthroughs: '" + raw + "' needs percent:multiplier, percent 1-100, multiplier >= 1 (skipped)");
-                }
-            }
-            out.sort(java.util.Comparator.comparingDouble(Breakthrough::percent));
-            return List.copyOf(out);
-        }
+    record Growth(double shape, double everyPercent, double bonusPercent) {
+        static final Growth DEFAULT = new Growth(0.7, 4, 10);
     }
 
+    /** What a milestone raises. */
+    enum Target { VALUE, CHANCE, NONE }
+
     record Def(Kind kind, String id, Effect effect, int max, double cost, double chance1, double chanceMax, double value1,
-               double valueMax, int cooldownSeconds, int unlockLevel, int unlockPrestige, List<Breakthrough> breaks) {
+               double valueMax, int cooldownSeconds, int unlockLevel, int unlockPrestige, Growth growth) {
 
         Def(Kind kind, String id, Effect effect, int max, double cost, double chance1, double chanceMax, double value1,
             double valueMax, int cooldownSeconds, int unlockLevel, int unlockPrestige) {
-            this(kind, id, effect, max, cost, chance1, chanceMax, value1, valueMax, cooldownSeconds, unlockLevel, unlockPrestige, List.of());
+            this(kind, id, effect, max, cost, chance1, chanceMax, value1, valueMax, cooldownSeconds, unlockLevel, unlockPrestige, Growth.DEFAULT);
         }
 
-        /** Breakthroughs boost the chance of a proc and the value of a steady enchant (not Lucky Streak's block count). */
-        boolean boostsChance() {
-            return !effect.passive();
+        /** What this enchant's milestones raise: the amount, the chance (area and timed enchants), or nothing. */
+        Target target() {
+            return switch (effect) {
+                case AREA, STORM, FRENZY, FEVER, BASKET -> Target.CHANCE;
+                case KEY, PITY, CHAIN -> Target.NONE;
+                default -> Target.VALUE;
+            };
         }
 
-        boolean boostsValue() {
-            return effect.passive() && effect != Effect.PITY;
+        /** Levels between two milestones (4% of the track: 100 of 2,500, 40 of 1,000, 20 of 500). */
+        int step() {
+            return (int) Math.max(1, Math.round(max * growth.everyPercent() / 100.0));
         }
 
-        /** The breakthrough multiplier at a level (1 before the first one). Pure. */
+        /** Milestones reached at a level. */
+        int milestones(int level) {
+            return level <= 0 ? 0 : Math.min(level, max) / step();
+        }
+
+        /** The milestone multiplier at a level (1 before the first). Pure. */
         double boost(int level) {
-            double m = 1;
-            for (Breakthrough b : breaks) {
-                if (level >= b.level(max)) {
-                    m = Math.max(m, b.multiplier());
-                }
+            return target() == Target.NONE ? 1 : Math.pow(1 + growth.bonusPercent() / 100.0, milestones(level));
+        }
+
+        /** The level of the next milestone above {@code level} (empty at the top or when milestones raise nothing). */
+        java.util.OptionalInt nextMilestone(int level) {
+            if (target() == Target.NONE) {
+                return java.util.OptionalInt.empty();
             }
-            return m;
+            int n = (milestones(level) + 1) * step();
+            return n <= max ? java.util.OptionalInt.of(n) : java.util.OptionalInt.empty();
         }
 
-        /** The next breakthrough above {@code level}: its level and multiplier (empty when none is left). Pure. */
-        Optional<Breakthrough> next(int level) {
-            return breaks.stream().filter(b -> b.level(max) > level && b.multiplier() > boost(level)).findFirst();
+        /** How many milestones going from {@code from} to {@code to} reaches. */
+        int crossed(int from, int to) {
+            return target() == Target.NONE ? 0 : Math.max(0, milestones(to) - milestones(from));
         }
 
-        /** True when going from {@code from} to {@code to} reaches a new breakthrough. Pure. */
         boolean crosses(int from, int to) {
-            return boost(to) > boost(from);
+            return crossed(from, to) > 0;
         }
 
         /** A rare find (Lucky Streak's pity counts these): a key, or a proc that is at most 0.1% at max. */
@@ -146,9 +138,9 @@ final class GrindEnchants {
             return effect == Effect.KEY || (!effect.passive() && chanceMax <= 0.1);
         }
 
-        /** Proc chance in percent at a level (0 below level 1). */
+        /** Proc chance in percent at a level (0 below level 1): even steps, then the chance milestones. */
         double chance(int level) {
-            return level <= 0 ? 0 : Math.min(100, lerp(chance1, chanceMax, level, max) * (boostsChance() ? boost(level) : 1));
+            return level <= 0 ? 0 : Math.min(100, lerp(chance1, chanceMax, level, max) * (target() == Target.CHANCE ? boost(level) : 1));
         }
 
         /**
@@ -156,7 +148,12 @@ final class GrindEnchants {
          * the same few tenths of a percent more than the last), so the higher it gets the better each level is.
          */
         double value(int level) {
-            return level <= 0 ? 0 : grow(value1, valueMax, level, max) * (boostsValue() ? boost(level) : 1);
+            return level <= 0 ? 0 : steady(level) * (target() == Target.VALUE ? boost(level) : 1);
+        }
+
+        /** The steady part: from value1 to valueMax on the fast-start curve ({@code growth.shape}). */
+        double steady(int level) {
+            return curve(value1, valueMax, level, max, growth.shape());
         }
 
         /** Shards for one level ({@code level} >= 1). */
@@ -188,6 +185,19 @@ final class GrindEnchants {
 
     private GrindEnchants(Map<Kind, List<Def>> byKind) {
         this.byKind = byKind;
+    }
+
+    /**
+     * Tools v6 round 3: from {@code a} at level 1 to {@code b} at {@code max} along {@code t^shape} (t = how far along the
+     * track): shape 1 = even steps, below 1 = most per level at the start and still growing to the end. Pure.
+     */
+    static double curve(double a, double b, int level, int max, double shape) {
+        if (max <= 1) {
+            return b;
+        }
+        int l = Math.max(1, Math.min(level, max));
+        double t = (l - 1) / (double) (max - 1);
+        return a + (b - a) * Math.pow(t, Math.max(0.05, shape));
     }
 
     /** Compound (geometric) from {@code a} at level 1 to {@code b} at {@code max}; linear when an end is 0 or below. Pure. */
@@ -240,10 +250,10 @@ final class GrindEnchants {
     }
 
     static GrindEnchants parse(List<String> lines, Consumer<String> problems) {
-        return parse(lines, List.of(), problems);
+        return parse(lines, Growth.DEFAULT, problems);
     }
 
-    static GrindEnchants parse(List<String> lines, List<Breakthrough> breaks, Consumer<String> problems) {
+    static GrindEnchants parse(List<String> lines, Growth growth, Consumer<String> problems) {
         Map<Kind, List<Def>> out = new EnumMap<>(Kind.class);
         for (Kind k : Kind.values()) {
             out.put(k, new ArrayList<>());
@@ -267,7 +277,7 @@ final class GrindEnchants {
                         Double.parseDouble(p[4].strip()), Double.parseDouble(p[5].strip()), Double.parseDouble(p[6].strip()),
                         Double.parseDouble(p[7].strip()), Integer.parseInt(p[8].strip()),
                         p.length == 11 ? Math.max(0, Integer.parseInt(p[9].strip())) : 0,
-                        p.length == 11 ? Math.max(0, Integer.parseInt(p[10].strip())) : 0, List.copyOf(breaks));
+                        p.length == 11 ? Math.max(0, Integer.parseInt(p[10].strip())) : 0, growth);
                 if (d.max() < 1 || d.cost() <= 0) {
                     problems.accept("enchants.list: '" + raw + "' needs max >= 1 and cost > 0 (skipped)");
                     continue;

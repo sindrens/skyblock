@@ -11,6 +11,37 @@
 # Reload: /skyblock reload cosmetics
 
 titles:
+  # Owner 7 Nov 2026: island hoe prestige titles (plans/HOE_IMPROVEMENTS.md 18)
+  farmhand:
+    display: "<pillar:farming>Farmhand"
+    rarity: uncommon
+    source: "Prestige your island hoe once."
+    secret: false
+    season-persistent: true
+  harvester_hoe:
+    display: "<pillar:farming>Harvester"
+    rarity: rare
+    source: "Reach hoe prestige 10."
+    secret: false
+    season-persistent: true
+  field_lord:
+    display: "<c:flame>Field Lord"
+    rarity: epic
+    source: "Reach hoe prestige 25."
+    secret: false
+    season-persistent: true
+  harvest_king:
+    display: "<grad:flame>Harvest King</grad>"
+    rarity: legendary
+    source: "Reach hoe prestige 50."
+    secret: false
+    season-persistent: true
+  reborn_reaper:
+    display: "<grad:phoenix>Reborn Reaper</grad>"
+    rarity: mythic
+    source: "Rebirth your island hoe."
+    secret: false
+    season-persistent: true
   kindled:
     display: "<c:ember>Kindled"
     rarity: rare

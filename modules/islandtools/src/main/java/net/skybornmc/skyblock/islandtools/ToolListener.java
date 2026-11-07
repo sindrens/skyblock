@@ -158,14 +158,8 @@ final class ToolListener implements Listener {
             return; // the rod and the sword break blocks like plain items
         }
         Block block = event.getBlock();
-        // Owner 7 Nov 2026: at /farm and /mine the drops fill the inventory first, then the tool's storage; only when
-        // both are full does the breaking pause (nothing is lost; shards keep coming while there is room).
-        if (grindWorld(p) && !expanding.contains(p.getUniqueId()) && bagFull(p)
-                && m.storage().used(m.profile(p), kind) >= m.storage().capacity(p, kind)) {
-            event.setCancelled(true);
-            m.msg().actionBar(p, "storage.paused");
-            return;
-        }
+        // Owner 7 Nov 2026 (plans/HOE_IMPROVEMENTS.md 9-10): breaking never pauses; what does not fit in the bag and the
+        // storage drops on the ground for this player only (see onDrops).
         // Owner 3 Nov 2026: the island hoe never breaks a crop that is not fully grown.
         if (kind == Kind.HOE && IslandGrowth.CROPS.contains(block.getType())
                 && block.getBlockData() instanceof Ageable age && age.getAge() < age.getMaximumAge()) {
@@ -369,16 +363,16 @@ final class ToolListener implements Listener {
             }
             ItemStack rest = left.values().iterator().next();
             long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount(), compact);
+            storageWarning(p, kind);
             if (stored >= rest.getAmount()) {
                 it.remove();
                 continue;
             }
             rest.setAmount(rest.getAmount() - (int) stored);
             warn(p, "storage.full");
+            entity.setItemStack(rest);
             if (grindWorld(p)) {
-                it.remove(); // full bag and storage at /farm or /mine: lost, like vanilla, never an item on the ground
-            } else {
-                entity.setItemStack(rest);
+                privateDrop(p, entity); // owner 7 Nov 2026: on the ground, for this player only
             }
         }
         if (compact) {
@@ -416,6 +410,41 @@ final class ToolListener implements Listener {
         for (ItemStack left : inv.addItem(new ItemStack(block, blocks)).values()) {
             inv.addItem(new ItemStack(item, left.getAmount() * net.skybornmc.skyblock.common.sell.Compact.SIZE)); // no room: back as items
         }
+    }
+
+    private final java.util.Set<String> warned90 = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Owner 7 Nov 2026: one warning when the storage reaches 90% (again only after it went below 80%). */
+    private void storageWarning(Player p, Kind kind) {
+        long used = m.storage().used(m.profile(p), kind);
+        long cap = m.storage().capacity(p, kind);
+        String key = p.getUniqueId() + ":" + kind.id();
+        if (cap <= 0) {
+            return;
+        }
+        if (used * 10 >= cap * 9) {
+            if (warned90.add(key)) {
+                net.skybornmc.skyblock.common.hud.ActionBars.show(p, "storage", m.msg().component(p, "storage.almost",
+                        net.skybornmc.skyblock.common.text.Msg.p("tool", m.raw("item.name." + kind.id())),
+                        net.skybornmc.skyblock.common.text.Msg.number("percent", used * 100 / cap)),
+                        net.skybornmc.skyblock.common.hud.ActionBars.WARNING, 3000);
+                m.core().sounds().play(p, "error");
+            }
+        } else if (used * 10 < cap * 8) {
+            warned90.remove(key);
+        }
+    }
+
+    /** A drop only {@code p} can see and pick up (the others never see it); it despawns like any item. */
+    void privateDrop(Player p, Item entity) {
+        entity.setOwner(p.getUniqueId());
+        entity.setVisibleByDefault(false);
+        p.showEntity(m.core().plugin(), entity);
+        Bukkit.getScheduler().runTask(m.core().plugin(), () -> {
+            if (entity.isValid() && p.isOnline()) {
+                p.showEntity(m.core().plugin(), entity);
+            }
+        });
     }
 
     /** Magnet: the drops go straight into the bag (what does not fit stays on the ground, never at /farm and /mine). */
@@ -578,6 +607,7 @@ final class ToolListener implements Listener {
         if (!left.isEmpty()) {
             ItemStack rest = left.values().iterator().next();
             long stored = m.storage().add(p, kind, rest.getType().getKey().getKey(), rest.getAmount());
+            storageWarning(p, kind);
             if (stored < rest.getAmount()) {
                 warn(p, "storage.full");
             }
