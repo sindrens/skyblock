@@ -69,6 +69,8 @@ public final class PerksModule implements SkyblockModule {
     private FreeRankService freeRank;
     private AshbornAuto ashborn;
     private RankRewards rankRewards;
+    private PlayerVaults vaults;
+    private JoinFull joinFull;
     private volatile boolean active;
     private boolean rankHookRegistered;
     private final Map<UUID, Long> lastNickChange = new java.util.concurrent.ConcurrentHashMap<>();
@@ -116,6 +118,11 @@ public final class PerksModule implements SkyblockModule {
         ashborn.start();
         rankRewards = new RankRewards(core, config, msg);
         rankRewards.register();
+        // Owner 7 Nov 2026: /pv vaults and join when full.
+        vaults = new PlayerVaults(core, config, msg);
+        vaults.register();
+        joinFull = new JoinFull(core, config, msg);
+        org.bukkit.Bukkit.getPluginManager().registerEvents(joinFull, core.plugin());
     }
 
     @Override
@@ -172,6 +179,13 @@ public final class PerksModule implements SkyblockModule {
         }
         if (rankRewards != null) {
             org.bukkit.event.HandlerList.unregisterAll(rankRewards);
+        }
+        if (vaults != null) {
+            vaults.stop();
+            org.bukkit.event.HandlerList.unregisterAll(vaults);
+        }
+        if (joinFull != null) {
+            org.bukkit.event.HandlerList.unregisterAll(joinFull);
         }
         active = false;
         if (trash != null) {

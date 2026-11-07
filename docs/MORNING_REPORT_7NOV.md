@@ -218,6 +218,18 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Vaults, join when full, /reclaim, cosmetic points (update170, plan: `STORE_FULL_PLAN.md` section 2)
+- **`/pv [n]`:** private vaults per account, 27 slots: Hatchling 1, Firewing 2, Sunfeather 3, Immortal 4, plus up to 2
+  extra vaults from `/store` → Extras (500 credits). A pick menu when you have more than one; a vault above your number
+  (rank gone) can only be emptied.
+- **Join when full:** Firewing and up can join a full server (up to +10% over the limit); others see "Ranks from Firewing
+  can still join".
+- **`/reclaim`:** the monthly rank chest: cosmetic points by rank (Hatchling 100, Fledgling 150, Firewing 250, Flamecrest
+  350, Sunfeather 500, Pyrelord 700, Immortal 1,000) and the month's tag when the pool has one. Also the chest tile in
+  `/rankrewards`.
+- **Cosmetic points:** a new account balance (placeholder `<ph:cosmetic_points>`): 10 every hour online, 2 every
+  vote, the monthly chest. They are spent on cosmetic upgrades in Cosmetics v2.
+
 ## Look v2: feature colours (update169, plan: `docs/plans/LOOK_V2.md`)
 - One colour per thing, flat (no gradients): PHOENIX red + SKYBLOCK white on the scoreboard and tab, money green,
   credits aqua, crystals light purple, Farm yellow, Mine aqua, Fish blue, PvE red, Island green, Events light purple.

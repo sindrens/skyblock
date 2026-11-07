@@ -94,4 +94,28 @@ final class RankRewardsRules {
         }
         return null;
     }
+
+    /**
+     * Owner 7 Nov 2026 (/reclaim): the points of the highest listed group the player has ({@code '<group>:<points>'}
+     * lines, lowest rank first); 0 for none. A bad line counts as 0. Pure.
+     */
+    static long points(java.util.List<String> lines, java.util.function.Predicate<String> hasGroup) {
+        long best = 0;
+        for (String raw : lines == null ? java.util.List.<String>of() : lines) {
+            String line = raw == null ? "" : raw.strip().toLowerCase(java.util.Locale.ROOT);
+            int colon = line.lastIndexOf(':');
+            if (colon <= 0) {
+                continue;
+            }
+            try {
+                long pts = Long.parseLong(line.substring(colon + 1).strip());
+                if (hasGroup.test(line.substring(0, colon).strip())) {
+                    best = Math.max(best, pts);
+                }
+            } catch (NumberFormatException ignored) {
+                // skipped
+            }
+        }
+        return best;
+    }
 }

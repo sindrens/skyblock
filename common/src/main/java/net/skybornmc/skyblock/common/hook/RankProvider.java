@@ -84,6 +84,14 @@ public interface RankProvider {
     }
 
     /** Unsubscribes event listeners (plugin disable). */
+    /**
+     * Owner 7 Nov 2026 (join when full): whether a player who is not online yet (LuckPerms loaded them at pre-login) has
+     * {@code node}. False without LuckPerms or while the user is not loaded.
+     */
+    default boolean hasPermission(UUID player, String node) {
+        return false;
+    }
+
     default void close() {
     }
 

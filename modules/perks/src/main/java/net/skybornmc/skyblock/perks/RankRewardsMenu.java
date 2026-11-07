@@ -62,9 +62,10 @@ final class RankRewardsMenu extends Menu {
                 rewards.claimKit(viewer, this::reload);
             }
         });
-        boolean monthlyReady = !status.monthlyClaimed() && status.nextCosmetic() != null;
-        ItemStack monthly = service.item(Material.NAME_TAG, viewer, PerksModule.ID, status.monthlyClaimed() ? "rank-rewards.monthly.claimed"
-                : status.nextCosmetic() == null ? "rank-rewards.monthly.nothing" : "rank-rewards.monthly.ready", Msg.p("month", status.month()));
+        boolean monthlyReady = !status.monthlyClaimed() && (status.nextCosmetic() != null || status.points() > 0);
+        ItemStack monthly = service.item(Material.ENDER_CHEST, viewer, PerksModule.ID, status.monthlyClaimed() ? "rank-rewards.monthly.claimed"
+                : !monthlyReady ? "rank-rewards.monthly.nothing" : "rank-rewards.monthly.ready", Msg.p("month", status.month()),
+                Msg.number("points", status.points()));
         if (monthlyReady) {
             monthly.editMeta(m -> m.setEnchantmentGlintOverride(true));
         }

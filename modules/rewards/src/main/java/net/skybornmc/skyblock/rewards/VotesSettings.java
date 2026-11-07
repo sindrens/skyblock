@@ -90,6 +90,9 @@ public final class VotesSettings extends ModuleConfig {
             level = Setting.Level.OWNER)
     public long credits = 3;
 
+    @Setting(path = "rewards.cosmetic-points", desc = "Owner 7 Nov 2026: cosmetic points every vote gives (account).", min = 0, max = 1_000)
+    public long cosmeticPoints = 2;
+
     @Setting(path = "rewards.pass-xp", desc = "Battle pass XP every vote gives (P10-13: 25). Only once the pass exists.", min = 0,
             max = 100_000, level = Setting.Level.OWNER)
     public long passXp = 25;

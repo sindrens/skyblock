@@ -104,6 +104,33 @@ public final class PerksConfig extends ModuleConfig {
             + "player does not own yet. Empty = the tile says 'Nothing new this month' (owner supplies the list, EP-Q17).")
     public List<String> rankMonthlyPool = List.of();
 
+    @Setting(path = "rank-rewards.monthly.points", desc = "Owner 7 Nov 2026 (/reclaim): cosmetic points of the monthly rank chest, "
+            + "'<luckperms group>:<points>'; the highest group the player has counts.")
+    public List<String> rankMonthlyPoints = List.of("hatchling:100", "fledgling:150", "firewing:250", "flamecrest:350",
+            "sunfeather:500", "pyrelord:700", "immortal:1000");
+
+    @Setting(path = "vaults.enabled", desc = "Owner 7 Nov 2026: /pv private vaults (account-wide). How many: the highest "
+            + "skyblock.perks.pv.<n> a rank gives, plus extra vaults from the credit shop.")
+    public boolean vaultsEnabled = true;
+
+    @Setting(path = "vaults.max", desc = "Most vaults anyone can have (rank + bought).", min = 1, max = 9)
+    public int vaultsMax = 6;
+
+    @Setting(path = "vaults.rows", desc = "Rows of one vault.", min = 1, max = 6)
+    public int vaultsRows = 3;
+
+    @Setting(path = "vaults.extra-credits", desc = "Credits of one extra vault in the credit shop (/store → Extras). 0 = not sold.", min = 0, max = 100000)
+    public long vaultsExtraCredits = 500;
+
+    @Setting(path = "vaults.extra-max", desc = "Most extra vaults that can be bought.", min = 0, max = 9)
+    public int vaultsExtraMax = 2;
+
+    @Setting(path = "join-full.enabled", desc = "Owner 7 Nov 2026: players with skyblock.perks.joinfull (Firewing and up) can join a full server.")
+    public boolean joinFullEnabled = true;
+
+    @Setting(path = "join-full.extra-percent", desc = "How far over the player limit ranks can still join (percent of the limit).", min = 0, max = 100)
+    public int joinFullExtraPercent = 10;
+
     @Setting(path = "freerank.tags", desc = "The 3 tags the player picks 1 from (ids from tags-titles.yml). Kept forever.")
     public List<String> freerankTags = List.of("ember", "spark", "ash");
 

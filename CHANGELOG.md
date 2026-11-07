@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Rank perks 2 (update170):** `/pv` vaults (rank + store extras), join when full from Firewing, `/reclaim` monthly rank chest with cosmetic points, cosmetic points from playtime and votes.
 - **Look v2 (update169):** feature colours everywhere (flat, Bedrock-matching), scoreboard blocks with coloured row bars and small-caps labels, new tab header/footer, flat chat prefixes.
 - **Credit shop (update167):** `/store` with Ranks (pay the difference), server boosters, cosmetics links and extras (pass premium and levels, streak save, profile slots, loadout slot, island rename token); `/credit gift`, `/credit pay`, `/credit history`, gg after purchases, `/is name`, chargebacks remove shop ranks, Eclipse key no longer sold for credits.
 - **Calmer farming (update166):** one proc line, quiet everyday procs, shard popups added up once a second.

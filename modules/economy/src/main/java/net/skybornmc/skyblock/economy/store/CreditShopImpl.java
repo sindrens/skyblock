@@ -185,6 +185,7 @@ public final class CreditShopImpl implements CreditShop, Listener {
     }
 
     /** A delivery that gives one account thing (tokens, extra vaults ...). */
+    @Override
     public Deliver giveThing(String key) {
         return (buyer, receiver, purchaseId) -> core.database().transaction(c -> {
             addThing(c, receiver.getUniqueId(), key, 1, System.currentTimeMillis());

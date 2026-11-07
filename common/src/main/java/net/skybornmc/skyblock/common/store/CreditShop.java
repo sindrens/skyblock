@@ -98,6 +98,9 @@ public interface CreditShop {
     /** Opens the shop for a player (first tab, or {@code tab}). Main thread. */
     void open(Player player, Tab tab);
 
+    /** A delivery that adds one of an account thing ({@code key}) to the receiver (see {@link #owned}). */
+    Deliver giveThing(String key);
+
     /** How many of an account thing ({@code key}) the account has; cached for online players, 0 when unknown. */
     int owned(UUID account, String key);
 

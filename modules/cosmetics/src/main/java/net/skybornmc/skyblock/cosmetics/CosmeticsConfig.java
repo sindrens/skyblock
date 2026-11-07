@@ -6,6 +6,12 @@ import net.skybornmc.skyblock.common.config.Setting;
 /** Settings of titles &amp; tags ({@code cosmetics.yml}). The titles and tags themselves are in tags-titles.yml. */
 public final class CosmeticsConfig extends ModuleConfig {
 
+    @Setting(path = "points.playtime-minutes", desc = "Owner 7 Nov 2026: every this many online minutes give points.playtime-points cosmetic points.", min = 1, max = 1440)
+    public int pointsPlaytimeMinutes = 60;
+
+    @Setting(path = "points.playtime-points", desc = "Cosmetic points per points.playtime-minutes online (0 = none).", min = 0, max = 10000)
+    public long pointsPlaytimePoints = 10;
+
     @Setting(path = "auto-title", desc = "Title every player gets on their first join (id from tags-titles.yml). Empty = none.")
     public String autoTitle = "newcomer";
 

@@ -12,3 +12,10 @@ lp group mod permission set skyblock.staff.nick.others true
 lp group admin permission set skyblock.admin.sudo false
 lp group owner permission set skyblock.admin.sudo true
 # /freerank is for everyone (plugin default: true). The 'ember' group it gives is created in base.txt.
+# Owner 7 Nov 2026 (plans/STORE_FULL_PLAN.md 2): /pv vaults by rank (1/1/2/2/3/3/4) and join when full from Firewing.
+lp group hatchling permission set skyblock.perks.pv.1 true
+lp group firewing permission set skyblock.perks.pv.2 true
+lp group sunfeather permission set skyblock.perks.pv.3 true
+lp group immortal permission set skyblock.perks.pv.4 true
+lp group firewing permission set skyblock.perks.joinfull true
+lp group helper permission set skyblock.perks.joinfull true

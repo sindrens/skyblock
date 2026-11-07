@@ -68,6 +68,11 @@ final class RankRewards implements Listener {
                 .description("Your rank's weekly kit and monthly tag").category("Perks")
                 .permission(PERM_KIT).playerOnly().example("rankrewards")
                 .executes(ctx -> open(ctx.player())));
+        // Owner 7 Nov 2026: /reclaim = the monthly rank chest (cosmetic points + the month's rank tag).
+        core.commands().register(CommandSpec.command("reclaim")
+                .description("Your rank's monthly chest: cosmetic points and the month's tag").category("Perks")
+                .permission(PERM_MONTHLY).playerOnly().example("reclaim")
+                .executes(ctx -> claimMonthly(ctx.player(), () -> { })));
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
     }
 
@@ -82,7 +87,7 @@ final class RankRewards implements Listener {
     // ------------------------------------------------------------------ state
 
     /** What the menu shows. */
-    record Status(String size, boolean kitClaimed, boolean monthlyClaimed, String nextCosmetic, String month) {
+    record Status(String size, boolean kitClaimed, boolean monthlyClaimed, String nextCosmetic, String month, long points) {
     }
 
     UUID profile(Player p) {
@@ -125,7 +130,7 @@ final class RankRewards implements Listener {
         return core.database().async(c -> new boolean[]{
                 Sql.queryOne(c, "SELECT 1 FROM perks_rank_kit WHERE profile_key = ? AND week_key = ?", rs -> true, profile, week).isPresent(),
                 Sql.queryOne(c, "SELECT 1 FROM perks_rank_monthly WHERE player_uuid = ? AND month_key = ?", rs -> true, account, month).isPresent()})
-                .thenApplyAsync(r -> new Status(kitSize(p), r[0], r[1], nextCosmetic(p), month), new MainThread(core.plugin()));
+                .thenApplyAsync(r -> new Status(kitSize(p), r[0], r[1], nextCosmetic(p), month, monthlyPoints(p)), new MainThread(core.plugin()));
     }
 
     // ------------------------------------------------------------------ weekly kit
@@ -243,13 +248,25 @@ final class RankRewards implements Listener {
 
     // ------------------------------------------------------------------ monthly tag
 
+    /** Owner 7 Nov 2026 (/reclaim): the cosmetic points of the player's highest rank (rank-rewards.monthly.points). */
+    long monthlyPoints(Player p) {
+        return RankRewardsRules.points(config.rankMonthlyPoints, g -> p.hasPermission("group." + g));
+    }
+
     void claimMonthly(Player p, Runnable refresh) {
         Optional<Cosmetics> cosmetics = core.services().optional(Cosmetics.class);
-        String tag = nextCosmetic(p);
-        if (!config.rankMonthlyEnabled || !p.hasPermission(PERM_MONTHLY) || cosmetics.isEmpty() || tag == null) {
+        String tag = cosmetics.isEmpty() ? null : nextCosmetic(p);
+        long points = monthlyPoints(p);
+        Optional<net.skybornmc.skyblock.common.cosmetics.CosmeticPoints> pointService =
+                net.skybornmc.skyblock.common.cosmetics.CosmeticPoints.of(core.services());
+        if (pointService.isEmpty()) {
+            points = 0;
+        }
+        if (!config.rankMonthlyEnabled || !p.hasPermission(PERM_MONTHLY) || (tag == null && points <= 0)) {
             msg.send(p, "rank-rewards.monthly-nothing");
             return;
         }
+        long pts = points;
         UUID id = p.getUniqueId();
         if (!busy.add(id)) {
             return;
@@ -259,7 +276,7 @@ final class RankRewards implements Listener {
         core.database().async(c -> {
             try {
                 Sql.update(c, "INSERT INTO perks_rank_monthly (player_uuid, month_key, cosmetic_id, claimed_at) VALUES (?, ?, ?, ?)",
-                        id, month, tag, now);
+                        id, month, tag == null ? "points" : tag, now);
                 return true;
             } catch (SQLException e) {
                 if (e.getSQLState() != null && e.getSQLState().startsWith("23")) {
@@ -268,7 +285,9 @@ final class RankRewards implements Listener {
                 throw e;
             }
         }).thenCompose(inserted -> !Boolean.TRUE.equals(inserted) ? CompletableFuture.completedFuture((Boolean) null)
-                : cosmetics.get().grantTag(id, tag, "rank_monthly").exceptionally(e -> false)
+                : (tag == null ? CompletableFuture.completedFuture(true) : cosmetics.get().grantTag(id, tag, "rank_monthly").exceptionally(e -> false))
+                .thenCompose(ok -> !Boolean.TRUE.equals(ok) || pts <= 0 ? CompletableFuture.completedFuture(ok)
+                        : pointService.get().add(id, pts, "rank_monthly", "reclaim:" + id + ":" + month).exceptionally(e -> false))
                 .thenCompose(ok -> Boolean.TRUE.equals(ok) ? CompletableFuture.completedFuture(true)
                         : core.database().async(c -> Sql.update(c, "DELETE FROM perks_rank_monthly WHERE player_uuid = ? AND month_key = ?",
                         id, month)).thenApply(n -> false)))
@@ -282,8 +301,13 @@ final class RankRewards implements Listener {
                         msg.send(p, "rank-rewards.monthly-already");
                         return;
                     }
-                    msg.send(p, "rank-rewards.monthly-claimed", Msg.p("month", month),
-                            Msg.c("tag", cosmetics.get().display(p, Cosmetics.Kind.TAG, tag)));
+                    if (tag != null) {
+                        msg.send(p, "rank-rewards.monthly-claimed", Msg.p("month", month),
+                                Msg.c("tag", cosmetics.get().display(p, Cosmetics.Kind.TAG, tag)));
+                    }
+                    if (pts > 0) {
+                        msg.send(p, "rank-rewards.monthly-points", Msg.p("month", month), Msg.number("points", pts));
+                    }
                     core.sounds().play(p, "success");
                     refresh.run();
                 }, new MainThread(core.plugin()));

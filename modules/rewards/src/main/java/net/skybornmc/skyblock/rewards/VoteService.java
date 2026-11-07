@@ -358,6 +358,10 @@ final class VoteService {
             }
             m.audit("vote", Actor.SYSTEM, account, p.getName(), 1L, d);
             m.grants().handOut(rows);
+            if (s.cosmeticPoints > 0) { // owner 7 Nov 2026: cosmetic points per vote (keyed by the vote, paid once)
+                net.skybornmc.skyblock.common.cosmetics.CosmeticPoints.of(m.core.services()).ifPresent(cp ->
+                        cp.add(account, s.cosmeticPoints, "vote", "vote:" + row.voteId()));
+            }
             if (p.isOnline()) {
                 m.msg.send(p, "vote.thanks", Msg.p("site", siteName), Msg.c("rewards", RewardText.inline(m, p, vote)));
                 if (streakCrate.isPresent()) {

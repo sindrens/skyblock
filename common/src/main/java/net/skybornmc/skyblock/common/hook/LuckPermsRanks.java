@@ -155,6 +155,12 @@ final class LuckPermsRanks implements RankProvider {
     }
 
     @Override
+    public boolean hasPermission(UUID player, String node) {
+        User user = lp.getUserManager().getUser(player);
+        return user != null && user.getCachedData().getPermissionData().checkPermission(node).asBoolean();
+    }
+
+    @Override
     public CompletableFuture<Boolean> removeGroup(UUID player, String group) {
         return lp.getGroupManager().loadGroup(group).thenCompose(found -> {
             if (found.isEmpty()) {

@@ -64,3 +64,27 @@ skyblock.rank.kit.size.3:
 skyblock.rank.kit.size.4:
   description: Weekly rank kit size XL
   default: false
+skyblock.perks.pv:
+  description: Use /pv (owner 7 Nov 2026); how many vaults comes from skyblock.perks.pv.<n> and extra vaults bought in the store
+  default: true
+skyblock.perks.pv.1:
+  description: 1 private vault (Hatchling, Fledgling)
+  default: false
+skyblock.perks.pv.2:
+  description: 2 private vaults (Firewing, Flamecrest)
+  default: false
+skyblock.perks.pv.3:
+  description: 3 private vaults (Sunfeather, Pyrelord)
+  default: false
+skyblock.perks.pv.4:
+  description: 4 private vaults (Immortal)
+  default: false
+skyblock.perks.pv.5:
+  description: 5 private vaults (staff or won ranks)
+  default: false
+skyblock.perks.pv.6:
+  description: 6 private vaults (staff or won ranks)
+  default: false
+skyblock.perks.joinfull:
+  description: Join when the server is full, up to join-full.extra-percent over the limit (owner 7 Nov 2026, Firewing and up)
+  default: false

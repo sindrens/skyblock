@@ -65,6 +65,9 @@ public final class CosmeticsModule implements SkyblockModule {
         return ID;
     }
 
+    private PointsService points;
+    private net.skybornmc.skyblock.common.util.Scheduler.Task pointsTask;
+
     @Override
     public void enable() throws Exception {
         core.configs().load(config);
@@ -83,6 +86,13 @@ public final class CosmeticsModule implements SkyblockModule {
         Bukkit.getPluginManager().registerEvents(tagItems, core.plugin());
         service.loadOnline();
         registerCommands();
+        // Owner 7 Nov 2026: cosmetic points (playtime, votes, /reclaim), spent on cosmetic upgrades.
+        points = new PointsService(core, config);
+        core.services().register(ID, net.skybornmc.skyblock.common.cosmetics.CosmeticPoints.class, points);
+        Bukkit.getPluginManager().registerEvents(points, core.plugin());
+        Bukkit.getOnlinePlayers().forEach(points::load);
+        pointsTask = core.scheduler().repeat("cosmetics:points", 1200L, 1200L, points::tick);
+        core.placeholders().registerText(ID, "cosmetic_points", p -> p == null ? "" : net.skybornmc.skyblock.common.util.Format.number(points.cached(p.getUniqueId())));
     }
 
     @Override
@@ -97,6 +107,13 @@ public final class CosmeticsModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        if (pointsTask != null) {
+            pointsTask.cancel();
+            pointsTask = null;
+        }
+        if (points != null) {
+            org.bukkit.event.HandlerList.unregisterAll(points);
+        }
         HandlerList.unregisterAll(service);
         HandlerList.unregisterAll(tagItems);
         core.items().unregister(TagItems.ITEM_ID);

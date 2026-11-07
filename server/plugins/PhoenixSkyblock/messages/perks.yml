@@ -134,21 +134,51 @@ rank-rewards:
     none:
       name: "<c:muted>Weekly Kit"
       lore: ["<c:text>Your rank has no weekly kit.", "<c:muted>Donor ranks get one."]
+  # Owner 7 Nov 2026: the monthly rank chest (/reclaim): cosmetic points by rank (+ the month's tag when the pool has one).
   monthly:
     ready:
-      name: "<area:reward><bold>Monthly Tag"
-      lore: ["<c:text>One new tag every month.", "<c:text>Yours for good.", "", "<c:success><sym:check> Ready", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
+      name: "<area:reward><bold>Monthly Rank Chest"
+      lore: ["<c:text>Every month: cosmetic points for your rank.", "<c:bar>| </c:bar><c:text>This month: <c:value><points> points", "<c:muted>Also: /reclaim", "", "<c:success><sym:check> Ready", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
     claimed:
-      name: "<area:reward><bold>Monthly Tag"
-      lore: ["<c:text>One new tag every month.", "<c:bar>| </c:bar><c:text>Claimed for <c:value><month>", "", "<c:muted><sym:check> Claimed this month"]
+      name: "<area:reward><bold>Monthly Rank Chest"
+      lore: ["<c:text>Every month: cosmetic points for your rank.", "<c:bar>| </c:bar><c:text>Claimed for <c:value><month>", "", "<c:muted><sym:check> Claimed this month"]
     nothing:
-      name: "<c:muted>Monthly Tag"
-      lore: ["<c:text>Nothing new this month."]
+      name: "<c:muted>Monthly Rank Chest"
+      lore: ["<c:text>Every month: cosmetic points for your rank.", "", "<c:muted>Ranks get it: /store"]
   kit-claimed: "<prefix><c:success><sym:check></c:success> <c:text>Weekly kit <c:value><size></c:value> <c:text>claimed. What didn't fit is in <c:action>/box</c:action>."
   kit-already: "<prefix><c:error><sym:cross></c:error> <c:text>This profile already claimed this week's kit. The next one comes on Monday."
   kit-none: "<prefix><c:error><sym:cross></c:error> <c:text>Your rank has no weekly kit."
   kit-box-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your <c:action>/box</c:action> <c:text>is full. Empty it first, nothing was used up."
   monthly-claimed: "<prefix><c:success><sym:check></c:success> <c:text>New tag for <c:value><month></c:value><c:text>: <tag>"
-  monthly-already: "<prefix><c:error><sym:cross></c:error> <c:text>You already took this month's tag."
-  monthly-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>No new tag for you this month."
+  monthly-already: "<prefix><c:error><sym:cross></c:error> <c:text>You already took this month's rank chest."
+  monthly-nothing: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing to claim this month. Ranks get a monthly chest: <click:run_command:'/store'><c:action>/store</c:action></click>"
+  monthly-points: "<prefix><c:success><sym:check></c:success> <c:text>Monthly rank chest for <c:value><month></c:value><c:text>: <c:value>+<points> cosmetic points</c:value><c:text>."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was used up, try again."
+
+# Owner 7 Nov 2026: /pv private vaults. <number> <count> <max> <have> <bought>
+vaults:
+  title: "Vault <number>"
+  title-locked: "Vault <number> (take out only)"
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Vaults are off right now."
+  no-such: "<prefix><c:error><sym:cross></c:error> <c:text>Vaults go from 1 to <c:value><max></c:value><c:text>."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>You have <c:value><count></c:value> <c:text>vault(s). More come with a rank or the store: <click:run_command:'/store'><c:action>/store</c:action></click>"
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Your vault couldn't be opened. Try again."
+  take-out-only: "<c:warning>This vault is above your number of vaults: you can only take things out."
+  menu:
+    title: "Vaults"
+    vault:
+      name: "<c:value><bold>Vault <number>"
+      lore: ["<c:text>27 slots, only yours.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    locked:
+      name: "<c:muted>Vault <number>"
+      lore: ["<c:text>Comes with a higher rank", "<c:text>or as an extra vault in the store.", "", "<c:muted>Click to take out what's left in it."]
+  store:
+    name: "<c:value><bold>Extra Vault"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>One more private vault (/pv), 27 slots."
+      - "<c:bar>| </c:bar><c:text>You have: <c:value><have></c:value> <c:muted>(bought <bought>/<max>)"
+
+# Owner 7 Nov 2026: join when full (Firewing and up).
+join-full:
+  kick: "<c:error>The server is full.</c:error>\n<c:text>Ranks from Firewing can still join: <c:server>store.skybornmc.net"
