@@ -381,7 +381,15 @@ final class Generators implements GeneratorService {
         /** One custom item instead of the block's vanilla drops (gilded blackstone, gold nuggets ...), Silk Touch too. */
         @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
         public void onDrops(BlockDropItemEvent event) {
-            GeneratorTable.Ore ore = customByBlock.get(event.getBlockState().getType());
+            Material broken = event.getBlockState().getType();
+            if ((broken == Material.EMERALD_ORE || broken == Material.DEEPSLATE_EMERALD_ORE) && islandWorld(event.getBlock().getWorld())) {
+                // 7 Nov 2026: emeralds from an island generator sell like /mine emeralds (villager emeralds still don't)
+                for (Item item : event.getItems()) {
+                    item.setItemStack(net.skybornmc.skyblock.common.sell.MineDrop.mark(item.getItemStack()));
+                }
+                return;
+            }
+            GeneratorTable.Ore ore = customByBlock.get(broken);
             if (ore == null || event.getItems().isEmpty() || !islandWorld(event.getBlock().getWorld())) {
                 return; // no drops = the tool can't harvest it (vanilla rule), nothing to replace
             }

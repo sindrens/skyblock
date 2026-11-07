@@ -134,7 +134,6 @@ achievements:
     metric: skill_fishing
     goals: [10, 25, 50, 66, 100]
     title: {id: angler, display: "<pillar:fishing>Angler", rarity: epic}
-    enabled: false   # Fishing opens in Phase 7
   into_the_void:
     enabled: false # feedback 5 Nov 2026: only real achievements (a duplicate step, a Depths or Forge leftover, or random)
     name: "<c:sky_ice>Into the Void"

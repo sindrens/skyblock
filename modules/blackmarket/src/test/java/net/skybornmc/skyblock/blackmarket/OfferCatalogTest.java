@@ -18,7 +18,7 @@ class OfferCatalogTest {
         List<String> problems = new ArrayList<>();
         OfferCatalog c = OfferCatalog.parse(new BlackMarketSettings().offers, problems::add);
         assertEquals(List.of(), problems);
-        assertEquals(19, c.all().size(), "batch 10: Sell Wand, Auto-Sell Chest and Chunk Collector are back, plus the Greater Tome");
+        assertEquals(18, c.all().size(), "v7 (7 Nov 2026): the Blueprint is gone");
         assertEquals(4, c.of(OfferCatalog.Slot.FIXED).size(), "scroll + 3 premium spawners (ECON-SPAWNERS)");
         assertEquals(3, c.of(OfferCatalog.Slot.HEADLINE).size());
     }
@@ -37,11 +37,13 @@ class OfferCatalogTest {
         assertTrue(c.get("spawner_t5").isEmpty(), "the random tier 5 spawner is gone");
         OfferCatalog.Offer golem = c.get("spawner_iron_golem").orElseThrow();
         assertEquals("5:iron_golem", golem.ref());
-        assertEquals(400, golem.price());
+        assertEquals(200_000_000, golem.price());
+        assertEquals(net.skybornmc.skyblock.common.economy.Currency.MONEY, golem.currency(), "spawners cost money (7 Nov 2026)");
         assertEquals(OfferCatalog.Period.DAY, golem.period());
         assertEquals(8, c.get("scroll").orElseThrow().price());
         // Batch 10 (7 Nov 2026): the three island items are back at their old prices; the tomes are sold for real.
-        assertEquals(25, c.get("sell_wand").orElseThrow().price());
+        assertEquals(2_500_000, c.get("sell_wand").orElseThrow().price());
+        assertEquals(net.skybornmc.skyblock.common.economy.Currency.CRYSTALS, c.get("mythic_book").orElseThrow().currency());
         assertEquals(OfferCatalog.Kind.CHUNK_COLLECTOR, c.get("chunk_collector").orElseThrow().kind());
         assertEquals(OfferCatalog.Kind.AUTOSELL_CHEST, c.get("autosell_chest").orElseThrow().kind());
         assertEquals(OfferCatalog.Kind.WARDROBE_TOME, c.get("wardrobe_tome").orElseThrow().kind());
@@ -86,7 +88,19 @@ class OfferCatalogTest {
         assertEquals(BlackMarketSettings.OFFERS_V5, v5.to());
         var v6 = new BlackMarketSettings().valueChanges().get(6).get("offers");
         assertEquals(BlackMarketSettings.OFFERS_V5, v6.from());
-        assertEquals(BlackMarketSettings.OFFERS, v6.to());
+        assertEquals(BlackMarketSettings.OFFERS_V6, v6.to());
+        var v7 = new BlackMarketSettings().valueChanges().get(7).get("offers");
+        assertEquals(BlackMarketSettings.OFFERS_V6, v7.from());
+        assertEquals(BlackMarketSettings.OFFERS, v7.to());
+        assertFalse(BlackMarketSettings.OFFERS.stream().anyMatch(l -> l.startsWith("blueprint:")), "the Blueprint is gone");
+    }
+
+    @Test
+    void anOfferCostsMoneyOrCrystals() {
+        assertEquals(net.skybornmc.skyblock.common.economy.Currency.CRYSTALS, OfferCatalog.parseLine("x: slot=rare price=1 reward=scroll").currency());
+        assertEquals(net.skybornmc.skyblock.common.economy.Currency.MONEY, OfferCatalog.parseLine("x: slot=rare price=1 cost=MONEY reward=scroll").currency());
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> OfferCatalog.parseLine("x: slot=rare price=1 cost=shards reward=scroll"));
     }
 
     @Test

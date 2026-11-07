@@ -173,7 +173,9 @@ final class BlackMarketMenu extends Menu {
         OptionalLong shards = m.economy().map(e -> e.cached(viewer.getUniqueId(), BlackMarketModule.CURRENCY)).orElse(OptionalLong.empty());
         OptionalLong credits = m.economy().map(e -> net.skybornmc.skyblock.common.economy.CreditView.cachedShown(e, viewer.getUniqueId(),
                 Currency.CREDITS)).orElse(OptionalLong.empty());
+        OptionalLong money = m.economy().map(e -> e.cached(viewer.getUniqueId(), Currency.MONEY)).orElse(OptionalLong.empty());
         return service.item(Material.AMETHYST_SHARD, viewer, BlackMarketModule.ID, "menu.wallet",
+                Msg.p("money", money.isPresent() ? m.price(Currency.MONEY, money.getAsLong()) : "..."),
                 Msg.p("shards", shards.isPresent() ? m.price(BlackMarketModule.CURRENCY, shards.getAsLong()) : "..."),
                 Msg.p("credits", credits.isPresent() ? m.price(Currency.CREDITS, credits.getAsLong()) : "..."));
     }
@@ -183,7 +185,7 @@ final class BlackMarketMenu extends Menu {
         if (!lore.isEmpty()) {
             lore.add(Component.empty());
         }
-        lore.addAll(service.lines(viewer, BlackMarketModule.ID, "menu.offer.price", Msg.p("price", m.shards(o.price()))));
+        lore.addAll(service.lines(viewer, BlackMarketModule.ID, "menu.offer.price", Msg.p("price", m.price(o.currency(), o.price()))));
         if (o.amount() > 1) {
             lore.addAll(service.lines(viewer, BlackMarketModule.ID, "menu.offer.amount", Msg.number("amount", o.amount())));
         }
@@ -251,8 +253,8 @@ final class BlackMarketMenu extends Menu {
         openChild(new ConfirmMenu(v -> service.text(v, BlackMarketModule.ID, "confirm.crumb"), shown,
                 v -> {
                     List<Component> lines = new ArrayList<>(service.lines(v, BlackMarketModule.ID, "confirm.offer",
-                            Msg.c("offer", m.offerName(v, o)), Msg.number("amount", o.amount()), Msg.p("price", m.shards(o.price())),
-                            Msg.p("balance", balance(v, BlackMarketModule.CURRENCY))));
+                            Msg.c("offer", m.offerName(v, o)), Msg.number("amount", o.amount()), Msg.p("price", m.price(o.currency(), o.price())),
+                            Msg.p("balance", balance(v, o.currency()))));
                     if (o.kind() != OfferCatalog.Kind.TAG && (m.settings.bound || o.kind() == OfferCatalog.Kind.KEY)) {
                         lines.addAll(service.lines(v, BlackMarketModule.ID, "confirm.bound"));
                     }

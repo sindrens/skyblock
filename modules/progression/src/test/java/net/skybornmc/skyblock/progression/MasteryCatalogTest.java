@@ -71,8 +71,8 @@ class MasteryCatalogTest {
         Set<String> shown = new HashSet<>();
         bundled().shown().forEach(d -> shown.add(d.id()));
         assertEquals(Set.of("warrior", "homestead", "wings", "treasury", "market_contacts", // owner 7 Nov 2026: no Depths-only masteries
-                "farm_mastery", "mine_mastery", "fish_mastery", "combat_mastery"), shown,
-                "GUI-2: Timber, Swift Hands, Fuel Efficiency, Beast Tamer and Angler stay hidden until their feature reads them");
+                "farm_mastery", "mine_mastery", "fish_mastery", "combat_mastery", "angler"), shown,
+                "GUI-2: Timber, Swift Hands, Fuel Efficiency and Beast Tamer stay hidden until their feature reads them (Angler: 7 Nov)");
     }
 
     @Test

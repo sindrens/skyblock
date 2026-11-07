@@ -23,8 +23,8 @@ particles:
   - { id: portal_to_warzone, x: -22, y: 104, z: -97, type: dust, color: "#C21F2B" }
   - { id: portal_to_depths, x: -11, y: 104, z: -97, type: smoke }
   - { id: portal_to_island, x: 0, y: 104, z: -97, type: happy_villager }
-  - { id: portal_to_outposts, x: 11, y: 104, z: -97, type: composter, enabled: false }
-  - { id: portal_to_events, x: 22, y: 104, z: -97, type: enchant, enabled: false }
+  - { id: portal_to_outposts, x: 11, y: 104, z: -97, type: composter }
+  - { id: portal_to_events, x: 22, y: 104, z: -97, type: enchant }
   - { id: brazier_gate_w, x: -7, y: 104, z: -76, type: flame }
   - { id: brazier_gate_e, x: 7, y: 104, z: -76, type: flame }
   - { id: brazier_island_w, x: -3, y: 104, z: -92, type: flame }

@@ -218,6 +218,16 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## The whole list, batch 1 (update160, plan: `docs/plans/WHOLE_LIST_7NOV.md`)
+- **/mine:** emerald is the last ore and sells ($8,200). Emeralds from an island generator sell too; villager emeralds still don't.
+- **/shop:** a click opens the buy screen (1 / 8 / 16 / 32 / 64 and the price).
+- **Black Market, new list:** island items, spawners, the Coinmaster set and the elytra cost **money**; books, keys, tomes, set tokens and the tag cost **crystals**. Premium spawners $200M (1 a day), Coinmaster $40M, Auto-Sell Chest $25M, Chunk Collector $20M, Elytra $5M, Sell Wand $2.5M. Blueprint removed. The wallet shows your money too.
+- **Switched on:** Mob Loot (+12% spawner drops a level, up to +120%) and XP Boost island upgrades, custom island generators (the Generator upgrade can be bought), the Angler achievement, the Angler mastery (+% fishing loot with the rod), the Rewards menu with `/weekly` and `/monthly`.
+- **KOTH** now pays **2 Conqueror keys** + 500 crystals (was 5 Ember keys); the Conqueror crate is shown in /crates (no pedestal at the yard until the builder adds a 7th).
+- **Gatehouse:** the iron bars in front of the /fish and /pve portals are gone and their particles are on.
+- The "Depths" upgrade tab is called **Grinding** (Mine Fortune, XP Boost). "/credit pay (coming soon)" is gone from the /pay message.
+- **Still off on purpose:** Lumberjack, Timber, Deep Pockets, Crystal Rush, Lucky Strike (Depths leftovers); Swift Hands, Beast Tamer, Island Fuel, custom crops and the credit shop wait for your answers on `DECISIONS_RANKS_7NOV.html`.
+
 ## Your picks, part 4: King of the Hill (update159)
 - **KOTH in the Warzone**, every 3 hours for up to 15 minutes: one chat line ("King of the Hill! /koth"), `/koth` takes you in front of the hill. Stand on the gold 7x7 hill with no other island on it: 2 minutes in total wins (another island on it pauses the clock; after 15 minutes the island that held it longest wins). Every player of the winning island in the Warzone gets 5 Ember keys and 500 crystals. PvP is on there; you keep your items.
 - The Warzone has no build yet (only a 7x7 builder platform), so KOTH lays a 31x31 stone brick floor around it (only into air, never over a build). When the builder makes the Warzone, set `essentials.yml server-events.koth.arena-radius: 0` and move `koth.x/y/z` to the real hill. The Gatehouse portal sign now says "Warzone · KOTH: /koth" (the portal itself stays closed until that build exists).
@@ -233,7 +243,7 @@ Your "simple, nothing unnecessary" answer:
 ## Your picks, part 1 (update156, plan: `docs/plans/OWNER_PICKS_7NOV.md`)
 - **Shard Finder shows its number again** ("+111% shards") on the tool and in the perk menu.
 - **Top Tools board** in the Hall of Heroes (the old Foraging board): players by tool prestiges, a rebirth counts 50.
-- **Auto-Compactor** (hoe and pickaxe perk, tool level 15, 40,000 shards): 9 wheat become a hay bale, 9 ingots a block (coal, redstone, lapis, diamond, gold, emerald, melon, slime too), in your bag and in the tool storage. A block sells as exactly 9 items and counts as 9 for the daily price, so it never changes what you earn.
+- **Auto-Compactor** (hoe and pickaxe perk, tool level 15, 40,000 shards): 9 wheat become a hay bale, 9 ingots a block (coal, redstone, lapis, diamond, gold, melon, slime too), in your bag and in the tool storage. A block sells as exactly 9 items and counts as 9 for the daily price, so it never changes what you earn.
 
 ## /fish and /pve contracts (update154)
 - **Fix (update155):** the test server's contracts still used the very first pools (Depths mine/chop/kill, which are never offered since the Depths are gone), so you only got sell, tool levels, visit and like. They now use the current pools: harvest, ore, fish, fight, sell, tool levels, enchant, visit, like.

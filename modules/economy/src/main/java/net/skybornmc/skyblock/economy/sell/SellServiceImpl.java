@@ -195,6 +195,9 @@ public final class SellServiceImpl implements SellService {
     // ------------------------------------------------------------------ lookups
 
     SellRules.ItemFacts facts(ItemStack stack) {
+        if (net.skybornmc.skyblock.common.sell.MineDrop.isMineEmerald(stack)) { // owner 7 Nov 2026: /mine emeralds sell
+            return new SellRules.ItemFacts("emerald", net.skybornmc.skyblock.common.sell.MineDrop.EMERALD_ID, "material", false, false, false);
+        }
         return SellItems.facts(stack, items, config.get().sellBlockedDataKeys);
     }
 

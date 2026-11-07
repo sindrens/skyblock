@@ -144,7 +144,7 @@ final class Purchases {
         }
         int slot = offer.slot() == OfferCatalog.Slot.FIXED ? -1 : m.market().row(offer.id()).map(BlackMarketStore.RotationRow::index).orElse(-1);
         long rotationId = slot >= 0 ? m.market().currentId() : m.rotation().id(System.currentTimeMillis());
-        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), BlackMarketModule.CURRENCY, offer.price(), slot,
+        return Optional.of(new Plan(offer, offer.id(), offer.kind().key(), offer.amount(), offer.currency(), offer.price(), slot,
                 rotationId, null, 0));
     }
 
@@ -232,7 +232,7 @@ final class Purchases {
             TxResult.Status status = error != null || result == null ? TxResult.Status.ERROR : result.status();
             switch (status) {
                 case SUCCESS -> bought(p, now, row, counted, result.fromBalance());
-                case INSUFFICIENT_FUNDS -> m.fail(p, now.currency().isCredits() ? "buy.no-credits" : "buy.no-shards",
+                case INSUFFICIENT_FUNDS -> m.fail(p, now.currency().isCredits() ? "buy.no-credits" : now.currency() == Currency.MONEY ? "buy.no-money" : "buy.no-shards",
                         Msg.p("price", m.price(now.currency(), now.price())));
                 case DUPLICATE -> refused(p, outcome.get());
                 default -> {

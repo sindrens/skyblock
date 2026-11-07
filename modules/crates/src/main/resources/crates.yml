@@ -26,7 +26,7 @@
 #           one open gives. A tiered crate has no pity.
 
 # ECON-SHARDS: shards are only found in shard blocks (no 'shards' rewards); premium spawners are sold by the Black Market.
-catalog-version: 3
+catalog-version: 4
 
 crates:
   ember:
@@ -175,7 +175,7 @@ crates:
     icon: trial_spawner
     order: 7
     pity: 20
-    hidden: true
+    hidden: false   # 7 Nov 2026: keys from King of the Hill
     fallback-crystals: 250
     rewards:
       - {id: money, type: money, chance: 28, minutes: 30}

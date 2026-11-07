@@ -60,7 +60,7 @@ pay:
   frozen: "<prefix><c:error><sym:cross></c:error> <c:text>You can't pay while frozen. Wait for staff."
   not-tradeable: "<prefix><c:error><sym:cross></c:error> <currency> <c:text>can't be paid to players."
   # Card C1: credits never move with /pay.
-  use-credit-pay: "<prefix><c:error><sym:cross></c:error> <c:text>Credits aren't sent with /pay. Bought credits will be sent with <c:value>/credit pay</c:value> <c:muted>(coming soon)</c:muted><c:text>. See yours: <c:value>/credit bal</c:value>."
+  use-credit-pay: "<prefix><c:error><sym:cross></c:error> <c:text>Credits can't be sent to other players. See yours: <c:value>/credit bal</c:value>."
   below-minimum: "<prefix><c:error><sym:cross></c:error> <c:text>The smallest payment is <min><c:text>."
   # Owner F1: <required> to earn first, <earned> so far, <missing> still to earn (income only, not money from players).
   send-gate: "<prefix><c:error><sym:cross></c:error> <c:text>Earn <required> <c:text>yourself before you send money away. Earn <missing> <c:text>more (selling, rewards). <c:muted>Island members can always be paid."
@@ -403,6 +403,7 @@ sell:
     zero: "<c:muted>base price"
   category:
     ores: "Ores"
+    mine-drops: "Mine drops"
     crops: "Crops"
     mob-loot: "Mob loot"
     island-ores: "Island ores"

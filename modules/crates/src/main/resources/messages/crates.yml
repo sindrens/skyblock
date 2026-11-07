@@ -443,6 +443,7 @@ key-board:
   how:
     - "<c:text>Vote <c:value>/vote</c:value> <c:muted><sym:dot></c:muted> <c:text>Daily <c:value>/daily"
     - "<c:text>Playtime, AFK pool and quests"
+    - "<c:text>Conqueror: win <c:value>/koth"
   odds-header: "<c:muted>Chance of a <c:flame><sym:star></c:flame><c:muted> top reward:"
   odds-line: "<crate> <c:value><top>%"
   footer: "<c:text>Open anywhere: <c:value>/crates"

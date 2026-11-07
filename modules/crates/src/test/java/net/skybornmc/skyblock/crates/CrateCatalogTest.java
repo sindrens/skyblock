@@ -15,8 +15,19 @@ class CrateCatalogTest {
     void bundledHasTheSevenCratesInOrder() {
         CrateCatalog c = Fixtures.bundled();
         assertEquals(List.of("ember", "cinder", "blaze", "inferno", "phoenix", "eclipse", "conqueror"), c.ids());
-        assertEquals(List.of("ember", "cinder", "blaze", "inferno", "phoenix", "eclipse"),
-                c.visible().stream().map(CrateCatalog.Crate::id).toList(), "Conqueror stays hidden until KOTH (RX9)");
+        assertEquals(List.of("ember", "cinder", "blaze", "inferno", "phoenix", "eclipse", "conqueror"),
+                c.visible().stream().map(CrateCatalog.Crate::id).toList(), "7 Nov 2026: KOTH pays Conqueror keys, the crate is shown");
+    }
+
+    @Test
+    void aLiveFileShowsConquerorOnce() {
+        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        yaml.set("catalog-version", 3);
+        yaml.set("crates.conqueror.hidden", true);
+        assertEquals(1, net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CratesModule.CATALOG_STEPS).size());
+        assertFalse(yaml.getBoolean("crates.conqueror.hidden"));
+        yaml.set("crates.conqueror.hidden", true); // staff hid it again: stays hidden
+        assertTrue(net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CratesModule.CATALOG_STEPS).isEmpty());
     }
 
     @Test

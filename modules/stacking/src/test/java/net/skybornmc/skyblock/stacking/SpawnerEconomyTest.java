@@ -64,8 +64,9 @@ class SpawnerEconomyTest {
         assertEquals(10.0, s.seconds(0));
         assertEquals(5.0, s.seconds(99), "above the list: the last step");
         assertEquals(2.0, s.mobs(4));
-        assertEquals(1.5, s.loot(5));
-        assertEquals(2.0 * 2.0 * 1.5, (s.seconds(0) / s.seconds(10)) * s.mobs(4) * s.loot(5), 1e-9, "x6 combined maximum (Spawners v2: speed level 10 = 5 s)");
+        assertEquals(1.6, s.loot(5), 1e-9, "Mob Loot +12% a level (= the upgrade's lore)");
+        assertEquals(2.2, s.loot(10), 1e-9);
+        assertEquals(2.0 * 2.0 * 2.2, (s.seconds(0) / s.seconds(10)) * s.mobs(4) * s.loot(10), 1e-9, "x8.8 combined maximum (Spawners v2: speed level 10 = 5 s)");
         SpawnerSteps fast = SpawnerSteps.parse(List.of("1"), List.of("1"), List.of("1"), 4, p -> { });
         assertEquals(4.0, fast.seconds(0), "never below the floor");
         assertEquals(80, fast.intervalTicks(0, 50, 0.0), "jitter never goes under the floor");

@@ -695,7 +695,7 @@ upgrades:
     economy:
       crumb: "Economy"
     depths:
-      crumb: "Depths"
+      crumb: "Grinding"
     production:
       crumb: "Production"
     masteries:

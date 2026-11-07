@@ -117,7 +117,7 @@ tooltip:
   # ONE muted Java hint per tile (MENUS-V3 D6): hint-sell when the item sells, else hint-stack. Shift + Right-click and
   # middle click still sell every one you carry (taught in /help shop and by the sell GUI's Sell all button).
   hint-sell: "Right-click to sell"
-  hint-stack: "Shift-click to buy a stack"
+  hint-stack: "Click to pick an amount"
   action-input: "CLICK"
   action: "to buy"
 

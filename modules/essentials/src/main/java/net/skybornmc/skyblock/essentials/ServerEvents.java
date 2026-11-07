@@ -563,10 +563,10 @@ final class ServerEvents implements Listener {
             }
             if (c.kothKeys > 0) {
                 core.services().optional(net.skybornmc.skyblock.common.crate.CrateKeys.class)
-                        .ifPresent(k -> k.giveKeys(profile, c.eventKeyCrate, c.kothKeys, "koth", Actor.system("essentials")));
+                        .ifPresent(k -> k.giveKeys(profile, c.kothCrate, c.kothKeys, "koth", Actor.system("essentials")));
             }
             msg.send(p, "server-events.koth.won", Msg.number("keys", c.kothKeys), Msg.p("crystals", Format.number(c.kothCrystals)),
-                    Msg.p("crate", c.eventKeyCrate));
+                    Msg.p("crate", c.kothCrate.isEmpty() ? c.kothCrate : Character.toUpperCase(c.kothCrate.charAt(0)) + c.kothCrate.substring(1)));
             core.sounds().play(p, "unlock");
         }
         core.audit().log(AuditCategory.ECONOMY, "koth_win", Actor.system("essentials"), winner.toString(), (long) held.getOrDefault(winner, 0), null,

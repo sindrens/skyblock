@@ -261,6 +261,11 @@ public final class CratesModule implements SkyblockModule, Listener {
                             net.skybornmc.skyblock.common.audit.Actor.system("crates-v3"), CrateCatalog.FILE, null, (long) v3.log().size(),
                             null, java.util.Map.of("upgrade", "catalog-version 3 (coming-soon rows out)", "steps", v3.log()));
                 }
+                // catalog-version 4 (7 Nov 2026): KOTH pays Conqueror keys, so the crate is shown in /crates.
+                for (String line : net.skybornmc.skyblock.common.config.CatalogUpdate.apply(yaml, CATALOG_STEPS)) {
+                    core.plugin().getLogger().info("crates.yml v4 → " + line);
+                    yaml.save(file);
+                }
                 boolean added = CatalogMerge.addMissing(yaml, bundled);
                 boolean upgraded = CatalogMerge.upgradeLive(yaml, bundled);
                 if (upgraded) {
@@ -299,6 +304,9 @@ public final class CratesModule implements SkyblockModule, Listener {
                 net.skybornmc.skyblock.common.audit.Actor.system("crates-v2"), CrateCatalog.FILE, null, (long) result.log().size(),
                 null, java.util.Map.of("upgrade", "catalog-version 2 (ECON-SHARDS)", "steps", result.log()));
     }
+
+    static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
+            java.util.Map.of(4, java.util.Map.of(CrateCatalog.ROOT + ".conqueror" + ".hidden", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(true, false)));
 
     private YamlConfiguration bundled() {
         YamlConfiguration yaml = new YamlConfiguration();

@@ -120,7 +120,10 @@ public final class EssentialsConfig extends ModuleConfig {
     public int kothArenaRadius = 15;
 
     @Setting(path = "server-events.koth.keys", desc = "Keys for every player of the winning island who is in the Warzone.", min = 0, max = 100)
-    public int kothKeys = 5;
+    public int kothKeys = 2;
+
+    @Setting(path = "server-events.koth.crate", desc = "Crate of the KOTH keys (7 Nov 2026: the Conqueror crate, only from KOTH).")
+    public String kothCrate = "conqueror";
 
     @Setting(path = "server-events.koth.crystals", desc = "Crystals for every player of the winning island who is in the Warzone.", min = 0, max = 100_000)
     public long kothCrystals = 500;
@@ -388,13 +391,15 @@ public final class EssentialsConfig extends ModuleConfig {
     /** Version 2 (owner 7 Nov 2026, plans/HOE_SHARDS_SPAWNERS.md): the /farm money bonus is halved (untouched lists only). */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         EssentialsConfig d = new EssentialsConfig();
         return java.util.Map.of(
+                // v5 (7 Nov 2026): KOTH pays 2 Conqueror keys (the special crate) instead of 5 Ember keys
+                5, java.util.Map.of("server-events.koth.keys", ValueChange.of(5, d.kothKeys)),
                 // v4 (owner 7 Nov 2026, "better events, no spam"): one event at a time for 60 s, then 3-5 minutes off
                 4, java.util.Map.of("grind.events.duration-seconds", ValueChange.of(30, d.grindEventSeconds),
                         "grind.events.active-min", ValueChange.of(2, d.grindEventActiveMin),

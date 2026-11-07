@@ -11,11 +11,11 @@ import java.util.List;
  */
 public final class GeneratorSettings extends ModuleConfig {
 
-    @Setting(path = "enabled", desc = "Custom generators on/off (master switch, OFF until the owner enables production). On: any lava + "
+    @Setting(path = "enabled", desc = "Custom generators on/off (master switch; on since 7 Nov 2026, owner: everything finished goes live). On: any lava + "
             + "water cobble generator on an island forms a block rolled from the island's Generator level (levels below), the "
             + "Generator upgrade in /is upgrade can be bought, Ashstone and Emberite drop. Off: every generator stays vanilla. "
             + "Apply with /skyblock reload production.", level = Setting.Level.OWNER)
-    public boolean enabled = false;
+    public boolean enabled = true;
 
     @Setting(path = "form-blocks", desc = "Blocks lava + water form that the generator replaces with its roll (basalt and obsidian "
             + "always stay vanilla). The 'cobble' share of a level keeps the block that formed.")
@@ -78,6 +78,17 @@ public final class GeneratorSettings extends ModuleConfig {
             "10: cobble=40 coal=6 copper=6 iron=6 gold=6 redstone=6 lapis=6 diamond=6 emerald=6 ashstone=7 emberite=5");
 
     @Override
+    public int version() {
+        return 2;
+    }
+
+    /** v2 (owner 7 Nov 2026, "make sure it's active"): an untouched 'enabled: false' turns on. */
+    @Override
+    public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
+        return java.util.Map.of(2, java.util.Map.of("enabled", ValueChange.of(false, true)));
+    }
+
+    @Override
     public String fileName() {
         return "generators.yml";
     }
@@ -85,7 +96,7 @@ public final class GeneratorSettings extends ModuleConfig {
     @Override
     public String header() {
         return "Custom island generators (PHASE-7 M7.2): lava + water on an island forms ores by the island's Generator level.\n"
-                + "OFF by default: set enabled: true, then /skyblock reload production.\n"
+                + "Switch: enabled (true/false), then /skyblock reload production.\n"
                 + "Texts: messages/production.yml (generator.*). Prices: sell.yml. Reload: /skyblock reload production";
     }
 }

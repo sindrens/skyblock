@@ -327,10 +327,13 @@ public final class AchievementsModule implements SkyblockModule, AchievementServ
             }
         }
         // Farming is the core of the game now (/farm, the harvester hoe): Harvester is on, unless staff wrote something else.
-        String harvester = AchievementRegistry.ACHIEVEMENTS + ".harvester.enabled";
-        if (yaml.isBoolean(harvester) && !yaml.getBoolean(harvester)) {
-            yaml.set(harvester, null);
-            changed = true;
+        // 7 Nov 2026: Angler too (/fish and the island rod give Fishing XP).
+        for (String id : new String[]{"harvester", "angler"}) {
+            String path = AchievementRegistry.ACHIEVEMENTS + "." + id + ".enabled";
+            if (yaml.isBoolean(path) && !yaml.getBoolean(path)) {
+                yaml.set(path, null);
+                changed = true;
+            }
         }
         for (String[] fix : AchievementRegistry.DESCRIPTION_FIXES_5NOV) {
             String path = AchievementRegistry.ACHIEVEMENTS + "." + fix[0] + ".description";

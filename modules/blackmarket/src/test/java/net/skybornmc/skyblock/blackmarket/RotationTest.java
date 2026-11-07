@@ -121,7 +121,7 @@ class RotationTest {
     @Test
     void picksFollowTheSlotCountsWithoutRepeats() {
         List<Rotation.Pick> picks = Rotation.pick(42, 0, catalog, counts, o -> true, 25);
-        // Live commons in the defaults (batch 10): bm_tag, elytra, the Sell Wand and the Wardrobe Tome; the blueprint is coming soon.
+        // Live commons in the defaults (batch 10): bm_tag, elytra, the Sell Wand and the Wardrobe Tome. The Blueprint is gone (v7).
         assertEquals(1 + 3 + 4, picks.size());
         Set<String> ids = new HashSet<>();
         for (Rotation.Pick p : picks) {

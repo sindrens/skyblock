@@ -49,7 +49,7 @@ class PortalIndexTest {
         assertEquals("#C21F2B", warzone.color());
         assertTrue(warzone.enabled());
         assertEquals("happy_villager", PortalFixtures.portal(all, "to_island").particle().type());
-        assertFalse(PortalFixtures.portal(all, "to_outposts").particle().enabled(), "enabled: false");
+        assertTrue(PortalFixtures.portal(all, "to_outposts").particle().enabled(), "7 Nov 2026: the /fish portal is open, its particle too");
         Portal.Particle glow = PortalFixtures.portal(all, "to_spawn").particle();
         assertEquals("portal_glow", glow.id(), "matched by position inside the trigger");
         assertEquals("flame", glow.type());

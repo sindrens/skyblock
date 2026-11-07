@@ -130,7 +130,7 @@ final class Market {
         headline().flatMap(r -> m.catalog().get(r.offerId())).ifPresent(offer -> {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (p.hasPermission(BlackMarketModule.PERM_USE)) {
-                    m.msg.send(p, "rotation.announce", Msg.c("offer", m.offerName(p, offer)), Msg.p("price", m.shards(offer.price())));
+                    m.msg.send(p, "rotation.announce", Msg.c("offer", m.offerName(p, offer)), Msg.p("price", m.price(offer.currency(), offer.price())));
                 }
             }
         });

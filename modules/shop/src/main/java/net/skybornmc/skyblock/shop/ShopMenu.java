@@ -2,7 +2,6 @@ package net.skybornmc.skyblock.shop;
 
 import net.kyori.adventure.text.Component;
 import net.skybornmc.skyblock.common.menu.MenuButton;
-import net.skybornmc.skyblock.common.menu.MenuClick;
 import net.skybornmc.skyblock.common.menu.PagedMenu;
 import net.skybornmc.skyblock.common.text.Msg;
 import org.bukkit.Material;
@@ -135,7 +134,7 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
         ItemStack shown = service.item(icon, service.text(viewer, ShopModule.ID, "entry.name", Msg.c("item", module.displayName(viewer, item))), lore);
         return MenuButton.of(shown, click -> openBuy(click.player(), item))
                 .withRight(click -> openSell(click.player(), item))
-                .withShift(click -> shiftBuy(click, item))
+                .withShift(click -> openBuy(click.player(), item)) // owner 7 Nov 2026 (Q-73): every click opens the buy screen
                 .withMiddle(click -> module.sellAll(click.player(), item, () -> afterChange(click.player())));
     }
 
@@ -155,23 +154,6 @@ final class ShopMenu extends PagedMenu<ShopCatalog.Item> {
         }
         guard.disarm();
         openChild(new SellItemMenu(module, item, categoryId));
-    }
-
-    /** Java shift-click: one stack straight away (a big buy arms first and needs a second shift-click). */
-    private void shiftBuy(MenuClick click, ShopCatalog.Item item) {
-        Player player = click.player();
-        if (module.refuse(player, item)) {
-            return;
-        }
-        int stack = module.maxStack(item);
-        long now = System.currentTimeMillis();
-        long total = module.plannedTotal(player, item, stack);
-        boolean big = module.needsSecondClick(player, total);
-        if (!guard.click("shift:" + item.id(), big, now, module.settings.bigBuyArmSeconds * 1000L)) {
-            module.armedNotice(player, item, total);
-            return;
-        }
-        module.buy(player, item, stack, () -> afterChange(player));
     }
 
     /** After a buy or a sale: the balance and the Undo tile change. */

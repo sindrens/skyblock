@@ -18,14 +18,14 @@ class AchievementRegistryTest {
     @Test
     void bundledFileHas39AchievementsInSixCategories() {
         AchievementRegistry r = Fixtures.registry();
-        assertEquals(26, r.size(), "30 starters + 8 added 2 Nov 2026 - 13 retired 5 Nov + Harvester on");
+        assertEquals(27, r.size(), "30 starters + 8 added 2 Nov 2026 - 13 retired 5 Nov + Harvester and Angler on");
         assertEquals(List.of("skills", "island", "combat", "economy", "gear", "social"),
                 r.categories().stream().map(Category::id).toList());
         for (Category c : r.categories()) {
             assertFalse(r.inCategory(c.id()).isEmpty(), c.id() + " has achievements");
         }
         assertTrue(r.get("harvester").isPresent(), "feedback 5 Nov 2026: farming is the core of the game, Harvester is on");
-        assertTrue(r.get("angler").isEmpty(), "fishing waits for Phase 7 (enabled: false)");
+        assertTrue(r.get("angler").isPresent(), "7 Nov 2026: /fish exists, Angler is on");
     }
 
     @Test

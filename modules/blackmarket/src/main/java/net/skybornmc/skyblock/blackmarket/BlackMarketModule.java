@@ -415,10 +415,6 @@ public final class BlackMarketModule implements SkyblockModule, Listener {
         };
     }
 
-    String shards(long amount) {
-        return economy().map(e -> e.format(BlackMarketModule.CURRENCY, amount)).orElse(Format.number(amount));
-    }
-
     String price(Currency currency, long amount) {
         return economy().map(e -> e.format(currency, amount)).orElse(Format.number(amount));
     }

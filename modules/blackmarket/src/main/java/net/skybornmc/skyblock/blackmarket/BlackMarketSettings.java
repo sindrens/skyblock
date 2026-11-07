@@ -51,9 +51,9 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     // ------------------------------------------------------------------ offers
 
-    @Setting(path = "offers", desc = "Offers, one per line: '<id>: slot=<headline|rare|common|fixed> price=<shards> weight=<n> "
+    @Setting(path = "offers", desc = "Offers, one per line: '<id>: slot=<headline|rare|common|fixed> price=<n> [cost=<money|crystals>] weight=<n> "
             + "reward=<kind>[:<value>] [amount=<n>] [level=<n>] [limit=<n>/<rotation|day|month|season>] [icon=<item>]'. Kinds: "
-            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, autosell-chest, chunk-collector, coming-soon "
+            + "set-token:<set>, enchant-book:<rarity>, scroll, key:<crate>, spawner:<tier 1-5>[:<mob>], item:<item>, tag:<tag>, sell-wand:<uses>, autosell-chest, chunk-collector, wardrobe-tome:<normal|greater>, coming-soon "
             + "(listed, never rolled). Names and lore: messages/blackmarket.yml offers.<id>.", level = Setting.Level.OWNER)
     public List<String> offers = OFFERS;
 
@@ -163,11 +163,36 @@ public final class BlackMarketSettings extends ModuleConfig {
      * the item that comes back stays bound and never lands on the ground), and the Wardrobe Tome is sold for real, with the
      * Greater Tome in the rare slot.
      */
-    static final List<String> OFFERS = java.util.stream.Stream.concat(OFFERS_V4.stream()
+    static final List<String> OFFERS_V6 = java.util.stream.Stream.concat(OFFERS_V4.stream()
                     .map(line -> line.startsWith("wardrobe_tome:")
                             ? "wardrobe_tome: slot=common price=30 weight=3 reward=wardrobe-tome:normal limit=1/rotation icon=book" : line),
             java.util.stream.Stream.of("greater_tome: slot=rare price=100 weight=2 reward=wardrobe-tome:greater limit=1/rotation icon=enchanted_book"))
             .toList();
+
+    /**
+     * The default offer list (version 7, owner 7 Nov 2026: "new blackmarket items with different costs, some money etc depending
+     * on the relevancy"). Island items, spawners, the money set and the elytra cost money (a money sink for the farms); books,
+     * keys, tomes, set tokens and the tag cost crystals. The Blueprint (never built) is gone.
+     */
+    static final List<String> OFFERS = List.of(
+            "scroll: slot=fixed price=8 cost=crystals reward=scroll limit=10/rotation icon=paper",
+            "spawner_iron_golem: slot=fixed price=200000000 cost=money reward=spawner:5:iron_golem limit=1/day icon=iron_block",
+            "spawner_wither_skeleton: slot=fixed price=200000000 cost=money reward=spawner:5:wither_skeleton limit=1/day icon=wither_skeleton_skull",
+            "spawner_evoker: slot=fixed price=200000000 cost=money reward=spawner:5:evoker limit=1/day icon=totem_of_undying",
+            "regalia: slot=headline price=400 cost=crystals weight=1 reward=set-token:phoenix limit=1/season",
+            "voidforged: slot=headline price=250 cost=crystals weight=2 reward=set-token:voidforged limit=1/rotation",
+            "mythic_book: slot=headline price=200 cost=crystals weight=2 reward=enchant-book:mythic limit=1/rotation",
+            "coinmaster: slot=rare price=40000000 cost=money weight=2 reward=set-token:coinmaster limit=1/rotation",
+            "chunk_collector: slot=rare price=20000000 cost=money weight=2 reward=chunk-collector limit=1/rotation icon=hopper",
+            "autosell_chest: slot=rare price=25000000 cost=money weight=2 reward=autosell-chest limit=1/rotation icon=chest",
+            "eclipse_key: slot=rare price=75 cost=crystals weight=2 reward=key:eclipse limit=1/month",
+            "legendary_book: slot=rare price=60 cost=crystals weight=3 reward=enchant-book:legendary limit=1/rotation",
+            "phoenix_key: slot=rare price=50 cost=crystals weight=3 reward=key:phoenix limit=1/rotation",
+            "greater_tome: slot=rare price=100 cost=crystals weight=2 reward=wardrobe-tome:greater limit=1/rotation icon=enchanted_book",
+            "bm_tag: slot=common price=60 cost=crystals weight=2 reward=tag:black_market limit=1/rotation",
+            "elytra: slot=common price=5000000 cost=money weight=3 reward=item:elytra limit=1/rotation",
+            "sell_wand: slot=common price=2500000 cost=money weight=3 reward=sell-wand:100 limit=2/rotation icon=blaze_rod",
+            "wardrobe_tome: slot=common price=30 cost=crystals weight=3 reward=wardrobe-tome:normal limit=1/rotation icon=book");
 
     /** The default offer list before ECON-SPAWNERS (version 1). */
     static final List<String> OFFERS_V1 = List.of(
@@ -190,7 +215,7 @@ public final class BlackMarketSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 6;
+        return 7;
     }
 
     /**
@@ -204,6 +229,7 @@ public final class BlackMarketSettings extends ModuleConfig {
                 3, java.util.Map.of("offers", ValueChange.of(OFFERS_V2, OFFERS)),
                 4, java.util.Map.of("offers", ValueChange.of(OFFERS_V3, OFFERS)),
                 5, java.util.Map.of("offers", ValueChange.of(OFFERS_V4, OFFERS_V5)),
-                6, java.util.Map.of("offers", ValueChange.of(OFFERS_V5, OFFERS)));
+                6, java.util.Map.of("offers", ValueChange.of(OFFERS_V5, OFFERS_V6)),
+                7, java.util.Map.of("offers", ValueChange.of(OFFERS_V6, OFFERS)));
     }
 }

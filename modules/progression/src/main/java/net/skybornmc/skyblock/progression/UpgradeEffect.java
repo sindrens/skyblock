@@ -32,16 +32,16 @@ enum UpgradeEffect {
     MINE_FORTUNE("mine-fortune", true),
     /** +% extra logs in the Depths forest for members (EXTRA_DROPS, activity foraging). Not live: the Depths are gone. */
     LUMBERJACK("lumberjack", false),
-    /** +% skill XP for members (SKILL_XP family). Not live yet: the skills module does not read SKILL_XP for skill gains. */
-    XP_BOOST("xp-boost", false),
+    /** +% skill XP for members (SKILL_XP family): every skill XP gain goes through the BonusService (enchants listener, capped). */
+    XP_BOOST("xp-boost", true),
     /** Spawners per stacked spawner block (stacking module). */
     SPAWNER_STACK("spawner-stack", true),
     /** Owner 7 Nov 2026: extra spawners per mob type the island may place (stacking module, on top of the type's level). */
     SPAWNER_CAPACITY("spawner-capacity", true),
     /** +% spawner output (stacking module, spawner rate multiplier). */
     SPAWNER_RATE("spawner-rate", true),
-    /** +% spawner drops: no hook in the stacking module yet. */
-    MOB_LOOT("mob-loot", false),
+    /** +% spawner drops: the stacking module multiplies stacked-kill and spawner drops by the island's Mob Loot level. */
+    MOB_LOOT("mob-loot", true),
     /** +% crop growth on the island: the island tools' crop clock reads it (owner 4 Nov 2026), and farming when it is on. */
     CROP_GROWTH("crop-growth", true),
     /**

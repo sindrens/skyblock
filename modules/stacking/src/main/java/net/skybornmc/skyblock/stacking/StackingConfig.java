@@ -103,7 +103,7 @@ public final class StackingConfig extends ModuleConfig {
     public List<String> mobSteps = List.of("1.0", "1.25", "1.5", "1.75", "2.0");
 
     @Setting(path = "spawners.loot-steps", desc = "Custom drop multiplier per Mob Loot upgrade level (level 0 first).", level = Setting.Level.OWNER)
-    public List<String> lootSteps = List.of("1.0", "1.1", "1.2", "1.3", "1.4", "1.5");
+    public List<String> lootSteps = List.of("1.0", "1.12", "1.24", "1.36", "1.48", "1.6", "1.72", "1.84", "1.96", "2.08", "2.2"); // = upgrades.yml mob_loot (+12% a level, 10 levels)
 
     @Setting(path = "spawners.max-per-tier", desc = "Spawners of one tier an island can hold (all blocks; ECON-SPAWNERS S3: 32). 0 = no cap. Islands above it keep theirs (grandfathered) but can't add more.", min = 0, max = 100_000, level = Setting.Level.OWNER)
     public int spawnerMaxPerTier = 0; // Spawners v2: the limit is per mob type (spawners.level.*)
@@ -320,7 +320,7 @@ public final class StackingConfig extends ModuleConfig {
 
     @Override
     public int version() {
-        return 8;
+        return 9;
     }
 
     /** ECON-SPAWNERS step 3: the new roster and defaults, applied only while the live value is still the old default. */
@@ -337,6 +337,8 @@ public final class StackingConfig extends ModuleConfig {
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
         StackingConfig d = new StackingConfig();
         return java.util.Map.of(
+                // v9 (7 Nov 2026): Mob Loot is live; its steps match the upgrade's +12% a level (10 levels)
+                9, java.util.Map.of("spawners.loot-steps", ValueChange.of(List.of("1.0", "1.1", "1.2", "1.3", "1.4", "1.5"), d.lootSteps)),
                 // v8 (owner 7 Nov 2026): 64 spawners of a mob type at the first level, +32 a level, one block holds them all
                 8, java.util.Map.of("spawners.level.limit-per-level", ValueChange.of(4, d.limitPerLevel),
                         "spawners.level.limit-max", ValueChange.of(64, d.limitMax),

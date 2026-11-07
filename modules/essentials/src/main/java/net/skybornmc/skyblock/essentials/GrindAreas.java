@@ -759,7 +759,8 @@ final class GrindAreas extends CommandGroup implements Listener, net.skybornmc.s
                 if (first) {
                     // the vanilla coal count (Fortune) carries over to the player's ore
                     int times = Math.max(1, item.getItemStack().getAmount());
-                    item.setItemStack(new ItemStack(ore.drop(), Math.min(ore.drop().getMaxStackSize(), ore.amount() * times)));
+                    item.setItemStack(net.skybornmc.skyblock.common.sell.MineDrop.mark( // owner 7 Nov 2026: /mine emeralds sell
+                            new ItemStack(ore.drop(), Math.min(ore.drop().getMaxStackSize(), ore.amount() * times))));
                     first = false;
                 } else {
                     it.remove();

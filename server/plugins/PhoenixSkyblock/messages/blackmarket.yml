@@ -18,6 +18,7 @@ buy:
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>That offer changed. Nothing was paid, please look again."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>One moment, your last buy is still saving."
   no-shards: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:crystals><price></cur:crystals><c:text>. Crystals come from island tasks, quests and rewards."
+  no-money: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:money><price></cur:money><c:text>. Sell your crops, ores and drops: /sell"
   no-credits: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><price></cur:credits><c:text>. <c:muted>Earned credits are spent first. See yours: /credit bal"
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was paid, so just try again."
   done: "<prefix><c:success><sym:check></c:success> <c:text>You bought <offer> <c:text>for <c:value><price></c:value><c:text>. <c:muted>(left: <balance>)"
@@ -63,9 +64,9 @@ periods:
 menu:
   title: "Black Market"
   info:
-    - "<c:text>Rare things for crystals. The stock"
-    - "<c:text>changes at every restock. Limits"
-    - "<c:text>count per account; the headline"
+    - "<c:text>Rare things for money and crystals."
+    - "<c:text>The stock changes at every restock."
+    - "<c:text>Limits count per account; the headline"
     - "<c:text>has a stock shared by everyone."
   clock:
     name: "<c:flame>Restocks in <c:value><time>"
@@ -73,6 +74,7 @@ menu:
   wallet:
     name: "<c:value>Your crystals: <cur:crystals><shards>"
     lore:
+      - "<c:text>Money: <cur:money><money>"
       - "<c:text>Credits: <cur:credits><credits>"
       - "<c:text>Crystals come from island tasks,"
       - "<c:text>quests and rewards."
@@ -85,7 +87,7 @@ menu:
   offer:
     name: "<offer>"
     headline-name: "<c:flame><sym:star></c:flame> <offer>"
-    price: "<c:bar>| </c:bar><c:text>Price: <cur:crystals><price>"
+    price: "<c:bar>| </c:bar><c:text>Price: <c:value><price>"
     amount: "<c:bar>| </c:bar><c:text>You get: <c:value><amount>x"
     stock: "<c:bar>| </c:bar><c:text>Stock: <c:value><left>/<total></c:value> <c:muted>(shared)"
     limit: "<c:bar>| </c:bar><c:text>Bought: <c:value><bought>/<limit></c:value> <period>"
@@ -109,7 +111,7 @@ confirm:
   crumb: "Confirm Purchase"
   offer:
     - "<c:text>You get: <c:value><amount>x</c:value> <offer>"
-    - "<c:text>Price: <cur:crystals><price>"
+    - "<c:text>Price: <c:value><price>"
     - "<c:text>You have: <c:value><balance>"
   bound: ["<c:muted>Bound to your profile (no trading)."]
   charter-crumb: "Confirm Island Charter"
@@ -174,8 +176,6 @@ offers:
   spawner_evoker:
     name: "<rarity:epic>Evoker Spawner"
     lore: ["<c:text>Tier 5 spawner. Works on every island."]
-  blueprint:
-    name: "<rarity:rare>Blueprint"
   bm_tag:
     name: "<rarity:legendary>Black Market Tag"
     lore: ["<c:text>A tag sold only here."]

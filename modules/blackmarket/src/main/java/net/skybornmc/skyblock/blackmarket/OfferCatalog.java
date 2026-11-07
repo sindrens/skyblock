@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 
 /**
  * The Black Market offers from {@code blackmarket.yml → offers} (PHASE-10-REWARDS.md M10.11 table). One line per offer:
- * <pre>{@code <id>: slot=<headline|rare|common|fixed> price=<shards> weight=<n> reward=<kind>[:<ref>] [amount=<n>]
- *     [level=<n>] [limit=<n>/<rotation|day|month|season>] [icon=<item>]}</pre>
+ * <pre>{@code <id>: slot=<headline|rare|common|fixed> price=<n> [cost=<money|crystals>] weight=<n> reward=<kind>[:<ref>]
+ *     [amount=<n>] [level=<n>] [limit=<n>/<rotation|day|month|season>] [icon=<item>]}</pre>
  * Pure (no Bukkit), unit-tested. A broken line is reported and skipped; the rest still loads.
  */
 final class OfferCatalog {
@@ -126,13 +126,14 @@ final class OfferCatalog {
     /**
      * One offer.
      *
-     * @param price  shards per buy (one buy gives {@code amount} of the reward)
+     * @param price  price per buy, in {@code currency} (one buy gives {@code amount} of the reward)
      * @param weight chance weight inside its slot group (fixed offers ignore it)
      * @param limit  buys per account per {@code period}; 0 = no limit
      * @param icon   vanilla item id of the menu icon, or null for the kind's default
+     * @param currency what the price is paid in ({@code cost=money|crystals}, default crystals; owner 7 Nov 2026: costs by relevance)
      */
     record Offer(String id, Slot slot, long price, double weight, Kind kind, String ref, int amount, int level, int limit, Period period,
-                 String icon) {
+                 String icon, net.skybornmc.skyblock.common.economy.Currency currency) {
 
         boolean rollable() {
             return slot != Slot.FIXED && kind != Kind.COMING_SOON && weight > 0;
@@ -252,7 +253,18 @@ final class OfferCatalog {
             throw new IllegalArgumentException("a tag is one per account (amount must be 1)");
         }
         String icon = values.get("icon");
-        return new Offer(id, slot, price, weight, kind, ref, amount, level, limit, period, icon == null ? null : icon.toLowerCase(Locale.ROOT));
+        net.skybornmc.skyblock.common.economy.Currency currency = cost(values.getOrDefault("cost", "crystals"));
+        return new Offer(id, slot, price, weight, kind, ref, amount, level, limit, period, icon == null ? null : icon.toLowerCase(Locale.ROOT),
+                currency);
+    }
+
+    /** The currencies an offer can cost: money or crystals (credits only for the Island Charter, shards stay for the tools). */
+    static net.skybornmc.skyblock.common.economy.Currency cost(String raw) {
+        return switch (raw.trim().toLowerCase(Locale.ROOT)) {
+            case "money" -> net.skybornmc.skyblock.common.economy.Currency.MONEY;
+            case "crystals" -> net.skybornmc.skyblock.common.economy.Currency.CRYSTALS;
+            default -> throw new IllegalArgumentException("cost must be money or crystals");
+        };
     }
 
     private static String required(Map<String, String> values, String key) {

@@ -29,7 +29,7 @@ class FarmingFeatureTest {
         assertTrue(UpgradeEffect.CROP_GROWTH.live());
         assertTrue(UpgradeEffect.HARVEST_YIELD.live());
         assertTrue(UpgradeEffect.MINE_FORTUNE.live());
-        assertFalse(UpgradeEffect.MOB_LOOT.live(), "Mob Loot waits for M7.7");
+        assertTrue(UpgradeEffect.MOB_LOOT.live(), "7 Nov 2026: Mob Loot is on (the stacking module reads it)");
         assertEquals(UpgradeRules.Status.READY, UpgradeRules.status(growth, 0, true, 99, true, 1_000_000));
         assertEquals(UpgradeRules.Status.READY, UpgradeRules.status(yield, 0, true, 99, true, 1_000_000));
         FarmingFeature.source(() -> true);

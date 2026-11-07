@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Whole list, batch 1 (update160):** emerald is the last /mine ore and sells, /shop click opens the buy screen, Black Market costs money or crystals by item, Mob Loot / XP Boost / generators / Angler / Rewards menu on, KOTH pays Conqueror keys, the /fish and /pve gatehouse portals open.
 - **Owner picks 4 (update159):** King of the Hill in the Warzone every 3 hours (/koth).
 - **Owner picks 3 (update158):** tool skins for credits.
 - **Owner picks 2 (update157):** meteor at spawn every hour, fishing contest every 2 hours.

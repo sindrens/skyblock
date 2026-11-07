@@ -107,17 +107,17 @@ public final class RewardsSettings extends ModuleConfig {
 
     @Setting(path = "menu.enabled", desc = "The /rewards menu (Daily, Weekly, Monthly, Battle pass on one screen, Claim all) and "
             + "/weekly, /monthly. While on, the /menu Rewards count leaves out waiting votes and a second join line points to "
-            + "/vote (spec G1). Off by default until the release (golden rule 10).", level = Setting.Level.OWNER)
-    public boolean menuEnabled = false;
+            + "/vote (spec G1). On since 7 Nov 2026 (owner: everything finished goes live).", level = Setting.Level.OWNER)
+    public boolean menuEnabled = true;
 
     @Setting(path = "join-notice.votes", desc = "With the /rewards menu on: a second join line when votes are waiting "
             + "(\"You have N votes waiting. /vote\").")
     public boolean joinNoticeVotes = true;
 
     @Setting(path = "weekly.enabled", desc = "Weekly Reward: once a week (Monday 00:00) per profile, after weekly.required-minutes "
-            + "of active play on that profile that week (owner W1b). Unclaimed = lost. Off by default until the release.",
+            + "of active play on that profile that week (owner W1b). Unclaimed = lost. On since 7 Nov 2026.",
             level = Setting.Level.OWNER)
-    public boolean weeklyEnabled = false;
+    public boolean weeklyEnabled = true;
 
     @Setting(path = "weekly.required-minutes", desc = "Active minutes on the profile this week before the Weekly Reward opens "
             + "(owner W1b: 3 h). Per profile, never summed over profiles.", min = 0, max = 10_080, level = Setting.Level.OWNER)
@@ -130,8 +130,8 @@ public final class RewardsSettings extends ModuleConfig {
             "crystals 60", "key blaze fallback 60");
 
     @Setting(path = "monthly.enabled", desc = "Monthly Reward (/monthly): once a month (the 1st 00:00) per profile, no requirement "
-            + "(owner F5c). Unclaimed = lost. Off by default until the release.", level = Setting.Level.OWNER)
-    public boolean monthlyEnabled = false;
+            + "(owner F5c). Unclaimed = lost. On since 7 Nov 2026.", level = Setting.Level.OWNER)
+    public boolean monthlyEnabled = true;
 
     @Setting(path = "monthly.rewards", desc = "Monthly Reward contents, one reward per line (owner F5b: bigger, two bound keys). "
             + "Placeholders for the balance run.", level = Setting.Level.OWNER)
@@ -222,12 +222,14 @@ public final class RewardsSettings extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 4;
+        return 5;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(4, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new RewardsSettings().refPerMinute)),
+        return java.util.Map.of(5, java.util.Map.of("menu.enabled", ValueChange.of(false, true), // 7 Nov 2026: the Rewards menu goes live
+                        "weekly.enabled", ValueChange.of(false, true), "monthly.enabled", ValueChange.of(false, true)),
+                4, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new RewardsSettings().refPerMinute)),
                 3, java.util.Map.of(
                 "weekly.rewards", ValueChange.of(List.of("pass-xp 400", "booster skill_xp 25 30 fallback 25",
                         "booster tool_xp 25 30 fallback 25", "crystals 60", "key blaze fallback 60", "shards 25"), List.of("pass-xp 400",

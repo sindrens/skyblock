@@ -31,8 +31,8 @@ enum MasteryEffect {
     FUEL_EFFICIENCY("fuel-efficiency", false, null, null),
     /** MA9 faster breeding, more animal drops: no breeding hook yet. */
     BEAST_TAMER("beast-tamer", false, null, null),
-    /** MA10 fishing speed and loot: no fishing yet. */
-    ANGLER("angler", false, null, null),
+    /** MA10 +% fishing loot (7 Nov 2026): EXTRA_DROPS for the island rod's catches (activity island_rod, /fish and islands). */
+    ANGLER("angler", true, BonusFamily.EXTRA_DROPS, "island_rod"),
     /** MA11 extra shared island homes ({@code IslandService#extraIslandHomesProvider}, owner P5-21). */
     HOMESTEAD("homestead", true, null, null),
     /** MA12 island fly for everyone on the island ({@code IslandService#wingsProvider}). */

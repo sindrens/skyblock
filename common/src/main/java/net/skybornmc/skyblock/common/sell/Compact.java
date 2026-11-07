@@ -18,7 +18,6 @@ public final class Compact {
             Material.IRON_INGOT, Material.IRON_BLOCK,
             Material.GOLD_INGOT, Material.GOLD_BLOCK,
             Material.DIAMOND, Material.DIAMOND_BLOCK,
-            Material.EMERALD, Material.EMERALD_BLOCK,
             Material.REDSTONE, Material.REDSTONE_BLOCK,
             Material.LAPIS_LAZULI, Material.LAPIS_BLOCK,
             Material.COAL, Material.COAL_BLOCK,

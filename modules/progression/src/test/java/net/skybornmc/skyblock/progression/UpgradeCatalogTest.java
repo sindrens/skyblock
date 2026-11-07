@@ -49,19 +49,19 @@ class UpgradeCatalogTest {
         assertEquals(15_700_000L, c.get("entity_limits").orElseThrow().level(1).cost());
         assertEquals(250_000L, c.get("spawner_rate").orElseThrow().level(1).cost(), "production: C_p(1)");
         // Features that don't exist yet: shown as coming soon, not buyable.
-        for (String id : List.of("island_vault", "mob_loot", "generator", "fuel_tank", "lumberjack", "xp_boost", "spawner_stack_limit")) {
+        for (String id : List.of("island_vault", "generator", "fuel_tank", "lumberjack", "spawner_stack_limit")) { // generator: while generators.yml is off
             assertFalse(c.get(id).orElseThrow().buyable(), id);
         }
         for (String id : List.of("island_size", "member_slots", "warp_slots", "entity_limits", "bank_capacity", "bank_interest",
-                "sell_multiplier", "spawner_rate", "crop_growth", "harvest_yield", "mine_fortune")) {
+                "sell_multiplier", "spawner_rate", "crop_growth", "harvest_yield", "mine_fortune", "mob_loot", "xp_boost")) {
             assertTrue(c.get(id).orElseThrow().buyable(), id);
         }
         for (UpgradeTab tab : UpgradeTab.values()) {
             assertTrue(c.tab(tab).size() <= UpgradeMenu.UPGRADE_SLOTS.length, tab + " fits the menu");
             assertEquals(tab == UpgradeTab.MASTERIES, c.tab(tab).isEmpty(), tab + " has upgrades (the Masteries tab never does)");
         }
-        assertTrue(c.tab(UpgradeTab.DEPTHS).stream().noneMatch(UpgradeCatalog.Def::buyable),
-                "Depths upgrades wait until the drop roll and skill XP read the player's bonus families");
+        assertEquals(List.of("xp_boost"), c.tab(UpgradeTab.DEPTHS).stream().filter(UpgradeCatalog.Def::buyable).map(UpgradeCatalog.Def::id).toList(),
+                "the Grinding tab (was Depths): XP Boost is live, Lumberjack stays hidden");
         for (UpgradeCatalog.Def d : c.all()) {
             assertTrue(d.maxLevel() <= UpgradeDetailMenu.LEVEL_SLOTS.length, d.id() + " levels fit the detail menu");
         }
