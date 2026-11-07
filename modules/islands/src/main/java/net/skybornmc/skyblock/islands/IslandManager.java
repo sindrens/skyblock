@@ -896,6 +896,12 @@ final class IslandManager implements IslandService {
         return e == null ? 0 : Math.max(0, e.spawnerMobsLevel(islandId));
     }
 
+    /** Rows of the island's shared storage (Island Vault upgrade; 0 = not bought). */
+    int vaultRows(UUID islandId) {
+        var e = effects(islandId);
+        return e == null ? 0 : Math.max(0, Math.min(6, e.vaultRows(islandId)));
+    }
+
     @Override
     public int mobLootLevel(UUID islandId) {
         var e = effects(islandId);

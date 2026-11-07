@@ -313,6 +313,19 @@ menu:
     name: "<c:muted>Island bank"
     lore:
       - "<c:muted>Not available right now"
+  # Batch 4: /is storage. <rows> rows of the Island Vault upgrade.
+  storage:
+    name: "<c:value>Island Storage"
+    lore:
+      - "<c:text>One chest for the whole island."
+      - "<c:bar>| </c:bar><c:text>Rows: <c:value><rows>"
+      - ""
+      - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+  storage-locked:
+    name: "<c:muted>Island Storage"
+    lore:
+      - "<c:text>One chest for the whole island."
+      - "<c:locked><sym:cross> Buy Island Vault in /is upgrade"
   upgrades:
     name: "<c:muted>Upgrades"
     lore:
@@ -1740,6 +1753,15 @@ profiles:
 
 # ---------------------------------------------------------------- NOTES (/is notes, owner N1-N9)
 # <text> = the note (player text, never parsed), <player> / <author> = names, <date> = members.date-format.
+# Island Vault (batch 4): /is storage, one chest shared by the island.
+vault:
+  title: "Island Storage"
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island first: <c:value>/is</c:value><c:text>."
+  no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>Your island role can't open the island storage. <c:muted>The leader sets it in /is permissions (Containers)."
+  locked: "<prefix><c:error><sym:cross></c:error> <c:text>Your island has no storage yet. Buy <c:value>Island Vault</c:value> <c:text>in <c:value>/is upgrade</c:value><c:text>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage could not be opened. Try again in a moment."
+  not-allowed: "<c:error><sym:cross></c:error> <c:text>Bound items and island tools can't go in the island storage."
+
 notes:
   crumb: "Notes"
   info:

@@ -239,6 +239,12 @@ Your "simple, nothing unnecessary" answer:
 - ROADMAP and BACKLOG show what is built now.
 - **Not done on purpose:** FX-05 (a hard crash in the half second of a Sell Wand sale): making a chest crash-safe needs a world save per sale, too heavy for a very small risk. 5-row menus stay 5 rows (your "smaller GUIs" rule).
 
+## The whole list, batch 4: Island Vault (update163)
+- **`/is storage`** (or `/is vault`, or the new ender chest tile in the island menu): one chest for the whole island. Every member sees the same chest at the same time, so nothing can be taken twice. Rows come from the **Island Vault** upgrade (2 rows at level 1, up to 6), which can be bought now. Without it the tile says where to buy it.
+- Who: members whose role may open containers (the leader sets it in /is permissions). Bound items and island tools can't go in.
+- Saved a second after every change, when the last person closes it, every minute and on shutdown.
+- The challenge book's hand-in tasks now have a working **"From island storage"** button (the items and the task progress are saved together, so a crash never takes one without the other).
+
 ## Your picks, part 4: King of the Hill (update159)
 - **KOTH in the Warzone**, every 3 hours for up to 15 minutes: one chat line ("King of the Hill! /koth"), `/koth` takes you in front of the hill. Stand on the gold 7x7 hill with no other island on it: 2 minutes in total wins (another island on it pauses the clock; after 15 minutes the island that held it longest wins). Every player of the winning island in the Warzone gets 5 Ember keys and 500 crystals. PvP is on there; you keep your items.
 - The Warzone has no build yet (only a 7x7 builder platform), so KOTH lays a 31x31 stone brick floor around it (only into air, never over a build). When the builder makes the Warzone, set `essentials.yml server-events.koth.arena-radius: 0` and move `koth.x/y/z` to the real hill. The Gatehouse portal sign now says "Warzone · KOTH: /koth" (the portal itself stays closed until that build exists).

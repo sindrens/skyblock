@@ -32,8 +32,8 @@ class UpgradeRulesTest {
         assertEquals(UpgradeRules.Status.ISLAND_LEVEL, UpgradeRules.status(SIZE, 1, true, 9, true, 1_000_000));
         assertEquals(UpgradeRules.Status.READY, UpgradeRules.status(SIZE, 1, true, 10, true, 1_000_000));
         assertEquals(UpgradeRules.Status.MAXED, UpgradeRules.status(SIZE, 3, true, 99, true, 1_000_000));
-        UpgradeCatalog.Def vault = def(UpgradeEffect.ISLAND_VAULT, true, new UpgradeCatalog.Level(1, 10, 2, 0));
-        assertEquals(UpgradeRules.Status.COMING_SOON, UpgradeRules.status(vault, 0, true, 99, true, 1_000));
+        UpgradeCatalog.Def fuel = def(UpgradeEffect.FUEL_TANK, true, new UpgradeCatalog.Level(1, 10, 2, 0));
+        assertEquals(UpgradeRules.Status.COMING_SOON, UpgradeRules.status(fuel, 0, true, 99, true, 1_000), "Island Fuel is off");
         UpgradeCatalog.Def off = def(UpgradeEffect.ISLAND_SIZE, false, new UpgradeCatalog.Level(1, 10, 5, 0));
         assertEquals(UpgradeRules.Status.DISABLED, UpgradeRules.status(off, 0, true, 99, true, 1_000));
         assertTrue(UpgradeRules.Status.NO_PERMISSION.unlocked());

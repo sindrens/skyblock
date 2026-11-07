@@ -579,7 +579,7 @@ tasks:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
       lore-none:
-        - "<c:text>No <item> in storage."
+        - "<c:text>No <item> in <c:value>/is storage</c:value><c:text>."
         - "<c:bar>| </c:bar><c:text>Still needed: <c:value><room>"
       lore-soon:
         - "<c:muted>Coming soon: hand in"
@@ -595,7 +595,7 @@ tasks:
     done: "<prefix><c:success><sym:check></c:success> <c:text>Handed in <c:value><amount></c:value> <item>. Task: <c:value><progress></c:value><c:muted>/<goal>"
     none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no plain <item> to hand in."
     none-in-storage: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage has nothing to hand in for this task."
-    no-storage: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage isn't open yet."
+    no-storage: "<prefix><c:error><sym:cross></c:error> <c:text>The island storage is off on this server."
     not-needed: "<prefix><c:error><sym:cross></c:error> <c:text>This task needs no more items."
     not-member: "<prefix><c:error><sym:cross></c:error> <c:text>Only island members can hand in items."
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>That task doesn't exist anymore."
@@ -633,7 +633,7 @@ upgrades:
     island-size: "<value>x<value> border"
     member-slots: "<members> members + leader"
     warp-slots: "<value> warps"
-    island-vault: "<value> storage rows"
+    island-vault: "<value> rows in /is storage"
     entity-limits: "+<value>% entity limits"
     # <amount> from bank.yml (island.levels), <hours> between payouts, <value> the bank level
     bank-capacity: "Island bank holds <amount>"

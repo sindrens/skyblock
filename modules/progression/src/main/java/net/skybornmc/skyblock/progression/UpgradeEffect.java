@@ -15,8 +15,8 @@ enum UpgradeEffect {
     MEMBER_SLOTS("member-slots", true),
     /** Warps, through {@code IslandService#setWarpSlots}. */
     WARP_SLOTS("warp-slots", true),
-    /** Island Vault rows (I7): the island storage does not exist yet. */
-    ISLAND_VAULT("island-vault", false),
+    /** Island Vault rows (batch 4, 7 Nov 2026): the shared island storage, /is storage (islands module). */
+    ISLAND_VAULT("island-vault", true),
     /** +% island entity limits (stacking module). */
     ENTITY_LIMITS("entity-limits", true),
     /** Bank Capacity level (economy module, bank.yml table). */

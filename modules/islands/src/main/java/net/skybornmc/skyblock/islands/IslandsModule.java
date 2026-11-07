@@ -88,6 +88,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private ObsidianBucket obsidianBucket;
     private IslandAdmin admin;
     private IslandNotes notes;
+    private IslandVault vault;
     private IslandChat chat;
     private IslandHub hub;
     private IslandStats stats;
@@ -146,6 +147,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         hub = new IslandHub(this, manager);
         homes = new IslandHomes(this, manager, new IslandHomeStore(core.database()));
         homes.load();
+        vault = new IslandVault(this, manager, new IslandVaultStore(core.database()));
         visits.onPresence(environment::apply);
         manager.onFlagChange((island, flag) -> {
             if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
@@ -165,6 +167,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Bukkit.getPluginManager().registerEvents(autoPickup, core.plugin());
         Bukkit.getPluginManager().registerEvents(obsidianBucket, core.plugin());
         Bukkit.getPluginManager().registerEvents(homes, core.plugin());
+        Bukkit.getPluginManager().registerEvents(vault, core.plugin());
+        vault.start();
         environment.start();
         fly.start();
         // /settings (menus) and the TeleportService (essentials) may enable after us: hook them one tick later.
@@ -179,6 +183,8 @@ public final class IslandsModule implements SkyblockModule, Listener {
             if (chat != null) {
                 chat.hookSettings();
             }
+            // Batch 4: deliver tasks of the challenge book can hand in from the island storage.
+            core.services().optional(net.skybornmc.skyblock.common.progression.TaskService.class).ifPresent(t -> t.storage(vault));
         });
         startSweep();
         Bukkit.getPluginManager().registerEvents(this, core.plugin());
@@ -312,6 +318,12 @@ public final class IslandsModule implements SkyblockModule, Listener {
         if (homes != null) {
             HandlerList.unregisterAll(homes);
         }
+        if (vault != null) {
+            core.services().optional(net.skybornmc.skyblock.common.progression.TaskService.class).ifPresent(t -> t.storage(null));
+            vault.stop(); // closes the views and writes every changed storage (blocking)
+            HandlerList.unregisterAll(vault);
+            vault = null;
+        }
         HandlerList.unregisterAll(this);
     }
 
@@ -414,6 +426,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
     }
 
     /** The island notes (NOTES), or null before enable / after disable. */
+    IslandVault vault() {
+        return vault;
+    }
+
     IslandNotes notes() {
         return notes;
     }
@@ -612,6 +628,9 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("notes").description("Your island's shared notes and to-do list (book view, pinned holograms)")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(notesIsland).example("is notes")
                         .executes(ctx -> notes.command(ctx.player(), ctx.getOr(notesIsland, null))))
+                .sub(CommandSpec.sub("storage").description("Your island's shared storage (rows from the Island Vault upgrade)")
+                        .permission(PERM_USE).playerOnly().aliases("vault").cooldown(Duration.ofSeconds(1)).example("is storage")
+                        .executes(ctx -> vault.open(ctx.player())))
                 .sub(CommandSpec.sub("chat").description("Island chat: without text, switch your chat to the island and back")
                         .permission(PERM_USE).playerOnly().optional(chatText).example("is chat on my way")
                         .executes(ctx -> chat.command(ctx.player(), ctx.getOr(chatText, null))))

@@ -52,6 +52,13 @@ decision page first. Source: PROJECT_STATUS_7NOV.md and the disabled-features au
 ## Batch 4 (update163): Island Vault
 - `/is storage`: shared island storage (rows from the Island Vault upgrade), task hand-in from it, the Vault upgrade
   live.
+- **Detail:** `/is storage` (alias `/is vault`) opens one chest shared by the island: every member sees the same items at
+  the same time (one server inventory, no copies). Rows = the Island Vault upgrade (2 at level 1, up to 6); without the
+  upgrade the command says "Buy Island Vault in /is upgrade". Who: island members whose role may open containers (the
+  permission matrix). Bound items (Black Market, tutorial ...) and island tools can't go in (they would become tradeable).
+  Saved to the database (`island_vault`, one row per slot) a second after every change, when the last viewer closes, every
+  minute and on shutdown. Deliver tasks get the "From island storage" button: the items and the task progress are saved in
+  one database transaction. Also in the island menu? No (Principle 0): `/is storage` and the challenge book only.
 
 ## Batch 5 (after the decision page): ranks and Discord
 - Rank perks from the answers (7 ranks are decided: Hatchling to Immortal), Tebex rank packages with "pay the

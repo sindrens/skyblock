@@ -22,7 +22,7 @@ import java.util.List;
  *  . . . . 🌱 . . . 💣     4 island info, 8 danger tile: disband (leader) / leave (everyone else), TNT, red (I9 section 5)
  *  . 🛏 👤 ⚙ ✈ 🚪 🔁 📄 .   10 home, 11 members, 12 permissions, 13 warps, 14 visitors (lock), 15 settings, 16 invites
  *  . 📖 💬 🎨 🗺 ★ ▣ ⚒ .   19 notes, 20 island chat, 21 chat colors, 22 visit islands, 23 stats, 24 bank, 25 upgrades*
- *  . ⛽ . . . . . . .      28 Island Fuel gauge (only while Island Fuel is on, PHASE-7 M7.1)
+ *  . ⛽ . . ▤ . . . .      28 Island Fuel gauge (only while Island Fuel is on, PHASE-7 M7.1), 31 island storage
  *  . . . . . . . . .
  *  ← . . . ✕ . . . .      45 back, 49 close        * = coming soon (gray)
  * </pre>
@@ -46,6 +46,8 @@ final class IslandMenu extends Menu {
     static final int SLOT_BANK = 24;
     static final int SLOT_UPGRADES = 25;
     static final int SLOT_FUEL = 28;
+    /** Batch 4: the island storage (/is storage), centre of row 4. */
+    static final int SLOT_STORAGE = 31;
     /** Disband (leader) / Leave: the red danger tile in the top right corner, far from Back, pages and the main action. */
     static final int SLOT_DANGER = Menu.SLOT_DANGER;
     /** Every content slot, for the layout test (no slot used twice). */
@@ -154,6 +156,7 @@ final class IslandMenu extends Menu {
         set(SLOT_STATS, stats());
         set(SLOT_BANK, bank());
         set(SLOT_UPGRADES, upgrades());
+        set(SLOT_STORAGE, storage());
         fuel();
         // I9 section 5: one red danger tile (TNT) in the corner; the click still asks (disband: two steps).
         if (role == Role.LEADER) {
@@ -240,6 +243,17 @@ final class IslandMenu extends Menu {
             return comingSoon("island/upgrades", "menu.upgrades");
         }
         return button("island/upgrades", "menu.upgrades-open", click -> progression.get().openUpgradeMenu(viewer, this));
+    }
+
+    /** Batch 4: the shared island storage; locked (with the way to unlock it) before the Island Vault upgrade. */
+    private MenuButton storage() {
+        int rows = islands.vaultRows(island.id());
+        if (rows <= 0) {
+            return MenuButton.display(service.item(new ItemStack(Material.ENDER_CHEST), text("menu.storage-locked.name"),
+                    lines("menu.storage-locked.lore")));
+        }
+        return MenuButton.of(service.item(new ItemStack(Material.ENDER_CHEST), text("menu.storage.name"),
+                lines("menu.storage.lore", Msg.p("rows", rows))), click -> module.vault().open(viewer));
     }
 
     /** PHASE-7 M7.1: the production module's Island Fuel gauge (display only; nothing while Island Fuel is off). */

@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Whole list, batch 4 (update163):** Island Vault: `/is storage`, one shared chest per island (2-6 rows from the upgrade), task hand-in from it.
 - **Whole list, batch 3 (update162):** tool-style lore rows in 21 menus, Title Case menu titles, the carrots hint reads the config.
 - **Whole list, batch 2 (update161):** Kindle's Island quest chapter (8 island steps, Kindled title), island level and island break steps, title rewards in the quest book.
 - **Whole list, batch 1 (update160):** emerald is the last /mine ore and sells, /shop click opens the buy screen, Black Market costs money or crystals by item, Mob Loot / XP Boost / generators / Angler / Rewards menu on, KOTH pays Conqueror keys, the /fish and /pve gatehouse portals open.

@@ -732,6 +732,11 @@ final class UpgradeManager implements Listener {
         }
 
         @Override
+        public int vaultRows(UUID islandId) {
+            return UpgradeRules.whole(catalog, of(islandId), UpgradeEffect.ISLAND_VAULT);
+        }
+
+        @Override
         public OptionalInt spawnerStackLimit(UUID islandId) {
             return UpgradeRules.spawnerStack(catalog, of(islandId));
         }

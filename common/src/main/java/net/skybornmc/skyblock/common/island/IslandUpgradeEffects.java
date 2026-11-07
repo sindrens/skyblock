@@ -21,6 +21,11 @@ public interface IslandUpgradeEffects {
         return 0;
     }
 
+    /** Batch 4 (7 Nov 2026): rows of the island's shared storage, /is storage (Island Vault upgrade; 0 = none yet). */
+    default int vaultRows(UUID islandId) {
+        return 0;
+    }
+
     default OptionalInt spawnerStackLimit(UUID islandId) {
         return OptionalInt.empty();
     }
