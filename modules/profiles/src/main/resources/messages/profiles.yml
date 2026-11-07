@@ -245,3 +245,18 @@ restore:
   done: "<prefix><c:success><sym:check></c:success> <c:text>Restored <c:value><player></c:value><c:text>'s <c:value><profile></c:value> <c:text>(slot <slot>, snapshot #<snapshot>). The profile that was there is snapshot <c:value>#<replaced></c:value> <c:muted>(0 = the slot was empty)</c:muted><c:text>."
   island-hint: "<prefix><c:muted>Island membership doesn't come back by itself. If <player> was kicked from <island>, use</c:muted> <click:suggest_command:'/isadmin restore <player>'><hover:show_text:'<c:text>Open the kick backups'><c:action>[/isadmin restore]</c:action></hover></click>"
   you: "<prefix><c:success><sym:check></c:success> <c:text>Staff restored your profile <c:value><profile></c:value> <c:text>(slot <slot>)."
+
+# Owner 7 Nov 2026: the credit shop tiles (/store » Extras). <slot>
+store:
+  slot:
+    name: "<c:value><bold>Profile Slot <slot>"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>One more profile: its own island, money,"
+      - "<c:text>inventory and skills. For your whole account."
+  slot-owned:
+    name: "<c:value><bold>Profile Slot <slot>"
+    lore:
+      - "<c:muted>EXTRA"
+      - ""
+      - "<c:success><sym:check> You have this slot"

@@ -109,8 +109,9 @@ public final class CratesSettings extends ModuleConfig {
     public String eclipseCrate = "eclipse";
 
     @Setting(path = "eclipse.store-purchase.enabled", desc = "Owner V5 (\"I am the owner and I flip the flag\"): players buy an "
-            + "Eclipse key with credits in its preview. Bought keys are tradeable (G4). No limit (R4).")
-    public boolean eclipseBuyEnabled = true;
+            + "Eclipse key with credits in its preview. Bought keys are tradeable (G4). No limit (R4). Owner 7 Nov 2026: off, keys "
+            + "are earned only (the Black Market still sells the Eclipse key for crystals).")
+    public boolean eclipseBuyEnabled = false;
 
     @Setting(path = "eclipse.store-purchase.price", desc = "Credits per Eclipse key (earned credits are used first).", min = 1, max = 1_000_000)
     public int eclipseBuyPrice = 400;
@@ -310,7 +311,7 @@ public final class CratesSettings extends ModuleConfig {
 
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     /**
@@ -319,7 +320,8 @@ public final class CratesSettings extends ModuleConfig {
      */
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new CratesSettings().refPerMinute)),
+        return java.util.Map.of(4, java.util.Map.of("eclipse.store-purchase.enabled", ValueChange.of(true, false)), // owner 7 Nov 2026: keys earned only
+                3, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new CratesSettings().refPerMinute)),
                 2, java.util.Map.of(
                 "spinner.duration-ticks", ValueChange.of(60, 40),
                 "fragments.enabled", ValueChange.of(true, false),

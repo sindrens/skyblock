@@ -263,6 +263,9 @@ final class WardrobeConfig extends ModuleConfig {
             min = 0, max = 8, level = Setting.Level.OWNER)
     public int loadoutBoughtMax = 3;
 
+    @Setting(path = "loadout.slot-credits", desc = "Owner 7 Nov 2026: credits of one extra preset in the credit shop (/store → Extras). 0 = not sold.", min = 0, max = 100000)
+    public long loadoutSlotCredits = 300;
+
     @Setting(path = "loadout.cooldown-seconds", desc = "Seconds between two swaps (shared with wearing and taking off sets).", min = 0, max = 60)
     public int loadoutCooldownSeconds = 2;
 

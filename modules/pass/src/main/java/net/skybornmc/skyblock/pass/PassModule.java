@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.bukkit.Material;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -168,6 +169,7 @@ public final class PassModule implements SkyblockModule, Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }
+        registerShopOffers();
         long retry = 20L * settings.retrySeconds;
         // The first run also recovers hand-outs a crash interrupted (after every module, crates included, is up).
         tasks.add(core.scheduler().repeat("pass:grants", 200L, retry, grants::retry));
@@ -193,6 +195,7 @@ public final class PassModule implements SkyblockModule, Listener {
 
     @Override
     public void disable() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
         HandlerList.unregisterAll(this);
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
@@ -396,6 +399,62 @@ public final class PassModule implements SkyblockModule, Listener {
             msg.send(sender, "admin.reset", Msg.p("player", target.getName()));
             refreshMenus();
         }, main);
+    }
+
+    // ================================================================== credit shop (owner 7 Nov 2026)
+
+    /** Premium for this season and one pass level, sold in the credit shop (Extras). */
+    private void registerShopOffers() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
+        if (!settings.enabled) {
+            return;
+        }
+        if (settings.premiumPriceCredits > 0) {
+            net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.of("pass_premium",
+                    net.skybornmc.skyblock.common.store.CreditShop.Tab.EXTRAS, 10,
+                    (viewer, receiver) -> core.menus().item(Material.NETHER_STAR, viewer, ID, hasPremium(receiver) ? "store.premium-owned" : "store.premium",
+                            Msg.p("season", season)),
+                    (viewer, receiver) -> hasPremium(receiver) ? -1L : settings.premiumPriceCredits, false, true,
+                    (buyer, receiver, purchaseId) -> setPremium(receiver, "store:" + buyer.getName())));
+        }
+        if (settings.tierSkipCredits > 0) {
+            net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.of("pass_level",
+                    net.skybornmc.skyblock.common.store.CreditShop.Tab.EXTRAS, 11,
+                    (viewer, receiver) -> {
+                        ProfileState st = state(receiver);
+                        int level = st == null ? 0 : curve.level(st.xp);
+                        return core.menus().item(Material.EXPERIENCE_BOTTLE, viewer, ID, "store.level", Msg.number("level", level),
+                                Msg.number("next", Math.min(settings.maxLevel, level + 1)));
+                    },
+                    (viewer, receiver) -> {
+                        ProfileState st = state(receiver);
+                        return st == null || curve.level(st.xp) >= settings.maxLevel ? -1L : settings.tierSkipCredits;
+                    }, false, true,
+                    (buyer, receiver, purchaseId) -> store(profileKey(receiver), receiver.getUniqueId(), settings.xpPerLevel, "credit_shop",
+                            purchaseId, false, Actor.player(buyer))));
+        }
+    }
+
+    /** Premium this season for {@code target} (credit shop). Main thread; completes true when it is on afterwards. */
+    private CompletableFuture<Boolean> setPremium(Player target, String by) {
+        UUID player = target.getUniqueId();
+        String s = season;
+        return core.database().transaction(c -> PassStore.setPremium(c, player, s, true, by, System.currentTimeMillis()))
+                .thenApplyAsync(changed -> {
+                    AccountState a = accounts.get(player);
+                    if (a != null && a.season.equals(s)) {
+                        a.premiumRow = true;
+                    }
+                    if (Boolean.TRUE.equals(changed)) {
+                        audit("premium_granted", Actor.system("credit_shop"), player, target.getName(), null, Map.of("season", s, "source", by));
+                        if (target.isOnline()) {
+                            msg.send(target, "premium.unlocked");
+                            sound(target, settings.levelUpSound);
+                        }
+                    }
+                    refreshMenus();
+                    return Boolean.TRUE.equals(changed);
+                }, main);
     }
 
     private void premium(CommandSender sender, Player target, boolean on) {

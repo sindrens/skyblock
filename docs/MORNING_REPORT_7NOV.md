@@ -218,6 +218,38 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## The credit shop (update167, plan: `docs/plans/STORE_FULL_PLAN.md` section 1)
+- **`/store`** (also `/credit shop`, `/creditshop`, `/buy`, and the Store button in `/menu`): tabs **Ranks**, **Boosters**,
+  **Cosmetics**, **Extras**; your bought and earned credits on top; a confirm screen for every buy; if a delivery fails,
+  the credits come back by themselves.
+- **Ranks:** the 7 ranks with 3-4 perk lines each, prices 500 to 10,000 credits, an upgrade costs only the difference,
+  bought credits only. A purchase is announced ("Steve is now Firewing! Type gg") and everyone who types gg within 30 s
+  gets 1 earned credit (once per purchase, no daily limit). Credit packs bought on Tebex get the same gg moment.
+- **Boosters:** server-wide Sell / Tool XP / Skill XP / Crystals boosters, 30 min 300 or 60 min 500 credits (you get the
+  item, right-click starts it for everyone).
+- **Cosmetics:** links to the tool skins (per tool) and the wardrobe sets.
+- **Extras:** premium battle pass (1,000), one pass level (100), streak save (100, while a broken streak can still be
+  saved, 2 days), profile slots 2 / 3 (500 / 1,500), an extra loadout preset (300, up to 3), an Island Rename Token (50).
+- **`/credit gift <player>`** (or the cake button): the shop for an online friend, their prices, paid with bought credits.
+- **`/credit pay <player> <amount>`:** send bought credits, confirm screen, both get a line. **`/credit history`:** the
+  credit lines of your transactions.
+- **`/is name [name]`:** name your island (the first name is free, later changes use a Rename Token).
+- **Chargebacks:** a chargeback whose credits were already spent removes the ranks bought with credits and bans (console
+  `/ban`, config `credit-shop.chargeback-ban`).
+- **Eclipse key for credits: off** (keys are earned only; the Black Market keeps it for crystals).
+- **For you:** make the Tebex webstore with the 4 packs (500 = 5, 1,000 = 10, 2,700 = 25, 14,000 = 130), each running
+  `credit grant {id} <package> {transaction}` (packages `c500`, `c1000`, `c2700`, `c14000`).
+- **Test:** `/eco give <you> credits 20000 test` (owner node), then `/store`: buy Hatchling, then Firewing (pays 1,500),
+  type gg from a second account, buy a booster, the pass level, `/is name Test Isle`, a rename token and rename again,
+  `/credit pay <alt> 10`, `/credit history`, `/credit gift <alt>`.
+
+## Look v2 and the rest of the store plan (next)
+Answers saved in `docs/plans/LOOK_V2.md` (theme B, feature colours) and `STORE_FULL_PLAN.md`. Next: the new look on
+every scoreboard, tab list, chat line and menu; then /pv, join when full, /reclaim and cosmetic points; island boosters
+and KOTH; masteries; Black Market v8; Cosmetics v2; Fire tools; the resource pack; the compound pass.
+Note: small caps letters (ᴍᴏɴᴇʏ) are not Bedrock-safe (the build checks every message), so they come as a style tag
+that shows small caps on Java and plain capitals on Bedrock.
+
 ## Hoe plan, part 1: the enchant core (update165, plan: `docs/plans/HOE_IMPROVEMENTS.md`)
 - **Milestones instead of breakthroughs:** every level is stronger (a fast start: Shard Burst 100 → 110 at level 2 → 385 at level 100), and every 4% of the track an **extra +10%** that stays (25 per enchant: every 100 levels of 2,500, 40 of 1,000, 20 of 500). Area and timed enchants get the extra chance instead (no lag). Every milestone: action bar + sound; every 5th: a title. The tile shows "Next boost: +10% at level 300 (14 to go)" with a bar.
 - **Shard Finder** milestones too: +10% extra every 25 levels.

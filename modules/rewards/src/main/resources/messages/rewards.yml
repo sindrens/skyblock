@@ -11,6 +11,8 @@ no-permission: "<prefix><c:error><sym:cross></c:error> <c:text>You can't claim d
 box-full: "<prefix><c:error><sym:cross></c:error> <c:text>Your <c:action>/box</c:action> <c:text>is full. Empty it first, then claim."
 
 daily:
+  # Owner 7 Nov 2026: a streak saved in the credit shop. <streak>
+  streak-saved: "<prefix><c:success><sym:check></c:success> <c:text>Streak saved! You are on day <c:value><streak></c:value> <c:text>in a row again."
   disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Daily rewards are turned off right now."
   reminder: "<prefix><c:flame><sym:star></c:flame> <c:text>Your daily reward (day <c:value><day></c:value><c:text>) is ready! Streak: <c:value><streak></c:value><c:text>. Type <c:action>/daily</c:action><c:text>."
   already: "<prefix><c:muted><sym:time></c:muted> <c:text>You already claimed today. Next reward in <c:value><time></c:value><c:text>."
@@ -377,3 +379,20 @@ menu:
         - "<c:muted>Parties so far: <parties>"
       you-in: "<c:success><sym:check></c:success> <c:text>You are in (you voted today)"
       you-out: "<c:warning><sym:time></c:warning> <c:text>Vote today to join"
+
+# Owner 7 Nov 2026: the credit shop tile (/store » Extras). <lost> <days>
+store:
+  save:
+    name: "<c:value><bold>Save Your Streak"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>Your <c:value><lost> day</c:value> <c:text>daily streak broke."
+      - "<c:text>Get it back and keep counting."
+  save-none:
+    name: "<c:value><bold>Save Your Streak"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>When your daily streak breaks, you can"
+      - "<c:text>get it back here within <days> days."
+      - ""
+      - "<c:success><sym:check> Your streak is fine"

@@ -127,6 +127,42 @@ public final class WardrobeModule implements SkyblockModule {
         registerCommands();
         equipment.start();
         leveling.start();
+        registerShopOffers();
+    }
+
+    /** Owner 7 Nov 2026: an extra loadout preset (Extras) and the wardrobe sets (a link in Cosmetics) in the credit shop. */
+    private void registerShopOffers() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
+        net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.link("wardrobe_sets",
+                net.skybornmc.skyblock.common.store.CreditShop.Tab.COSMETICS, 20,
+                (viewer, receiver) -> core.menus().item(org.bukkit.Material.LEATHER_CHESTPLATE, viewer, ID, "store.sets"),
+                player -> menus().openMain(player)));
+        if (!config().loadoutEnabled || config().loadoutSlotCredits <= 0) {
+            return;
+        }
+        net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.of("loadout_slot",
+                net.skybornmc.skyblock.common.store.CreditShop.Tab.EXTRAS, 50,
+                (viewer, receiver) -> {
+                    Session s = equipment().sessionOrNull(receiver.getUniqueId());
+                    return core.menus().item(org.bukkit.Material.ARMOR_STAND, viewer, ID, "store.loadout",
+                            net.skybornmc.skyblock.common.text.Msg.number("have", s == null ? 0 : loadouts().slots(receiver, s)),
+                            net.skybornmc.skyblock.common.text.Msg.number("bought", s == null ? 0 : s.boughtSlots),
+                            net.skybornmc.skyblock.common.text.Msg.number("max", config().loadoutBoughtMax));
+                },
+                (viewer, receiver) -> {
+                    Session s = equipment().sessionOrNull(receiver.getUniqueId());
+                    return s == null || !s.loaded || s.boughtSlots >= config().loadoutBoughtMax ? -1L : config().loadoutSlotCredits;
+                }, false, true,
+                (buyer, receiver, purchaseId) -> core.database().transaction(c -> {
+                    loadoutStore.addBought(c, receiver.getUniqueId(), 1, System.currentTimeMillis());
+                    return true;
+                }).thenApplyAsync(ok -> {
+                    Session s = equipment().sessionOrNull(receiver.getUniqueId());
+                    if (s != null) {
+                        s.boughtSlots++;
+                    }
+                    return ok;
+                }, new net.skybornmc.skyblock.common.db.MainThread(core.plugin()))));
     }
 
     @Override
@@ -144,6 +180,7 @@ public final class WardrobeModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
         if (leveling != null) {
             leveling.stop(); // saves earned set XP (blocking) while the sessions still exist
             HandlerList.unregisterAll(leveling);

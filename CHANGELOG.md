@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Credit shop (update167):** `/store` with Ranks (pay the difference), server boosters, cosmetics links and extras (pass premium and levels, streak save, profile slots, loadout slot, island rename token); `/credit gift`, `/credit pay`, `/credit history`, gg after purchases, `/is name`, chargebacks remove shop ranks, Eclipse key no longer sold for credits.
+- **Calmer farming (update166):** one proc line, quiet everyday procs, shard popups added up once a second.
 - **Hoe plan part 1 (update165):** milestones instead of breakthroughs (fast-start growth, +10% every 4% of the track), Buy Max, enchant on/off, one action bar line with a combo counter, private drops when full, storage warning, Sweep without prestige, +1,000% shard cap, prestige keys and hoe titles, juicy hits.
 - **Tools v6 (update164):** compound Shard Finder (+3% a level, 250 levels), 10 shards a block, always rounded up, half price for /farm and /mine items, 2,500-level compounding enchants, 9 new enchants (26 on the pickaxe and hoe), no prestige gates, banner rows in the enchant menu, Auto-Sell and Auto-Compactor once for all tools, Angler mastery island-level gates.
 - **Whole list, batch 4 (update163):** Island Vault: `/is storage`, one shared chest per island (2-6 rows from the upgrade), task hand-in from it.

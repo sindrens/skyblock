@@ -89,6 +89,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
     private IslandAdmin admin;
     private IslandNotes notes;
     private IslandVault vault;
+    private IslandNaming naming;
     private IslandChat chat;
     private IslandHub hub;
     private IslandStats stats;
@@ -148,6 +149,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         homes = new IslandHomes(this, manager, new IslandHomeStore(core.database()));
         homes.load();
         vault = new IslandVault(this, manager, new IslandVaultStore(core.database()));
+        naming = new IslandNaming(this, manager); // owner 7 Nov 2026: /is name
         visits.onPresence(environment::apply);
         manager.onFlagChange((island, flag) -> {
             if (flag == IslandFlag.WEATHER || flag == IslandFlag.TIME) {
@@ -604,6 +606,7 @@ public final class IslandsModule implements SkyblockModule, Listener {
         Arg<String> notesIsland = Args.word("island", Suggest.bySender(s -> notes == null ? List.of() : notes.staffNames(s, visits::islandNames)));
         // M2.5
         Arg<String> chatText = Args.text("message", "on my way", "need help at the farm");
+        Arg<String> islandName = Args.text("name", "Sky Haven", "Ember Isle");
         Arg<String> infoIsland = Args.word("player", Suggest.bySender(visits::islandNames));
         // M5.5 Homestead (P5-21): shared island homes
         Arg<String> homeName = Args.word("name", Suggest.bySender(homes::ownNames));
@@ -628,6 +631,10 @@ public final class IslandsModule implements SkyblockModule, Listener {
                 .sub(CommandSpec.sub("notes").description("Your island's shared notes and to-do list (book view, pinned holograms)")
                         .permission(PERM_USE).playerOnly().cooldown(Duration.ofSeconds(1)).optional(notesIsland).example("is notes")
                         .executes(ctx -> notes.command(ctx.player(), ctx.getOr(notesIsland, null))))
+                .sub(CommandSpec.sub("name").description("See or change your island's name (first name free, later a Rename Token)")
+                        .permission(PERM_USE).playerOnly().aliases("rename").cooldown(Duration.ofSeconds(2)).optional(islandName)
+                        .example("is name Sky Haven")
+                        .executes(ctx -> naming.command(ctx.player(), ctx.getOr(islandName, null))))
                 .sub(CommandSpec.sub("storage").description("Your island's shared storage (rows from the Island Vault upgrade)")
                         .permission(PERM_USE).playerOnly().aliases("vault").cooldown(Duration.ofSeconds(1)).example("is storage")
                         .executes(ctx -> vault.open(ctx.player())))

@@ -130,6 +130,38 @@ public final class EconomyConfig extends ModuleConfig {
             + "online staff (skyblock.staff.economy.anomalies), the console and the Discord 'alerts' channel. A success is silent.")
     public boolean creditStoreAlertFailures = true;
 
+    // ------------------------------------------------------------------ credit shop (owner 7 Nov 2026, plans/STORE_FULL_PLAN.md 1)
+
+    @Setting(path = "credit-shop.enabled", desc = "The in-game credit shop (/credit shop, /store).")
+    public boolean creditShopEnabled = true;
+
+    @Setting(path = "credit-shop.ranks", desc = "Ranks for credits, lowest first: '<luckperms group>:<credits>'. An upgrade costs the "
+            + "difference to the highest of these groups the player already has. Bought credits only.", level = Setting.Level.OWNER)
+    public List<String> creditShopRanks = List.of("hatchling:500", "fledgling:1000", "firewing:2000", "flamecrest:3000",
+            "sunfeather:4500", "pyrelord:6500", "immortal:10000");
+
+    @Setting(path = "credit-shop.boosters", desc = "Server-wide boosters for credits: '<type>:<percent>:<minutes>:<credits>' "
+            + "(type sell, skill_xp, tool_xp, crystals). The buyer gets the booster item (right-click starts it for everyone).")
+    public List<String> creditShopBoosters = List.of("sell:50:30:300", "sell:50:60:500", "tool_xp:100:30:300", "tool_xp:100:60:500",
+            "skill_xp:50:30:300", "skill_xp:50:60:500", "crystals:50:30:300", "crystals:50:60:500");
+
+    @Setting(path = "credit-shop.island-rename-price", desc = "Credits of one Island Rename Token (/is name: the first name is free).", min = 0, max = 100000)
+    public long creditShopRenamePrice = 50;
+
+    @Setting(path = "credit-shop.gg-seconds", desc = "After a rank or credit purchase, everyone who types gg within this many seconds "
+            + "gets credit-shop.gg-credits earned credits (once per purchase each, no daily limit).", min = 0, max = 300)
+    public int creditShopGgSeconds = 30;
+
+    @Setting(path = "credit-shop.gg-credits", desc = "Earned credits for one gg.", min = 0, max = 100)
+    public long creditShopGgCredits = 1;
+
+    @Setting(path = "credit-shop.chargeback-ban", desc = "A Tebex chargeback whose credits were already spent removes the ranks bought "
+            + "with credits and bans the player (console /ban) until it is settled.", level = Setting.Level.OWNER)
+    public boolean creditShopChargebackBan = true;
+
+    @Setting(path = "credit-shop.chargeback-reason", desc = "Ban reason of a chargeback ban.", level = Setting.Level.OWNER)
+    public String creditShopChargebackReason = "Chargeback on a store purchase. Contact staff to settle it.";
+
     // ------------------------------------------------------------------ database retries (C1-R3-03)
 
     @Setting(path = "database.retry.attempts", desc = "Tries of one balance change when the database reports a deadlock or "

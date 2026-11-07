@@ -592,3 +592,18 @@ confirm:
   give-token:
     crumb: "Give Token"
     details: ["<c:text>Give a <c:value><set></c:value> token", "<c:text>to <c:value><player></c:value>"]
+
+# Owner 7 Nov 2026: the credit shop tiles (/store). <have> <bought> <max>
+store:
+  sets:
+    name: "<c:value><bold>Wardrobe Sets"
+    lore:
+      - "<c:muted>COSMETICS"
+      - "<c:text>Armour sets with looks and set bonuses,"
+      - "<c:text>some of them for credits."
+  loadout:
+    name: "<c:value><bold>Extra Loadout"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>One more loadout preset (armour + hotbar)."
+      - "<c:bar>| </c:bar><c:text>You have: <c:value><have></c:value> <c:muted>(bought <bought>/<max>)"

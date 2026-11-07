@@ -57,6 +57,12 @@ final class TransactionsMenu extends Menu {
         this.creditsAccount = creditsAccount == null ? account : creditsAccount;
     }
 
+    /** Owner 7 Nov 2026 (/credit history): opens with the Credits filter set. */
+    TransactionsMenu creditsOnly() {
+        filter = filter.withCurrency(Currency.CREDITS);
+        return this;
+    }
+
     /** The account a row is seen from: the player for credit rows (both halves), the profile for everything else. */
     private AccountRef view(LedgerEntry e) {
         return e.currency().accountWide() ? creditsAccount : account;

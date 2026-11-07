@@ -229,6 +229,11 @@ public final class Island {
         return name;
     }
 
+    /** Owner 7 Nov 2026 (/is name): the new name after the database saved it. */
+    void customName(String name) {
+        this.name = name;
+    }
+
     String ownerName() {
         return ownerName;
     }

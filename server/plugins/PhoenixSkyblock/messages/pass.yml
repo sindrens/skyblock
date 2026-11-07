@@ -163,3 +163,25 @@ admin:
   reset: "<prefix><c:success><sym:check></c:success> <c:text>Pass XP of <c:value><player></c:value> <c:text>is 0 now. Claimed tiers stay claimed."
   premium-on: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>has the Premium Pass for season <c:value><season></c:value><c:text>."
   premium-off: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>no longer has the Premium Pass for season <c:value><season></c:value><c:text> (the permission still counts)."
+
+# Owner 7 Nov 2026: the credit shop tiles (/store » Extras). <season> <level> <next>
+store:
+  premium:
+    name: "<c:value><bold>Premium Battle Pass"
+    lore:
+      - "<c:muted>EXTRA · SEASON <season>"
+      - "<c:text>The premium track for this season:"
+      - "<c:text>titles and tags at every milestone."
+      - "<c:muted>Looks only. For your whole account."
+  premium-owned:
+    name: "<c:value><bold>Premium Battle Pass"
+    lore:
+      - "<c:muted>EXTRA · SEASON <season>"
+      - ""
+      - "<c:success><sym:check> You have premium this season"
+  level:
+    name: "<c:value><bold>Battle Pass Level"
+    lore:
+      - "<c:muted>EXTRA"
+      - "<c:text>One pass level right away."
+      - "<c:bar>| </c:bar><c:text>Level <c:value><level></c:value> <c:text>» <c:value><next>"

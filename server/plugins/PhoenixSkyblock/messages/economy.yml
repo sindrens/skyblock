@@ -174,6 +174,215 @@ credit:
     failed: "<tag:store> <c:error>Chargeback FAILED for <c:value><player></c:value> <c:error>tx <tx>. Try again."
   alert:
     failed-grant: "<prefix><c:error><sym:cross></c:error> <c:text>Store grant failed: <c:value><player></c:value><c:text>, package <package>, tx <tx> (<reason>)."
+  # Owner 7 Nov 2026 (plans/STORE_FULL_PLAN.md 1): /credit shop, /store. <price> <player> <rank> <seconds> <credits> <have> <after>
+  shop:
+    disabled: "<prefix><c:error><sym:cross></c:error> <c:text>The credit shop is closed right now."
+    not-for-sale: "<prefix><c:error><sym:cross></c:error> <c:text>That can't be bought right now."
+    busy: "<prefix><c:muted>One moment, your last purchase is still going through."
+    failed: "<prefix><c:error><sym:cross></c:error> <c:text>Something went wrong. Nothing was taken; try again."
+    not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You need <cur:credits><price> credits</cur:credits><c:text>. Get more with <click:run_command:'/store'><c:action>/store</c:action></click><c:text> » Get credits."
+    not-enough-bought: "<prefix><c:error><sym:cross></c:error> <c:text>This needs <cur:credits><price> bought credits</cur:credits><c:text> (earned credits can't buy ranks or gifts)."
+    refunded: "<prefix><c:error><sym:cross></c:error> <c:text>That didn't work, so your <cur:credits><price> credits</cur:credits> <c:text>came back."
+    bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought for <cur:credits><price> credits</cur:credits><c:text>. Thank you!"
+    gifted: "<prefix><c:success><sym:check></c:success> <c:text>Gift sent to <c:value><player></c:value> <c:text>for <cur:credits><price> credits</cur:credits><c:text>. Thank you!"
+    gift-received: "<prefix><c:success><sym:star></c:success> <c:value><player></c:value> <c:text>bought you a gift from the store! Check <click:run_command:'/box'><c:action>/box</c:action></click><c:text> if it's an item."
+    rank-bought:
+      - ""
+      - " <c:success><bold>STORE</bold></c:success> <c:value><bold><player></bold></c:value> <c:text>is now <c:value><bold><rank></bold></c:value><c:text>!"
+      - " <c:muted>Type <c:value>gg</c:value> <c:muted>in the next <seconds> s for a free credit.</c:muted> <click:run_command:'/store'><c:action>[ OPEN STORE ]</c:action></click>"
+      - ""
+    pack-bought:
+      - ""
+      - " <c:success><bold>STORE</bold></c:success> <c:value><bold><player></bold></c:value> <c:text>supported the server!"
+      - " <c:muted>Type <c:value>gg</c:value> <c:muted>in the next <seconds> s for a free credit.</c:muted> <click:run_command:'/store'><c:action>[ OPEN STORE ]</c:action></click>"
+      - ""
+    rank-title:
+      title: "<grad:flame><bold><rank>"
+      subtitle: "<c:text>Thank you for supporting the server!"
+      fade-in: 5
+      stay: 50
+      fade-out: 15
+    gg-thanks: "<cur:credits>+<credits> credit</cur:credits> <c:muted>for the gg"
+    get-credits:
+      - "<prefix><c:text>Credits are sold on our webstore: <click:open_url:'https://store.skybornmc.net'><c:action>store.skybornmc.net</c:action></click>"
+      - " <c:muted>They arrive in a few seconds, even when you are offline."
+    menu:
+      title: "Store"
+      empty:
+        name: "<c:muted>Nothing here yet"
+        lore: ["<c:muted>New things come with updates."]
+      wallet:
+        name: "<cur:credits><bold>Your Credits"
+        lore:
+          - "<c:bar>| </c:bar><c:text>Bought: <cur:credits><bought>"
+          - "<c:bar>| </c:bar><c:text>Earned: <cur:credits><earned>"
+          - ""
+          - "<c:muted>Earned credits pay first (votes, streaks, gg)."
+          - "<c:muted>Ranks and gifts need bought credits."
+      gift-for:
+        name: "<c:value><bold>Gift for <player>"
+        lore:
+          - "<c:text>Prices are for <player>."
+          - "<c:bar>| </c:bar><c:text>Your bought credits: <cur:credits><bought>"
+          - ""
+          - "<c:muted>Gifts are paid with bought credits."
+      tab:
+        ranks:
+          name: "<c:value><bold>Ranks"
+          lore: ["<c:text>7 ranks. An upgrade costs only the difference."]
+        boosters:
+          name: "<c:value><bold>Boosters"
+          lore: ["<c:text>Boosts for everyone online, with your name on it."]
+        cosmetics:
+          name: "<c:value><bold>Cosmetics"
+          lore: ["<c:text>Tool skins, wardrobe sets and more looks."]
+        extras:
+          name: "<c:value><bold>Extras"
+          lore: ["<c:text>Battle pass, slots, tokens and saves."]
+      price:
+        - ""
+        - "<c:bar>| </c:bar><c:text>Price: <cur:credits><price> credits"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+      price-bought:
+        - ""
+        - "<c:bar>| </c:bar><c:text>Price: <cur:credits><price> bought credits"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"
+      link:
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      gift:
+        name: "<c:value><bold>Gift to a Friend"
+        lore:
+          - "<c:text>Buy a rank, a booster or an extra"
+          - "<c:text>for another player who is online."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>and type their name"
+      history:
+        name: "<c:value><bold>Credit History"
+        lore:
+          - "<c:text>Everything bought, earned, spent and sent."
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
+      get:
+        name: "<cur:credits><bold>Get Credits"
+        lore:
+          - "<c:text>Credit packs on the webstore:"
+          - "<c:bar>| </c:bar><c:text>500 · 1,000 · 2,700 · 14,000"
+          - ""
+          - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the link"
+    confirm:
+      crumb: "Buy this?"
+      any:
+        - "<c:bar>| </c:bar><c:text>Price: <cur:credits><price> credits"
+        - "<c:bar>| </c:bar><c:text>You have: <cur:credits><have>"
+        - "<c:bar>| </c:bar><c:text>After: <cur:credits><after>"
+        - "<c:muted>Earned credits pay first."
+      bought:
+        - "<c:bar>| </c:bar><c:text>Price: <cur:credits><price> bought credits"
+        - "<c:bar>| </c:bar><c:text>You have: <cur:credits><have> bought"
+        - "<c:bar>| </c:bar><c:text>After: <cur:credits><after>"
+      gift:
+        - "<c:text>A gift for <c:value><player></c:value><c:text>."
+        - "<c:bar>| </c:bar><c:text>Price: <cur:credits><price> bought credits"
+        - "<c:bar>| </c:bar><c:text>You have: <cur:credits><have> bought"
+    # The rank tiles: perks of each rank (cumulative, the rank below included). <rank> <full>
+    rank:
+      hatchling:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 1"
+          - "<c:text><sym:bullet> /hat"
+          - "<c:text><sym:bullet> 7 auction slots"
+          - "<c:text><sym:bullet> Weekly kit (S)"
+      fledgling:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 2"
+          - "<c:text><sym:bullet> Everything of Hatchling"
+          - "<c:text><sym:bullet> /craft, a join message"
+          - "<c:text><sym:bullet> 3 loadouts, 8 auction slots"
+      firewing:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 3"
+          - "<c:text><sym:bullet> Everything of Fledgling"
+          - "<c:text><sym:bullet> /ec, /nick, a second profile"
+          - "<c:text><sym:bullet> Weekly kit (M), 9 auction slots"
+      flamecrest:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 4"
+          - "<c:text><sym:bullet> Everything of Firewing"
+          - "<c:text><sym:bullet> Fly on your island"
+          - "<c:text><sym:bullet> 4 loadouts, 10 auction slots"
+      sunfeather:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 5"
+          - "<c:text><sym:bullet> Everything of Flamecrest"
+          - "<c:text><sym:bullet> Nick colours"
+          - "<c:text><sym:bullet> Weekly kit (L), 12 auction slots"
+      pyrelord:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 6"
+          - "<c:text><sym:bullet> Everything of sunfeather"
+          - "<c:text><sym:bullet> A third profile"
+          - "<c:text><sym:bullet> 5 loadouts, 14 auction slots"
+      immortal:
+        name: "<c:value><bold><rank>"
+        lore:
+          - "<c:muted>RANK · TIER 7 · BEST VALUE"
+          - "<c:text><sym:bullet> Everything of Pyrelord"
+          - "<c:text><sym:bullet> Hex nick colours, rank chat colour"
+          - "<c:text><sym:bullet> Weekly kit (XL), 16 auction slots"
+    rank-state:
+      owned: ["", "<c:success><sym:check> You have this rank"]
+      new: ["", "<c:muted>Full price: <full>"]
+      upgrade: ["", "<c:muted>Full price: <full> · you pay the difference"]
+    booster:
+      name: "<c:value><bold><type> +<percent>%"
+      lore:
+        - "<c:muted>SERVER BOOSTER"
+        - "<c:text>For everyone online, <minutes> minutes."
+        - "<c:text>Your name in the boss bar: they can say thanks!"
+        - "<c:muted>You get the booster; right-click starts it."
+    booster-type:
+      sell: "Sell"
+      skill_xp: "Skill XP"
+      tool_xp: "Tool XP"
+      crystals: "Crystals"
+    rename:
+      name: "<c:value><bold>Island Rename Token"
+      lore:
+        - "<c:muted>EXTRA"
+        - "<c:text>Give your island a new name: /is name"
+        - "<c:text>(the first name is free)."
+        - "<c:bar>| </c:bar><c:text>You have: <c:value><have>"
+  gift:
+    ask: "<prefix><c:text>Type the name of the player (online) you want to buy a gift for, or <c:value>cancel</c:value><c:text>."
+    ask-form:
+      title: "Gift to a Friend"
+      label: "Player name (online)"
+    offline: "<prefix><c:error><sym:cross></c:error> <c:value><player></c:value> <c:text>is not online. Gifts go to online players."
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>That's you! Use the shop for yourself."
+  # /credit pay <player> <amount>: bought credits only. <player> <amount>
+  pay:
+    self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't send credits to yourself."
+    crumb: "Send credits?"
+    shown:
+      name: "<cur:credits><bold>Send <amount> credits"
+      lore: ["<c:text>To <c:value><player>"]
+    details:
+      - "<c:bar>| </c:bar><c:text>To: <c:value><player>"
+      - "<c:bar>| </c:bar><c:text>Amount: <cur:credits><amount> bought credits"
+      - "<c:muted>This can't be undone."
+    not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have <cur:credits><amount> bought credits</cur:credits><c:text> (earned credits can't be sent)."
+    failed: "<prefix><c:error><sym:cross></c:error> <c:text>Sending failed. Nothing was taken; try again."
+    sent: "<prefix><c:success><sym:check></c:success> <c:text>Sent <cur:credits><amount> credits</cur:credits> <c:text>to <c:value><player></c:value><c:text>."
+    received: "<prefix><c:success><sym:check></c:success> <c:value><player></c:value> <c:text>sent you <cur:credits><amount> credits</cur:credits><c:text>!"
 
 # Tab completion hints (C1-R3-03). Staff can type any reason; these are only suggestions.
 tab-hints:

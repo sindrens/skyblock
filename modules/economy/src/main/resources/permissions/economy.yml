@@ -64,6 +64,12 @@ skyblock.staff.economy.anomalies:
 skyblock.credit.bal:
   description: See your credits with the bought/earned split, or another player's total (/credit, /credit bal [player]; card C1)
   default: true
+skyblock.credit.shop:
+  description: The credit shop (/credit shop, /store, /creditshop; owner 7 Nov 2026), gifts (/credit gift) and the credit history (/credit history)
+  default: true
+skyblock.credit.pay:
+  description: Send bought credits to another player (/credit pay <player> <amount>, confirm screen, receipt)
+  default: true
 skyblock.credit.grant:
   description: /credit grant and /storegrant (Tebex, CREDIT-SHOP 5.2). Console only and never granted to anyone; admin and owner get an explicit false in server/permissions/economy.txt.
   default: false

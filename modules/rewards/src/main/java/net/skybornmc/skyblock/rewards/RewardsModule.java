@@ -161,6 +161,21 @@ public final class RewardsModule implements SkyblockModule, Listener {
         tasks.add(core.scheduler().repeat("rewards:votes", 1_200L, 1_200L, votes::periodic));
         long board = 20L * votesSettings.hologramSeconds;
         tasks.add(core.scheduler().repeat("rewards:vote-board", 100L, board, votes::pushBoard));
+        registerShopOffers();
+    }
+
+    /** Owner 7 Nov 2026: the streak save in the credit shop (Extras), shown while a broken streak can be saved. */
+    private void registerShopOffers() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
+        if (!settings.saveEnabled) {
+            return;
+        }
+        net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.of("streak_save",
+                net.skybornmc.skyblock.common.store.CreditShop.Tab.EXTRAS, 30,
+                (viewer, receiver) -> core.menus().item(Material.CLOCK, viewer, ID, daily.saveable(receiver) ? "store.save" : "store.save-none",
+                        Msg.number("lost", daily.lostStreak(receiver)), Msg.number("days", settings.saveDays)),
+                (viewer, receiver) -> daily.saveable(receiver) ? settings.saveCredits : -1L, false, true,
+                (buyer, receiver, purchaseId) -> daily.saveStreak(receiver)));
     }
 
     @Override
@@ -172,10 +187,12 @@ public final class RewardsModule implements SkyblockModule, Listener {
         defineTitles();
         receiver.apply();
         votes.markBoard();
+        registerShopOffers();
     }
 
     @Override
     public void disable() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
         HandlerList.unregisterAll(this);
         HandlerList.unregisterAll(activity);
         tasks.forEach(Scheduler.Task::cancel);

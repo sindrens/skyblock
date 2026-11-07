@@ -460,6 +460,34 @@ final class ProfileServiceImpl implements ProfileService, Listener {
         return s == null ? Optional.empty() : SlotRules.source(slot, s.unlocks, n -> player.hasPermission(SlotRules.rankPermission(n)));
     }
 
+    /** Owner 7 Nov 2026 (credit shop): the price of a slot for this player, -1 when it can't be bought (owned, rank, not sold). */
+    long shopPrice(Player player, int slot) {
+        Session s = sessions.get(player.getUniqueId());
+        long price = config().price(slot);
+        return s == null || SlotRules.canBuy(slot, s.unlocks, n -> player.hasPermission(SlotRules.rankPermission(n)), price).isPresent() ? -1 : price;
+    }
+
+    /** Owner 7 Nov 2026 (credit shop): unlocks a slot after the shop took the credits. */
+    CompletableFuture<Boolean> grantSlot(Player player, int slot) {
+        UUID owner = player.getUniqueId();
+        return core.database().transaction(c -> {
+            store.addUnlock(c, owner, slot, SlotSource.CREDITS, 0, System.currentTimeMillis());
+            return store.unlocks(c, owner);
+        }).thenApplyAsync(unlocks -> {
+            Session live = sessions.get(owner);
+            if (live != null) {
+                live.unlocks = List.copyOf(unlocks);
+            }
+            core.audit().logPlayer(AuditCategory.AUTH, "profile_slot_unlock", Actor.player(player), owner, player.getName(), config().price(slot),
+                    player.getLocation(), Map.of("slot", slot, "source", "credit_shop"));
+            if (player.isOnline()) {
+                module.msg.send(player, "slots.bought", Msg.number("slot", slot), Msg.p("price", Format.number(config().price(slot))));
+                core.sounds().play(player, "unlock");
+            }
+            return true;
+        }, main);
+    }
+
     /**
      * Buys a slot with credits (earned first, then bought; C1). Atomic: the payment has an idempotency key per player and
      * slot, so it is paid once.

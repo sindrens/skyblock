@@ -2076,3 +2076,19 @@ obsidian:
   done: "<c:success><sym:check></c:success> <c:text>The obsidian melted back into a lava bucket."
   cooldown: "<c:error><sym:cross></c:error> <c:text>Wait a moment before the next one."
   limit: "<c:error><sym:cross></c:error> <c:text>That's enough lava for this hour. Try again later."
+
+# Owner 7 Nov 2026 (plans/STORE_FULL_PLAN.md 1): /is name. <name> <tokens> <cost> <max>
+name:
+  info:
+    - "<prefix><c:text>Your island: <c:value><name>"
+    - " <c:muted>Change it with <c:value>/is name <new name></c:value><c:muted>: <cost></c:muted> <c:muted>Rename Tokens: <tokens></c:muted> <click:run_command:'/store'><c:action>[Store]</c:action></click>"
+  cost-free: "the first name is free."
+  cost-token: "uses one Rename Token."
+  leader-only: "<prefix><c:error><sym:cross></c:error> <c:text>Only the island leader can name the island."
+  empty: "<prefix><c:error><sym:cross></c:error> <c:text>Type a name of at least 2 characters: <c:value>/is name Sky Haven"
+  too-long: "<prefix><c:error><sym:cross></c:error> <c:text>That name is too long (<max> characters at most)."
+  characters: "<prefix><c:error><sym:cross></c:error> <c:text>Use letters, numbers, spaces, <c:value>' - _</c:value><c:text> only."
+  filtered: "<prefix><c:error><sym:cross></c:error> <c:text>That name isn't allowed here. Pick another one."
+  no-token: "<prefix><c:error><sym:cross></c:error> <c:text>A new name needs a <c:value>Rename Token</c:value><c:text>. Get one in <click:run_command:'/store'><c:action>/store</c:action></click><c:text> » Extras."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Saving the name failed. Try again."
+  done: "<prefix><c:success><sym:check></c:success> <c:text>Your island is now called <c:value><name></c:value><c:text>."

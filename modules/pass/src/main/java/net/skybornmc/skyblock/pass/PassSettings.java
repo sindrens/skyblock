@@ -87,6 +87,12 @@ public final class PassSettings extends ModuleConfig {
             level = Setting.Level.OWNER)
     public List<String> freeOverflow = List.of("crystals 60", "key ember");
 
+    @Setting(path = "premium.price-credits", desc = "Owner 7 Nov 2026: premium for this season in the credit shop (/store → Extras; once per account and season). 0 = not sold.", min = 0, max = 100000)
+    public long premiumPriceCredits = 1000;
+
+    @Setting(path = "premium.tier-skip-credits", desc = "Owner 7 Nov 2026: one pass level (levels.xp-per-level XP) in the credit shop. 0 = not sold.", min = 0, max = 100000)
+    public long tierSkipCredits = 100;
+
     @Setting(path = "premium.milestones", desc = "Premium track (per account, P10-28): '<level>: <reward>' lines. COSMETICS ONLY "
             + "(R3-44, Mojang rules): only title <id> [rarity] and tag <id> are accepted; anything else is skipped with a warning. "
             + "A tag id must exist in tags-titles.yml; titles are added there by the pass if missing (names: messages/pass.yml "

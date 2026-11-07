@@ -58,6 +58,20 @@ public final class ProfilesModule implements SkyblockModule {
         service.start();
         core.services().register(ID, ProfileService.class, service);
         core.plugin().getServer().getPluginManager().registerEvents(service, core.plugin());
+        // Owner 7 Nov 2026: profile slots 2 and 3 in the credit shop (Extras).
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
+        for (int slot = 2; slot <= 3; slot++) {
+            int n = slot;
+            if (config.price(n) <= 0) {
+                continue;
+            }
+            net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.of("profile_slot_" + n,
+                    net.skybornmc.skyblock.common.store.CreditShop.Tab.EXTRAS, 40 + n,
+                    (viewer, receiver) -> core.menus().item(org.bukkit.Material.ARMOR_STAND, viewer, ID,
+                            service.slotUnlocked(receiver, n) ? "store.slot-owned" : "store.slot", net.skybornmc.skyblock.common.text.Msg.number("slot", n)),
+                    (viewer, receiver) -> service.shopPrice(receiver, n), false, true,
+                    (buyer, receiver, purchaseId) -> service.grantSlot(receiver, n)));
+        }
         guards = new ProfileGuards(this, service);
         core.plugin().getServer().getPluginManager().registerEvents(guards, core.plugin());
         core.placeholders().registerText(ID, "profile_name", p -> p == null ? "" : service.activeName(p));
@@ -175,6 +189,7 @@ public final class ProfilesModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
         if (service != null) {
             HandlerList.unregisterAll(service);
             service.stop();

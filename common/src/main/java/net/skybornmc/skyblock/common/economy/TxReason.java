@@ -120,7 +120,19 @@ public final class TxReason {
     /** ECON-SHARDS: crystals or shards paid for a shard block upgrade (a sink). */
     public static final String SHARD_BLOCK_UPGRADE = "shardblk_upgrade";
 
-    private static final Pattern VALID = Pattern.compile("[a-z0-9_]{1,32}");
+    /** Owner 7 Nov 2026 (plans/STORE_FULL_PLAN.md 1): something bought in the credit shop (/credit shop). */
+    public static final String CREDIT_SHOP = "credit_shop";
+
+    /** A credit shop purchase given back (the delivery failed). */
+    public static final String CREDIT_SHOP_REFUND = "credit_shop_refund";
+
+    /** {@code /credit pay}: bought credits sent to another player. */
+    public static final String CREDIT_PAY = "credit_pay";
+
+    /** "gg" after a purchase: one earned credit. */
+    public static final String CREDIT_GG = "credit_gg";
+
+    private static final Pattern VALID =Pattern.compile("[a-z0-9_]{1,32}");
 
     private TxReason() {
     }

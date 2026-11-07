@@ -42,6 +42,39 @@ final class DailyService {
         return Optional.ofNullable(states.get(profile));
     }
 
+    /** Owner 7 Nov 2026 (credit shop): can the active profile's lost streak be saved right now? Main thread, cached. */
+    boolean saveable(Player p) {
+        return state(m.profiles().profileKey(p)).flatMap(s -> DailyRules.saved(s, today(), m.settings.saveDays)).isPresent();
+    }
+
+    /** The lost streak of the player's active profile (for the shop tile), 0 when none. */
+    int lostStreak(Player p) {
+        return state(m.profiles().profileKey(p)).map(DailyRules.State::lostStreak).orElse(0);
+    }
+
+    /** Saves the lost streak (after the credit shop took the credits); true when it was saved. */
+    java.util.concurrent.CompletableFuture<Boolean> saveStreak(Player p) {
+        UUID profile = m.profiles().profileKey(p);
+        int today = today();
+        int days = m.settings.saveDays;
+        long now = System.currentTimeMillis();
+        return m.core.database().transaction(c -> {
+            Optional<DailyRules.State> before = RewardStore.calendar(c, profile);
+            Optional<DailyRules.State> after = before.flatMap(s -> DailyRules.saved(s, today, days));
+            return after.isPresent() && RewardStore.saveCalendar(c, profile, before, after.get(), now) ? after.get() : null;
+        }).thenApplyAsync(after -> {
+            if (after == null) {
+                return false;
+            }
+            states.put(profile, after);
+            m.refreshMenus(profile);
+            if (p.isOnline()) {
+                m.msg.send(p, "daily.streak-saved", net.skybornmc.skyblock.common.text.Msg.number("streak", after.streak()));
+            }
+            return true;
+        }, m.main());
+    }
+
     int today() {
         return DailyRules.today(System.currentTimeMillis(), m.zone());
     }

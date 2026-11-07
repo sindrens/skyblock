@@ -715,3 +715,12 @@ skins:
   bought: "<prefix><c:success><sym:check></c:success> <c:text>New skin: <c:value><skin></c:value> <c:text>for your <tool>."
   poor: "<prefix><c:error><sym:cross></c:error> <c:text>That costs <c:value><price></c:value> <c:text>credits; you have <c:value><have></c:value><c:text>. </c:text><click:run_command:'/credit'><c:action>/credit</c:action></click>"
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Nothing was paid. Try again in a moment."
+
+# Owner 7 Nov 2026: the credit shop tiles (/store » Cosmetics). <tool>
+store:
+  skins:
+    name: "<c:value><bold><tool> Skins"
+    lore:
+      - "<c:muted>COSMETICS"
+      - "<c:text>New looks for your <tool>."
+      - "<c:text>Looks only, your levels and perks stay."

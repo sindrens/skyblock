@@ -76,6 +76,10 @@ public final class EconomyModule implements SkyblockModule, Listener {
     static final String PERM_APPROVE_OWN = "skyblock.admin.economy.approve-own";
     /** {@code /credit bal [player]}: everyone (card C1). */
     static final String PERM_CREDIT_BAL = "skyblock.credit.bal";
+    /** Owner 7 Nov 2026: the credit shop, gifts and the credit history. */
+    static final String PERM_CREDIT_SHOP = "skyblock.credit.shop";
+    /** Owner 7 Nov 2026: /credit pay (bought credits only). */
+    static final String PERM_CREDIT_PAY = "skyblock.credit.pay";
     /**
      * Creating or setting <b>bought</b> credits by hand ({@code /eco give|set|reset credits}, reason {@code admin_buy}): the
      * owner only (C1-R1-18; explicit false for admins in server/permissions/economy.txt).
@@ -95,6 +99,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
     final ModuleMessages msg;
     final EconomyConfig config = new EconomyConfig();
     private net.skybornmc.skyblock.economy.store.StoreGrants storeGrants;
+    private net.skybornmc.skyblock.economy.store.CreditShopImpl creditShop;
     private EconomyServiceImpl service;
     private MoneyNotes notes;
     private net.skybornmc.skyblock.economy.sell.SellFeature sell;
@@ -171,6 +176,11 @@ public final class EconomyModule implements SkyblockModule, Listener {
                 storeGrants.remember(ids);
             }
         }, main);
+        // Owner 7 Nov 2026 (plans/STORE_FULL_PLAN.md 1): the credit shop; modules add their offers through the service.
+        creditShop = new net.skybornmc.skyblock.economy.store.CreditShopImpl(core, msg, () -> config, service, main, this::refreshCredits);
+        creditShop.reload();
+        core.services().register(ID, net.skybornmc.skyblock.common.store.CreditShop.class, creditShop);
+        core.plugin().getServer().getPluginManager().registerEvents(creditShop, core.plugin());
         registerPlaceholders();
         registerCommands();
         core.plugin().getServer().getPluginManager().registerEvents(this, core.plugin());
@@ -181,6 +191,7 @@ public final class EconomyModule implements SkyblockModule, Listener {
         autoSell.start();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
+            creditShop.load(p);
         }
         baltop.refreshIfOlder(0, config.baltopSize, publicCurrencies());
         // R3-6: waiting /eco changes are dropped after eco.pending-minutes (memory only, every 10 s).
@@ -226,6 +237,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         if (watch != null) {
             watch.reload();
         }
+        if (creditShop != null) {
+            creditShop.reload();
+        }
     }
 
     @Override
@@ -250,6 +264,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
         }
         if (watch != null) {
             watch.disable();
+        }
+        if (creditShop != null) {
+            HandlerList.unregisterAll(creditShop);
         }
         HandlerList.unregisterAll(this);
     }
@@ -379,6 +396,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         load(event.getPlayer());
+        if (creditShop != null) {
+            creditShop.load(event.getPlayer());
+        }
         if (watch != null) {
             watch.rememberStaff(event.getPlayer());
         }
@@ -837,6 +857,8 @@ public final class EconomyModule implements SkyblockModule, Listener {
 
     private void registerCredit() {
         Arg<String> target = Args.offlinePlayer("player");
+        Arg<Player> giftTarget = Args.onlinePlayer("player");
+        Arg<Long> payAmount = Args.amount("amount");
         core.commands().register(CommandSpec.command("credit")
                 .description("Your credits: bought and earned (store, votes, streaks, thanks)")
                 .category("Economy")
@@ -849,8 +871,38 @@ public final class EconomyModule implements SkyblockModule, Listener {
                         .optional(target)
                         .example("credit bal Steve")
                         .executes(ctx -> creditBalance(ctx.sender(), ctx.getOr(target, null))))
+                .sub(CommandSpec.sub("shop")
+                        .description("The credit shop: ranks, boosters, cosmetics and extras")
+                        .permission(PERM_CREDIT_SHOP)
+                        .playerOnly()
+                        .executes(ctx -> openShop(ctx.player())))
+                .sub(CommandSpec.sub("history")
+                        .description("Your credit history: bought, earned, spent, sent")
+                        .permission(PERM_CREDIT_SHOP)
+                        .playerOnly()
+                        .executes(ctx -> core.menus().open(ctx.player(), new TransactionsMenu(this,
+                                AccountRef.player(profiles().profileKey(ctx.player())), AccountRef.player(ctx.player().getUniqueId())).creditsOnly())))
+                .sub(CommandSpec.sub("gift")
+                        .description("Buy something from the credit shop for another player (online)")
+                        .permission(PERM_CREDIT_SHOP)
+                        .playerOnly()
+                        .arg(giftTarget)
+                        .example("credit gift Steve")
+                        .executes(ctx -> openGift(ctx.player(), ctx.get(giftTarget))))
+                .sub(CommandSpec.sub("pay")
+                        .description("Send bought credits to another player")
+                        .permission(PERM_CREDIT_PAY)
+                        .playerOnly()
+                        .arg(target)
+                        .arg(payAmount)
+                        .example("credit pay Steve 100")
+                        .executes(ctx -> creditPay(ctx.player(), ctx.get(target), ctx.get(payAmount))))
                 .sub(storeGrantSpec(CommandSpec.sub("grant")))
                 .sub(chargebackSpec()));
+        // Owner 7 Nov 2026: /store and /creditshop open the shop (the /menu Store button goes live with /store).
+        core.commands().register(CommandSpec.command("store").description("The credit shop: ranks, boosters, cosmetics and extras")
+                .category("Economy").permission(PERM_CREDIT_SHOP).playerOnly().aliases("creditshop", "buy")
+                .executes(ctx -> openShop(ctx.player())));
         // Hidden alias of the old C1 name (/storegrant), same handler and arguments (CREDIT-SHOP 5.2).
         core.commands().register(storeGrantSpec(CommandSpec.command("storegrant")).hidden());
     }
@@ -960,6 +1012,9 @@ public final class EconomyModule implements SkyblockModule, Listener {
                             refreshCredits(uuid);
                             msg.send(online, "credit.grant.thanks", Msg.number("credits", pack.get().credits()));
                             core.sounds().play(online, "success");
+                            if (creditShop != null) {
+                                creditShop.storePurchase(online, tx); // owner 7 Nov 2026: "gg" for everyone
+                            }
                         }
                     }
                     case DUPLICATE -> msg.send(sender, "credit.grant.duplicate", Msg.p("tx", tx), Msg.p("package", pack.get().id()));
@@ -969,6 +1024,72 @@ public final class EconomyModule implements SkyblockModule, Listener {
                     }
                 }
             });
+        });
+    }
+
+    private void openShop(Player p) {
+        creditShop.open(p, net.skybornmc.skyblock.common.store.CreditShop.Tab.RANKS);
+    }
+
+    private void openGift(Player p, Player to) {
+        if (to.equals(p)) {
+            throw CommandFailure.of("credit.gift.self");
+        }
+        creditShop.openGift(p, to);
+    }
+
+    /**
+     * {@code /credit pay}: bought credits only (C1-R2-04), a confirm screen every time, both get a line; refused to
+     * yourself and when a sanction blocks paying.
+     */
+    private void creditPay(Player p, String name, long amount) {
+        if (net.skybornmc.skyblock.common.moderation.SanctionService.denied(core.services(), p,
+                net.skybornmc.skyblock.common.moderation.SanctionService.Use.PAY)) {
+            return;
+        }
+        then(p, resolve(name), found -> {
+            if (found.isEmpty()) {
+                msg.send(p, "unknown-player", Msg.p("player", name));
+                sound(p, "error");
+                return;
+            }
+            UUID to = found.get().uuid();
+            String toName = found.get().name();
+            if (to.equals(p.getUniqueId())) {
+                msg.send(p, "credit.pay.self");
+                sound(p, "error");
+                return;
+            }
+            net.skybornmc.skyblock.common.menu.ConfirmMenu confirm = new net.skybornmc.skyblock.common.menu.ConfirmMenu(
+                    v -> core.menus().text(v, ID, "credit.pay.crumb"),
+                    core.menus().item(org.bukkit.Material.EMERALD, p, ID, "credit.pay.shown", Msg.p("player", toName),
+                            Msg.number("amount", amount)),
+                    v -> core.menus().lines(v, ID, "credit.pay.details", Msg.p("player", toName), Msg.number("amount", amount)),
+                    pl -> {
+                        String key = "cpay:" + UUID.randomUUID().toString().replace("-", "").substring(0, 24);
+                        then(pl, service.execute(Transaction.transfer(AccountRef.player(pl.getUniqueId()), AccountRef.player(to),
+                                        Currency.CREDITS, amount, net.skybornmc.skyblock.common.economy.TxReason.CREDIT_PAY)
+                                .actor(Actor.player(pl)).reference("credit_pay").idempotencyKey(key)), result -> {
+                            if (!result.ok()) {
+                                msg.send(pl, result.status() == net.skybornmc.skyblock.common.economy.TxResult.Status.INSUFFICIENT_FUNDS
+                                        ? "credit.pay.not-enough" : "credit.pay.failed", Msg.number("amount", amount));
+                                sound(pl, "error");
+                                return;
+                            }
+                            refreshCredits(pl.getUniqueId());
+                            msg.send(pl, "credit.pay.sent", Msg.p("player", toName), Msg.number("amount", amount));
+                            sound(pl, "success");
+                            Player online = Bukkit.getPlayer(to);
+                            if (online != null) {
+                                refreshCredits(to);
+                                msg.send(online, "credit.pay.received", Msg.p("player", pl.getName()), Msg.number("amount", amount));
+                                core.sounds().play(online, "success");
+                            }
+                            core.audit().log(AuditCategory.ECONOMY, "credit_pay", Actor.player(pl), to.toString(), toName, amount, null,
+                                    Map.of("key", key));
+                        });
+                    }, pl -> { });
+            core.menus().open(p, confirm);
         });
     }
 

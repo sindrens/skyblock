@@ -44,6 +44,18 @@ final class DailyRules {
     private DailyRules() {
     }
 
+    /**
+     * Owner 7 Nov 2026 (credit shop, R5): a streak broken at most {@code days} days ago can be saved: the lost streak is
+     * added back to the streak counted since. Empty when there is nothing to save. Pure.
+     */
+    static Optional<State> saved(State s, int today, int days) {
+        if (s == null || s.lostStreak() <= 0 || s.brokenOn() == NEVER || today - s.brokenOn() > days || today < s.brokenOn()) {
+            return Optional.empty();
+        }
+        int streak = s.streak() + s.lostStreak();
+        return Optional.of(new State(s.calendarDay(), s.lastClaimDate(), streak, Math.max(s.best(), streak), 0, NEVER, s.total()));
+    }
+
     /** The epoch day of {@code millis} in {@code zone}. */
     static int today(long millis, ZoneId zone) {
         return (int) LocalDate.ofInstant(Instant.ofEpochMilli(millis), zone).toEpochDay();

@@ -143,6 +143,19 @@ public final class IslandToolsModule implements SkyblockModule {
         long sellTicks = Math.max(1, config.autoSellSeconds) * 20L;
         tasks.add(core.scheduler().repeat("islandtools:auto-sell", sellTicks, sellTicks, this::flushAutoSell));
         registerCommands();
+        // Owner 7 Nov 2026: the tool skins in the credit shop (Cosmetics), one link per tool.
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
+        for (Kind kind : Kind.values()) {
+            net.skybornmc.skyblock.common.store.CreditShop.register(ID, net.skybornmc.skyblock.common.store.CreditShop.Offer.link("skins_" + kind.id(),
+                    net.skybornmc.skyblock.common.store.CreditShop.Tab.COSMETICS, 10 + kind.ordinal(),
+                    (viewer, receiver) -> core.menus().item(switch (kind) {
+                        case HOE -> org.bukkit.Material.GOLDEN_HOE;
+                        case PICKAXE -> org.bukkit.Material.GOLDEN_PICKAXE;
+                        case ROD -> org.bukkit.Material.FISHING_ROD;
+                        case SWORD -> org.bukkit.Material.GOLDEN_SWORD;
+                    }, viewer, ID, "store.skins", Msg.p("tool", raw("item.name." + kind.id()))),
+                    player -> core.menus().open(player, new SkinMenu(this, kind))));
+        }
         // Owner Q-30: the /farm and /mine scoreboard shows how full the tool's storage is.
         for (Kind kind : Kind.values()) {
             core.placeholders().registerText(ID, "tool_storage_" + kind.id(), p -> {
@@ -177,6 +190,7 @@ public final class IslandToolsModule implements SkyblockModule {
 
     @Override
     public void disable() {
+        net.skybornmc.skyblock.common.store.CreditShop.unregisterAll(ID);
         tasks.forEach(Scheduler.Task::cancel);
         tasks.clear();
         flushXp();

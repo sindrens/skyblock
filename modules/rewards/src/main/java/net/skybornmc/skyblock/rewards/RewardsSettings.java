@@ -99,7 +99,13 @@ public final class RewardsSettings extends ModuleConfig {
 
     @Setting(path = "streak.save-enabled", desc = "Show the 'Save streak' button (save a broken streak for 100 credits within 2 days, R5). "
             + "Stays hidden until the credit shop exists (Phase 11) even when on.", level = Setting.Level.OWNER)
-    public boolean saveEnabled = false;
+    public boolean saveEnabled = true;
+
+    @Setting(path = "streak.save-credits", desc = "Owner 7 Nov 2026: credits of a streak save in the credit shop (/store → Extras).", min = 1, max = 100000)
+    public long saveCredits = 100;
+
+    @Setting(path = "streak.save-days", desc = "Days after the break a lost streak can still be saved.", min = 1, max = 14)
+    public int saveDays = 2;
 
     // ------------------------------------------------------------------ playtime
 
@@ -222,12 +228,13 @@ public final class RewardsSettings extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 5;
+        return 6;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(5, java.util.Map.of("menu.enabled", ValueChange.of(false, true), // 7 Nov 2026: the Rewards menu goes live
+        return java.util.Map.of(6, java.util.Map.of("streak.save-enabled", ValueChange.of(false, true)), // 7 Nov 2026: the credit shop exists
+                5, java.util.Map.of("menu.enabled", ValueChange.of(false, true), // 7 Nov 2026: the Rewards menu goes live
                         "weekly.enabled", ValueChange.of(false, true), "monthly.enabled", ValueChange.of(false, true)),
                 4, java.util.Map.of("pouch.ref-per-minute", ValueChange.of(List.of("82700", "146700", "256000", "450700", "792000", "1386700", "2434700", "4266700", "12213300", "34933300", "100000000", "285333300"), new RewardsSettings().refPerMinute)),
                 3, java.util.Map.of(
