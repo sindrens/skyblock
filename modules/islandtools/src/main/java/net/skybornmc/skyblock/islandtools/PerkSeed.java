@@ -27,6 +27,9 @@ final class PerkSeed {
         if (oldLevel <= 0) {
             return 0;
         }
+        if (effect == Upgrades.Effect.SHARDS) { // tools v6: the same shards on the compound track (3% even steps -> 3% compound)
+            return (int) Math.max(1, Math.min(newMax, Math.round(Math.log(1 + oldLevel * 0.03) / Math.log(1.03))));
+        }
         return (int) Math.max(1, Math.min(newMax, Math.round(oldLevel * factor(effect))));
     }
 }

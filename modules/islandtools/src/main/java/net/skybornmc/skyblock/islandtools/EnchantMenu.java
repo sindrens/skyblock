@@ -15,13 +15,14 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Owner 6 Nov 2026 (plans/TOOLS_V3.md): the player's own grind enchants of one tool. No glass, two centred rows:
+ * Owner 6 Nov 2026 (plans/TOOLS_V3.md): the player's own grind enchants of one tool. Tools v6 (7 Nov 2026): one row per
+ * group with a coloured banner first (its name and how many are open), up to 8 enchants after it, in unlock order:
  * <pre>
  *  . . . H . A . . .      3 the tool and your shards, 5 the buy amount (x1 / x10 / x100, Bedrock-friendly)
- *  . . a a a a . . .      area: Blast, Lightning, Meteor, Nuke (hoe: Explode, Row Reaper, Tornado, Meteor Shower)
- *  . . s s s s . . .      shards: Burst, Echo, Compound Interest, Jackpot
- *  . . l l l l l . .      loot: Rich Vein, Cash Vein, Quick Study, Motherlode, Geode
- *  . . b b b b . . .      boosts: Scholar, Combo, Lucky Streak, Keyfinder
+ *  ▌ a a a a a . . .      area: Blast, Lightning, Meteor, Nuke, Chain Reaction (hoe: Explode, Row Reaper, Tornado ...)
+ *  ▌ s s s s s s s .      shards: Burst, Echo, Compound Interest, Storm, Rain, Booster Find, Jackpot
+ *  ▌ l l l l l l l .      loot and finds: Rich Vein, Cash Vein, Golden Touch, Duplicator, Geode, Keyfinder, Crystal Find
+ *  ▌ b b b b b b b .      boosts: Scholar, Combo, Quick Study, Motherlode, XP Surge, Frenzy, Lucky Streak
  *  nav bar
  * </pre>
  * A click buys the chosen amount; on Java shift-click buys 10 and right-click 100 as well.
@@ -100,35 +101,58 @@ final class EnchantMenu extends Menu {
         }
         List<List<GrindEnchants.Def>> rows = groups(e.defs().of(kind));
         for (int r = 0; r < rows.size(); r++) {
-            place(rows.get(r), 9 * (r + 1));
+            if (rows.get(r).isEmpty()) {
+                continue;
+            }
+            header(r, rows.get(r), 9 * (r + 1));
+            place(rows.get(r), 9 * (r + 1) + 1);
         }
     }
 
-    /** The four rows of the menu: area, shards, loot, boosts (config order inside a row). Pure. */
+    static final String[] GROUPS = {"area", "shards", "loot", "boosts"};
+    private static final Material[] BANNERS = {Material.RED_BANNER, Material.PURPLE_BANNER, Material.YELLOW_BANNER, Material.LIME_BANNER};
+
+    /** The group's banner: its name, what it does and how many of its enchants are open. */
+    private void header(int group, List<GrindEnchants.Def> defs, int slot) {
+        EnchantProcs e = m.enchants();
+        long open = defs.stream().filter(d -> {
+            String no = e.refusal(viewer, d);
+            return !"enchant.locked-level".equals(no) && !"enchant.locked-prestige".equals(no);
+        }).count();
+        set(slot, service.item(BANNERS[group], viewer, IslandToolsModule.ID, "enchant.menu.group." + GROUPS[group],
+                Msg.number("open", open), Msg.number("total", defs.size())));
+    }
+
+    /** The four rows of the menu: area, shards, loot and finds, boosts (unlock order inside a row, 8 at most). Pure. */
     static List<List<GrindEnchants.Def>> groups(List<GrindEnchants.Def> defs) {
         List<List<GrindEnchants.Def>> out = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             out.add(new ArrayList<>());
         }
         for (GrindEnchants.Def d : defs) {
-            int row = switch (d.effect()) {
-                case AREA -> 0;
-                case SHARDS, ECHO, STREAK_SHARDS -> 1;
-                case EXTRA_ITEMS, CASH, PROGRESS, BASKET -> 2;
-                case SKILL_XP, STREAK_XP, PITY, KEY -> 3;
-            };
-            out.get(row).add(d);
+            out.get(group(d)).add(d);
         }
+        out.forEach(row -> row.sort(java.util.Comparator.comparingInt(GrindEnchants.Def::unlockLevel)
+                .thenComparingInt(GrindEnchants.Def::unlockPrestige)));
         return out;
     }
 
+    /** The row of an enchant: 0 area, 1 shards, 2 loot and finds, 3 boosts. Pure. */
+    static int group(GrindEnchants.Def d) {
+        return switch (d.effect()) {
+            case AREA, CHAIN -> 0;
+            case SHARDS, ECHO, STREAK_SHARDS, STORM, RAIN, FEVER -> 1;
+            case EXTRA_ITEMS, CASH, GOLDEN, DUPLICATE, BASKET, KEY, CRYSTALS -> 2;
+            case SKILL_XP, STREAK_XP, PROGRESS, XP_SURGE, FRENZY, PITY -> 3;
+        };
+    }
+
     private void place(List<GrindEnchants.Def> defs, int rowStart) {
-        int first = ToolMenu.start(defs.size());
-        for (int i = 0; i < defs.size() && i < 9; i++) {
+        for (int i = 0; i < defs.size() && i < 8; i++) {
             GrindEnchants.Def d = defs.get(i);
             MenuButton button = MenuButton.of(item(d), click -> buy(click, d, amount))
                     .withShift(click -> buy(click, d, 10)).withRight(click -> buy(click, d, 100));
-            set(rowStart + first + i, button);
+            set(rowStart + i, button);
         }
     }
 

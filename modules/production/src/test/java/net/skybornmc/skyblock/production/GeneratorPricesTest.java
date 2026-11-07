@@ -44,7 +44,7 @@ class GeneratorPricesTest {
         plan.put("lapis_lazuli", 45L);
         plan.put("diamond", 61L);
         plan.put("emerald", 82L);
-        plan.forEach((item, p) -> assertEquals(p * 100, price(yml, "categories.ores." + item), item)); // money x100
+        plan.forEach((item, p) -> assertEquals(p * 50, price(yml, "categories.ores." + item), item)); // money x100, then half (tools v6)
     }
 
     @Test

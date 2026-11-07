@@ -18,7 +18,8 @@ import java.util.function.Consumer;
  *   <li>{@code effect}: what a level does ({@link Effect}); {@code enchant=<vanilla id>} for enchant-like perks;</li>
  *   <li>{@code max}: levels (long tracks 100 to 1,000; enchant-like perks their vanilla levels; one-time unlocks 1);</li>
  *   <li>{@code unlock-level}: the tool level that unlocks the perk (owner: perks spread over the levels 1 to 50);</li>
- *   <li>{@code costs}: {@code base+step} = a long track, {@code cost(L) = base + step × L^exponent} nice-rounded, or
+ *   <li>{@code costs}: {@code base+step} = a long track, {@code cost(L) = base + step × L^exponent} nice-rounded,
+ *       {@code base*percent} = a compound track ({@code base × (1 + percent/100)^(L-1)}, tools v6), or
  *       {@code a/b/c} = the price of each level (the last repeats);</li>
  *   <li>{@code prestige}: optional, the tool prestige needed as well (Sweep and Vein: 1).</li>
  * </ul>
@@ -40,7 +41,11 @@ final class Upgrades {
 
     /** One upgrade of one tool. {@code prices} is empty for a long track (then {@code base}/{@code step} apply). */
     record Def(Kind kind, String id, Effect effect, String arg, int max, int unlock, int prestige, long base, double step,
-               List<Long> prices) {
+               List<Long> prices, double growth) {
+
+        Def(Kind kind, String id, Effect effect, String arg, int max, int unlock, int prestige, long base, double step, List<Long> prices) {
+            this(kind, id, effect, arg, max, unlock, prestige, base, step, prices, 0);
+        }
 
         boolean track() {
             return prices.isEmpty();
@@ -52,6 +57,9 @@ final class Upgrades {
          */
         double rawCost(int level, double exponent) {
             int l = Math.max(1, level);
+            if (growth > 0) { // tools v6: 'base*percent' = a compound track, each level percent more than the last
+                return base * Math.pow(1 + growth / 100.0, l - 1);
+            }
             if (track()) {
                 return base + step * Math.pow(l, exponent);
             }
@@ -117,8 +125,16 @@ final class Upgrades {
                 String costs = p[5].trim();
                 long base = 0;
                 double step = 0;
+                double growth = 0;
                 List<Long> prices = new ArrayList<>();
-                if (costs.contains("+")) {
+                if (costs.contains("*")) {
+                    String[] bg = costs.split("\\*", 2);
+                    base = Long.parseLong(bg[0].trim());
+                    growth = Double.parseDouble(bg[1].trim());
+                    if (base < 1 || growth <= 0 || growth > 100) {
+                        throw new IllegalArgumentException();
+                    }
+                } else if (costs.contains("+")) {
                     String[] bs = costs.split("\\+", 2);
                     base = Long.parseLong(bs[0].trim());
                     step = Double.parseDouble(bs[1].trim());
@@ -144,7 +160,7 @@ final class Upgrades {
                     continue;
                 }
                 list.add(new Def(kind.get(), id, effect.get(), eff.length > 1 ? eff[1].trim().toLowerCase(Locale.ROOT) : "", max,
-                        unlock, prestige, base, step, List.copyOf(prices)));
+                        unlock, prestige, base, step, List.copyOf(prices), growth));
             } catch (IllegalArgumentException e) {
                 warn.accept("islandtools.yml → upgrades: '" + line + "' has a bad kind, effect or number, skipped");
             }

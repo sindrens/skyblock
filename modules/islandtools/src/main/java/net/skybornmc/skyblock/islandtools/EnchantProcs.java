@@ -66,7 +66,13 @@ final class EnchantProcs implements Listener {
         long echoUntil;
         double echoPercent;
         int sinceRare;
+        /** Tools v6: Shard Storm and Booster Find run until these times; Golden Touch and Duplicator count drops down. */
+        long stormUntil;
+        long feverUntil;
+        int goldenLeft;
+        int dupLeft;
     }
+    private final Map<UUID, Long> pendingCrystals = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> pendingKeys = new ConcurrentHashMap<>();
 
     EnchantProcs(IslandToolsModule m) {
@@ -162,7 +168,7 @@ final class EnchantProcs implements Listener {
         if (prog == null) {
             return "loading";
         }
-        if (m.level(prog).level() < def.unlockLevel()) {
+        if (m.lifetimeLevel(prog) < def.unlockLevel()) { // tools v6: once reached, a prestige never locks it again
             return "enchant.locked-level";
         }
         if (m.capPrestige(prog) < def.unlockPrestige()) {
@@ -171,10 +177,11 @@ final class EnchantProcs implements Listener {
         return lv >= cap(p, def) ? "enchant.capped" : null;
     }
 
-    /** The highest level the player can have now (the cap rises every prestige). */
+    /** The highest level the player can have now (tools v6: it grows with the tool's lifetime levels, faster near the top). */
     int cap(Player p, GrindEnchants.Def def) {
-        return GrindEnchants.cap(def.max(), m.capPrestige(m.view(p, def.kind())), m.config().enchantCapBase, m.config().enchantCapPerPrestige,
-                mastery(p, def.kind()));
+        ToolStore.Prog prog = m.view(p, def.kind());
+        return GrindEnchants.capByLevels(def.max(), prog == null ? 0 : m.lifetimeLevel(prog), m.config().enchantCapBase,
+                m.config().enchantCapFullLevels, m.config().enchantCapExponent, mastery(p, def.kind()));
     }
 
     /** Owner 6-7 Nov 2026 (Area Masteries): the island's Farm or Mine Mastery adds enchant levels to the cap. */
@@ -328,6 +335,7 @@ final class EnchantProcs implements Listener {
             pity = 2;
         }
         st.sinceRare++;
+        ongoing(p, kind, origin, drops, st, have, now);
         GrindEnchants.Def area = null;
         double areaValue = 0;
         for (GrindEnchants.Def def : defs.of(kind)) {
@@ -362,6 +370,44 @@ final class EnchantProcs implements Listener {
         }
         if (area != null) {
             apply(p, kind, area, areaValue, origin, drops, rnd, st, have, now);
+            // Tools v6: Chain Reaction, a second area enchant right after the first.
+            GrindEnchants.Def chain = passive(kind, GrindEnchants.Effect.CHAIN);
+            int chainLv = chain == null ? 0 : Math.min(chain.max(), have.getOrDefault(chain.key(), 0));
+            if (chainLv > 0 && rnd.nextDouble(100) < chain.value(chainLv)) {
+                apply(p, kind, area, areaValue, origin, drops, rnd, st, have, now);
+                bar(p, "enchant.proc.chain", chain, Msg.p("amount", name(area)));
+            }
+        }
+    }
+
+    /** Tools v6: what a running Shard Storm, Golden Touch or Duplicator does to this break. */
+    private void ongoing(Player p, Kind kind, Block origin, List<Item> drops, State st, Map<String, Integer> have, long now) {
+        if (st.dupLeft > 0 && !drops.isEmpty()) {
+            st.dupLeft--;
+            ItemStack stack = drops.getFirst().getItemStack();
+            stack.setAmount(Math.min(stack.getMaxStackSize(), stack.getAmount() * 2));
+            drops.getFirst().setItemStack(stack);
+        }
+        if (st.goldenLeft > 0 && !drops.isEmpty()) {
+            st.goldenLeft--;
+            long money = cash(drops, 1.0);
+            if (money > 0) {
+                pendingCash.merge(m.profile(p), money, Long::sum);
+            }
+        }
+        if (now < st.stormUntil) {
+            GrindEnchants.Def burst = defs.get(kind, "shard_burst").orElse(null);
+            if (burst != null) {
+                int lv = Math.max(1, Math.min(burst.max(), have.getOrDefault(burst.key(), 0)));
+                double doubled = GrindEvents.multiplier(m.core().services(), p, GrindEvents.Kind.DOUBLE_SHARDS);
+                long shards = ToolRules.rollUp(burst.value(lv) * doubled * shardMultiplier(p, kind), ThreadLocalRandom.current().nextDouble());
+                if (shards > 0) {
+                    m.addShards(m.profile(p), kind.shards(), shards);
+                    if (origin != null) {
+                        m.popup(p, origin.getLocation(), kind.shards(), shards);
+                    }
+                }
+            }
         }
     }
 
@@ -438,7 +484,8 @@ final class EnchantProcs implements Listener {
         if (now < st.echoUntil) {
             pct += st.echoPercent;
         }
-        return 1 + Math.min(m.config().enchantShardCap, pct) / 100.0;
+        double fever = now < st.feverUntil ? 2 : 1; // tools v6: Booster Find, on top of the cap
+        return (1 + Math.min(m.config().enchantShardCap, pct) / 100.0) * fever;
     }
 
     /** Combo: the multiplier on tool XP while the break streak runs (only at /farm and /mine). */
@@ -476,7 +523,7 @@ final class EnchantProcs implements Listener {
             }
             case SHARDS -> {
                 double doubled = GrindEvents.multiplier(m.core().services(), p, GrindEvents.Kind.DOUBLE_SHARDS);
-                long shards = ToolRules.roll(value * doubled * shardMultiplier(p, kind), rnd.nextDouble());
+                long shards = ToolRules.rollUp(value * doubled * shardMultiplier(p, kind), rnd.nextDouble()); // tools v6: always rounded up
                 if (def.id().equals("shard_burst")) {
                     // Shard Echo: a Burst starts (or refreshes) a few seconds of more shards.
                     GrindEnchants.Def echo = passive(kind, GrindEnchants.Effect.ECHO);
@@ -528,7 +575,60 @@ final class EnchantProcs implements Listener {
                     m.core().sounds().play(p, "tool-lucky");
                 }
             }
-            case SKILL_XP, ECHO, STREAK_SHARDS, STREAK_XP, PITY -> {
+            case STORM -> {
+                st.stormUntil = now + Math.round(value * 1000);
+                bar(p, "enchant.proc.storm", def, Msg.p("amount", EnchantMenu.num(value)));
+                m.core().sounds().play(p, "tool-lucky");
+            }
+            case FRENZY -> {
+                int ticks = (int) Math.max(20, Math.round(value * 20));
+                p.addPotionEffect(new org.bukkit.potion.PotionEffect(kind == Kind.SWORD ? org.bukkit.potion.PotionEffectType.STRENGTH
+                        : org.bukkit.potion.PotionEffectType.HASTE, ticks, kind == Kind.SWORD ? 1 : 2, true, false, true));
+                bar(p, "enchant.proc.frenzy", def, Msg.p("amount", EnchantMenu.num(value)));
+            }
+            case GOLDEN -> {
+                st.goldenLeft += (int) Math.max(1, Math.round(value));
+                bar(p, "enchant.proc.golden", def, Msg.number("amount", Math.round(value)));
+            }
+            case DUPLICATE -> {
+                st.dupLeft += (int) Math.max(1, Math.round(value));
+                bar(p, "enchant.proc.duplicate", def, Msg.number("amount", Math.round(value)));
+            }
+            case XP_SURGE -> {
+                long xp = m.bonusXp(p, kind, value);
+                if (xp > 0) {
+                    bar(p, "enchant.proc.xp", def, Msg.number("amount", xp));
+                }
+            }
+            case CRYSTALS -> {
+                long n = ToolRules.rollUp(value, rnd.nextDouble());
+                if (n > 0) {
+                    pendingCrystals.merge(m.profile(p), n, Long::sum);
+                    bar(p, "enchant.proc.crystals", def, Msg.number("amount", n));
+                    m.core().sounds().play(p, "tool-lucky");
+                }
+            }
+            case FEVER -> {
+                st.feverUntil = now + Math.round(value * 1000);
+                m.msg().title(p, "enchant.fever-title", Msg.number("seconds", Math.round(value)));
+                m.core().sounds().play(p, "tool-max");
+            }
+            case RAIN -> {
+                long shards = ToolRules.rollUp(value, rnd.nextDouble());
+                UUID island = m.island(p);
+                int others = 0;
+                for (Player o : Bukkit.getOnlinePlayers()) {
+                    if (o.equals(p) || island == null || !island.equals(m.island(o))) {
+                        continue;
+                    }
+                    m.addShards(m.profile(o), kind.shards(), shards);
+                    m.msg().actionBar(o, "enchant.proc.rain-got", Msg.p("player", p.getName()), Msg.mm("amount", m.shardText(kind, shards)));
+                    others++;
+                }
+                m.addShards(m.profile(p), kind.shards(), shards);
+                bar(p, "enchant.proc.rain", def, Msg.number("amount", others));
+            }
+            case SKILL_XP, ECHO, STREAK_SHARDS, STREAK_XP, PITY, CHAIN -> {
             }
         }
     }
@@ -620,6 +720,23 @@ final class EnchantProcs implements Listener {
                     .whenComplete((result, error) -> {
                         if (error != null || result == null || !result.ok()) {
                             pendingCash.merge(profile, amount, Long::sum);
+                        }
+                    });
+        }
+        for (UUID profile : List.copyOf(pendingCrystals.keySet())) {
+            Long amount = pendingCrystals.remove(profile);
+            if (economy == null || amount == null || amount <= 0) {
+                if (amount != null && amount > 0) {
+                    pendingCrystals.merge(profile, amount, Long::sum);
+                }
+                continue;
+            }
+            UUID batch = UUID.randomUUID();
+            economy.execute(Transaction.deposit(AccountRef.player(profile), Currency.CRYSTALS, amount, TxReason.GRIND_ENCHANT_CRYSTALS)
+                    .actor(Actor.system("grind_enchant")).reference("grind_enchant_crystals:" + batch).idempotencyKey("grind_enchant_crystals:" + batch))
+                    .whenComplete((result, error) -> {
+                        if (error != null || result == null || !result.ok()) {
+                            pendingCrystals.merge(profile, amount, Long::sum);
                         }
                     });
         }

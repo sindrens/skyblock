@@ -45,11 +45,29 @@ final class GrindEnchants {
         /** One of every crop or ore the player has unlocked (the value is unused). */
         BASKET,
         /** Pity: after this many blocks without a rare find, the rare chances double (passive). */
-        PITY;
+        PITY,
+        /** Tools v6 (7 Nov 2026), Shard Storm: for this many seconds every break also gives a Shard Burst. */
+        STORM,
+        /** Frenzy: this many seconds of Haste III (pickaxe, hoe) or Strength (sword). */
+        FRENZY,
+        /** Golden Touch: the next this-many drops pay their sell price once more (money). */
+        GOLDEN,
+        /** Duplicator: the next this-many drops are doubled. */
+        DUPLICATE,
+        /** XP Surge: tool XP worth this many blocks at once. */
+        XP_SURGE,
+        /** Crystal Find: this many crystals. */
+        CRYSTALS,
+        /** Booster Find: this many seconds of x2 shards with this tool. */
+        FEVER,
+        /** Chain Reaction: this percent chance that an area enchant sets off a second one (passive). */
+        CHAIN,
+        /** Shard Rain: this many shards for you and every island member online. */
+        RAIN;
 
         /** Always on: no chance roll. */
         boolean passive() {
-            return this == SKILL_XP || this == ECHO || this == STREAK_SHARDS || this == STREAK_XP || this == PITY;
+            return this == SKILL_XP || this == ECHO || this == STREAK_SHARDS || this == STREAK_XP || this == PITY || this == CHAIN;
         }
     }
 
@@ -133,9 +151,12 @@ final class GrindEnchants {
             return level <= 0 ? 0 : Math.min(100, lerp(chance1, chanceMax, level, max) * (boostsChance() ? boost(level) : 1));
         }
 
-        /** The effect's amount at a level. */
+        /**
+         * The effect's amount at a level. Tools v6 (owner 7 Nov 2026): it <b>compounds</b> from level 1 to max (every level
+         * the same few tenths of a percent more than the last), so the higher it gets the better each level is.
+         */
         double value(int level) {
-            return level <= 0 ? 0 : lerp(value1, valueMax, level, max) * (boostsValue() ? boost(level) : 1);
+            return level <= 0 ? 0 : grow(value1, valueMax, level, max) * (boostsValue() ? boost(level) : 1);
         }
 
         /** Shards for one level ({@code level} >= 1). */
@@ -169,6 +190,18 @@ final class GrindEnchants {
         this.byKind = byKind;
     }
 
+    /** Compound (geometric) from {@code a} at level 1 to {@code b} at {@code max}; linear when an end is 0 or below. Pure. */
+    static double grow(double a, double b, int level, int max) {
+        if (a <= 0 || b <= 0 || a == b) {
+            return lerp(a, b, level, max);
+        }
+        if (max <= 1) {
+            return b;
+        }
+        int l = Math.max(1, Math.min(level, max));
+        return a * Math.pow(b / a, (l - 1) / (double) (max - 1));
+    }
+
     /** Linear from {@code a} at level 1 to {@code b} at {@code max}. Pure. */
     static double lerp(double a, double b, int level, int max) {
         if (max <= 1) {
@@ -193,6 +226,15 @@ final class GrindEnchants {
             case "combo" -> Effect.STREAK_XP;
             case "geode", "harvest_basket", "treasure_chest" -> Effect.BASKET;
             case "lucky_streak" -> Effect.PITY;
+            case "shard_storm" -> Effect.STORM;
+            case "frenzy" -> Effect.FRENZY;
+            case "golden_touch" -> Effect.GOLDEN;
+            case "duplicator" -> Effect.DUPLICATE;
+            case "xp_surge" -> Effect.XP_SURGE;
+            case "crystal_find" -> Effect.CRYSTALS;
+            case "booster_find" -> Effect.FEVER;
+            case "chain_reaction" -> Effect.CHAIN;
+            case "shard_rain" -> Effect.RAIN;
             default -> null;
         });
     }
@@ -249,6 +291,18 @@ final class GrindEnchants {
      */
     static int cap(int max, int prestige, int base, int perPrestige) {
         return cap(max, prestige, base, perPrestige, 0);
+    }
+
+    /**
+     * Tools v6 (owner 7 Nov 2026: "they need to prestige A LOT"): the level cap grows with the tool's <b>lifetime</b> levels
+     * (prestige x max level + level), faster the higher you get: {@code max x (lifetime / fullAt)^exponent}, at least
+     * {@code base}, plus the island's Mastery levels. {@code fullAt} lifetime levels (100 = prestige 2) open the whole track. Pure.
+     */
+    static int capByLevels(int max, int lifetime, int base, int fullAt, double exponent, double mastery) {
+        double f = Math.min(1, Math.max(0, lifetime) / (double) Math.max(1, fullAt));
+        long c = Math.max((long) Math.max(1, base), (long) Math.ceil(max * Math.pow(f, Math.max(0.1, exponent)) - 1e-9))
+                + (long) Math.max(0, mastery);
+        return (int) Math.min(max, c);
     }
 
     /** {@link #cap(int, int, int, int)} plus {@code mastery} levels from the island's Farm or Mine Mastery. Pure. */

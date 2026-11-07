@@ -90,7 +90,7 @@ class ToolRulesTest {
         assertEquals(100, sweep.max());
         assertEquals(1, u.get(Kind.PICKAXE, "vein").orElseThrow().prestige());
         // Feedback 5 Nov 2026: fewer, bigger steps (100 levels of 1% instead of 1,000 of 0.1%); the first level is cheap.
-        assertEquals(2500, u.get(Kind.HOE, "shard_finder").orElseThrow().max(), "tools v5: long tracks");
+        assertEquals(250, u.get(Kind.HOE, "shard_finder").orElseThrow().max(), "tools v6: 250 compound levels");
         assertEquals(1, u.get(Kind.HOE, "shard_finder").orElseThrow().unlock(), "Shard Finder from level 1");
         assertTrue(u.get(Kind.HOE, "shard_finder").orElseThrow().cost(1, C.priceExponent, 1) <= 1_000, "the first Shard Finder within a minute or two (shards x10)");
         assertEquals(1000, u.get(Kind.HOE, "extra_drops").orElseThrow().max());

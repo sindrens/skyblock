@@ -218,6 +218,18 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Tools v6: compound shards and 9 new enchants (update164, plan: `docs/plans/TOOLS_V6_COMPOUND.md`)
+- **Shard Finder:** +3% a level on top of the last level (compound), 250 levels (about 1,600x shards at the max). The menu shows only the level. Its price grows +3.5% a level, so every level costs about the same number of blocks.
+- **More shards:** 10 a block (was 6), the rod 300 a catch (was 200), the sword 80 a kill (was 50). Shards are **always rounded up** (10.3 is 11).
+- **Half price at /farm and /mine:** every crop and ore sells for 50% (wheat $200, carrot $350, potato $550, beetroot $800, nether wart $1,200; coal $500 ... diamond $3,050, emerald $4,100).
+- **Enchants:** everyday ones 2,500 levels, middle ones 1,000, rare ones 500. Each level is a bit stronger than the last (compound), up to 15x at the max. Shard Burst gives 100 at level 1, 1,500 at the max.
+- **9 new enchants:** Shard Storm, Frenzy, Golden Touch, Duplicator, XP Surge, Crystal Find, Booster Find, Chain Reaction and Shard Rain. Pickaxe and hoe 26 enchants each, rod 19, sword 15.
+- **No more prestige walls:** no enchant needs a prestige. They open at tool levels 1 to 48, closer together near the top. Once open, a prestige never locks one again. The level cap grows with every level the tool ever reached, faster near the top (level 50 at prestige 0: a third of each track, prestige 2: everything).
+- **New enchant menu:** a coloured banner per row (Area, Shards, Loot and Finds, Boosts) with how many are open, then the enchants in unlock order.
+- **Auto-Sell and Auto-Compactor:** buy once, on any tool, and every tool has it, through prestige and rebirth.
+- **Small notes:** the Angler mastery now asks for island levels 5 / 15 / 30 / 50 (not Farming pillar levels). Mob Loot stays at +12% a level.
+- **Note:** a Shard Finder above level 250 from before now counts as 250 (now worth far more than before).
+
 ## The whole list, batch 1 (update160, plan: `docs/plans/WHOLE_LIST_7NOV.md`)
 - **/mine:** emerald is the last ore and sells ($8,200). Emeralds from an island generator sell too; villager emeralds still don't.
 - **/shop:** a click opens the buy screen (1 / 8 / 16 / 32 / 64 and the price).

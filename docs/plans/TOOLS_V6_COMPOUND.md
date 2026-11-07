@@ -1,5 +1,19 @@
 # Plan: Tools v6, compound growth (7 Nov 2026)
 
+## Owner answers (7 Nov 2026) and what was built (update164)
+1. Shard Finder: "a lot smaller compound, maybe 3%, and the default shards higher than 6": **+3% compound a level, 250
+   levels (about 1,600x at the max), 10 shards a block** (was 6; rod 300 a catch, sword 80 a kill), always rounded up.
+   Its price compounds too (+3.5% a level from 150), so a level costs about the same number of blocks from start to end.
+   The GUI shows only the level.
+2. "50% less sell price at level 1": not my reading. "I'm at tier 1 in wheat and it already makes thousands" = **every
+   /farm crop and /mine ore sells for half** (wheat $200, nether wart $1,200, coal $500, diamond $3,050, /mine emerald
+   $4,100; island crops and generator ores use the same prices).
+3. More enchants, not hidden behind many prestiges: **9 new enchants**, pickaxe and hoe 26, rod 19, sword 15. **No
+   prestige gates**; unlocks over tool levels 1-48, closer together near the top; an unlock reached once stays open after
+   a prestige (lifetime levels). The level cap grows with lifetime levels too: max x (lifetime / 100)^1.5 (level 50 at
+   prestige 0 opens about a third, prestige 2 the whole track). Every other point: the suggested answer below.
+
+
 Owner, 7 Nov 2026: Shard Finder +10% a level **compounding** (6 → 6.6 → 7.26 ..., shards always rounded up), no "how
 much more" in the GUI; the same compound logic on the enchants and wherever it is fun; enchants 500-2,500 levels by
 relevance; Auto-Sell bought once and kept forever (prestige too); Shard Burst gives more and compounds; more enchants

@@ -196,6 +196,23 @@ final class ToolRules {
     }
 
     /** Random rounding of an expected amount (2.3 = 2, and 3 three times in ten). */
+    /**
+     * Tools v6 (owner 7 Nov 2026: "we always round up"): from 1 on, the next whole number up (6.6 → 7); below 1 a chance
+     * of one. Pure.
+     */
+    static int rollUp(double expected, double random01) {
+        double e = Math.max(0, expected);
+        if (e >= 1) {
+            return (int) Math.min(Integer.MAX_VALUE, Math.ceil(e - 1e-9));
+        }
+        return random01 < e ? 1 : 0;
+    }
+
+    /** Tools v6: {@code (1 + percent/100)^level}, the compound multiplier of Shard Finder. Pure. */
+    static double compound(double percent, int level) {
+        return Math.pow(1 + Math.max(0, percent) / 100.0, Math.max(0, level));
+    }
+
     static int roll(double expected, double random01) {
         int base = (int) Math.floor(Math.max(0, expected));
         return base + (random01 < expected - base ? 1 : 0);

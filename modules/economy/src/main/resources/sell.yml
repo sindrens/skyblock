@@ -29,33 +29,34 @@ catalog-version: 4
 categories:
   # Island generator drops (ECONOMY_BALANCE §4.1: one tier below the Depths ore, half its price).
   ores:
-    cobblestone: 100
-    coal: 1000
-    raw_copper: 1400
-    raw_iron: 1800
-    raw_gold: 2500
-    redstone: 3300
-    lapis_lazuli: 4500
-    diamond: 6100
+    cobblestone: 50
+    coal: 500
+    raw_copper: 700
+    raw_iron: 900
+    raw_gold: 1250
+    redstone: 1650
+    lapis_lazuli: 2250
+    diamond: 3050
     # Off until villager trading is limited: fletchers turn free sticks into emeralds (docs/OPEN_QUESTIONS.md).
-    emerald: { price: 8200, sellable: false }
+    emerald: { price: 4100, sellable: false }
 
   # Island crops by Farming unlock tier (ECONOMY_BALANCE §4.1).
   crops:
     # Owner 3 Nov 2026: crops you harvest with the hoe pay better per item than crops that farm themselves
     # (cactus, cane, melon, pumpkin, cocoa, berries: big automatic farms must not be OP). /farm pays a bonus on top.
     # Owner 7 Nov 2026: each /farm crop is a clear step up (wheat, carrot, potato, beetroot, nether wart).
-    wheat: 400
-    carrot: 700
-    potato: 1100
-    beetroot: 1600
+    # Owner 7 Nov 2026 (tools v6): every /farm crop and /mine ore sells for half (wheat at tier 1 made thousands).
+    wheat: 200
+    carrot: 350
+    potato: 550
+    beetroot: 800
     sugar_cane: 250
     melon_slice: 120
     pumpkin: 600
     cocoa_beans: 500
     cactus: 300
     sweet_berries: 350
-    nether_wart: 2400
+    nether_wart: 1200
     torchflower: 24000
     pitcher_plant: 52000
 
@@ -109,14 +110,14 @@ categories:
     # Owner 7 Nov 2026: a spawner sheep drops 1 mutton + 1 wool, so wool has its own price (it was $643 from string).
     white_wool: 140
     # Iron golems drop iron ingots; an ingot can't sell above raw iron (smelting), so it gets the raw iron price.
-    iron_ingot: 1800
+    iron_ingot: 900
 
 custom-items:
   # Custom island generator ores (PHASE-7 M7.2, generators.yml; ECONOMY_BALANCE §4.1: half the Depths ore one tier up:
   # Ashstone = half of Depths amethyst, Emberite = half of Depths quartz). Only an island generator at level 9 / 10 makes them.
   # Owner 7 Nov 2026 (Q-70): emerald is the last /mine ore; only emeralds from /mine sell (villager emeralds don't).
   mine-drops:
-    mine_emerald: 8200
+    mine_emerald: 4100
   island-ores:
     ashstone: 18000
     emberite: 39600

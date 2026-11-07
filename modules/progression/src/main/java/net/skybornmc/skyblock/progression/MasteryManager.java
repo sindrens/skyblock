@@ -198,6 +198,35 @@ final class MasteryManager implements Listener {
      * Reads {@code masteries.yml} from the data folder. A missing file is written from the bundled one; masteries that are
      * new in the bundled file are added to an existing file (turn one off with {@code enabled: false} instead).
      */
+    /** The Angler gates of an untouched live file move from Farming pillar 15/30/45/60 to island level 5/15/30/50. Pure. */
+    static boolean anglerGates(org.bukkit.configuration.ConfigurationSection yaml) {
+        String base = MasteryCatalog.SECTION + ".angler";
+        if (!"farming".equals(yaml.getString(base + ".pillar"))) {
+            return false;
+        }
+        java.util.List<java.util.Map<?, ?>> ranks = yaml.getMapList(base + ".ranks");
+        int[] oldGates = {15, 30, 45, 60};
+        int[] newGates = {5, 15, 30, 50};
+        if (ranks.size() != oldGates.length) {
+            return false;
+        }
+        java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
+        for (int i = 0; i < ranks.size(); i++) {
+            Object gate = ranks.get(i).get("pillar-level");
+            if (!(gate instanceof Number n) || n.intValue() != oldGates[i]) {
+                return false; // staff changed it: leave it
+            }
+            java.util.Map<String, Object> rank = new java.util.LinkedHashMap<>();
+            ranks.get(i).forEach((k, v) -> rank.put(String.valueOf(k), v));
+            rank.remove("pillar-level");
+            rank.put("island-level", newGates[i]);
+            out.add(rank);
+        }
+        yaml.set(base + ".pillar", null);
+        yaml.set(base + ".ranks", out);
+        return true;
+    }
+
     private MasteryCatalog loadCatalog() {
         UpgradeCatalog.costMultiplier = upgradesConfig.costMultiplier; // owner 7 Nov 2026: all money prices / 4
         File file = new File(core.plugin().getDataFolder(), MasteryCatalog.FILE);
@@ -233,6 +262,10 @@ final class MasteryManager implements Listener {
                     changed = true;
                 }
             }
+        }
+        if (file.exists() && anglerGates(yaml)) { // 7 Nov 2026: Angler asks for island levels, not Farming pillar levels
+            core.plugin().getLogger().info(MasteryCatalog.FILE + ": Angler now asks for island levels 5 / 15 / 30 / 50.");
+            changed = true;
         }
         if (changed) {
             try {

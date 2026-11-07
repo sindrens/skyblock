@@ -35,6 +35,8 @@ item:
 # Short words after a perk's value in the menus ("+1.2% shards").
 effect:
   shards: "shards"
+  # Tools v6: Shard Finder shows only its level. {level}
+  shard-finder: "Level {level}"
   drops: "drops"
   growth: "crop growth"
   items: "items"
@@ -133,7 +135,7 @@ prestige:
     stay: 60
     fade-out: 20
   # Owner 6-7 Nov 2026: your own prestige. <tool> <stars> <prestige> <bonus> <cap>
-  chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value><tool></c:value> <c:text>is prestige <c:flame><stars></c:flame><c:text>: +<bonus>% XP and shards for good, enchants up to level <c:value><cap></c:value><c:text>."
+  chat: "<prefix><c:flame><sym:star></c:flame> <c:text>Your <c:value><tool></c:value> <c:text>is prestige <c:flame><stars></c:flame><c:text>: +<bonus>% XP and shards for good, enchants open to <c:value><cap>%</c:value> <c:text>of their levels."
   # Every 10th prestige, to everyone else. <player> <tool> <prestige>
   broadcast: "<prefix><c:value><player></c:value> <c:text>reached prestige <c:flame><prestige></c:flame> <c:text>on their <tool>!"
   confirm-crumb: "Confirm Prestige"
@@ -429,6 +431,16 @@ enchant:
   golden_fish: {name: "Golden Fish", icon: gold_ingot, lore: ["<c:muted>Money: the catch's sell price", "<c:muted>many times over."]}
   treasure_chest: {name: "Treasure Chest", icon: chest, lore: ["<c:muted>One of every catch of the", "<c:muted>waters you have unlocked."]}
   lucky_streak: {name: "Lucky Streak", icon: rabbit_foot, lore: ["<c:muted>A long time without a rare find?", "<c:muted>The next one is twice as likely."]}
+  # Tools v6 (7 Nov 2026): nine new enchants
+  shard_storm: {name: "Shard Storm", icon: prismarine_crystals, lore: ["<c:muted>For a few seconds every block", "<c:muted>also gives a Shard Burst."]}
+  frenzy: {name: "Frenzy", icon: sugar, lore: ["<c:muted>A few seconds of much faster", "<c:muted>breaking (sword: more damage)."]}
+  golden_touch: {name: "Golden Touch", icon: golden_apple, lore: ["<c:muted>Your next drops sell twice:", "<c:muted>once more as money right away."]}
+  duplicator: {name: "Duplicator", icon: slime_ball, lore: ["<c:muted>Your next drops are doubled."]}
+  xp_surge: {name: "XP Surge", icon: experience_bottle, lore: ["<c:muted>A big chunk of tool XP at once."]}
+  crystal_find: {name: "Crystal Find", icon: quartz, lore: ["<c:muted>A rare chance at crystals."]}
+  booster_find: {name: "Booster Find", icon: beacon, lore: ["<c:muted>Very rare: a few minutes of", "<c:muted>double shards with this tool."]}
+  chain_reaction: {name: "Chain Reaction", icon: redstone, lore: ["<c:muted>An area enchant can set off", "<c:muted>a second one right after it."]}
+  shard_rain: {name: "Shard Rain", icon: lapis_lazuli, lore: ["<c:muted>Shards for you and every", "<c:muted>member of your island online."]}
   crate:
     ember: "Ember"
     cinder: "Cinder"
@@ -441,7 +453,7 @@ enchant:
   # <enchant> <level> <prestige> <have> <cap> <next> <tool>
   locked-level: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at tool level <c:value><level></c:value><c:text>. Your <tool> is level <c:value><have></c:value><c:text>."
   locked-prestige: "<prefix><c:error><sym:cross></c:error> <c:value><enchant></c:value> <c:text>unlocks at prestige <c:flame><prestige></c:flame><c:text>."
-  capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Prestige the tool (+20) or get your island's Mastery (+100 a rank): <click:run_command:'/is masteries'><c:action>/is masteries</c:action></click>"
+  capped: "<prefix><c:warning><sym:cross></c:warning> <c:value><enchant></c:value> <c:text>is at your cap (<c:value><cap></c:value><c:text>). Level the tool up (the cap grows faster the higher it is) or get your island's Mastery (+100 a rank): <click:run_command:'/is masteries'><c:action>/is masteries</c:action></click>"
   changed: "<prefix><c:warning><sym:cross></c:warning> <c:text>Your enchants changed on another screen. Nothing was paid; check the price and click again."
   # <enchant> <level> <max> <cost>
   # Action bar (tools v5: no chat line per click)
@@ -463,8 +475,27 @@ enchant:
     cash: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount>"
     progress: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> progress"
     basket: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> items"
+    # tools v6. <enchant> <amount>
+    storm: "<c:flame><bold><enchant>!</bold></c:flame> <c:text><amount> s of bursts"
+    frenzy: "<c:flame><bold><enchant>!</bold></c:flame> <c:text><amount> s"
+    golden: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>next <amount> drops sell twice"
+    duplicate: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>next <amount> drops doubled"
+    xp: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> tool XP"
+    crystals: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>+<amount> crystals"
+    chain: "<c:flame><bold>Chain Reaction!</bold></c:flame> <c:text>a second <amount>"
+    # <amount> = members who got shards too
+    rain: "<c:flame><bold><enchant>!</bold></c:flame> <c:text>for you and <amount> members"
+    # Shown to the other members. <player> <amount>
+    rain-got: "<c:flame><bold>Shard Rain</bold></c:flame> <c:text>from <player>: </c:text><amount>"
     # Chat (rare). <enchant> <crate>
     key: "<prefix><c:flame><sym:star></c:flame> <c:value><enchant></c:value> <c:text>found a <c:value><crate> Key</c:value><c:text>! Open it in</c:text> <c:action>/crates</c:action><c:text>."
+  # tools v6, Booster Find. <seconds>
+  fever-title:
+    title: "<grad:flame><bold>SHARD FEVER!"
+    subtitle: "<c:text>x2 shards for <c:value><seconds> s"
+    fade-in: 5
+    stay: 40
+    fade-out: 15
   key-title:
     title: "<grad:flame><bold>KEY FOUND!"
     subtitle: "<c:text>+1 <c:value><crate> Key"
@@ -490,6 +521,29 @@ enchant:
         - "<c:text>They work at <c:value><area></c:value> <c:text>with this tool."
         - ""
         - "<c:bar>| </c:bar><c:text>Your <shards>: </c:text><balance>"
+    # Tools v6: the coloured banner at the start of each row. <open> <total>
+    group:
+      area:
+        name: "<bold><c:error>Area"
+        lore:
+          - "<c:muted>Break many blocks at once."
+          - "<c:bar>| </c:bar><c:text>Open: <c:value><open></c:value><c:muted>/<total>"
+      shards:
+        name: "<bold><c:flame>Shards"
+        lore:
+          - "<c:muted>More shards for your perks."
+          - "<c:bar>| </c:bar><c:text>Open: <c:value><open></c:value><c:muted>/<total>"
+      loot:
+        name: "<bold><c:value>Loot and Finds"
+        lore:
+          - "<c:muted>More items, money, keys"
+          - "<c:muted>and crystals."
+          - "<c:bar>| </c:bar><c:text>Open: <c:value><open></c:value><c:muted>/<total>"
+      boosts:
+        name: "<bold><c:success>Boosts"
+        lore:
+          - "<c:muted>Faster levels and progress."
+          - "<c:bar>| </c:bar><c:text>Open: <c:value><open></c:value><c:muted>/<total>"
     # <amount> <next>
     amount:
       name: "<bold><area:neutral>Buy <amount> at a time"
@@ -502,7 +556,7 @@ enchant:
     name: "<bold><area:skills><name> <c:value><level>"
     name-new: "<bold><area:skills><name>"
     name-locked: "<bold><area:locked><name>"
-    # <level> <cap> <max>: the cap rises every prestige
+    # <level> <cap> <max>: the cap grows with the tool's levels (all of them, also before a prestige)
     level-cap: "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<cap> (max <max>)"
     locked-level:
       - ""
@@ -514,8 +568,9 @@ enchant:
     capped:
       - ""
       - "<c:warning>At your cap: <cap>"
-      - "<c:muted>Prestige: +20. Island Mastery:"
-      - "<c:muted>+100 a rank (/is masteries)."
+      - "<c:muted>Level the tool up: the cap grows"
+      - "<c:muted>faster near the top. Island"
+      - "<c:muted>Mastery: +100 a rank."
     # <level> <max>
     level: "<c:bar>| </c:bar><c:text>Level: </c:text><c:value><level></c:value><c:muted>/<max>"
     # <now> <next>
@@ -542,6 +597,15 @@ enchant:
       streak_xp: "up to +{value}% tool XP"
       basket: "1 of every unlocked item"
       pity: "after {value} blocks"
+      storm: "{value} s of bursts"
+      frenzy: "{value} s of speed"
+      golden: "next {value} drops x2 money"
+      duplicate: "next {value} drops doubled"
+      xp_surge: "XP of {value} blocks"
+      crystals: "{value} crystals"
+      fever: "{value} s of x2 shards"
+      chain: "{value}% chance of a second"
+      rain: "{value} shards for everyone"
     max:
       - ""
       - "<c:success><sym:check> Highest level"

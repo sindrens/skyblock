@@ -239,25 +239,24 @@ masteries:
     icon: "fishing_rod"
     order: 9
     effect: angler
-    pillar: farming
     enabled: true
-    ranks:
+    ranks:   # 7 Nov 2026: island level gates (there is no fishing pillar)
       - tier: 3
         cost: 916000
         value: 5
-        pillar-level: 15
+        island-level: 5
       - tier: 6
         cost: 16400000
         value: 10
-        pillar-level: 30
+        island-level: 15
       - tier: 9
         cost: 477000000
         value: 15
-        pillar-level: 45
+        island-level: 30
       - tier: 12
         cost: 36900000000
         value: 20
-        pillar-level: 60
+        island-level: 50
   homestead:
     icon: "red_bed"
     order: 10

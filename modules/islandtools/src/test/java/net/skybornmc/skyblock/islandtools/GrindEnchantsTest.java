@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Owner 6 Nov 2026 (plans/TOOLS_V3.md): the personal grind enchants, 17 per tool. */
+/** Owner 6 Nov 2026 (plans/TOOLS_V3.md): the personal grind enchants; tools v6: 26 on the pickaxe and hoe, compound values. */
 class GrindEnchantsTest {
 
     private static final IslandToolsConfig C = new IslandToolsConfig();
@@ -32,8 +32,9 @@ class GrindEnchantsTest {
         List<String> problems = new ArrayList<>();
         GrindEnchants g = defaults(problems);
         assertEquals(List.of(), problems);
-        assertEquals(17, g.of(Kind.PICKAXE).size(), "owner: 17 enchants on the /mine pickaxe");
-        assertEquals(17, g.of(Kind.HOE).size(), "owner: 17 enchants on the /farm hoe");
+        assertEquals(26, g.of(Kind.PICKAXE).size(), "tools v6: 17 + 9 new on the /mine pickaxe");
+        assertEquals(26, g.of(Kind.HOE).size(), "tools v6: 17 + 9 new on the /farm hoe");
+        assertTrue(g.of(Kind.PICKAXE).stream().allMatch(d -> d.unlockPrestige() == 0), "tools v6: no prestige gates");
         assertTrue(g.get(Kind.PICKAXE, "nuke").isPresent());
         assertTrue(g.get(Kind.HOE, "meteor_shower").isPresent());
         assertFalse(g.get(Kind.HOE, "nuke").isPresent(), "the hoe has its own area set");
@@ -53,25 +54,25 @@ class GrindEnchantsTest {
                 }
             }
             assertEquals(EnumSet.allOf(GrindEnchants.Effect.class), seen, kind + " uses every effect");
-            assertEquals(3, starters, kind + ": Shard Burst, the first area enchant and Scholar at level 1");
+            assertEquals(5, starters, kind + ": five enchants at tool level 1 (tools v6)");
         }
     }
 
     @Test
     void theRodHasItsOwnSetWithoutAreaEnchants() {
         GrindEnchants g = defaults(new ArrayList<>());
-        assertEquals(12, g.of(Kind.ROD).size());
+        assertEquals(19, g.of(Kind.ROD).size(), "tools v6: 12 + 7 new");
         assertTrue(g.of(Kind.ROD).stream().noneMatch(d -> d.effect() == GrindEnchants.Effect.AREA), "a rod breaks no blocks");
         assertTrue(g.get(Kind.ROD, "big_catch").isPresent() && g.get(Kind.ROD, "golden_fish").isPresent());
         List<List<GrindEnchants.Def>> rows = EnchantMenu.groups(g.of(Kind.ROD));
         assertTrue(rows.getFirst().isEmpty(), "no area row for the rod");
-        assertTrue(rows.stream().allMatch(r -> r.size() <= 7));
+        assertTrue(rows.stream().allMatch(r -> r.size() <= 8));
     }
 
     @Test
-    void theSwordHasEightEnchants() {
+    void theSwordHasFifteenEnchants() {
         GrindEnchants g = defaults(new ArrayList<>());
-        assertEquals(8, g.of(Kind.SWORD).size());
+        assertEquals(15, g.of(Kind.SWORD).size(), "tools v6: 8 + 7 new");
         assertTrue(g.of(Kind.SWORD).stream().noneMatch(d -> d.effect() == GrindEnchants.Effect.AREA || d.effect() == GrindEnchants.Effect.EXTRA_ITEMS
                 || d.effect() == GrindEnchants.Effect.PROGRESS), "kills go to the bag: no area, extra items or progress enchants");
     }
@@ -85,22 +86,29 @@ class GrindEnchantsTest {
     }
 
     @Test
-    void chanceAndValueGrowLinearly() {
+    void chancesGrowEvenlyAndValuesCompound() {
         GrindEnchants.Def blast = defaults(new ArrayList<>()).get(Kind.PICKAXE, "blast").orElseThrow();
         assertEquals(0, blast.chance(0));
         assertEquals(0.5, blast.chance(1), 1e-9);
-        assertEquals(500, blast.max(), "owner 7 Nov 2026: everyday enchants go to 500");
-        assertEquals(1.0, blast.chance(500), 1e-9);
-        assertEquals(0.75, blast.chance(250), 0.002);
+        assertEquals(2500, blast.max(), "tools v6: everyday enchants go to 2,500");
+        assertEquals(1.0, blast.chance(2500), 1e-9);
+        assertEquals(0.75, blast.chance(1250), 0.002);
         assertEquals(4, blast.value(1), 1e-9);
-        assertEquals(18, blast.value(500), 1e-9);
-        assertEquals(18, blast.value(5000), 1e-9, "above the max counts as the max");
+        assertEquals(18, blast.value(2500), 1e-9);
+        assertEquals(18, blast.value(25_000), 1e-9, "above the max counts as the max");
+        assertEquals(Math.sqrt(4 * 18), GrindEnchants.grow(4, 18, 1250, 2499), 1e-9, "halfway is the geometric middle");
+        GrindEnchants.Def burst = defaults(new ArrayList<>()).get(Kind.PICKAXE, "shard_burst").orElseThrow();
+        assertEquals(100, burst.value(1), 1e-9, "tools v6: a Burst gives 100 at level 1");
+        assertEquals(1500, burst.value(2500), 1e-9, "x15 at the max");
+        double step = burst.value(101) / burst.value(100);
+        assertEquals(step, burst.value(2001) / burst.value(2000), 1e-9, "the same few tenths of a percent every level");
         assertEquals(7, GrindEnchants.lerp(3, 7, 1, 1), 1e-9, "a one-level enchant is at its max at once");
+        assertEquals(5, GrindEnchants.grow(0, 10, 2, 3), 1e-9, "a zero end grows evenly");
         GrindEnchants.Def pity = defaults(new ArrayList<>()).get(Kind.HOE, "lucky_streak").orElseThrow();
         assertEquals(100, pity.value(1), 1e-9);
-        assertEquals(50, pity.value(pity.max()), 1e-9, "Lucky Streak: 100 blocks down to 50");
-        assertEquals(300, pity.max());
-        assertEquals(100, defaults(new ArrayList<>()).get(Kind.HOE, "tornado").orElseThrow().max(), "rare enchants go to 100");
+        assertEquals(30, pity.value(pity.max()), 1e-9, "Lucky Streak: 100 blocks down to 30");
+        assertEquals(1000, pity.max());
+        assertEquals(500, defaults(new ArrayList<>()).get(Kind.HOE, "tornado").orElseThrow().max(), "rare enchants go to 500");
     }
 
     @Test
@@ -108,19 +116,33 @@ class GrindEnchantsTest {
         GrindEnchants.Def d = defaults(new ArrayList<>()).get(Kind.PICKAXE, "shard_burst").orElseThrow();
         assertEquals(200, d.priceOf(1), "owner 7 Nov 2026: level 1 costs 200 shards (shards x10)");
         long last = 0;
-        for (int l = 1; l <= 500; l += 37) {
+        for (int l = 1; l <= 2500; l += 37) {
             assertTrue(d.priceOf(l) >= last);
             last = d.priceOf(l);
         }
         assertEquals(d.priceOf(1) + d.priceOf(2) + d.priceOf(3), d.price(0, 3));
         assertEquals(0, d.price(5, 0));
         assertEquals(10, d.buyable(0, 10));
-        assertEquals(3, d.buyable(497, 10), "never past the max");
-        assertEquals(0, d.buyable(500, 1));
+        assertEquals(3, d.buyable(2497, 10), "never past the max");
+        assertEquals(0, d.buyable(2500, 1));
     }
 
     @Test
-    void capRisesEveryPrestige() {
+    void capGrowsWithLifetimeLevelsFasterNearTheTop() {
+        assertEquals(20, GrindEnchants.capByLevels(2500, 1, 20, 100, 1.5, 0), "a new tool: the base");
+        assertEquals(80, GrindEnchants.capByLevels(2500, 10, 20, 100, 1.5, 0));
+        assertEquals(884, GrindEnchants.capByLevels(2500, 50, 20, 100, 1.5, 0), "level 50 at prestige 0: about a third");
+        assertEquals(2500, GrindEnchants.capByLevels(2500, 100, 20, 100, 1.5, 0), "prestige 2: the whole track");
+        assertEquals(2500, GrindEnchants.capByLevels(2500, 2550, 20, 100, 1.5, 0));
+        int early = GrindEnchants.capByLevels(2500, 20, 20, 100, 1.5, 0) - GrindEnchants.capByLevels(2500, 10, 20, 100, 1.5, 0);
+        int late = GrindEnchants.capByLevels(2500, 90, 20, 100, 1.5, 0) - GrindEnchants.capByLevels(2500, 80, 20, 100, 1.5, 0);
+        assertTrue(late > early * 2, "ten levels near the top open far more than ten levels at the start");
+        assertEquals(380, GrindEnchants.capByLevels(2500, 10, 20, 100, 1.5, 300), "Mine Mastery 3 adds 300 levels");
+        assertEquals(5, GrindEnchants.capByLevels(5, 1, 20, 100, 1.5, 0), "never above the enchant's max");
+    }
+
+    @Test
+    void oldCapRisesEveryPrestige() {
         assertEquals(20, GrindEnchants.cap(1000, 0, 20, 20));
         assertEquals(40, GrindEnchants.cap(1000, 1, 20, 20));
         assertEquals(1000, GrindEnchants.cap(1000, 50, 20, 20), "1000 at prestige 50");
@@ -169,11 +191,11 @@ class GrindEnchantsTest {
             assertEquals(4, rows.size());
             int total = 0;
             for (List<GrindEnchants.Def> row : rows) {
-                assertTrue(row.size() <= 7, "a centred row with room around it");
+                assertTrue(row.size() <= 8, "a banner and at most 8 enchants");
                 assertFalse(row.isEmpty());
                 total += row.size();
             }
-            assertEquals(17, total);
+            assertEquals(26, total);
         }
         assertEquals(10, EnchantMenu.nextAmount(1));
         assertEquals(100, EnchantMenu.nextAmount(10));
@@ -211,7 +233,7 @@ class GrindEnchantsTest {
         List<GrindEnchants.Breakthrough> b = GrindEnchants.Breakthrough.parse(C.enchantBreakthroughs, problems::add);
         assertEquals(List.of(), problems);
         GrindEnchants g = GrindEnchants.parse(C.enchantList, b, problems::add);
-        GrindEnchants.Def blast = g.get(Kind.PICKAXE, "blast").orElseThrow();
+        GrindEnchants.Def blast = g.get(Kind.PICKAXE, "meteor").orElseThrow(); // a 500-level area enchant
         assertEquals(List.of(10, 50, 150, 500), b.stream().map(x -> x.level(500)).toList(), "a 500-level enchant");
         assertEquals(List.of(2, 10, 30, 100), b.stream().map(x -> x.level(100)).toList(), "a 100-level enchant");
         assertEquals(1, blast.boost(9));
@@ -219,16 +241,16 @@ class GrindEnchantsTest {
         assertEquals(2, blast.boost(149));
         assertEquals(3, blast.boost(500));
         assertEquals(blast.chance(9) * 1.5, blast.chance(10), 0.01, "a jump at the breakthrough");
-        assertEquals(3.0, blast.chance(500), 1e-9, "x3 at the max");
-        assertEquals(18, blast.value(500), 1e-9, "a proc's amount stays (its chance grows)");
+        assertEquals(0.08 * 3, blast.chance(500), 1e-9, "x3 at the max");
+        assertEquals(40, blast.value(500), 1e-9, "a proc's amount stays (its chance grows)");
         assertTrue(blast.crosses(49, 50));
         assertFalse(blast.crosses(50, 120));
         assertEquals(50, blast.next(12).orElseThrow().level(500));
         assertTrue(blast.next(500).isEmpty());
         GrindEnchants.Def combo = g.get(Kind.PICKAXE, "combo").orElseThrow();
-        assertEquals(60, combo.value(500), 1e-9, "a steady enchant: its value x3");
+        assertEquals(225, combo.value(2500), 1e-9, "a steady enchant: its value x3");
         GrindEnchants.Def pity = g.get(Kind.PICKAXE, "lucky_streak").orElseThrow();
-        assertEquals(50, pity.value(pity.max()), 1e-9, "Lucky Streak's block count is not boosted");
+        assertEquals(30, pity.value(pity.max()), 1e-9, "Lucky Streak's block count is not boosted");
         GrindEnchants.Def rod = g.get(Kind.ROD, "big_catch").orElseThrow();
         assertTrue(rod.chance(rod.max()) <= 100, "never above 100%");
         assertEquals(1, GrindEnchants.Breakthrough.parse(List.of("10:2", "x:1", "0:2", "50:0.5"), problems::add).size());
@@ -237,7 +259,7 @@ class GrindEnchantsTest {
 
     @Test
     void shardsAreTenTimesBiggerWithTheSameValue() {
-        GrindEnchants now = defaults(new ArrayList<>());
+        GrindEnchants now = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V16, w -> { });
         GrindEnchants old = GrindEnchants.parse(IslandToolsConfig.ENCHANTS_V13, w -> { });
         for (Kind k : Kind.values()) {
             for (GrindEnchants.Def d : now.of(k)) {
@@ -247,8 +269,12 @@ class GrindEnchantsTest {
                 assertEquals(o.valueMax() * shards, d.valueMax(), 1e-9, d.key());
             }
         }
-        assertEquals(600, C.shardHoe);
+        assertEquals(1000, C.shardHoe, "tools v6: 10 shards a crop");
         assertEquals(2_500, C.luckyMax);
-        assertEquals(16, C.version());
+        assertEquals(17, C.version());
+        var v17 = C.valueChanges().get(17);
+        assertEquals(IslandToolsConfig.ENCHANTS_V16, v17.get("enchants.list").from());
+        assertEquals(C.enchantList, v17.get("enchants.list").to());
+        assertEquals(IslandToolsConfig.PERKS_V16, v17.get("perks").from());
     }
 }

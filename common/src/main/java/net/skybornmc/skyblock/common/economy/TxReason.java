@@ -68,6 +68,9 @@ public final class TxReason {
     /** Owner 6 Nov 2026: money from the Cash Vein / Cash Crop grind enchants at /mine and /farm; new money, batched. */
     public static final String GRIND_ENCHANT_CASH = "grind_enchant_cash";
 
+    /** Tools v6 (7 Nov 2026): crystals from the Crystal Find grind enchant; batched. */
+    public static final String GRIND_ENCHANT_CRYSTALS = "grind_enchant_crystals";
+
     /** Owner 3 Nov 2026: shards found while grinding with an island tool (and its Shard Finder upgrade); batched. */
     public static final String ISLAND_TOOL_SHARD = "island_tool_shard";
 

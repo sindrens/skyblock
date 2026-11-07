@@ -214,7 +214,7 @@ final class ToolMenu extends Menu {
         }
         return switch (d.effect()) {
             case ENCHANT, HASTE -> m.raw("upgrade." + d.id() + ".name") + " " + IslandToolsModule.roman(lv);
-            case SHARDS -> "+" + pct(lv * c.shardFinderPerLevel) + " " + m.raw("effect.shards"); // owner 7 Nov 2026: the number again
+            case SHARDS -> m.raw("effect.shard-finder").replace("{level}", Format.number(lv)); // tools v6: the level only, no percent
             case DROPS -> "+" + pct(lv * c.dropsPerLevel) + " " + m.raw("effect.drops");
             case GROWTH -> "+" + pct(lv * c.growthPerLevel) + " " + m.raw("effect.growth");
             case STORAGE -> Format.number(ToolRules.storage(lv, c.storageBase, c.storagePerLevel)) + " " + m.raw("effect.items");

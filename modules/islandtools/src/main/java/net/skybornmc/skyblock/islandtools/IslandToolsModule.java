@@ -354,8 +354,31 @@ public final class IslandToolsModule implements SkyblockModule {
                     levels.put(key.substring(prefix.length()), lv);
                 }
             });
+            // Tools v6 (owner 7 Nov 2026: "only need to buy ONCE"): Auto-Sell and Auto-Compactor bought on one tool are on
+            // every tool that has them, and they stay through prestige and rebirth.
+            for (Upgrades.Def d : upgrades.of(kind)) {
+                if (!accountWide(d) || levels.containsKey(d.id())) {
+                    continue;
+                }
+                for (Kind other : Kind.values()) {
+                    if (other == kind) {
+                        continue;
+                    }
+                    boolean owned = upgrades.of(other).stream().anyMatch(o -> o.effect() == d.effect()
+                            && rows.getOrDefault(other.id() + ":" + PERK + o.id(), 0) > 0);
+                    if (owned) {
+                        levels.put(d.id(), d.max());
+                        break;
+                    }
+                }
+            }
             return Upgrades.encode(levels);
         });
+    }
+
+    /** One-time perks that are bought once for all of a player's tools. Pure. */
+    static boolean accountWide(Upgrades.Def d) {
+        return d.max() == 1 && (d.effect() == Upgrades.Effect.AUTOSELL || d.effect() == Upgrades.Effect.COMPACT);
     }
 
     void forgetPerks(UUID profile) {
@@ -444,6 +467,42 @@ public final class IslandToolsModule implements SkyblockModule {
     /** The prestige the enchant cap counts: a player with a rebirth has every prestige behind them. */
     int capPrestige(ToolStore.Prog view) {
         return view == null ? 0 : view.rebirth() > 0 ? Math.max(view.prestige(), config.prestigeMax) : view.prestige();
+    }
+
+    /** Tools v6: every level the tool ever reached (prestige x max level + level; a rebirth counts as all 50 prestiges). */
+    int lifetimeLevel(ToolStore.Prog prog) {
+        return prog == null ? 0 : capPrestige(prog) * config.maxLevel + level(prog).level();
+    }
+
+    /**
+     * Tools v6, XP Surge: tool XP worth {@code blocks} relevant blocks at once (with the prestige bonus), on the player's own
+     * tool, with the normal level-up. Returns the XP given (0 at the max level or while loading).
+     */
+    long bonusXp(Player p, Kind kind, double blocks) {
+        UUID island = island(p);
+        UUID profile = profile(p);
+        ToolStore.Prog prog = view(island, profile, kind);
+        if (prog == null || blocks <= 0) {
+            return 0;
+        }
+        ToolRules.Level before = level(prog);
+        if (before.maxed()) {
+            return 0;
+        }
+        double perBlock = kind == Kind.HOE ? config.xpPerBlock / Math.max(1, config.hoeXpDivisor) : config.xpPerBlock;
+        long xp = ToolRules.rollUp(blocks * perBlock * prestigeBonus(p, kind), ThreadLocalRandom.current().nextDouble());
+        if (xp <= 0) {
+            return 0;
+        }
+        ToolStore.Prog next = prog.withXp(prog.xp() + xp);
+        personal.get(profile).put(kind, personal(profile, kind).withXp(next.xp()));
+        personalDelta.computeIfAbsent(profile, k -> new ConcurrentHashMap<>()).merge(kind, xp, Long::sum);
+        dirty.add(island);
+        ToolRules.Level after = level(next);
+        if (after.level() > before.level()) {
+            levelUp(p, island, kind, after, next);
+        }
+        return xp;
     }
 
     ToolRules.Level level(ToolStore.Prog prog) {
@@ -878,11 +937,11 @@ public final class IslandToolsModule implements SkyblockModule {
             case ROD -> config.shardRod;
             case SWORD -> config.shardSword;
         } / 100.0;
-        double finder = 1 + effect(island, profile, kind, Upgrades.Effect.SHARDS) * config.shardFinderPerLevel / 100.0;
+        double finder = ToolRules.compound(config.shardFinderPerLevel, effect(island, profile, kind, Upgrades.Effect.SHARDS)); // tools v6
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
         double streak = enchants.shardMultiplier(p, kind); // owner 6 Nov 2026: Shard Echo + Compound Interest
-        int shards = ToolRules.roll(chance * finder * bonus * doubled * streak, rnd.nextDouble());
+        int shards = ToolRules.rollUp(chance * finder * bonus * doubled * streak, rnd.nextDouble()); // tools v6: always rounded up
         int lucky = effect(island, profile, kind, Upgrades.Effect.LUCKY);
         if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
             int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);
@@ -1333,8 +1392,8 @@ public final class IslandToolsModule implements SkyblockModule {
             } else {
                 msg.title(p, "prestige.done", Msg.p("tool", tool), Msg.p("stars", stars), Msg.number("prestige", now.prestige()));
                 msg.send(p, "prestige.chat", Msg.p("tool", tool), Msg.p("stars", stars), Msg.number("prestige", now.prestige()),
-                        Msg.number("bonus", bonus), Msg.number("cap", GrindEnchants.cap(Integer.MAX_VALUE, now.prestige(),
-                                config.enchantCapBase, config.enchantCapPerPrestige)));
+                        Msg.number("bonus", bonus), Msg.number("cap", GrindEnchants.capByLevels(100, now.prestige() * config.maxLevel + 1,
+                                1, config.enchantCapFullLevels, config.enchantCapExponent, 0))); // tools v6: percent of every track
             }
             core.sounds().play(p, "tool-prestige");
         }
