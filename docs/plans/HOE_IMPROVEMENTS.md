@@ -35,5 +35,25 @@ milestones:
 Every enchant uses the same rule (its own level-1 value). Chances keep growing evenly to their cap; area enchants keep
 their block counts and get the milestone chance boost.
 
-## Open (round 2, see HOE_SUGGESTIONS_2.html)
-The round 1 points 9-15 that had no answer and the new ideas.
+## Decided (owner answers, round 2)
+10. **Full bag and full storage:** crops are still broken; what does not fit **drops on the ground for that player only**
+    (other players can't see or pick it up; it disappears after the normal item time).
+11. **Pick your crop at /farm:** a button to farm any crop you have unlocked, not only the newest.
+12. **Hot Crop of the hour:** one crop sells +50% at /farm for an hour (one chat line, a scoreboard line).
+13. **Fresh Field:** your first 2,000 crops each day give double shards.
+14. **Crop Golem:** every 20-40 minutes a hay golem walks over /farm; everyone hits it with the hoe; it bursts into crops
+    and shards, the top 3 hitters get a key; gone after 2 minutes.
+15. **Combo Fever:** at a x500 combo the field around you glows gold for 10 seconds and every crop counts double (drops,
+    shards, progress), then the combo starts again.
+16. **Lucky Clover:** a very rare drop (about 1 in 20,000 crops); right-click for 60 seconds of x2 enchant chances;
+    tradeable (auction house).
+17. **Fertilizer:** Harvest Basket sometimes gives Fertilizer: right-click an island crop and the 5x5 around it is ripe.
+18. **Hoe titles:** Farmhand (prestige 1), Harvester (10), Field Lord (25), Harvest King (50), Reborn Reaper (first rebirth).
+19. **Juicy hits:** big procs pop with particles and a rising sound, only for you.
+20. **Milestone progress bar** on each enchant tile.
+21. **Top Harvesters board** at /farm: the top 10 this week, no prizes, resets on Monday.
+
+## Still open (asked in chat, 7 Nov 2026)
+- The steady growth speed: +1% of level 1 every level (suggested) or half as fast.
+- The seven round 1 points without an answer: combo counter, next crop progress, Sweep without a prestige, hoe level
+  speed, storage warning at 90%, prestige reward, the +300% shard bonus cap.
