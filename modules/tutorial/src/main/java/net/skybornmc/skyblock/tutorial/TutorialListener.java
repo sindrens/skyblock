@@ -182,6 +182,51 @@ final class TutorialListener implements Listener {
         }
     }
 
+    /** Kindle (7 Nov 2026): the island level went up; every online member of that island hears it. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onIslandLevel(net.skybornmc.skyblock.common.progression.IslandLevelUpEvent event) {
+        if (!event.rose()) {
+            return;
+        }
+        for (Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (event.islandId().equals(m.islandOf(p))) {
+                m.signal(p, Signal.of(StepType.ISLAND_LEVEL, "island", event.newLevel()));
+            }
+        }
+    }
+
+    /** Kindle: ripe crops and generator blocks broken on your own island (cheap checks first: most breaks need nothing). */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onIslandBreak(org.bukkit.event.block.BlockBreakEvent event) {
+        org.bukkit.block.Block b = event.getBlock();
+        String what = islandBreak(b);
+        if (what == null) {
+            return;
+        }
+        Player p = event.getPlayer();
+        Signal signal = Signal.of(StepType.ISLAND_BREAK, what, 1);
+        if (m.listening(p, signal).isEmpty() || !m.onOwnIsland(p)
+                || ("ore".equals(what) && net.skybornmc.skyblock.common.world.ChunkMarks.marked(b))) { // a placed block does not count
+            return;
+        }
+        m.signal(p, signal);
+    }
+
+    /** {@code crop} for a ripe crop, {@code ore} for a generator block (cobblestone, stone, ores), else null. */
+    static String islandBreak(org.bukkit.block.Block b) {
+        Material type = b.getType();
+        if (b.getBlockData() instanceof org.bukkit.block.data.Ageable age && type != Material.SUGAR_CANE && type != Material.CACTUS
+                && type != Material.BAMBOO && type != Material.KELP) {
+            return age.getAge() >= age.getMaximumAge() ? "crop" : null;
+        }
+        if (type == Material.MELON || type == Material.PUMPKIN) {
+            return "crop";
+        }
+        String id = type.name();
+        boolean ore = type == Material.COBBLESTONE || type == Material.STONE || id.endsWith("_ORE") || type == Material.GILDED_BLACKSTONE;
+        return ore ? "ore" : null;
+    }
+
     /** Cobblestone or stone forming near a player standing on their own island: the generator works. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onForm(BlockFormEvent event) {

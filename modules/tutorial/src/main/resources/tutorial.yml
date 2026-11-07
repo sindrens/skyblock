@@ -2,9 +2,11 @@
 # dialog speed, places ...) are added below by the plugin and can be edited in /admin. Reload: /skyblock reload tutorial
 #
 # chapters.<id>: name, icon (vanilla item id), rewards (once per account: "money <n>", "crystals <n>", "shards <n>"
-#   (Farming Shards), "mining_shards <n>", "fishing_shards <n>", "combat_shards <n>", "key <crate> <n>", "tag <id>") and steps in order.
+#   (Farming Shards), "mining_shards <n>", "fishing_shards <n>", "combat_shards <n>", "key <crate> <n>", "tag <id>",
+#   "title <id>") and steps in order.
 # steps.<id>:
-#   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator | tool_level
+#   type    npc | menu | island | place | grind | sell | bank | audit | plant | chest | generator | tool_level |
+#           island_level (amount = the level) | island_break (target crop or ore: ripe crops / generator blocks on your island)
 #   target  npc: NPC role (npcs.yml) · menu: menu id(s) "hub|island" · place: id from places · grind: "farm", "mine",
 #           "fish" or "pve", optionally ":BLOCK|DROP" ("mine:COAL") · audit: "category:action[|action][:detail=value]" ·
 #           plant: blocks "WHEAT|CARROTS" · tool_level: hoe | pickaxe | rod | sword (amount = the level)
@@ -497,6 +499,67 @@ chapters:
         hint: "/pve boss, spend a Sigil, win in 3 minutes."
         command: pve
         icon: wither_skeleton_skull
+
+  # Quest line v2 (FULL_PLAN 7, owner 7 Nov 2026): Kindle's island chain. Steps you already did count at once.
+  kindle:
+    name: "Kindle's Island"
+    icon: blaze_powder
+    rewards: ["money 2000000", "crystals 50", "key blaze 1", "title kindled"]
+    steps:
+      spawner:
+        type: plant
+        target: SPAWNER
+        text: "Place a spawner on your island"
+        hint: "Buy one in /shop (Spawners), then place it."
+        place: island
+        icon: spawner
+      crops:
+        type: island_break
+        target: crop
+        amount: 50
+        text: "Harvest 50 island crops"
+        hint: "Ripe crops on your own island count."
+        place: island
+        icon: wheat
+      ores:
+        type: island_break
+        target: ore
+        amount: 50
+        text: "Mine 50 generator blocks"
+        hint: "Cobblestone and ores from your generator."
+        place: island
+        icon: cobblestone
+      size:
+        type: audit
+        target: "island:upgrade_buy:upgrade=island_size"
+        text: "Make your island bigger"
+        hint: "/is upgrade, Island Size (paid from the island bank)."
+        icon: grass_block
+      bank:
+        type: bank
+        target: island
+        amount: 10000
+        text: "Put $10,000 in the island bank"
+        hint: "/is bank, Deposit."
+        icon: gold_ingot
+      upgrade:
+        type: audit
+        target: "island:upgrade_buy"
+        text: "Buy one more island upgrade"
+        hint: "/is upgrade: Spawner Capacity, Sell Bonus ..."
+        icon: anvil
+      level:
+        type: island_level
+        amount: 2
+        text: "Reach island level 2"
+        hint: "Everything you do on the island gives island XP."
+        icon: experience_bottle
+      top:
+        type: menu
+        target: top
+        text: "Check /is top"
+        hint: "See which islands lead the server."
+        icon: gold_block
 
 # What an NPC says when you click it outside a tutorial step (before its menu opens). One line per click, in turn.
 # Each line points to the next NPC, so they work together. Remove a role's lines to keep it quiet.

@@ -181,6 +181,48 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
                     "chapters.fish_pro.rewards", change(List.of("fishing_shards 500", "key ember 1"), List.of("fishing_shards 5000", "key ember 1")),
                     "chapters.pve_pro.rewards", change(List.of("combat_shards 500", "key ember 1"), List.of("combat_shards 5000", "key ember 1"))));
 
+    /** The key listing every bundled chapter id a live file has seen (so a chapter staff removed does not come back). */
+    static final String SEEN = "chapters-seen";
+
+    /**
+     * Quest line v2 (7 Nov 2026): chapters that are new in the bundled tutorial.yml are added to a live file once (at the
+     * end, in bundled order). Pure apart from the yaml objects; returns the added ids.
+     */
+    static List<String> addNewChapters(org.bukkit.configuration.ConfigurationSection live, org.bukkit.configuration.ConfigurationSection bundled) {
+        org.bukkit.configuration.ConfigurationSection from = bundled == null ? null : bundled.getConfigurationSection("chapters");
+        if (from == null) {
+            return List.of();
+        }
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>(live.getStringList(SEEN));
+        List<String> added = new ArrayList<>();
+        for (String id : from.getKeys(false)) {
+            if (live.contains("chapters." + id)) {
+                seen.add(id);
+                continue;
+            }
+            if (seen.contains(id)) {
+                continue; // removed on purpose
+            }
+            live.set("chapters." + id, from.get(id));
+            seen.add(id);
+            added.add(id);
+        }
+        live.set(SEEN, new ArrayList<>(seen));
+        return added;
+    }
+
+    private org.bukkit.configuration.file.YamlConfiguration bundledCatalog() {
+        org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
+        try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream(Catalog.FILE)) {
+            if (in != null) {
+                y.load(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
+            core.plugin().getLogger().log(Level.WARNING, "tutorial.yml in the jar is broken", e);
+        }
+        return y;
+    }
+
     private static net.skybornmc.skyblock.common.config.CatalogUpdate.Change change(List<String> from, List<String> to) {
         return net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(from, to);
     }
@@ -199,6 +241,20 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
                 core.plugin().getLogger().info(Catalog.FILE + ": " + line);
             }
             if (net.skybornmc.skyblock.common.config.CatalogUpdate.version(yaml) != before) {
+                try {
+                    yaml.save(file);
+                } catch (java.io.IOException e) {
+                    core.plugin().getLogger().log(Level.WARNING, "Could not write " + Catalog.FILE, e);
+                }
+            }
+        }
+        if (!yaml.getKeys(false).isEmpty()) {
+            List<String> seenBefore = yaml.getStringList(SEEN);
+            List<String> added = addNewChapters(yaml, bundledCatalog());
+            if (!added.isEmpty() || !seenBefore.equals(yaml.getStringList(SEEN))) {
+                if (!added.isEmpty()) {
+                    core.plugin().getLogger().info(Catalog.FILE + ": new chapter(s) added: " + String.join(", ", added));
+                }
                 try {
                     yaml.save(file);
                 } catch (java.io.IOException e) {
@@ -311,6 +367,21 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
                 }
             }
         });
+        // Kindle (7 Nov 2026): "Reach island level 2" counts the level the island already has.
+        UUID key = core.services().optional(ProfileService.class).map(s -> s.profileKey(p)).orElse(p.getUniqueId());
+        core.services().optional(IslandService.class).flatMap(s -> s.islandOf(key)).ifPresent(island -> {
+            int level = core.services().optional(net.skybornmc.skyblock.common.progression.ProgressionService.class)
+                    .map(s -> s.islandLevel(island.id())).orElse(0);
+            if (level > 0) {
+                signal(p, Signal.of(StepType.ISLAND_LEVEL, "island", level));
+            }
+        });
+    }
+
+    /** The island of a player's current profile, or null. */
+    UUID islandOf(Player p) {
+        UUID key = core.services().optional(ProfileService.class).map(s -> s.profileKey(p)).orElse(p.getUniqueId());
+        return core.services().optional(IslandService.class).flatMap(s -> s.islandOf(key)).map(IslandService.IslandInfo::id).orElse(null);
     }
 
     void unload(Player p) {
@@ -434,6 +505,8 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
                             k.giveKeys(profile, r.id(), (int) r.amount(), "tutorial", Actor.player(p)));
                     case TAG -> core.services().optional(Cosmetics.class).ifPresent(cs ->
                             cs.grant(player, Cosmetics.Kind.TAG, r.id(), "tutorial:" + chapter.id()));
+                    case TITLE -> core.services().optional(Cosmetics.class).ifPresent(cs ->
+                            cs.grant(player, Cosmetics.Kind.TITLE, r.id(), "tutorial:" + chapter.id()));
                     default -> { }
                 }
             }
@@ -455,6 +528,7 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
                 case CURRENCY -> "reward." + r.currency().key();
                 case KEY -> "reward.key";
                 case TAG -> "reward.tag";
+                case TITLE -> "reward.title";
             };
             String raw = core.messages().raw(ID, key);
             String text = raw == null ? r.amount() + " " + (r.id() == null ? r.currency().key() : r.id()) : raw

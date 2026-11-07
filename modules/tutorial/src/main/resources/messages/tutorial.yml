@@ -22,6 +22,7 @@ reward:
   combat_shards: "<amount> Combat Shards"
   key: "<amount> <id> key"
   tag: "the <id> tag"
+  title: "the <id> title"
 
 # ------------------------------------------------------------------ talking NPCs
 dialog:

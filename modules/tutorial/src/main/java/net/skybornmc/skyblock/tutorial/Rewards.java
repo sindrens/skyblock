@@ -10,12 +10,12 @@ import java.util.function.Consumer;
 
 /**
  * Chapter reward lines (pure, unit-tested): {@code money 500}, {@code crystals 20}, {@code shards 100} (Farming Shards),
- * {@code mining_shards 100}, {@code key <crate> <n>}, {@code tag <id>}. Owner 4 Nov 2026 (plan T answer 4): the chapter
+ * {@code mining_shards 100}, {@code key <crate> <n>}, {@code tag <id>}, {@code title <id>}. Owner 4 Nov 2026 (plan T answer 4): the chapter
  * rewards as planned, so the farm and mine chapters pay their own shard type. Paid once per account.
  */
 final class Rewards {
 
-    enum Kind { CURRENCY, KEY, TAG }
+    enum Kind { CURRENCY, KEY, TAG, TITLE }
 
     /**
      * One reward.
@@ -38,7 +38,7 @@ final class Rewards {
         List<Reward> out = new ArrayList<>();
         for (String raw : lines) {
             parse(raw).ifPresentOrElse(out::add, () -> warn.accept("tutorial.yml: reward '" + raw
-                    + "' is not 'money <n>', 'crystals <n>', 'shards <n>', 'mining_shards <n>', 'key <crate> <n>' or 'tag <id>' (skipped)"));
+                    + "' is not 'money <n>', 'crystals <n>', 'shards <n>', 'mining_shards <n>', 'key <crate> <n>', 'tag <id>' or 'title <id>' (skipped)"));
         }
         return out;
     }
@@ -56,6 +56,9 @@ final class Rewards {
             }
             if (kind.equals("tag") && p.length == 2) {
                 return Optional.of(new Reward(Kind.TAG, null, p[1].toLowerCase(Locale.ROOT), 1));
+            }
+            if (kind.equals("title") && p.length == 2) { // quest line v2: the last quest of a guide gives a title
+                return Optional.of(new Reward(Kind.TITLE, null, p[1].toLowerCase(Locale.ROOT), 1));
             }
             Optional<Currency> c = Currency.byCanonicalKey(kind);
             if (c.isPresent() && payable(c.get()) && p.length == 2) {

@@ -44,10 +44,11 @@ final class Catalog {
             }
             return switch (type) {
                 case NPC, PLACE, TOOL_LEVEL -> target.equalsIgnoreCase(s.target());
-                case MENU, PLANT -> anyOf(target, s.target());
+                case MENU, PLANT, ISLAND_BREAK -> anyOf(target, s.target());
                 case GRIND -> grind(s);
                 case AUDIT -> audit(s);
-                case ISLAND, SELL, BANK, CHEST, GENERATOR -> true;
+                case BANK -> target.isEmpty() || anyOf(target, s.target()); // island | personal, or any bank
+                case ISLAND, SELL, CHEST, GENERATOR, ISLAND_LEVEL -> true;
             };
         }
 

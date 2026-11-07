@@ -228,6 +228,11 @@ Your "simple, nothing unnecessary" answer:
 - The "Depths" upgrade tab is called **Grinding** (Mine Fortune, XP Boost). "/credit pay (coming soon)" is gone from the /pay message.
 - **Still off on purpose:** Lumberjack, Timber, Deep Pockets, Crystal Rush, Lucky Strike (Depths leftovers); Swift Hands, Beast Tamer, Island Fuel, custom crops and the credit shop wait for your answers on `DECISIONS_RANKS_7NOV.html`.
 
+## The whole list, batch 2 (update161)
+- **Kindle's Island**, a new quest book chapter (8 steps): place a spawner, harvest 50 island crops, mine 50 generator blocks, make your island bigger, put $10,000 in the island bank, buy one more island upgrade, reach island level 2, check /is top. Reward: $2M, 50 crystals, a Blaze key and the **Kindled** title. Steps you already did count at once (island level too).
+- Rowan's chain: the first chapters already are it (Rowan, /menu, /is, /farm, harvest, sell), so nothing doubled.
+- Mastery island-level gates checked against the new island XP pace (level 20 is about 5-6 hours alone, level 50 about 2 days alone, much faster in a team): kept as they are.
+
 ## Your picks, part 4: King of the Hill (update159)
 - **KOTH in the Warzone**, every 3 hours for up to 15 minutes: one chat line ("King of the Hill! /koth"), `/koth` takes you in front of the hill. Stand on the gold 7x7 hill with no other island on it: 2 minutes in total wins (another island on it pauses the clock; after 15 minutes the island that held it longest wins). Every player of the winning island in the Warzone gets 5 Ember keys and 500 crystals. PvP is on there; you keep your items.
 - The Warzone has no build yet (only a 7x7 builder platform), so KOTH lays a 31x31 stone brick floor around it (only into air, never over a build). When the builder makes the Warzone, set `essentials.yml server-events.koth.arena-radius: 0` and move `koth.x/y/z` to the real hill. The Gatehouse portal sign now says "Warzone · KOTH: /koth" (the portal itself stays closed until that build exists).

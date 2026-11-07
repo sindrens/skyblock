@@ -30,4 +30,26 @@ class RewardsTest {
         assertEquals(1, Rewards.parse(List.of("money 1", "credits 9"), warnings::add).size());
         assertEquals(1, warnings.size());
     }
+
+    @Test
+    void aTitleIsAReward() {
+        Rewards.Reward r = Rewards.parse("title Kindled").orElseThrow();
+        assertEquals(Rewards.Kind.TITLE, r.kind());
+        assertEquals("kindled", r.id());
+        assertTrue(Rewards.parse("title").isEmpty());
+    }
+
+    @Test
+    void newBundledChaptersAreAddedToALiveFileOnce() {
+        org.bukkit.configuration.file.YamlConfiguration bundled = new org.bukkit.configuration.file.YamlConfiguration();
+        bundled.set("chapters.welcome.name", "W");
+        bundled.set("chapters.kindle.name", "K");
+        org.bukkit.configuration.file.YamlConfiguration live = new org.bukkit.configuration.file.YamlConfiguration();
+        live.set("chapters.welcome.name", "Staff name");
+        assertEquals(java.util.List.of("kindle"), TutorialModule.addNewChapters(live, bundled));
+        assertEquals("Staff name", live.getString("chapters.welcome.name"), "a live chapter is never changed");
+        assertEquals("K", live.getString("chapters.kindle.name"));
+        live.set("chapters.kindle", null); // staff removed it
+        assertTrue(TutorialModule.addNewChapters(live, bundled).isEmpty(), "a removed chapter does not come back");
+    }
 }

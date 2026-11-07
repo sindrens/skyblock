@@ -28,10 +28,11 @@ class CatalogTest {
         List<String> warnings = new ArrayList<>();
         Catalog c = bundled(warnings);
         assertEquals(List.of(), warnings);
-        assertEquals(List.of("welcome", "island", "farm", "mine", "money", "together", "next", "farm_pro", "mine_pro", "fish_pro", "pve_pro"),
-                c.chapters().stream().map(Catalog.Chapter::id).toList());
+        assertEquals(List.of("welcome", "island", "farm", "mine", "money", "together", "next", "farm_pro", "mine_pro", "fish_pro", "pve_pro",
+                        "kindle"), c.chapters().stream().map(Catalog.Chapter::id).toList());
         assertEquals("Welcome to Phoenix", c.chapters().getFirst().name());
-        assertEquals("Hale's Recruit", c.chapters().getLast().name());
+        assertEquals("Kindle's Island", c.chapters().getLast().name());
+        assertEquals(8, c.chapter("kindle").orElseThrow().steps().size(), "FULL_PLAN 7: Kindle has 8 steps");
     }
 
     @Test
@@ -103,6 +104,18 @@ class CatalogTest {
         Catalog.Step plant = c.step("island.plant").orElseThrow();
         assertTrue(plant.matches(Signal.of(StepType.PLANT, "CARROTS", 1)));
         assertFalse(plant.matches(Signal.of(StepType.PLANT, "STONE", 1)));
+        Catalog.Step crops = c.step("kindle.crops").orElseThrow();
+        assertTrue(crops.matches(Signal.of(StepType.ISLAND_BREAK, "crop", 1)));
+        assertFalse(crops.matches(Signal.of(StepType.ISLAND_BREAK, "ore", 1)));
+        Catalog.Step size = c.step("kindle.size").orElseThrow();
+        assertTrue(size.matches(new Signal(StepType.AUDIT, "island:upgrade_buy", 1, Map.of("upgrade", "island_size"))));
+        assertFalse(size.matches(new Signal(StepType.AUDIT, "island:upgrade_buy", 1, Map.of("upgrade", "sell_multiplier"))));
+        Catalog.Step islandBank = c.step("kindle.bank").orElseThrow();
+        assertTrue(islandBank.matches(Signal.of(StepType.BANK, "island", 10)));
+        assertFalse(islandBank.matches(Signal.of(StepType.BANK, "personal", 10)), "the island bank only");
+        assertTrue(c.step("money.deposit").orElseThrow().matches(Signal.of(StepType.BANK, "personal", 10)), "no target: any bank");
+        Catalog.Step spawner = c.step("kindle.spawner").orElseThrow();
+        assertTrue(spawner.matches(Signal.of(StepType.PLANT, "SPAWNER", 1)));
         Catalog.Step rowan = c.step("welcome.rowan").orElseThrow();
         assertTrue(rowan.matches(Signal.of(StepType.NPC, "GUIDE", 1)));
         assertFalse(rowan.matches(Signal.of(StepType.MENU, "guide", 1)));

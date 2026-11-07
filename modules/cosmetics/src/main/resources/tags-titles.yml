@@ -11,6 +11,12 @@
 # Reload: /skyblock reload cosmetics
 
 titles:
+  kindled:
+    display: "<c:ember>Kindled"
+    rarity: rare
+    source: "Finish Kindle's Island in the quest book (/tutorial)."
+    secret: false
+    season-persistent: true
   newcomer:
     display: "<c:text>Newcomer"
     rarity: common

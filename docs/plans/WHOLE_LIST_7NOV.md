@@ -29,6 +29,14 @@ decision page first. Source: PROJECT_STATUS_7NOV.md and the disabled-features au
   and **Kindle** (8 steps: place a spawner, 50 island crops, 50 generator ores, island size 2, island bank deposit,
   first island upgrade, island level 2, check /is top: key + title), as tutorial chapters (one engine).
 - Mastery `island-level` gates re-checked against the island XP pace (level 10 ≈ 1 h alone).
+- **Built (update161):** Rowan's 6 steps already are the quest book's first chapters (Welcome: Rowan, /menu, /is; The Farm:
+  /farm, harvest, sell), so they stay as they are. **Kindle's Island** is a new chapter at the end of the book (8 steps:
+  place a spawner, 50 island crops, 50 generator blocks, a bigger island, $10,000 into the island bank, one more island
+  upgrade, island level 2, /is top). Reward: $2M, 50 crystals, a Blaze key and the new **Kindled** title. Two new step types
+  (`island_level`, `island_break`), a `title <id>` reward, and new bundled chapters are added to a live tutorial.yml once.
+- **Gates checked:** island XP grows about as n^2.5 in total, so level 20 ≈ 5-6 h alone, level 50 ≈ 2 days alone (much less
+  with a team). Wings (20), Homestead (20/40), Treasury (15/35/60) and the Area Masteries (2 to 50) fit that pace: kept.
+  Angler still asks for Farming pillar levels (there is no fishing pillar); noted for the balance pass.
 
 ## Batch 3 (update162): menus and fixes
 - The rest of the menus in the tool style (rows, headers, click hints), Title Case on every title, 5-row menus to 6.

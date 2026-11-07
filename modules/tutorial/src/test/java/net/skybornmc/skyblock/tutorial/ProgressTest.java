@@ -57,6 +57,23 @@ class ProgressTest {
     }
 
     @Test
+    void anIslandLevelStepTakesTheLevelNotACount() {
+        Progress p = new Progress(UUID.randomUUID());
+        Set<String> before = new java.util.HashSet<>();
+        catalog.chapters().stream().filter(ch -> !ch.id().equals("kindle")).forEach(ch -> before.add(ch.id()));
+        Set<String> doneSteps = new java.util.HashSet<>();
+        catalog.chapter("kindle").orElseThrow().steps().stream().filter(s -> !s.id().equals("level")).forEach(s -> doneSteps.add(s.key()));
+        p.restore(doneSteps, Map.of(), before, 0, false);
+        Catalog.Step level = catalog.step("kindle.level").orElseThrow();
+        p.apply(catalog, Signal.of(StepType.ISLAND_LEVEL, "island", 1), all, 1);
+        p.apply(catalog, Signal.of(StepType.ISLAND_LEVEL, "island", 1), all, 2);
+        assertFalse(p.done(level), "level 1 twice is still level 1");
+        Progress.Change c = p.apply(catalog, Signal.of(StepType.ISLAND_LEVEL, "island", 3), all, 3);
+        assertTrue(p.done(level));
+        assertEquals("kindle", c.chaptersDone().getFirst().id());
+    }
+
+    @Test
     void aBankDepositCountsItsMoney() {
         Progress p = new Progress(UUID.randomUUID());
         p.restore(Set.of(), Map.of(), Set.of("welcome", "island", "farm", "mine"), 0, false);

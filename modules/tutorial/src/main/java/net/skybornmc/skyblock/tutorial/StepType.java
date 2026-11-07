@@ -31,7 +31,16 @@ enum StepType {
     /** Cobblestone or stone formed on your island while you were near it (a cobblestone generator works). */
     GENERATOR(false),
     /** Owner 7 Nov 2026 (quest line v2): your own island tool reached a level ({@code ToolLevelUpEvent}). target = hoe|pickaxe, amount = level. */
-    TOOL_LEVEL(true);
+    TOOL_LEVEL(true),
+    /** Quest line v2 (Kindle, 7 Nov 2026): your island reached a level ({@code IslandLevelUpEvent}). amount = the level. */
+    ISLAND_LEVEL(false),
+    /** Quest line v2 (Kindle): ripe crops ({@code crop}) or generator blocks and ores ({@code ore}) broken on your own island. */
+    ISLAND_BREAK(true);
+
+    /** Steps whose amount is a level reached, not a count. */
+    boolean level() {
+        return this == TOOL_LEVEL || this == ISLAND_LEVEL;
+    }
 
     private final boolean needsTarget;
 
