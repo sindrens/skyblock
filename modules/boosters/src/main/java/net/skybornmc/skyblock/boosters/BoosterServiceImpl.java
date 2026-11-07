@@ -46,6 +46,22 @@ final class BoosterServiceImpl implements BoosterService {
     }
 
     @Override
+    public Optional<ItemStack> createIsland(BoosterType type, int percent, int minutes, UUID profileKey, boolean bound, String origin) {
+        if (type == null || !m.settings.islandEnabled || !m.island().valid(percent, minutes)) {
+            return Optional.empty();
+        }
+        return Optional.of(m.island().create(type, percent, minutes, profileKey, bound, origin));
+    }
+
+    @Override
+    public java.util.concurrent.CompletableFuture<Boolean> startIsland(UUID islandId, BoosterType type, int percent, int minutes, String source) {
+        if (islandId == null || type == null || !m.settings.islandEnabled) {
+            return java.util.concurrent.CompletableFuture.completedFuture(false);
+        }
+        return m.island().start(islandId, type, percent, minutes, source);
+    }
+
+    @Override
     public long bank(Connection c, UUID profileKey, BoosterType type, int percent, long millis, long maxBankedMillis, String source)
             throws SQLException {
         long max = maxBankedMillis > 0 ? maxBankedMillis : m.settings.bankMaxMinutes * BoosterRules.MINUTE;

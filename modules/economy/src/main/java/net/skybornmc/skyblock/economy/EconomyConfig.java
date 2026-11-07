@@ -143,7 +143,7 @@ public final class EconomyConfig extends ModuleConfig {
     @Setting(path = "credit-shop.boosters", desc = "Server-wide boosters for credits: '<type>:<percent>:<minutes>:<credits>' "
             + "(type sell, skill_xp, tool_xp, crystals). The buyer gets the booster item (right-click starts it for everyone).")
     public List<String> creditShopBoosters = List.of("sell:50:30:300", "sell:50:60:500", "tool_xp:100:30:300", "tool_xp:100:60:500",
-            "skill_xp:50:30:300", "skill_xp:50:60:500", "crystals:50:30:300", "crystals:50:60:500");
+            "skill_xp:50:30:300", "skill_xp:50:60:500", "crystals:50:30:300", "crystals:50:60:500", "shards:100:30:300", "shards:100:60:500");
 
     @Setting(path = "credit-shop.island-rename-price", desc = "Credits of one Island Rename Token (/is name: the first name is free).", min = 0, max = 100000)
     public long creditShopRenamePrice = 50;
@@ -582,12 +582,15 @@ public final class EconomyConfig extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 11;
+        return 12;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
+        return java.util.Map.of(12, java.util.Map.of("credit-shop.boosters", ValueChange.of(List.of("sell:50:30:300", "sell:50:60:500",
+                        "tool_xp:100:30:300", "tool_xp:100:60:500", "skill_xp:50:30:300", "skill_xp:50:60:500", "crystals:50:30:300",
+                        "crystals:50:60:500"), new EconomyConfig().creditShopBoosters)), // 7 Nov 2026: shard boosters
+                5, java.util.Map.of("icons", ValueChange.of(OLD_ICONS, NEW_ICONS)),
                 6, java.util.Map.of("sell.skip-hotbar-default", ValueChange.of(true, false)),
                 // owner 6 Nov 2026: the $10k earned rule is replaced by the playtime pay limit
                 7, java.util.Map.of("send-gate.required", ValueChange.of(10_000L, 0L)),

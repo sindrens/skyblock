@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Boosters v2 (update171):** island boosters (whole island, real time), a Shards booster type, /boosters Shop (money / crystals), KOTH gives the winning island a booster, shard server boosters in /store.
 - **Rank perks 2 (update170):** `/pv` vaults (rank + store extras), join when full from Firewing, `/reclaim` monthly rank chest with cosmetic points, cosmetic points from playtime and votes.
 - **Look v2 (update169):** feature colours everywhere (flat, Bedrock-matching), scoreboard blocks with coloured row bars and small-caps labels, new tab header/footer, flat chat prefixes.
 - **Credit shop (update167):** `/store` with Ranks (pay the difference), server boosters, cosmetics links and extras (pass premium and levels, streak save, profile slots, loadout slot, island rename token); `/credit gift`, `/credit pay`, `/credit history`, gg after purchases, `/is name`, chargebacks remove shop ranks, Eclipse key no longer sold for credits.

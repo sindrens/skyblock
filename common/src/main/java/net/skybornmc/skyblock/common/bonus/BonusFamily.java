@@ -58,7 +58,12 @@ public enum BonusFamily {
      * Milestone progress boosters (spec §9.3): extra progress for other chains of the same category; counts toward tier
      * targets only, never toward metrics, economy numbers, points or boards. Cap +25%.
      */
-    MILESTONE_PROGRESS(25);
+    MILESTONE_PROGRESS(25),
+    /**
+     * Owner 7 Nov 2026 (boosters v2): more shards from the island tools (shard finds, Shard Burst …): shard boosters
+     * (personal, island, server-wide) and later the Shard Sense mastery.
+     */
+    SHARDS(500);
 
     private final double defaultCap;
 

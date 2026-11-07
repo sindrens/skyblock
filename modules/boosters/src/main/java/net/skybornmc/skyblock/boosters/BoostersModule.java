@@ -81,9 +81,11 @@ public final class BoostersModule implements SkyblockModule, Listener {
     private final BoosterItems items;
     private final PersonalBoosters personal;
     private final GlobalBoosters global;
+    private final IslandBoosters island = new IslandBoosters(this);
     private BoosterServiceImpl service;
     private Executor main;
     private Scheduler.Task task;
+    private Scheduler.Task islandTask;
     /** PERF10: the two halves of the tick, made once (not linked for the first time inside the first boosters:tick). */
     private final Runnable tickPersonal;
     private final Runnable tickGlobal;
@@ -113,6 +115,9 @@ public final class BoostersModule implements SkyblockModule, Listener {
         materials = BoostersSettings.materials(settings.materials, core.plugin().getLogger()::warning);
         globalMaterial = readGlobalMaterial();
         items.register(materials, globalMaterial);
+        Material islandMat = Material.matchMaterial(settings.islandMaterial.trim().toUpperCase(java.util.Locale.ROOT));
+        island.register(islandMat == null || !islandMat.isItem() ? Material.HEART_OF_THE_SEA : islandMat);
+        island.load();
         service = new BoosterServiceImpl(this);
         core.services().register(ID, BoosterService.class, service);
         core.services().optional(BonusService.class).ifPresent(b -> b.register(ID, new BoosterBonusSource(this)));
@@ -134,6 +139,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
             core.scheduler().timer().time("boosters:tick-personal", tickPersonal);
             core.scheduler().timer().time("boosters:tick-global", tickGlobal);
         });
+        islandTask = core.scheduler().repeat("boosters:island", 400L, 400L, island::tick);
     }
 
     @Override
@@ -149,6 +155,9 @@ public final class BoostersModule implements SkyblockModule, Listener {
         if (task != null) {
             task.cancel();
         }
+        if (islandTask != null) {
+            islandTask.cancel();
+        }
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (core.menus().openMenu(p) instanceof BoostersMenu) {
                 p.closeInventory();
@@ -161,6 +170,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
         core.services().optional(PlayerSettings.class).ifPresent(s -> s.unregisterAll(ID));
         core.services().unregisterAll(ID);
         items.unregister();
+        island.unregister();
     }
 
     /** The item of a personal booster type (read at start). */
@@ -221,6 +231,10 @@ public final class BoostersModule implements SkyblockModule, Listener {
 
     PersonalBoosters personal() {
         return personal;
+    }
+
+    IslandBoosters island() {
+        return island;
     }
 
     GlobalBoosters global() {
@@ -373,6 +387,14 @@ public final class BoostersModule implements SkyblockModule, Listener {
 
     /** Starts a booster item (right-click or the menu). Main thread. */
     void use(Player p, ItemStack stack) {
+        if (IslandBoosters.isIslandBooster(stack)) {
+            if (!p.hasPermission(PERM_USE)) {
+                msg.send(p, "no-permission");
+                return;
+            }
+            island.use(p, stack);
+            return;
+        }
         Optional<BoosterItems.Spec> spec = BoosterItems.read(stack);
         if (spec.isEmpty()) {
             msg.send(p, "invalid");
@@ -412,7 +434,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
             return;
         }
         ItemStack item = event.getItem();
-        if (!BoosterItems.isBooster(item)) {
+        if (!BoosterItems.isBooster(item) && !IslandBoosters.isIslandBooster(item)) {
             return;
         }
         event.setCancelled(true);
@@ -430,6 +452,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
+        island.forget(event.getPlayer());
         personal.quit(event.getPlayer());
     }
 
@@ -467,7 +490,7 @@ public final class BoostersModule implements SkyblockModule, Listener {
     List<ItemStack> owned(Player p) {
         List<ItemStack> out = new ArrayList<>();
         for (ItemStack s : p.getInventory().getContents()) {
-            if (s != null && BoosterItems.read(s).isPresent()) {
+            if (s != null && (BoosterItems.read(s).isPresent() || IslandBoosters.read(s).isPresent())) {
                 out.add(s);
             }
         }

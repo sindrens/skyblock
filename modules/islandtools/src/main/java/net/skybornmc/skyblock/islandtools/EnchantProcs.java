@@ -408,7 +408,7 @@ final class EnchantProcs implements Listener {
             if (burst != null) {
                 int lv = Math.max(1, Math.min(burst.max(), have.getOrDefault(burst.key(), 0)));
                 double doubled = GrindEvents.multiplier(m.core().services(), p, GrindEvents.Kind.DOUBLE_SHARDS);
-                long shards = ToolRules.rollUp(burst.value(lv) * doubled * shardMultiplier(p, kind), ThreadLocalRandom.current().nextDouble());
+                long shards = ToolRules.rollUp(burst.value(lv) * doubled * shardMultiplier(p, kind) * m.shardBoost(p), ThreadLocalRandom.current().nextDouble());
                 if (shards > 0) {
                     m.addShards(m.profile(p), kind.shards(), shards);
                     if (origin != null) {
@@ -599,7 +599,7 @@ final class EnchantProcs implements Listener {
             }
             case SHARDS -> {
                 double doubled = GrindEvents.multiplier(m.core().services(), p, GrindEvents.Kind.DOUBLE_SHARDS);
-                long shards = ToolRules.rollUp(value * doubled * shardMultiplier(p, kind), rnd.nextDouble()); // tools v6: always rounded up
+                long shards = ToolRules.rollUp(value * doubled * shardMultiplier(p, kind) * m.shardBoost(p), rnd.nextDouble()); // tools v6: always rounded up
                 if (def.id().equals("shard_burst")) {
                     // Shard Echo: a Burst starts (or refreshes) a few seconds of more shards.
                     GrindEnchants.Def echo = passive(kind, GrindEnchants.Effect.ECHO);

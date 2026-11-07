@@ -131,6 +131,7 @@ booster-types:
   skill_xp: "Skill XP"
   tool_xp: "Tool XP"
   crystals: "Crystals"
+  shards: "Shards"
 
 # Title display names (added to tags-titles.yml once; edit them there afterwards with /tags).
 titles:

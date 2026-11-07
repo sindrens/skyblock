@@ -23,8 +23,14 @@ import java.util.UUID;
 final class BoostersMenu extends Menu {
 
     static final int SLOT_SUMMARY = 4;
-    static final int[] PERSONAL_SLOTS = {10, 12, 14, 16};
-    static final int[] GLOBAL_SLOTS = {28, 30, 32, 34};
+    // Owner 7 Nov 2026 (boosters v2): five types, a row per kind (personal, island, server-wide), the shop on 48.
+    static final int[] PERSONAL_SLOTS = {11, 12, 13, 14, 15};
+    static final int[] ISLAND_SLOTS = {20, 21, 22, 23, 24};
+    static final int[] GLOBAL_SLOTS = {29, 30, 31, 32, 33};
+    static final int SLOT_ROW_PERSONAL = 10;
+    static final int SLOT_ROW_ISLAND = 19;
+    static final int SLOT_ROW_GLOBAL = 28;
+    static final int SLOT_SHOP = 48;
     static final int[] OWNED_SLOTS = {37, 38, 39, 40, 41, 42, 43};
     private static final int QUEUE_LINES = 3;
 
@@ -75,13 +81,29 @@ final class BoostersMenu extends Menu {
         set(SLOT_SUMMARY, service.item(Material.NETHER_STAR, viewer, BoostersModule.ID, "menu.summary"));
         PersonalBoosters.State state = m.personal().state(viewer);
         BoosterType[] types = BoosterType.values();
+        UUID islandId = m.island().islandOf(viewer);
         for (int i = 0; i < types.length && i < PERSONAL_SLOTS.length; i++) {
             set(PERSONAL_SLOTS[i], personalItem(types[i], state));
+            set(ISLAND_SLOTS[i], islandItem(types[i], islandId));
             set(GLOBAL_SLOTS[i], globalItem(types[i]), click -> thank(click.player()));
+        }
+        set(SLOT_ROW_PERSONAL, service.item(Material.PLAYER_HEAD, viewer, BoostersModule.ID, "menu.row.personal"));
+        set(SLOT_ROW_ISLAND, service.item(Material.GRASS_BLOCK, viewer, BoostersModule.ID, "menu.row.island"));
+        set(SLOT_ROW_GLOBAL, service.item(Material.BEACON, viewer, BoostersModule.ID, "menu.row.global"));
+        if (m.settings.shopEnabled) {
+            set(SLOT_SHOP, service.item(Material.EMERALD, viewer, BoostersModule.ID, "menu.shop-button"),
+                    click -> openChild(new BoosterShopMenu(m)));
         }
         List<ItemStack> owned = m.owned(viewer);
         int shown = owned.size() > OWNED_SLOTS.length ? OWNED_SLOTS.length - 1 : owned.size();
         for (int i = 0; i < shown; i++) {
+            Optional<IslandBoosters.Spec> islandSpec = IslandBoosters.read(owned.get(i));
+            if (islandSpec.isPresent()) {
+                ItemStack stack = owned.get(i);
+                IslandBoosters.Spec is = islandSpec.get();
+                set(OWNED_SLOTS[i], islandOwnedItem(stack, is), click -> openChild(confirmIsland(stack, is)));
+                continue;
+            }
             Optional<BoosterItems.Spec> spec = BoosterItems.read(owned.get(i));
             if (spec.isEmpty()) {
                 continue;
@@ -130,6 +152,36 @@ final class BoostersMenu extends Menu {
         lore.addAll(service.lines(viewer, BoostersModule.ID, "menu.personal.footer",
                 Msg.p("max", BoosterRules.time(m.settings.personalMaxMillis()))));
         return service.item(icon, service.text(viewer, BoostersModule.ID, title + ".name", Msg.p("type", name)), lore);
+    }
+
+    /** Owner 7 Nov 2026: the island booster of a type (every member, everywhere). */
+    private ItemStack islandItem(BoosterType type, UUID islandId) {
+        String name = m.typeName(type);
+        if (islandId == null) {
+            return service.item(Material.GRAY_DYE, viewer, BoostersModule.ID, "menu.island.no-island", Msg.p("type", name));
+        }
+        IslandBoosters.Run run = m.island().run(islandId, type);
+        if (run == null) {
+            return service.item(Material.GRAY_DYE, viewer, BoostersModule.ID, "menu.island.idle", Msg.p("type", name));
+        }
+        return service.item(m.material(type), viewer, BoostersModule.ID, "menu.island.running", Msg.p("type", name),
+                Msg.number("percent", run.percent()), Msg.p("time", BoosterRules.time(Math.max(0, run.endsAt() - System.currentTimeMillis()))));
+    }
+
+    private ItemStack islandOwnedItem(ItemStack stack, IslandBoosters.Spec spec) {
+        return service.item(stack.getType(), viewer, BoostersModule.ID, "menu.owned.island", Msg.p("type", m.typeName(spec.type())),
+                Msg.number("percent", spec.percent()), Msg.p("time", BoosterRules.time(spec.minutes() * BoosterRules.MINUTE)));
+    }
+
+    private ConfirmMenu confirmIsland(ItemStack stack, IslandBoosters.Spec spec) {
+        ItemStack shown = islandOwnedItem(stack, spec);
+        return new ConfirmMenu(v -> service.text(v, BoostersModule.ID, "menu.confirm.crumb"), shown,
+                v -> service.lines(v, BoostersModule.ID, "menu.confirm.island", Msg.p("type", m.typeName(spec.type())),
+                        Msg.number("percent", spec.percent()), Msg.p("time", BoosterRules.time(spec.minutes() * BoosterRules.MINUTE))),
+                player -> {
+                    start(player, spec.itemUuid());
+                    service.open(player, this);
+                }, player -> { });
     }
 
     private ItemStack globalItem(BoosterType type) {

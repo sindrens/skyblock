@@ -110,7 +110,38 @@ public final class BoostersSettings extends ModuleConfig {
 
     @Setting(path = "items.materials", desc = "Vanilla item of each personal booster type ('type:material'). "
             + "Pick items that do nothing on right-click.", restart = true)
-    public List<String> materials = List.of("sell:gold_ingot", "skill_xp:lapis_lazuli", "tool_xp:echo_shard", "crystals:prismarine_crystals");
+    public List<String> materials = List.of("sell:gold_ingot", "skill_xp:lapis_lazuli", "tool_xp:echo_shard", "crystals:prismarine_crystals",
+            "shards:amethyst_shard");
+
+    // ------------------------------------------------------------------ island boosters and the shop (owner 7 Nov 2026)
+
+    @Setting(path = "island.enabled", desc = "Island boosters: one per island and type, for every member everywhere (plans/STORE_FULL_PLAN.md 3).")
+    public boolean islandEnabled = true;
+
+    @Setting(path = "island.max-percent", desc = "Strongest island booster.", min = 1, max = 1000)
+    public int islandMaxPercent = 200;
+
+    @Setting(path = "island.max-item-minutes", desc = "Longest island booster item.", min = 1, max = 1440)
+    public int islandMaxItemMinutes = 120;
+
+    @Setting(path = "island.max-minutes", desc = "Most time one island booster type can have left (more is refused).", min = 1, max = 2880)
+    public int islandMaxMinutes = 240;
+
+    @Setting(path = "island.material", desc = "Vanilla item of island boosters (all types).", restart = true)
+    public String islandMaterial = "heart_of_the_sea";
+
+    @Setting(path = "shop.enabled", desc = "/boosters → Shop: personal boosters for money, island boosters for crystals (never credits: Mojang's rules).")
+    public boolean shopEnabled = true;
+
+    @Setting(path = "shop.offers", desc = "One offer per line: '<personal|island>:<type>:<percent>:<minutes>:<money|crystals>:<price>'. "
+            + "The item is bound to the buyer's profile.")
+    public List<String> shopOffers = List.of(
+            "personal:sell:25:30:money:2500000", "personal:sell:50:30:money:7500000",
+            "personal:tool_xp:50:30:money:3000000", "personal:skill_xp:50:30:money:3000000",
+            "personal:shards:50:30:money:5000000", "personal:crystals:50:30:money:4000000",
+            "island:sell:50:30:crystals:150", "island:shards:50:30:crystals:150",
+            "island:tool_xp:100:30:crystals:200", "island:skill_xp:100:30:crystals:200",
+            "island:sell:100:60:crystals:450", "island:shards:100:60:crystals:450");
 
     @Setting(path = "items.global-material", desc = "Vanilla item of global boosters (all types).", restart = true)
     public String globalMaterial = "nether_star";
@@ -139,12 +170,14 @@ public final class BoostersSettings extends ModuleConfig {
      */
     @Override
     public int version() {
-        return 3;
+        return 4;
     }
 
     @Override
     public java.util.Map<Integer, java.util.Map<String, ValueChange>> valueChanges() {
-        return java.util.Map.of(3, java.util.Map.of("global.boss-bar-color", ValueChange.of("yellow", "blue")));
+        return java.util.Map.of(4, java.util.Map.of("items.materials", ValueChange.of(List.of("sell:gold_ingot", "skill_xp:lapis_lazuli",
+                        "tool_xp:echo_shard", "crystals:prismarine_crystals"), new BoostersSettings().materials)), // 7 Nov 2026: shard boosters
+                3, java.util.Map.of("global.boss-bar-color", ValueChange.of("yellow", "blue")));
     }
 
     @Override
@@ -184,6 +217,7 @@ public final class BoostersSettings extends ModuleConfig {
         out.put(BoosterType.SKILL_XP, Material.LAPIS_LAZULI);
         out.put(BoosterType.TOOL_XP, Material.ECHO_SHARD);
         out.put(BoosterType.CRYSTALS, Material.PRISMARINE_CRYSTALS);
+        out.put(BoosterType.SHARDS, Material.AMETHYST_SHARD);
         for (String entry : raw == null ? List.<String>of() : raw) {
             String[] parts = entry == null ? new String[0] : entry.split(":", 2);
             if (parts.length != 2) {

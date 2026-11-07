@@ -68,4 +68,20 @@ public interface BoosterService {
 
     /** Removes a hold (on module disable). */
     void release(String owner);
+
+    /**
+     * Owner 7 Nov 2026 (boosters v2): a new island booster item (for every member of the island it is started on), bound
+     * to {@code profileKey} when {@code bound}. Empty when the numbers are not valid or island boosters are off.
+     */
+    default Optional<ItemStack> createIsland(BoosterType type, int percent, int minutes, UUID profileKey, boolean bound, String origin) {
+        return Optional.empty();
+    }
+
+    /**
+     * Owner 7 Nov 2026 (KOTH prize): starts or extends an island booster without an item. Completes false when another
+     * strength of that type runs on the island or it would be too long. Main thread.
+     */
+    default java.util.concurrent.CompletableFuture<Boolean> startIsland(UUID islandId, BoosterType type, int percent, int minutes, String source) {
+        return java.util.concurrent.CompletableFuture.completedFuture(false);
+    }
 }

@@ -958,7 +958,7 @@ public final class IslandToolsModule implements SkyblockModule {
         double doubled = net.skybornmc.skyblock.common.grind.GrindEvents.multiplier(core.services(), p,
                 net.skybornmc.skyblock.common.grind.GrindEvents.Kind.DOUBLE_SHARDS); // owner 6 Nov 2026: Double Shards
         double streak = enchants.shardMultiplier(p, kind); // owner 6 Nov 2026: Shard Echo + Compound Interest
-        int shards = ToolRules.rollUp(chance * finder * bonus * doubled * streak, rnd.nextDouble()); // tools v6: always rounded up
+        int shards = ToolRules.rollUp(chance * finder * bonus * doubled * streak * shardBoost(p), rnd.nextDouble()); // tools v6: always rounded up
         int lucky = effect(island, profile, kind, Upgrades.Effect.LUCKY);
         if (lucky > 0 && rnd.nextDouble(100) < lucky * config.luckyPerLevel) {
             int pouch = (int) Math.round(rnd.nextInt(Math.max(1, config.luckyMin), Math.max(config.luckyMin, config.luckyMax) + 1) * bonus);
@@ -977,6 +977,13 @@ public final class IslandToolsModule implements SkyblockModule {
             pendingShards.computeIfAbsent(profile(p), k -> new ConcurrentHashMap<>()).merge(kind.shards(), (long) shards, Long::sum);
             popup(p, at, kind.shards(), shards);
         }
+    }
+
+    /** Owner 7 Nov 2026 (boosters v2): shard boosters (personal, island, server-wide) and shard masteries: 1 + bonus / 100. */
+    double shardBoost(Player p) {
+        return core.services().optional(net.skybornmc.skyblock.common.bonus.BonusService.class)
+                .map(b -> b.multiplier(net.skybornmc.skyblock.common.bonus.BonusFamily.SHARDS, net.skybornmc.skyblock.common.bonus.BonusContext.of(p)))
+                .orElse(1.0);
     }
 
     /** Owner 7 Nov 2026: "+N shards" floats up from the block or mob that gave it (0.5 s, only this player sees it). */

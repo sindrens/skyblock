@@ -444,4 +444,4 @@ server-events:
       empty: "<c:flame><bold>KOTH</bold></c:flame> <c:muted>· the hill is free · <time>"
     end: "<prefix><c:flame><bold>King of the Hill:</bold></c:flame> <c:value><winner></c:value> <c:text>wins!"
     nobody: "<prefix><c:muted>King of the Hill ended without a king."
-    won: "<prefix><c:success><sym:star></c:success> <c:text>You won King of the Hill: <c:value><keys></c:value> <c:text><crate> keys and <c:value><crystals></c:value> <c:text>crystals."
+    won: "<prefix><c:success><sym:star></c:success> <c:text>You won King of the Hill: <c:value><keys></c:value> <c:text><crate> keys, <c:value><crystals></c:value> <c:text>crystals and an island booster for your whole island."

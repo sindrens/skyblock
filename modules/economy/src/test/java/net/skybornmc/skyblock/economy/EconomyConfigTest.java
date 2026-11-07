@@ -35,7 +35,7 @@ class EconomyConfigTest {
     @Test
     void everyOldTokensKeyMovesToAnExistingCrystalsSetting() {
         EconomyConfig config = new EconomyConfig();
-        assertEquals(11, config.version()); // v8: sell.dynamic.enabled true -> false (dynamic prices v2 replace the old model)
+        assertEquals(12, config.version()); // v12 (7 Nov 2026): shard server boosters in the credit shop; // v8: sell.dynamic.enabled true -> false (dynamic prices v2 replace the old model)
         Set<String> paths = settingPaths();
         var renames = config.migrations().get(2);
         assertEquals(6, renames.size());

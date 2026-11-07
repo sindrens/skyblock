@@ -20,6 +20,7 @@ types:
   skill_xp: "Skill XP"
   tool_xp: "Tool XP"
   crystals: "Crystals"
+  shards: "Shards"
 
 # Scoreboard timer row (G7-R1-01): the label of the soonest-ending booster, plain (the board colours it and adds the
 # time: "Booster: +50% Sell 37m"). <percent> a number, <type> a type name above.
@@ -42,6 +43,14 @@ item:
       - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
       - "<c:bar>| </c:bar><c:text>Time: <c:value>{time}"
       - "<c:muted>Players can thank you for credits."
+  # Owner 7 Nov 2026: island boosters (every member of the island, everywhere).
+  island:
+    name: "Island {type} Booster +{percent}%"
+    description: "Use it on your island's behalf: every member gets the bonus."
+    lore:
+      - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for your whole island"
+      - "<c:bar>| </c:bar><c:text>Time: <c:value>{time}"
+      - "<c:muted>Runs in real time, also while you're offline."
   bound: "<c:muted>Can't be traded: only this profile can use it."
   action-input: "USE"
   action-text: "to start"
@@ -157,6 +166,13 @@ menu:
       lore:
         - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+<percent>% <type>"
         - "<c:bar>| </c:bar><c:text>Time: <c:value><time>"
+    island:
+      name: "<c:island>Island <type> Booster +<percent>%"
+      lore:
+        - "<c:text>Every member of your island gets <c:value>+<percent>%"
+        - "<c:bar>| </c:bar><c:text>Time: <c:value><time>"
+        - ""
+        - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start it"
     global:
       name: "<c:flame>Global <type> Booster +<percent>%"
       lore:
@@ -178,3 +194,58 @@ menu:
     crumb: "Confirm Booster"
     personal: ["<c:text>Use up this booster item.", "<c:text>You get <c:value>+<percent>% <type></c:value> <c:text>for <c:value><time></c:value><c:text>."]
     global: ["<c:text>Use up this booster item.", "<c:text>Everyone online gets <c:value>+<percent>% <type></c:value><c:text>.", "<c:text>It runs <c:value><time></c:value> <c:text>(or queues after others)."]
+    island: ["<c:text>Use up this booster item.", "<c:text>Every member of your island gets <c:value>+<percent>% <type></c:value>", "<c:text>for <c:value><time></c:value><c:text>, everywhere."]
+  # Owner 7 Nov 2026 (boosters v2): one row per kind, island boosters and the shop.
+  row:
+    personal:
+      name: "<c:you><bold>Personal"
+      lore: ["<c:text>Only you, while you play."]
+    island:
+      name: "<c:island><bold>Island"
+      lore: ["<c:text>Every member of your island,", "<c:text>everywhere, in real time."]
+    global:
+      name: "<c:event><bold>Server"
+      lore: ["<c:text>Everyone online. Buy one in /store", "<c:text>and your name is on the bar."]
+  island:
+    running:
+      name: "<c:island><bold>Island <type> +<percent>%"
+      lore: ["<c:text>Every member gets it.", "<c:bar>| </c:bar><c:text>Time left: <c:value><time>"]
+    idle:
+      name: "<c:muted>Island <type>"
+      lore: ["<c:text>Not running.", "<c:muted>Island boosters: KOTH, crates, the Shop."]
+    no-island:
+      name: "<c:muted>Island <type>"
+      lore: ["<c:text>You need an island for island boosters."]
+  shop-button:
+    name: "<c:money><bold>Booster Shop"
+    lore: ["<c:text>Personal boosters for money,", "<c:text>island boosters for crystals.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+
+# Owner 7 Nov 2026 (boosters v2): island boosters. <player> <type> <percent> <time> <max>
+island:
+  started: "<prefix><c:island><sym:sparkle></c:island> <c:value><player></c:value> <c:text>started an island booster: <c:value>+<percent>% <type></c:value> <c:text>for every member, <c:value><time></c:value><c:text>."
+  disabled: "<prefix><c:error><sym:cross></c:error> <c:text>Island boosters are off right now."
+  no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You need an island to start an island booster: <click:run_command:'/is'><c:action>/is</c:action></click>"
+  other-strength: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already runs another <c:value><type></c:value> <c:text>booster. Wait until it ends."
+  full: "<prefix><c:error><sym:cross></c:error> <c:text>That would be more than <c:value><max></c:value> <c:text>of island <type> boosters. Wait a bit."
+
+# Owner 7 Nov 2026: /boosters, Shop. <type> <percent> <time> <price>
+shop:
+  title: "Shop"
+  crumb: "Buy this booster?"
+  row-personal:
+    name: "<c:you><bold>Personal"
+    lore: ["<c:text>For you, paid with money."]
+  row-island:
+    name: "<c:island><bold>Island"
+    lore: ["<c:text>For your whole island, paid with crystals."]
+  personal:
+    name: "<c:value><bold><type> +<percent>%"
+    lore: ["<c:muted>PERSONAL BOOSTER", "<c:bar>| </c:bar><c:text>Time: <c:value><time>", "<c:bar>| </c:bar><c:text>Price: <price>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
+  island:
+    name: "<c:value><bold>Island <type> +<percent>%"
+    lore: ["<c:muted>ISLAND BOOSTER", "<c:text>Every member, everywhere.", "<c:bar>| </c:bar><c:text>Time: <c:value><time>", "<c:bar>| </c:bar><c:text>Price: <price>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
+  confirm: ["<c:bar>| </c:bar><c:text>Price: <price>", "<c:muted>The booster goes to your inventory (or /box)."]
+  bought: "<prefix><c:success><sym:check></c:success> <c:text>Bought: <c:value><type> +<percent>%</c:value><c:text>. Right-click it to start."
+  not-enough: "<prefix><c:error><sym:cross></c:error> <c:text>You need <price><c:text>."
+  failed: "<prefix><c:error><sym:cross></c:error> <c:text>Buying failed. Nothing was taken; try again."
+  unavailable: "<prefix><c:error><sym:cross></c:error> <c:text>That booster can't be bought right now."

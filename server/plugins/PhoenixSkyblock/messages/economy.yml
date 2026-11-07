@@ -354,6 +354,7 @@ credit:
       skill_xp: "Skill XP"
       tool_xp: "Tool XP"
       crystals: "Crystals"
+      shards: "Shards"
     rename:
       name: "<c:value><bold>Island Rename Token"
       lore:

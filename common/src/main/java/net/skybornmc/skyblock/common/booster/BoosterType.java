@@ -17,7 +17,9 @@ public enum BoosterType {
     /** Custom tool XP. */
     TOOL_XP(BonusFamily.TOOL_XP),
     /** Crystals earned by actions. */
-    CRYSTALS(BonusFamily.CRYSTALS);
+    CRYSTALS(BonusFamily.CRYSTALS),
+    /** Owner 7 Nov 2026 (boosters v2): island tool shards. */
+    SHARDS(BonusFamily.SHARDS);
 
     private final BonusFamily family;
 

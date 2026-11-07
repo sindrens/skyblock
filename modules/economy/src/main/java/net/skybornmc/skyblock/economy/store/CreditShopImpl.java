@@ -463,6 +463,7 @@ public final class CreditShopImpl implements CreditShop, Listener {
             case SKILL_XP -> Material.LAPIS_LAZULI;
             case TOOL_XP -> Material.ECHO_SHARD;
             case CRYSTALS -> Material.PRISMARINE_CRYSTALS;
+            case SHARDS -> Material.AMETHYST_SHARD;
         };
     }
 

@@ -5,6 +5,7 @@ Boosters (PHASE-10-REWARDS.md **M10.2**, owner R3, R4, RW2, O11, RX39). Settings
 | Command | What it does | Permission | Status |
 |---|---|---|---|
 | `/boosters` (alias `/booster`) | Opens the boosters menu: your personal booster of each type (running, time left, banked time), the global booster of each type (who started it, time left, thanks so far, the queue) and the booster items in your inventory (click to start). Updates every second. Also in `/help boosters` | `skyblock.boosters.use` (everyone) | ✅ |
+| `/boosters` → Island row and Shop | Owner 7 Nov 2026 (boosters v2): island boosters (one per island and type, every member, everywhere, real time; items `island_booster_<type>`, right-click as a member; `boosters.yml island.*`) and the Shop (slot 48): personal boosters for money, island boosters for crystals (`shop.offers`), bound to the buyer's profile. Five types: sell, skill XP, tool XP, crystals, shards. KOTH starts an island booster for the winning island (`essentials.yml server-events.koth.island-booster`) | `skyblock.boosters.use` | ✅ |
 | `/thanks` (alias `/thank`) | Thanks every running (or just ended, `thanks.grace-seconds`) global booster you have not thanked yet: its starter gets `thanks.credits` (1) earned credit, once per booster per player (RW2). Saying a thanks phrase in chat (`thanks`, `ty`, `thx` ...) does the same, quietly | `skyblock.boosters.thanks` (everyone) | ✅ |
 
 No arguments, so there is nothing to tab-complete. No staff commands yet (a `/boosters admin give` would need the owner's OK; see OPEN_QUESTIONS).

@@ -218,6 +218,17 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Boosters v2 and KOTH (update171, plan: `STORE_FULL_PLAN.md` section 3)
+- **Island boosters (new):** one per island and type, for every member everywhere, in real time (also while offline).
+  The same strength adds time (up to 4 h), another strength waits. Items `Island <type> Booster`; right-click as a
+  member.
+- **Shards boosters (new type):** more island tool shards (finds and Shard Burst); personal, island and server-wide.
+- **`/boosters` → Shop:** personal boosters for money ($2.5M-7.5M), island boosters for crystals (150-450). Never credits
+  (Mojang's rules).
+- **`/boosters` menu:** a row each for Personal, Island and Server, five types.
+- **KOTH prize:** 2 Conqueror keys + 500 crystals + an island Sell +50% booster (30 min) for the winning island.
+- **Credit shop:** server-wide Shards boosters (300 / 500 credits).
+
 ## Vaults, join when full, /reclaim, cosmetic points (update170, plan: `STORE_FULL_PLAN.md` section 2)
 - **`/pv [n]`:** private vaults per account, 27 slots: Hatchling 1, Firewing 2, Sunfeather 3, Immortal 4, plus up to 2
   extra vaults from `/store` → Extras (500 credits). A pick menu when you have more than one; a vault above your number

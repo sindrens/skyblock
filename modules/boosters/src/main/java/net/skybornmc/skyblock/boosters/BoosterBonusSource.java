@@ -30,6 +30,7 @@ final class BoosterBonusSource implements BonusSource {
         if (type.isEmpty()) {
             return 0;
         }
-        return m.personal().percent(context.player(), type.get()) + m.global().percent(type.get());
+        return m.personal().percent(context.player(), type.get()) + m.global().percent(type.get())
+                + m.island().percent(context.player(), type.get()); // owner 7 Nov 2026: island boosters
     }
 }

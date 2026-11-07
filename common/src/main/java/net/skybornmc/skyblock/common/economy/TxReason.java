@@ -129,6 +129,9 @@ public final class TxReason {
     /** {@code /credit pay}: bought credits sent to another player. */
     public static final String CREDIT_PAY = "credit_pay";
 
+    /** Owner 7 Nov 2026: a personal or island booster bought in /boosters → Shop (money or crystals). */
+    public static final String BOOSTER_SHOP = "booster_shop";
+
     /** "gg" after a purchase: one earned credit. */
     public static final String CREDIT_GG = "credit_gg";
 

@@ -128,6 +128,10 @@ public final class EssentialsConfig extends ModuleConfig {
     @Setting(path = "server-events.koth.crystals", desc = "Crystals for every player of the winning island who is in the Warzone.", min = 0, max = 100_000)
     public long kothCrystals = 500;
 
+    @Setting(path = "server-events.koth.island-booster", desc = "Owner 7 Nov 2026: an island booster for the whole winning island, "
+            + "'<type>:<percent>:<minutes>' (sell, skill_xp, tool_xp, crystals, shards); empty = none.")
+    public String kothIslandBooster = "sell:50:30";
+
     @Setting(path = "server-events.contest.enabled", desc = "Owner 7 Nov 2026: a fishing contest at /fish; most catches win.")
     public boolean contestEnabled = true;
 

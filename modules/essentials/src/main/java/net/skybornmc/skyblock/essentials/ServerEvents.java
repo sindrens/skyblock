@@ -569,9 +569,32 @@ final class ServerEvents implements Listener {
                     Msg.p("crate", c.kothCrate.isEmpty() ? c.kothCrate : Character.toUpperCase(c.kothCrate.charAt(0)) + c.kothCrate.substring(1)));
             core.sounds().play(p, "unlock");
         }
+        kothIslandBooster(c, winner);
         core.audit().log(AuditCategory.ECONOMY, "koth_win", Actor.system("essentials"), winner.toString(), (long) held.getOrDefault(winner, 0), null,
                 Map.of("name", name));
         Bukkit.getOnlinePlayers().forEach(p -> msg.send(p, "server-events.koth.end", Msg.p("winner", name)));
+    }
+
+    /** Owner 7 Nov 2026: the winning island gets an island booster (every member, everywhere). A solo winner without an island gets none. */
+    private void kothIslandBooster(EssentialsConfig c, UUID winner) {
+        String[] p = c.kothIslandBooster == null ? new String[0] : c.kothIslandBooster.trim().toLowerCase(java.util.Locale.ROOT).split(":");
+        if (p.length != 3) {
+            return;
+        }
+        boolean island = core.services().optional(net.skybornmc.skyblock.common.island.IslandService.class)
+                .flatMap(s -> s.island(winner)).isPresent();
+        java.util.Optional<net.skybornmc.skyblock.common.booster.BoosterType> type = net.skybornmc.skyblock.common.booster.BoosterType.byId(p[0]);
+        if (!island || type.isEmpty()) {
+            return;
+        }
+        try {
+            int percent = Integer.parseInt(p[1]);
+            int minutes = Integer.parseInt(p[2]);
+            net.skybornmc.skyblock.common.booster.BoosterService.of(core.services())
+                    .ifPresent(b -> b.startIsland(winner, type.get(), percent, minutes, "KOTH"));
+        } catch (NumberFormatException e) {
+            core.plugin().getLogger().warning("essentials.yml server-events.koth.island-booster: '" + c.kothIslandBooster + "' is not <type>:<percent>:<minutes>");
+        }
     }
 
     /** {@code 7:05}. Pure. */
