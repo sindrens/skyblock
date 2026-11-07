@@ -223,12 +223,12 @@ menu:
     line-tradeable: "<key><c:text>: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
   crate:
     lore:
-      - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
-      - "<c:text>Luck: <bar>"
+      - "<c:bar>| </c:bar><c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+      - "<c:bar>| </c:bar><c:text>Luck: <bar>"
       - "<c:flame><sym:star></c:flame> <c:text>Top reward in <c:value><left></c:value> <c:text>opens"
       - ""
     lore-no-pity:
-      - "<c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
+      - "<c:bar>| </c:bar><c:text>Keys: <c:value><keys></c:value> <c:muted>(<tradeable> tradeable)"
       - ""
     actions:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see rewards and open"
@@ -241,7 +241,7 @@ menu:
   fragments:
     name: "<rarity:legendary>Key Fragments"
     lore:
-      - "<c:text>You carry: <c:value><have></c:value> <c:muted>fragments"
+      - "<c:bar>| </c:bar><c:text>You carry: <c:value><have></c:value> <c:muted>fragments"
       - "<c:text><need> fragments make 1 <key><c:text>."
       - "<c:muted>Tradeable."
       - ""
@@ -301,7 +301,7 @@ preview:
     lore:
       - "<c:text>Turns 1 tradeable <key><c:text> into an item"
       - "<c:text>you can trade or sell on <c:value>/ah</c:value><c:text>."
-      - "<c:text>Tradeable: <c:value><tradeable>"
+      - "<c:bar>| </c:bar><c:text>Tradeable: <c:value><tradeable>"
       - ""
       - "<c:muted>USE the item to put the key back."
       - ""

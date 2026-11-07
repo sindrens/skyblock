@@ -233,6 +233,12 @@ Your "simple, nothing unnecessary" answer:
 - Rowan's chain: the first chapters already are it (Rowan, /menu, /is, /farm, harvest, sell), so nothing doubled.
 - Mastery island-level gates checked against the new island XP pace (level 20 is about 5-6 hours alone, level 50 about 2 days alone, much faster in a team): kept as they are.
 
+## The whole list, batch 3 (update162)
+- **Menus:** 239 lore rows in 21 menus got the tool-style bar (`| Label: value`): island menu, members, warps, visit, notes, bank, sell, transactions, /is level and upgrades, rewards, crates, boosters, trade, wardrobe, profiles, achievements, collection, milestones, shop, spawner. 64 menu titles are now Title Case ("Buy Upgrade", "Island History", "Item Box" ...).
+- FX-09: the carrots step no longer says "3,000" (the number is in `essentials.yml grind.farm-unlocks`).
+- ROADMAP and BACKLOG show what is built now.
+- **Not done on purpose:** FX-05 (a hard crash in the half second of a Sell Wand sale): making a chest crash-safe needs a world save per sale, too heavy for a very small risk. 5-row menus stay 5 rows (your "smaller GUIs" rule).
+
 ## Your picks, part 4: King of the Hill (update159)
 - **KOTH in the Warzone**, every 3 hours for up to 15 minutes: one chat line ("King of the Hill! /koth"), `/koth` takes you in front of the hill. Stand on the gold 7x7 hill with no other island on it: 2 minutes in total wins (another island on it pauses the clock; after 15 minutes the island that held it longest wins). Every player of the winning island in the Warzone gets 5 Ember keys and 500 crystals. PvP is on there; you keep your items.
 - The Warzone has no build yet (only a 7x7 builder platform), so KOTH lays a 31x31 stone brick floor around it (only into air, never over a build). When the builder makes the Warzone, set `essentials.yml server-events.koth.arena-radius: 0` and move `koth.x/y/z` to the real hill. The Gatehouse portal sign now says "Warzone · KOTH: /koth" (the portal itself stays closed until that build exists).

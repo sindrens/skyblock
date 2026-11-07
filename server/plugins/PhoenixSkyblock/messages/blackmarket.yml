@@ -74,8 +74,8 @@ menu:
   wallet:
     name: "<c:value>Your crystals: <cur:crystals><shards>"
     lore:
-      - "<c:text>Money: <cur:money><money>"
-      - "<c:text>Credits: <cur:credits><credits>"
+      - "<c:bar>| </c:bar><c:text>Money: <cur:money><money>"
+      - "<c:bar>| </c:bar><c:text>Credits: <cur:credits><credits>"
       - "<c:text>Crystals come from island tasks,"
       - "<c:text>quests and rewards."
   disabled:

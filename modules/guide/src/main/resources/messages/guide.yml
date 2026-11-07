@@ -173,7 +173,7 @@ tasks:
   story-info:
     name: "<bold><grad:phoenix>Kindle's story</grad></bold>"
     lore:
-      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>"
       - "<c:muted>Each one opens the next. Some wait"
       - "<c:muted>for a higher island level."
   trades-info:

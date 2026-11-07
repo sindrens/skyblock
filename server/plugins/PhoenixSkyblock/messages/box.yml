@@ -63,7 +63,7 @@ sources:
   other: "<c:value>Other"
 
 menu:
-  title: "Item box"
+  title: "Item Box"
   info:
     - "<c:text>Items that did not fit your"
     - "<c:text>inventory wait here, safe."
@@ -117,12 +117,12 @@ staff:
       - "<c:text>profile. Admin only, logged."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to clear"
-  clear-crumb: "Clear box"
+  clear-crumb: "Clear Box"
   clear-details:
     - "<c:text>Removes <c:value><count></c:value> stack(s) from"
     - "<c:value><player></c:value><c:text>'s box (<profile>)."
     - "<c:text>They are kept in box_cleared."
-  remove-crumb: "Remove item"
+  remove-crumb: "Remove Item"
   remove-details:
     - "<c:text>Removes entry <c:value>#<id></c:value> from"
     - "<c:value><player></c:value><c:text>'s box."

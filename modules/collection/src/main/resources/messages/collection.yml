@@ -107,7 +107,7 @@ menu:
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Collection <found>/<total> <c:muted>(<percent>%)"
     lore:
-      - "<c:text>Profile: <c:value><profile>"
+      - "<c:bar>| </c:bar><c:text>Profile: <c:value><profile>"
       - ""
     rewards:
       - "<c:text>Every 25% of a page: <c:value>+<points></c:value> <c:text>island level"
@@ -123,16 +123,16 @@ menu:
     lore:
       - ""
       - "<c:text>Each one: +1 island level point."
-      - "<c:text>Full page: <rewards>"
+      - "<c:bar>| </c:bar><c:text>Full page: <rewards>"
   entry:
     locked: "<c:muted>???</c:muted> <c:muted><sym:dot></c:muted> <hint>"
     found:
       name: "<c:success><sym:check></c:success> <item>"
       lore:
         - "<hint>"
-        - "<c:text>Found: <c:value><amount>"
+        - "<c:bar>| </c:bar><c:text>Found: <c:value><amount>"
         - "<c:text>First <c:value><ago></c:value> <c:text>ago"
-        - "<c:text>From: <source>"
+        - "<c:bar>| </c:bar><c:text>From: <source>"
 
 # Batch 9: the ring bosses on the Mobs page (same names as /pve boss).
 bosses:

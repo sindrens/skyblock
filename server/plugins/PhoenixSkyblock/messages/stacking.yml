@@ -134,7 +134,7 @@ frozen:
       - "<c:text>Since <c:value><date></c:value>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to restore"
-  confirm-crumb: "Restore spawners"
+  confirm-crumb: "Restore Spawners"
   confirm-details:
     - "<c:text>Sends <c:value><amount>x <mob></c:value> <c:text>spawner"
     - "<c:text>to <c:value><player></c:value><c:text>'s /box. Logged."
@@ -205,11 +205,11 @@ menu:
     name: "<c:muted>Prestige"
     lore:
       - "<c:text>Reach level <c:value><max-level></c:value> <c:muted>(now <level>)"
-      - "<c:text>Drops now: <c:value>+<bonus>%"
+      - "<c:bar>| </c:bar><c:text>Drops now: <c:value>+<bonus>%"
   prestige-max:
     name: "<c:success><sym:check> Max prestige"
     lore:
-      - "<c:text>Drops: <c:value>+<bonus>%"
+      - "<c:bar>| </c:bar><c:text>Drops: <c:value>+<bonus>%"
   prestige-premium:
     name: "<c:muted>Premium spawner"
     lore:

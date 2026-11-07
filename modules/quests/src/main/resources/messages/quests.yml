@@ -129,7 +129,7 @@ menu:
     lore: ["<c:text>This board is turned off for now."]
   nothing-yet:
     name: "<c:muted>No quests for you yet"
-    lore: ["<c:text>Get your island first: <c:value>/is</c:value><c:text>."]
+    lore: ["<c:bar>| </c:bar><c:text>Get your island first: <c:value>/is</c:value><c:text>."]
   island:
     no-island:
       name: "<c:muted>You have no island"

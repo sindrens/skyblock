@@ -102,7 +102,7 @@ menu:
     lore:
       - "<c:muted>Skills"
       - ""
-      - "<c:text>Total skill levels: <c:value><total>"
+      - "<c:bar>| </c:bar><c:text>Total skill levels: <c:value><total>"
   bar:
     filled: "<c:flame>●</c:flame>"
     empty: "<c:muted>●</c:muted>"

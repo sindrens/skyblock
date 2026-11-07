@@ -132,7 +132,7 @@ class CatalogTest {
         assertEquals(List.of("shards 1000"), live.getStringList("chapters.farm.rewards"));
         assertEquals(List.of("fishing_shards 5000", "key ember 1"), live.getStringList("chapters.fish_pro.rewards"));
         assertEquals(List.of("mining_shards 300"), live.getStringList("chapters.mine.rewards"));
-        assertEquals(2, net.skybornmc.skyblock.common.config.CatalogUpdate.version(live));
+        assertEquals(3, net.skybornmc.skyblock.common.config.CatalogUpdate.version(live));
         assertEquals(List.of(), net.skybornmc.skyblock.common.config.CatalogUpdate.apply(live, TutorialModule.CATALOG_STEPS));
     }
 }

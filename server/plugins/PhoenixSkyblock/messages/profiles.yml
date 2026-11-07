@@ -31,10 +31,10 @@ menu:
     name: "<c:flame><profile>"
     lore:
       - "<c:muted>Slot <slot>"
-      - "<c:text>Island: <c:value><island>"
-      - "<c:text>Island level: <c:value><level>"
-      - "<c:text>Playtime: <c:value><playtime>"
-      - "<c:text>Created: <c:value><created>"
+      - "<c:bar>| </c:bar><c:text>Island: <c:value><island>"
+      - "<c:bar>| </c:bar><c:text>Island level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Playtime: <c:value><playtime>"
+      - "<c:bar>| </c:bar><c:text>Created: <c:value><created>"
       - ""
       - "<status>"
   # Empty unlocked slot. <slot>
@@ -67,10 +67,10 @@ manage:
     name: "<c:flame><profile>"
     lore:
       - "<c:muted>Slot <slot>"
-      - "<c:text>Island: <c:value><island>"
-      - "<c:text>Island level: <c:value><level>"
-      - "<c:text>Playtime: <c:value><playtime>"
-      - "<c:text>Created: <c:value><created>"
+      - "<c:bar>| </c:bar><c:text>Island: <c:value><island>"
+      - "<c:bar>| </c:bar><c:text>Island level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Playtime: <c:value><playtime>"
+      - "<c:bar>| </c:bar><c:text>Created: <c:value><created>"
       - ""
       - "<status>"
   playing:
@@ -143,7 +143,7 @@ icon:
   gone: "<prefix><c:error><sym:cross> That profile doesn't exist any more."
 
 delete:
-  crumb: "Delete profile"
+  crumb: "Delete Profile"
   shown:
     name: "<c:error><bold>Delete <profile>"
     lore: ["<c:text>Gone forever."]
@@ -167,7 +167,7 @@ slots:
   not-enough: "<prefix><c:error><sym:cross> You need <c:value><price> credits</c:value>. You have <c:value><have></c:value>."
   bought: "<prefix><c:success><sym:check> <c:text>Slot <c:value><slot></c:value> unlocked for <c:value><price> credits</c:value>. Create a profile in it!"
   confirm:
-    crumb: "Buy slot"
+    crumb: "Buy Slot"
     shown:
       name: "<c:value>Profile slot <slot>"
       lore: ["<c:text>Costs <c:value><price> credits</c:value>."]

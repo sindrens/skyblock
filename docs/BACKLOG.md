@@ -20,7 +20,13 @@ One place that points to every list of unbuilt work, ideas and questions. Nothin
 | [PLANNING.md](PLANNING.md) | Every plan and phase in one table: status, open questions, next build step |
 | [SECURITY_LOG.md](SECURITY_LOG.md) | Anything suspicious and reliability incidents |
 
-## Not built yet (by area)
+## Status 7 Nov 2026
+Most areas below are built now (see ROADMAP.md status column and docs/plans/WHOLE_LIST_7NOV.md). Still open: Island Vault
+(/is storage, batch 4), ranks, Tebex packages, credit shop and Discord (batch 5, after DECISIONS_RANKS_7NOV), Island Fuel and
+custom crops (owner decision), envoys, duels and the PvP zone (after the Warzone build), seasons, the balance pass and the load
+test. VisitManager uses the visibility service (✅).
+
+## Not built yet (by area, from before 7 Nov; kept for history)
 - **Join flow and tutorial** (owner 30 Oct): portal at spawn that creates your island and always teleports you there; guided tutorial on the island (camera/animation, arrow guide, step by step); permissions unlock per step; help NPCs and holograms everywhere with clean lores. → TUTORIAL (plan first), NPCHOLO, PORTALS.
 - **Builds stored but not used yet:** NPC pads, holograms, leaderboards, crates, particles, tutorial nodes, viewpoints, treasure spots, secrets, portals, protected regions in the Depths, safe zones and dev flags (no PvE in arrival/exit paths, no pearls in combat zones, no anvils/containers in the Forge Quarter). → NPCHOLO, PORTALS, DEPTHSPROT.
 - **Builder fixes:** the crypt's gate is not on the zone edge; spruce forest and spider den are paused at v1.

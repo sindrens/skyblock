@@ -9,14 +9,14 @@ no-island: "<prefix><c:error><sym:cross></c:error> <c:text>You don't have an isl
 
 create:
   menu:
-    crumb: "Create your island"
+    crumb: "Create Your Island"
     shown:
       name: "<c:flame><bold>Your own island"
       lore:
         - "<c:text>A small meadow in the sky,"
         - "<c:text>all yours to build on."
         - ""
-        - "<c:text>Start size: <c:value><size>x<size> chunks</c:value> <c:muted>(<blocks>x<blocks> blocks)"
+        - "<c:bar>| </c:bar><c:text>Start size: <c:value><size>x<size> chunks</c:value> <c:muted>(<blocks>x<blocks> blocks)"
     details:
       - "<c:text>Creates your <c:value>solo island</c:value> and"
       - "<c:text>takes you there. Free."
@@ -170,14 +170,14 @@ menu:
   island:
     name: "<c:flame><bold><island>"
     lore:
-      - "<c:text>Your role: <c:value><role>"
-      - "<c:text>Leader: <c:value><leader>"
-      - "<c:text>Type: <c:value><type>"
-      - "<c:text>Members: <c:value><members>/<slots>"
-      - "<c:text>Size: <c:value><size>x<size></c:value> <c:muted>blocks"
-      - "<c:text>Warps: <c:value><warps>/<warp-slots>"
-      - "<c:text>Level: <c:value><level>"
-      - "<c:text>Created: <c:value><created>"
+      - "<c:bar>| </c:bar><c:text>Your role: <c:value><role>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>Type: <c:value><type>"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Size: <c:value><size>x<size></c:value> <c:muted>blocks"
+      - "<c:bar>| </c:bar><c:text>Warps: <c:value><warps>/<warp-slots>"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Created: <c:value><created>"
     locked:
       - "<c:error><sym:cross> Locked"
     open:
@@ -196,8 +196,8 @@ menu:
   members:
     name: "<c:flame><bold>Members"
     lore:
-      - "<c:text>Members: <c:value><members>/<slots>"
-      - "<c:text>Coop: <c:value><coops>"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Coop: <c:value><coops>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   permissions:
@@ -213,7 +213,7 @@ menu:
   warps:
     name: "<c:flame><bold>Warps"
     lore:
-      - "<c:text>Your island warps: <c:value><warps>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Your island warps: <c:value><warps>/<slots>"
       - "<c:muted>Set one with /is setwarp shop"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
@@ -221,12 +221,12 @@ menu:
     name: "<c:flame><bold>Visitors"
     lore-open:
       - "<c:success><sym:check> Open to visitors"
-      - "<c:text>Visitors here now: <c:value><visitors>"
-      - "<c:text>Banned players: <c:value><bans>"
+      - "<c:bar>| </c:bar><c:text>Visitors here now: <c:value><visitors>"
+      - "<c:bar>| </c:bar><c:text>Banned players: <c:value><bans>"
     lore-locked:
       - "<c:error><sym:cross> Locked: members only"
-      - "<c:text>Visitors here now: <c:value><visitors>"
-      - "<c:text>Banned players: <c:value><bans>"
+      - "<c:bar>| </c:bar><c:text>Visitors here now: <c:value><visitors>"
+      - "<c:bar>| </c:bar><c:text>Banned players: <c:value><bans>"
     click-lock:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to lock"
     click-unlock:
@@ -248,7 +248,7 @@ menu:
   invites:
     name: "<c:flame><bold>Invites"
     lore:
-      - "<c:text>Open invites: <c:value><count>"
+      - "<c:bar>| </c:bar><c:text>Open invites: <c:value><count>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
   notes:
@@ -356,7 +356,7 @@ chat:
   # The copy staff spies (and the console) see.
   spy-line: "<c:muted>[Spy] [<island>]</c:muted> <role> <name> <c:muted>»</c:muted> <c:text><message>"
   colors:
-    crumb: "Chat colors"
+    crumb: "Chat Colors"
     info:
       - "<c:text>The color of each role in island chat."
       - "<c:text>The Leader clicks a role to change it."
@@ -418,7 +418,7 @@ invite:
   received-not-empty: "<prefix><c:muted>Accepting replaces your island and wipes this profile. Or use an empty profile slot:</c:muted> <click:run_command:'/profiles'><hover:show_text:'<c:text>Open your profiles'><c:action>[Profiles]</c:action></hover></click>"
   # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <island>, <members>, <slots>, <left>.
   popup:
-    title: "Island invite"
+    title: "Island Invite"
     name: "<c:value><player></c:value> <c:text>invited you"
     lore: ["<c:text>Join <c:value><island></c:value><c:text>.", "<c:muted><members>/<slots> members", "", "<c:muted>Expires in <left>"]
   expired-inviter: "<prefix><c:muted>Your island invite to <player> expired."
@@ -443,7 +443,7 @@ invite:
 
 # TUTORIAL TQ19: the island portal with pending invites (members.portal-invite-choice).
 portal-choice:
-  title: "Your island"
+  title: "Your Island"
   # GUI-4c: the "?" of the portal choice (new players land here with invites waiting).
   info:
     - "<c:text>You have island invites."
@@ -454,7 +454,7 @@ portal-choice:
     lore: ["<c:text>A new solo island, just for you.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to create"]
   join:
     name: "<c:flame><bold>Join <island></bold>"
-    lore: ["<c:text>You were invited to this island.", "<c:text>Members: <c:value><members>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to join"]
+    lore: ["<c:text>You were invited to this island.", "<c:bar>| </c:bar><c:text>Members: <c:value><members>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to join"]
 
 accept:
   none: "<prefix><c:error><sym:cross></c:error> <c:text>You have no island invites."
@@ -463,7 +463,7 @@ accept:
   has-island: "<prefix><c:error><sym:cross></c:error> <c:text>Joining needs an empty profile. Use an empty profile slot or leave your island first. <click:run_command:'/profiles'><hover:show_text:'<c:text>Open your profiles'><c:action>[Profiles]</c:action></hover></click> <click:run_command:'/is leave'><hover:show_text:'<c:text>Leave your island (wipes this profile)'><c:action>[Leave]</c:action></hover></click>"
   # Owner 3 Nov 2026: accepting an invite while you lead an island alone. <island> yours, <target> the new one, <level>
   replace:
-    crumb: "Join island"
+    crumb: "Join Island"
     shown:
       name: "<c:error><bold>Your island will be deleted"
       lore: ["<c:text>Join <c:value><target></c:value><c:text> instead of", "<c:value><island></c:value> <c:muted>(level <level>)</c:muted>"]
@@ -534,7 +534,7 @@ deny:
 kick:
   self: "<prefix><c:error><sym:cross></c:error> <c:text>You can't kick yourself. Use <c:value>/is leave</c:value>."
   not-allowed: "<prefix><c:error><sym:cross></c:error> <c:text>You can't kick <c:value><player></c:value>. <c:muted>You can only kick lower roles."
-  crumb: "Kick member"
+  crumb: "Kick Member"
   shown:
     name: "<c:error><bold>Kick <player>"
     lore:
@@ -560,7 +560,7 @@ leave:
     - "<c:text>You leave <c:value><island></c:value><c:text> and this"
     - "<c:text>profile starts empty (new island or invite)."
     - ""
-  crumb: "Leave island"
+  crumb: "Leave Island"
   shown:
     name: "<c:error><bold>Leave <island>"
     lore:
@@ -583,7 +583,7 @@ demote:
 
 transfer:
   not-possible: "<prefix><c:error><sym:cross></c:error> <c:text>You can only hand the island to one of its members."
-  crumb: "Transfer island"
+  crumb: "Transfer Island"
   shown:
     name: "<c:warning><bold>Make <player> the Leader"
     lore:
@@ -667,15 +667,15 @@ members:
   summary:
     name: "<c:flame><bold><island>"
     lore-solo:
-      - "<c:text>Type: <c:value>Solo island"
-      - "<c:text>Members: <c:value><members>/<slots>"
-      - "<c:text>Coop: <c:value><coops>/<max-coops>"
+      - "<c:bar>| </c:bar><c:text>Type: <c:value>Solo island"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Coop: <c:value><coops>/<max-coops>"
       - ""
       - "<c:muted>Inviting someone makes it a Team Island."
     lore-team:
-      - "<c:text>Type: <c:value>Team island"
-      - "<c:text>Members: <c:value><members>/<slots></c:value> <c:muted>(up to <max-slots> with upgrades)"
-      - "<c:text>Coop: <c:value><coops>/<max-coops>"
+      - "<c:bar>| </c:bar><c:text>Type: <c:value>Team island"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots></c:value> <c:muted>(up to <max-slots> with upgrades)"
+      - "<c:bar>| </c:bar><c:text>Coop: <c:value><coops>/<max-coops>"
     # Owner F10: shown while slots are locked after a leave or kick. <locked> <time> = until the first one opens, <hours>
     locked:
       - "<c:text>Locked slots: <c:warning><locked></c:warning> <c:muted>(next opens in <time>)"
@@ -710,7 +710,7 @@ members:
       - "<c:error>Your island is full (<members>/<slots>)."
     # Owner F10: room by members, but the free slots are locked. <locked> <time> <members> <slots>
     lore-locked:
-      - "<c:text>Members: <c:value><members>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots>"
       - "<c:warning>A slot opens again in <time>."
       - "<c:muted>A member left recently."
   invites:
@@ -726,7 +726,7 @@ actions:
   head:
     name: "<c:value><player>"
     lore:
-      - "<c:text>Role: <c:value><role>"
+      - "<c:bar>| </c:bar><c:text>Role: <c:value><role>"
   gone:
     name: "<c:muted>No longer on the island"
     lore:
@@ -931,7 +931,7 @@ disband:
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>Your island is being built or removed. Try again soon."
   # Owner answer 141: an island with other members can't be disbanded. <members> = other members.
   has-members: "<prefix><c:error><sym:cross></c:error> <c:text>Your island still has <c:value><members></c:value> other member(s). Make one of them Leader first: <click:suggest_command:'/is transfer '><hover:show_text:'<c:text>Pick a new Leader'><c:action>[Transfer]</c:action></hover></click>"
-  crumb: "Disband island"
+  crumb: "Disband Island"
   shown:
     name: "<c:error><bold>Disband <island>"
     lore:
@@ -962,7 +962,7 @@ disband:
   notify-coop: "<prefix><c:text>Your coop on <c:value><island></c:value> ended: the island was removed."
 
 admin:
-  crumb: "Island admin"
+  crumb: "Island Admin"
   not-found: "<prefix><c:error><sym:cross></c:error> <c:value><input></c:value> <c:text>isn't on any island. Use the name of an island's Leader or member."
   busy: "<prefix><c:error><sym:cross></c:error> <c:text>That island is being built or removed. Try again soon."
   changed: "<prefix><c:error><sym:cross></c:error> <c:text>The island changed meanwhile, nothing was done. Check <c:value>/isadmin info</c:value>."
@@ -1008,7 +1008,7 @@ admin:
     done-empty: "<prefix><c:warning><sym:cross></c:warning> <c:text>Slot <c:value>#<slot></c:value> is empty: you're at its center in the air. <c:muted>(<state>)"
   delete:
     confirm: "<prefix><c:text>Delete the island of <c:value><input></c:value> forever? <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Delete it (/<command> confirm)'><c:action>[Confirm]</c:action></hover></click> <c:muted>(within <time>)"
-    crumb: "Delete island"
+    crumb: "Delete Island"
     shown:
       name: "<c:error><bold>Delete <island>"
       lore:
@@ -1023,7 +1023,7 @@ admin:
     you: "<prefix><c:error><sym:cross></c:error> <c:text>Staff deleted your island <c:value><island></c:value>. <click:run_command:'/is'><hover:show_text:'<c:text>Create a new island'><c:action>[Create one]</c:action></hover></click>"
   reset:
     confirm: "<prefix><c:text>Reset the island of <c:value><input></c:value>? It's deleted and its Leader gets a new one. <click:run_command:'/<command> confirm'><hover:show_text:'<c:text>Reset it (/<command> confirm)'><c:action>[Confirm]</c:action></hover></click> <c:muted>(within <time>)"
-    crumb: "Reset island"
+    crumb: "Reset Island"
     shown:
       name: "<c:warning><bold>Reset <island>"
       lore:
@@ -1066,7 +1066,7 @@ admin:
   # gives back only what was taken: a kick takes only the membership; a disband/reset gives back <money> = what it withdrew.
   restore:
     unknown: "<prefix><c:error><sym:cross></c:error> <c:text>No player called <c:value><player></c:value> has played here."
-    menu-crumb: "Kick backups of <player>"
+    menu-crumb: "Kick Backups of <player>"
     info:
       - "<c:text>Backups made when this player"
       - "<c:text>was kicked, or their island was"
@@ -1311,13 +1311,13 @@ warp:
   rename-prompt: "<prefix><c:text>Type the new name for <c:value><warp></c:value>. <c:muted>(letters, numbers, _ and -, max <max>, <cancel> to stop, <seconds>s)"
   # Bedrock form popup: title and the text above the field. <warp>, <max>
   rename-prompt-form:
-    title: "Rename warp"
+    title: "Rename Warp"
     label: "<c:text>New name for <warp> (letters, numbers, _ and -, max <max>):"
   # "Adding warps" button in your own warps (GUI-4b): a new warp where you stand. Chat: <max>, <cancel>, <seconds>
   new-prompt: "<prefix><c:text>Type a name for a warp where you stand. <c:muted>(letters, numbers, _ and -, max <max>, <cancel> to stop, <seconds>s)"
   # Bedrock form popup. <max>, <count>/<slots> warps
   new-prompt-form:
-    title: "New warp"
+    title: "New Warp"
     label: "<c:text>Name of the warp where you stand (letters, numbers, _ and -, max <max>). Warps: <count>/<slots>"
   renamed: "<prefix><c:success><sym:check></c:success> <c:text>Warp <c:value><old></c:value> is now called <c:value><warp></c:value>."
   rename-taken: "<prefix><c:error><sym:cross></c:error> <c:text>Your island already has a warp <c:value><warp></c:value>. Pick another name."
@@ -1366,7 +1366,7 @@ warps:
   filter:
     name: "<c:flame><category>"
     lore:
-      - "<c:text>Warps: <c:value><count>"
+      - "<c:bar>| </c:bar><c:text>Warps: <c:value><count>"
     click:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show only these"
     selected:
@@ -1381,13 +1381,13 @@ warps:
   own:
     name: "<c:flame><bold>Your warps"
     lore:
-      - "<c:text>Warps: <c:value><count>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Warps: <c:value><count>/<slots>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to see and edit"
   how:
     name: "<c:flame>Adding warps"
     lore:
-      - "<c:text>Warps: <c:value><count>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Warps: <c:value><count>/<slots>"
       - "<c:text>Stand on the spot and type"
       - "<c:value>/is setwarp <name> [category]"
       - "<c:text>or place a sign with <c:value><tag></c:value>"
@@ -1399,9 +1399,9 @@ warps:
   entry:
     name: "<c:value><warp>"
     lore:
-      - "<c:text>Island: <c:value><island>"
-      - "<c:text>Category: <c:value><category>"
-      - "<c:text>Visits: <c:value><visits>"
+      - "<c:bar>| </c:bar><c:text>Island: <c:value><island>"
+      - "<c:bar>| </c:bar><c:text>Category: <c:value><category>"
+      - "<c:bar>| </c:bar><c:text>Visits: <c:value><visits>"
     rated:
       - "<c:text>Island rating: <c:flame><rating> <sym:star></c:flame> <c:muted>(<ratings>)"
     unrated:
@@ -1422,8 +1422,8 @@ warps:
     warp:
       name: "<c:flame><bold><warp>"
       lore:
-        - "<c:text>Category: <c:value><category>"
-        - "<c:text>Visits: <c:value><visits>"
+        - "<c:bar>| </c:bar><c:text>Category: <c:value><category>"
+        - "<c:bar>| </c:bar><c:text>Visits: <c:value><visits>"
     teleport:
       name: "<c:flame>Teleport"
       lore:
@@ -1475,7 +1475,7 @@ warps:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"
   delete:
-    crumb: "Delete warp"
+    crumb: "Delete Warp"
     shown: "<c:error><bold>Delete <warp>"
     details:
       - "<c:text>Warp <c:value><warp></c:value> is removed"
@@ -1530,13 +1530,13 @@ browser:
         - "<c:text>Every island, in random order."
         - "<c:text>Active islands show up more."
     visits:
-      crumb: "Most visited"
+      crumb: "Most Visited"
       name: "<c:flame>Most visited"
       lore:
         - "<c:text>Unique visitors per day,"
         - "<c:text>last <c:value><days></c:value> days."
     rating:
-      crumb: "Top rated"
+      crumb: "Top Rated"
       name: "<c:flame>Top rated"
       # Owner R3-33: <ips> = different players (addresses) needed, <min> = ratings needed.
       lore:
@@ -1544,7 +1544,7 @@ browser:
         - "<c:text>weighted: more ratings count more."
         - "<c:muted>Needs ratings from <ips> different players."
     likes:
-      crumb: "Most liked"
+      crumb: "Most Liked"
       name: "<c:flame>Most liked"
       lore:
         - "<c:text>Likes this season."
@@ -1556,11 +1556,11 @@ browser:
   entry:
     name: "<c:flame><island>"
     lore:
-      - "<c:text>Leader: <c:value><owner>"
-      - "<c:text>Members: <c:value><members>"
-      - "<c:text>Visits: <c:value><visits></c:value> <c:muted>(<days> days)"
-      - "<c:text>Likes: <c:value><likes>"
-      - "<c:text>Warps: <c:value><warps>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><owner>"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>"
+      - "<c:bar>| </c:bar><c:text>Visits: <c:value><visits></c:value> <c:muted>(<days> days)"
+      - "<c:bar>| </c:bar><c:text>Likes: <c:value><likes>"
+      - "<c:bar>| </c:bar><c:text>Warps: <c:value><warps>"
     rated:
       - "<c:text>Rating: <c:flame><rating> <sym:star></c:flame> <c:muted>(<ratings>)"
     unrated:
@@ -1586,23 +1586,23 @@ invites:
   received:
     name: "<c:success><island>"
     lore:
-      - "<c:text>From: <c:value><inviter>"
-      - "<c:text>Members: <c:value><members>/<slots>"
-      - "<c:text>Expires in: <c:value><time>"
+      - "<c:bar>| </c:bar><c:text>From: <c:value><inviter>"
+      - "<c:bar>| </c:bar><c:text>Members: <c:value><members>/<slots>"
+      - "<c:bar>| </c:bar><c:text>Expires in: <c:value><time>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to accept or deny"
   sent:
     name: "<c:value><player></c:value> <c:muted>· invited"
     lore:
-      - "<c:text>Sent by: <c:value><inviter>"
-      - "<c:text>Expires in: <c:value><time>"
+      - "<c:bar>| </c:bar><c:text>Sent by: <c:value><inviter>"
+      - "<c:bar>| </c:bar><c:text>Expires in: <c:value><time>"
       - ""
     click:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to cancel"
     locked:
       - "<c:muted>Only the Leader, Admins and Mods can cancel."
   cancel:
-    crumb: "Cancel invite"
+    crumb: "Cancel Invite"
     shown:
       name: "<c:error><bold>Cancel invite to <player>"
       lore:
@@ -1754,9 +1754,9 @@ notes:
   summary:
     name: "<c:flame><bold><island>"
     lore:
-      - "<c:text>Open: <c:value><open></c:value> <c:muted>·</c:muted> <c:text>Done: <c:value><done>"
-      - "<c:text>Notes: <c:value><count>/<max>"
-      - "<c:text>Pinned: <c:value><pins>/<max-pins>"
+      - "<c:bar>| </c:bar><c:text>Open: <c:value><open></c:value> <c:muted>·</c:muted> <c:text>Done: <c:value><done>"
+      - "<c:bar>| </c:bar><c:text>Notes: <c:value><count>/<max>"
+      - "<c:bar>| </c:bar><c:text>Pinned: <c:value><pins>/<max-pins>"
   book-button:
     name: "<c:flame>Open as book"
     lore:
@@ -1777,7 +1777,7 @@ notes:
     name: "<c:success><bold>Add a note"
     lore:
       - "<c:text>Type it in chat, up to <c:value><length></c:value> characters."
-      - "<c:text>Notes: <c:value><count>/<max>"
+      - "<c:bar>| </c:bar><c:text>Notes: <c:value><count>/<max>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to write"
     lore-full:
@@ -1873,7 +1873,7 @@ notes:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to delete"
   delete:
-    crumb: "Delete note"
+    crumb: "Delete Note"
     shown:
       name: "<c:error><bold>Delete this note?"
       lore:
@@ -1882,7 +1882,7 @@ notes:
       - "<c:text>The note leaves the list for everyone."
       - "<c:muted>Staff can read it for <days> days (reports)."
   clear:
-    crumb: "Clear done notes"
+    crumb: "Clear Done Notes"
     shown:
       name: "<c:warning><bold>Clear <count> done note(s)?"
       lore:
@@ -1894,7 +1894,7 @@ notes:
     crumb: "Deleted"
     info:
       - "<c:text>Notes deleted in the last few days."
-      - "<c:text>Read only. Full history: <c:value>/logs"
+      - "<c:bar>| </c:bar><c:text>Read only. Full history: <c:value>/logs"
     empty:
       name: "<c:muted>Nothing deleted"
       lore:
@@ -1912,16 +1912,16 @@ notes:
     edit: "<prefix><c:text>Type the new text. <c:muted>(max <max>, <cancel> to stop, <seconds>s)</c:muted><newline><c:muted>Now: <text>"
     # Bedrock form popup (GUI-4b): title and the text above the field. <max>
     add-form:
-      title: "Island notes"
+      title: "Island Notes"
       label: "<c:text>Your new note (max <max> characters):"
     edit-form:
-      title: "Island notes"
+      title: "Island Notes"
       label: "<c:text>Change the note (max <max> characters):"
   hologram: "<bold><c:value><text></c:value></bold><newline><c:muted><author>"
   book:
     name: "<c:flame><bold>Island notes</bold> <c:muted>(temporary)"
     name-read: "<c:flame><bold>Island notes</bold> <c:muted>(read only)"
-    title: "Island notes"
+    title: "Island Notes"
     lore:
       - "<c:text>One note per page. Change a page"
       - "<c:text>or write on the empty last page."
@@ -1986,7 +1986,7 @@ stats:
     name: "<c:flame><bold><island>"
     lore:
       - "<c:text>Stats of your island and its members."
-      - "<c:text>Today: <c:value><today>"
+      - "<c:bar>| </c:bar><c:text>Today: <c:value><today>"
       - "<c:text>This week: since <c:value><week></c:value> <c:muted>(Monday)"
       - "<c:muted>Saved every <flush> seconds."
   category:
@@ -2005,10 +2005,10 @@ stats:
   item:
     name: "<c:flame><bold><category>"
     lore:
-      - "<c:text>All time: <c:value><total>"
-      - "<c:text>Today: <c:value><today>"
-      - "<c:text>This week: <c:value><week>"
-      - "<c:text>Last week: <c:value><last-week>"
+      - "<c:bar>| </c:bar><c:text>All time: <c:value><total>"
+      - "<c:bar>| </c:bar><c:text>Today: <c:value><today>"
+      - "<c:bar>| </c:bar><c:text>This week: <c:value><week>"
+      - "<c:bar>| </c:bar><c:text>Last week: <c:value><last-week>"
     trend:
       up: "<c:success>+<percent>%</c:success> <c:muted>vs last week so far"
       down: "<c:error>-<percent>%</c:error> <c:muted>vs last week so far"
@@ -2032,13 +2032,13 @@ stats:
     name: "<c:value>#<place> <player>"
     lore:
       - "<c:muted><role>"
-      - "<c:text>All time: <c:value><total></c:value> <c:muted>(<percent>%)"
-      - "<c:text>This week: <c:value><week></c:value> <c:muted>(<week-percent>%)"
-      - "<c:text>Today: <c:value><today>"
+      - "<c:bar>| </c:bar><c:text>All time: <c:value><total></c:value> <c:muted>(<percent>%)"
+      - "<c:bar>| </c:bar><c:text>This week: <c:value><week></c:value> <c:muted>(<week-percent>%)"
+      - "<c:bar>| </c:bar><c:text>Today: <c:value><today>"
     former: "Former member"
     others-name: "<c:muted>+<count> more"
     others-lore:
-      - "<c:text>Together: <c:value><total>"
+      - "<c:bar>| </c:bar><c:text>Together: <c:value><total>"
     empty-name: "<c:muted>Nothing yet"
     empty-lore:
       - "<c:muted>Nobody added to this stat yet."

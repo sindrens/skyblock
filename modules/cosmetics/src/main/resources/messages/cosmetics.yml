@@ -29,11 +29,11 @@ menu:
   tab-titles:
     crumb: "Titles"
     name: "<c:flame><bold>Titles"
-    lore: ["<c:text>Earned with achievements.", "<c:text>Owned: <c:value><owned></c:value><c:muted>/<total>"]
+    lore: ["<c:text>Earned with achievements.", "<c:bar>| </c:bar><c:text>Owned: <c:value><owned></c:value><c:muted>/<total>"]
   tab-tags:
     crumb: "Tags"
     name: "<c:flame><bold>Tags"
-    lore: ["<c:text>From crates and the store.", "<c:text>Owned: <c:value><owned></c:value><c:muted>/<total>"]
+    lore: ["<c:text>From crates and the store.", "<c:bar>| </c:bar><c:text>Owned: <c:value><owned></c:value><c:muted>/<total>"]
   tab-selected: ["", "<c:success><sym:check> Showing now"]
   tab-action: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"]
   preview:
@@ -56,13 +56,13 @@ menu:
   secret-lore: ["<c:muted><sym:time> A secret title.", "<c:muted>Find out how to earn it."]
   unequip-titles:
     name: "<c:error><sym:cross></c:error> <c:value>Remove title"
-    lore: ["<c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
+    lore: ["<c:bar>| </c:bar><c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
   unequip-tags:
     name: "<c:error><sym:cross></c:error> <c:value>Remove tag"
-    lore: ["<c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
+    lore: ["<c:bar>| </c:bar><c:text>Wearing: <display>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to remove"]
   achievements:
     name: "<c:flame>Achievements"
-    lore: ["<c:text>Most titles come from these.", "<c:text>Done: <c:value><done></c:value><c:muted>/<total>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
+    lore: ["<c:text>Most titles come from these.", "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"]
   edit:
     name: "<c:warning>Edit titles & tags"
     lore: ["<c:text>Staff: create and change titles", "<c:text>and tags.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to edit"]
@@ -80,7 +80,7 @@ item:
   action-text: "to redeem"
 
 redeem:
-  crumb: "Redeem tag"
+  crumb: "Redeem Tag"
   details:
     - "<c:text>Adds <display> <c:text>to your tags"
     - "<c:text>and uses up this item."
@@ -151,7 +151,7 @@ editor:
   preview-lore: ["<c:muted>Id: <id>"]
   display:
     name: "<c:value>Look"
-    lore: ["<c:text>Shown as: <shown>", "<c:muted>Text: <raw>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
+    lore: ["<c:bar>| </c:bar><c:text>Shown as: <shown>", "<c:muted>Text: <raw>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"]
   rarity:
     name: "<c:value>Rarity: <rarity>"
     lore: ["<c:text>How rare it looks in /tags.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
@@ -234,7 +234,7 @@ display:
   prompt-form:
     title: "Display format"
     label: "<c:text>New <field> (default resets, empty clears):"
-  confirm-crumb: "Save display"
+  confirm-crumb: "Save Display"
   confirm-details: ["<c:text>Old: <c:muted><old>", "<c:text>New: <c:value><new>", "<c:text>The head shows the preview."]
   saved: "<prefix><c:success><sym:check></c:success> <c:text>Saved <c:value><field></c:value>. Live for everyone."
   failed: "<prefix><c:error><sym:cross></c:error> <c:text>Not saved: <reason>"

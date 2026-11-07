@@ -59,7 +59,7 @@ sell:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to list for <time>"
 
 buy:
-  crumb: "Buy item"
+  crumb: "Buy Item"
   confirm-lines:
     - "<c:muted><sym:bullet></c:muted> <c:text>pay <price> <c:text>to <c:value><seller>"
     - "<c:muted><sym:bullet></c:muted> <c:text>give you <c:value><amount>x <item>"
@@ -78,7 +78,7 @@ buy:
   processing: "<prefix><c:text>Buying <c:value><item></c:value><c:text>... You get the item or keep your money; check <c:value>/box</c:value> <c:text>in a minute."
 
 cancel:
-  crumb: "Cancel listing"
+  crumb: "Cancel Listing"
   confirm-lines:
     - "<c:muted><sym:bullet></c:muted> <c:text>remove <c:value><amount>x <item></c:value> <c:text>from the auction house"
     - "<c:muted><sym:bullet></c:muted> <c:text>give the item back <c:muted>(/box if your inventory is full)"
@@ -207,9 +207,9 @@ browse:
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Auction House"
     lore:
-      - "<c:text>Items for sale: <c:value><listings>"
-      - "<c:text>Your listings: <c:value><used></c:value><c:muted>/</c:muted><c:value><slots>"
-      - "<c:text>Your balance: </c:text><balance>"
+      - "<c:bar>| </c:bar><c:text>Items for sale: <c:value><listings>"
+      - "<c:bar>| </c:bar><c:text>Your listings: <c:value><used></c:value><c:muted>/</c:muted><c:value><slots>"
+      - "<c:bar>| </c:bar><c:text>Your balance: </c:text><balance>"
       - ""
       - "<c:muted>Listing fee <fee>%, paid when listing."
       - "<c:muted>Sales tax <tax>%, taken from the price."
@@ -284,7 +284,7 @@ browse:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy or remove (staff)"
 
 mine:
-  title: "My listings"
+  title: "My Listings"
   info:
     - "<c:text>Your items on sale. Click one to"
     - "<c:text>cancel it and get the item back."
@@ -296,7 +296,7 @@ mine:
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>My listings"
     lore:
-      - "<c:text>Listings: <c:value><used></c:value><c:muted>/</c:muted><c:value><slots>"
+      - "<c:bar>| </c:bar><c:text>Listings: <c:value><used></c:value><c:muted>/</c:muted><c:value><slots>"
       - "<c:muted>Ranks can unlock more slots."
   # C2: optional extra line under the summary (e.g. the next rank's slots). Empty = not shown.
   slots-hint: ""

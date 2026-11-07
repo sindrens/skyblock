@@ -165,6 +165,9 @@ public final class TutorialModule implements SkyblockModule, TutorialService {
     /** Shards x10 (owner 7 Nov 2026, docs/plans/SHARDS_X10_BREAKTHROUGHS.md): the chapter shard rewards of a live file, once. */
     static final java.util.Map<Integer, java.util.Map<String, net.skybornmc.skyblock.common.config.CatalogUpdate.Change>> CATALOG_STEPS =
             java.util.Map.of(
+                    // v3 (FX-09): the carrots hint no longer hardcodes the number (essentials.yml grind.farm-unlocks decides it)
+                    3, java.util.Map.of("chapters.next.steps.carrots.hint", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(
+                            "Harvest 3,000 wheat at /farm to unlock carrots.", "Keep harvesting at /farm: it shows how many to go.")),
                     // v2 (FINISH_PLAN batch A): the invite step no longer blocks a solo player (visiting or liking an island counts)
                     2, java.util.Map.of(
                     "chapters.together.steps.invite.target", net.skybornmc.skyblock.common.config.CatalogUpdate.Change.of(

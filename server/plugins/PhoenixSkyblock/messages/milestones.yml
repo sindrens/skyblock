@@ -86,10 +86,10 @@ menu:
     info: ["<c:text>Claimed tiers are green, a ready", "<c:text>tier glows. Claim it to start", "<c:text>its perk. The perk of your", "<c:text>highest claimed tier counts."]
     summary:
       name: "<c:value><bold><chain>"
-      lore: ["<c:text>Done: <c:value><progress>", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
+      lore: ["<c:bar>| </c:bar><c:text>Done: <c:value><progress>", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
     summary-island:
       name: "<c:value><bold><chain>"
-      lore: ["<c:text>Done: <c:value><progress>", "<c:text>You contributed <c:value><percent>%", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
+      lore: ["<c:bar>| </c:bar><c:text>Done: <c:value><progress>", "<c:text>You contributed <c:value><percent>%", "<c:bar>| </c:bar><c:text>Active perk", "<perk>", "<c:bar>| </c:bar><c:text>Next perk", "<next-perk>"]
   tier:
     claimed:
       name: "<c:success><sym:check> Tier <tier>"
@@ -127,13 +127,13 @@ top:
   entry:
     first:
       name: "<bold><c:top1>#1</c:top1></bold> <c:value><name>"
-      lore: ["<c:text>Milestone points: <c:value><points>"]
+      lore: ["<c:bar>| </c:bar><c:text>Milestone points: <c:value><points>"]
     second:
       name: "<bold><c:top2>#2</c:top2></bold> <c:value><name>"
-      lore: ["<c:text>Milestone points: <c:value><points>"]
+      lore: ["<c:bar>| </c:bar><c:text>Milestone points: <c:value><points>"]
     third:
       name: "<bold><c:top3>#3</c:top3></bold> <c:value><name>"
-      lore: ["<c:text>Milestone points: <c:value><points>"]
+      lore: ["<c:bar>| </c:bar><c:text>Milestone points: <c:value><points>"]
     other:
       name: "<c:muted>#<place> <c:value><name>"
-      lore: ["<c:text>Milestone points: <c:value><points>"]
+      lore: ["<c:bar>| </c:bar><c:text>Milestone points: <c:value><points>"]

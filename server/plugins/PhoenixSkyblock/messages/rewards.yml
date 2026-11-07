@@ -250,7 +250,7 @@ menu:
     name: "<c:ember><sym:star></c:ember> <c:value>Streak: <streak> days"
     lore:
       - "<c:text>Claim every day to keep it."
-      - "<c:text>Best: <c:value><best></c:value> <c:muted><sym:dot></c:muted> <c:text>Claims: <c:value><total>"
+      - "<c:bar>| </c:bar><c:text>Best: <c:value><best></c:value> <c:muted><sym:dot></c:muted> <c:text>Claims: <c:value><total>"
     credits:
       - ""
       - "<c:text>Every <every> days: <cur:credits><credits>"
@@ -274,14 +274,14 @@ menu:
         - "<c:text>Time counts while you play."
         - "<c:text>After <c:value><idle></c:value> <c:text>minutes without doing"
         - "<c:text>anything it pauses."
-        - "<c:text>Profile: <c:value><profile>"
+        - "<c:bar>| </c:bar><c:text>Profile: <c:value><profile>"
     disabled:
       name: "<c:muted>Playtime rewards are off"
       lore: []
     time:
       name: "<c:value>Active playtime"
       lore:
-        - "<c:text>Total: <c:value><time>"
+        - "<c:bar>| </c:bar><c:text>Total: <c:value><time>"
         - "<c:text>Next hour reward in <c:value><next>"
     status:
       counting: "<c:success><sym:check></c:success> <c:text>Counting right now"
@@ -293,7 +293,7 @@ menu:
     hourly:
       name: "<c:value>Every hour"
       lore:
-        - "<c:text>Crystal Pouch: <cur:crystals><crystals>"
+        - "<c:bar>| </c:bar><c:text>Crystal Pouch: <cur:crystals><crystals>"
       pass: ["<c:text>Pass XP: <c:value><xp>"]
       pass-soon: ["<c:muted>+<xp> pass XP once the pass is live"]
     key:
@@ -321,9 +321,9 @@ menu:
     summary:
       name: "<c:flame><sym:star></c:flame> <c:value>Vote for us"
       lore:
-        - "<c:text>Today: <c:value><done></c:value><c:muted>/</c:muted><c:text><sites> sites"
-        - "<c:text>Streak: <c:value><streak></c:value> <c:text>days"
-        - "<c:text>Rewards go to: <c:value><profile>"
+        - "<c:bar>| </c:bar><c:text>Today: <c:value><done></c:value><c:muted>/</c:muted><c:text><sites> sites"
+        - "<c:bar>| </c:bar><c:text>Streak: <c:value><streak></c:value> <c:text>days"
+        - "<c:bar>| </c:bar><c:text>Rewards go to: <c:value><profile>"
         - "<c:muted>Waiting votes: <waiting>"
         - ""
         - "<c:muted>New day at 00:00 (Oslo time)."
@@ -332,12 +332,12 @@ menu:
         name: "<c:error><sym:cross></c:error> <c:value><site>"
         lore:
           - "<c:text>Not voted yet."
-          - "<c:text>Reward: <reward>"
+          - "<c:bar>| </c:bar><c:text>Reward: <reward>"
           - ""
           - "<bold><c:action>» CLICK</c:action></bold> <c:text>to get the link"
         lore-bedrock:
           - "<c:text>Not voted yet."
-          - "<c:text>Reward: <reward>"
+          - "<c:bar>| </c:bar><c:text>Reward: <reward>"
           - ""
           - "<bold><c:action>» TAP</c:action></bold> <c:text>to see the address"
       done:
@@ -358,7 +358,7 @@ menu:
       name: "<c:ember><sym:star></c:ember> <c:value>Vote streak: <streak> days"
       lore:
         - "<c:text>Vote at least once every day."
-        - "<c:text>Best: <c:value><best></c:value> <c:text>days"
+        - "<c:bar>| </c:bar><c:text>Best: <c:value><best></c:value> <c:text>days"
       today-yes: "<c:success><sym:check></c:success> <c:text>You voted today"
       today-no: "<c:warning><sym:time></c:warning> <c:text>Not voted today yet"
       next: "<c:text>Next: <c:value><crate> Key</c:value> <c:text>in <c:value><left></c:value> <c:text>days"
@@ -371,7 +371,7 @@ menu:
     party:
       name: "<c:flame><bold>Vote Party"
       lore:
-        - "<c:text>Every vote counts: <c:value><count></c:value><c:muted>/</c:muted><c:text><size>"
+        - "<c:bar>| </c:bar><c:text>Every vote counts: <c:value><count></c:value><c:muted>/</c:muted><c:text><size>"
         - "<c:text>When it is full, everyone online"
         - "<c:text>who voted today gets a <c:value><crate> Key</c:value><c:text>."
         - "<c:muted>Parties so far: <parties>"

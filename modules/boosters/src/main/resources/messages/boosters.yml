@@ -32,15 +32,15 @@ item:
     name: "{type} Booster +{percent}%"
     description: "Use it to start. The same type adds time."
     lore:
-      - "<c:text>Bonus: <c:value>+{percent}% {type}"
-      - "<c:text>Time: <c:value>{time}"
+      - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+{percent}% {type}"
+      - "<c:bar>| </c:bar><c:text>Time: <c:value>{time}"
       - "<c:muted>Counts only while you play."
   global:
     name: "Global {type} Booster +{percent}%"
     description: "Use it to start it for everyone online."
     lore:
-      - "<c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
-      - "<c:text>Time: <c:value>{time}"
+      - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+{percent}% {type}</c:value> <c:text>for everyone"
+      - "<c:bar>| </c:bar><c:text>Time: <c:value>{time}"
       - "<c:muted>Players can thank you for credits."
   bound: "<c:muted>Can't be traded: only this profile can use it."
   action-input: "USE"
@@ -108,8 +108,8 @@ menu:
     running:
       name: "<c:success><type> booster"
       lore:
-        - "<c:text>Running: <c:value>+<percent>%"
-        - "<c:text>Time left: <c:value><time>"
+        - "<c:bar>| </c:bar><c:text>Running: <c:value>+<percent>%"
+        - "<c:bar>| </c:bar><c:text>Time left: <c:value><time>"
     idle:
       name: "<c:muted><type> booster"
       lore:
@@ -130,9 +130,9 @@ menu:
       name: "<c:flame>Global <type> +<percent>%"
       lore:
         - "<c:text>Everyone online gets <c:value>+<percent>%"
-        - "<c:text>Time left: <c:value><time>"
+        - "<c:bar>| </c:bar><c:text>Time left: <c:value><time>"
         - "<c:text>Started by <c:value><name>"
-        - "<c:text>Thanks so far: <c:value><thanks>"
+        - "<c:bar>| </c:bar><c:text>Thanks so far: <c:value><thanks>"
     idle:
       name: "<c:muted>Global <type> booster"
       lore:
@@ -155,13 +155,13 @@ menu:
     personal:
       name: "<c:value><type> Booster +<percent>%"
       lore:
-        - "<c:text>Bonus: <c:value>+<percent>% <type>"
-        - "<c:text>Time: <c:value><time>"
+        - "<c:bar>| </c:bar><c:text>Bonus: <c:value>+<percent>% <type>"
+        - "<c:bar>| </c:bar><c:text>Time: <c:value><time>"
     global:
       name: "<c:flame>Global <type> Booster +<percent>%"
       lore:
         - "<c:text>Everyone online gets <c:value>+<percent>%"
-        - "<c:text>Time: <c:value><time>"
+        - "<c:bar>| </c:bar><c:text>Time: <c:value><time>"
     action:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to start it"

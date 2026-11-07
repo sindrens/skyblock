@@ -212,7 +212,7 @@ menu:
     info: ["<c:text>Pick one of the custom tools", "<c:text>in your inventory."]
     empty:
       name: "<c:muted>No custom tools"
-      lore: ["<c:text>Books work on wardrobe armor.", "<c:text>Tool enchants: <c:value>/tool</c:value><c:text>."]
+      lore: ["<c:text>Books work on wardrobe armor.", "<c:bar>| </c:bar><c:text>Tool enchants: <c:value>/tool</c:value><c:text>."]
     entry: ["<c:muted>Lv <level> · slots <used>/<slots>"]
     click:
       apply: ["<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a slot"]
@@ -349,11 +349,11 @@ menu:
     count: ["<c:muted>You have <count>"]
     ready: ["<c:success><sym:check> <c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to combine"]
   shop:
-    crumb: "Book shop"
+    crumb: "Book Shop"
     info: ["<c:text>Pay crystals for a random book", "<c:text>of a pool. Rolls never give", "<c:text>Mythics. Limits reset daily."]
     pool:
       name: "<c:value><pool>"
-      lore: ["<c:text>Your tier: <c:value><tier>", "<c:muted>Higher tiers open more enchants."]
+      lore: ["<c:bar>| </c:bar><c:text>Your tier: <c:value><tier>", "<c:muted>Higher tiers open more enchants."]
     scroll:
       name: "<rarity:rare>Disenchant Scroll"
       lore: ["<c:text>Takes an enchant off a tool", "<c:text>as a book.", "<c:text>Costs <c:value><sym:crystals> <cost>", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
@@ -367,7 +367,7 @@ menu:
       tier-low: "<c:error><sym:cross> <c:text>Needs <pool> tier <tier> <c:muted>(<have>)"
       none-left: ["<c:error><sym:cross> <c:text>None left today"]
   guide:
-    crumb: "Enchant guide"
+    crumb: "Enchant Guide"
     info: ["<c:text>Every enchant by tool. Mythics", "<c:text>stay secret until you find one."]
     empty:
       name: "<c:muted>Nothing here"
@@ -402,7 +402,7 @@ menu:
     not-found: "<c:muted><sym:cross> Not found yet"
   confirm:
     apply:
-      crumb: "Apply a book"
+      crumb: "Apply a Book"
       details: ["<c:text>Put <enchant>", "<c:text>on <c:value><tool></c:value> <c:muted>(slot <slot>)", "<c:text>Uses the book", "<c:text>Costs <c:value><sym:crystals> <cost>"]
     upgrade:
       crumb: "Upgrade"
@@ -410,7 +410,7 @@ menu:
     combine-tool:
       details: ["<c:text>Uses your <book> <c:text>book", "<c:text>Raises it to <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
     combine:
-      crumb: "Combine books"
+      crumb: "Combine Books"
       details: ["<c:text>Uses two <book> <c:text>books", "<c:text>Makes <next>", "<c:text>Costs <c:value><sym:crystals> <cost>"]
     remove:
       crumb: "Remove"
@@ -419,10 +419,10 @@ menu:
       crumb: "Shatter"
       details: ["<c:error>Destroys <enchant>", "<c:text>You get <c:value><sym:crystals> <refund></c:value> <c:text>back", "<c:error>This can't be undone"]
     scroll:
-      crumb: "Book shop"
+      crumb: "Book Shop"
       details: ["<c:text>Buy a Disenchant Scroll", "<c:text>Costs <c:value><sym:crystals> <cost>"]
     roll:
-      crumb: "Book shop"
+      crumb: "Book Shop"
       details: ["<roll>", "<c:text>Gives a random book", "<c:text>Costs <c:value><sym:crystals> <cost>"]
 
 # ---------------------------------------------------------------------------------------------------------- enchants

@@ -28,7 +28,7 @@ request:
   received: "<prefix><c:value><player></c:value> <c:text>wants to trade. <click:run_command:'/trade accept'><hover:show_text:'<c:text>Accept the trade'><c:success>[Accept]</c:success></hover></click> <click:run_command:'/trade deny'><hover:show_text:'<c:text>Deny the trade'><c:error>[Deny]</c:error></hover></click> <c:muted>or type /trade accept"
   # GUI-5: the Bedrock popup (Bedrock can't click chat). <player>, <seconds>, <left>.
   popup:
-    title: "Trade request"
+    title: "Trade Request"
     name: "<c:value><player></c:value> <c:text>wants to trade"
     lore: ["<c:text>Accept to open the trade window.", "<c:text>Nothing moves until you both confirm.", "", "<c:muted>Expires in <left>"]
   hint-accept: "<prefix><c:value><player></c:value> <c:text>asked you to trade: <c:value>/trade accept</c:value>"
@@ -137,14 +137,14 @@ menu:
   you:
     name: "<c:value>You <c:muted>(<player>)"
     lore:
-      - "<c:text>Items: <c:value><items>"
-      - "<c:text>Money: <money>"
+      - "<c:bar>| </c:bar><c:text>Items: <c:value><items>"
+      - "<c:bar>| </c:bar><c:text>Money: <money>"
       - "<ready>"
   them:
     name: "<c:value><player>"
     lore:
-      - "<c:text>Items: <c:value><items>"
-      - "<c:text>Money: <money>"
+      - "<c:bar>| </c:bar><c:text>Items: <c:value><items>"
+      - "<c:bar>| </c:bar><c:text>Money: <money>"
       - "<ready>"
   state-ready: "<c:success><sym:check> Confirmed"
   state-not-ready: "<c:muted>Not confirmed"
@@ -178,13 +178,13 @@ menu:
   my-money:
     name: "<c:value>Your money offer"
     lore:
-      - "<c:text>Now: <money>"
+      - "<c:bar>| </c:bar><c:text>Now: <money>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
   my-money-locked:
     name: "<c:value>Your money offer"
     lore:
-      - "<c:text>Now: <money>"
+      - "<c:bar>| </c:bar><c:text>Now: <money>"
   my-ready:
     name: "<c:success><sym:check> You confirmed"
     lore:
@@ -209,7 +209,7 @@ menu:
   their-money:
     name: "<c:value><player>'s money offer"
     lore:
-      - "<c:text>Now: <money>"
+      - "<c:bar>| </c:bar><c:text>Now: <money>"
   storing:
     name: "<c:muted>Adding..."
     lore:
@@ -232,13 +232,13 @@ menu:
     - "<bold><c:action>» CLICK</c:action></bold> <c:text>to take back"
 
 money-menu:
-  title: "Money offer"
+  title: "Money Offer"
   picker-title: "Offer <currency>"
   currency:
     name: "<c:value><currency>"
     lore:
-      - "<c:text>Your offer: <c:value><offer>"
-      - "<c:text>You have: <c:value><balance>"
+      - "<c:bar>| </c:bar><c:text>Your offer: <c:value><offer>"
+      - "<c:bar>| </c:bar><c:text>You have: <c:value><balance>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to change"
 

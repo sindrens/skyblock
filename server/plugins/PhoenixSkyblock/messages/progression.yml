@@ -158,7 +158,7 @@ level-menu:
   tasks:
     name: "<c:flame><bold>Challenge Book"
     lore:
-      - "<c:text>Island tasks: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:bar>| </c:bar><c:text>Island tasks: <c:value><done></c:value><c:muted>/<total>"
       - "<c:muted>Unlock upgrades and masteries."
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
@@ -178,8 +178,8 @@ level-menu:
   header:
     name: "<c:flame><bold>Island Level <level>"
     lore:
-      - "<c:text>Progress: <c:value><percent>%</c:value> <c:text>to <c:value><next>"
-      - "<c:text>Points: <c:value><points>"
+      - "<c:bar>| </c:bar><c:text>Progress: <c:value><percent>%</c:value> <c:text>to <c:value><next>"
+      - "<c:bar>| </c:bar><c:text>Points: <c:value><points>"
       - "<c:muted>Updates a few seconds after a change."
     lore-new:
       - "<c:text>Calculating your island level..."
@@ -204,7 +204,7 @@ level-menu:
     pillars:
       name: "<c:flame>Pillars"
       detail:
-        - "<c:text>Pillar levels: <c:value><levels>"
+        - "<c:bar>| </c:bar><c:text>Pillar levels: <c:value><levels>"
       how:
         - "<c:muted>Mine, chop, farm and fight as a"
         - "<c:muted>member: 1 point per pillar level."
@@ -236,8 +236,8 @@ level-menu:
       name: "<c:flame>Members' skills"
       # <counted> <members> <average> <days>
       detail:
-        - "<c:text>Members counted: <c:value><counted>/<members>"
-        - "<c:text>Average skill total: <c:value><average>"
+        - "<c:bar>| </c:bar><c:text>Members counted: <c:value><counted>/<members>"
+        - "<c:bar>| </c:bar><c:text>Average skill total: <c:value><average>"
       how:
         - "<c:muted>Level skills. Members count after"
         - "<c:muted>3 days; the average counts."
@@ -263,7 +263,7 @@ level-menu:
       name: "<c:flame>Block worth"
       # <worth> money
       detail:
-        - "<c:text>Worth: <c:value><worth>"
+        - "<c:bar>| </c:bar><c:text>Worth: <c:value><worth>"
       detail-scanning:
         - "<c:text>Worth: <c:value><worth></c:value> <c:muted>(counting...)"
       how:
@@ -297,7 +297,7 @@ level-menu:
   pillar:
     name: "<pillar> <c:value><level>"
     lore:
-      - "<c:text>Next level: <c:value><percent>%"
+      - "<c:bar>| </c:bar><c:text>Next level: <c:value><percent>%"
       - "<c:muted>1 island level point per level."
     soon-name: "<c:muted>Conquest"
     soon:
@@ -330,20 +330,20 @@ top-menu:
         - "<c:text>Who grew most since Monday."
         - "<c:muted>Restarts in <left>."
       lore-active:
-        - "<c:text>Showing: <board>"
+        - "<c:bar>| </c:bar><c:text>Showing: <board>"
         - "<c:muted>Restarts in <left>."
     pillars:
       name: "<c:flame><bold>Pillars"
       lore:
         - "<c:text>Ranked by one pillar's level."
       lore-active:
-        - "<c:text>Showing: <pillar>"
+        - "<c:bar>| </c:bar><c:text>Showing: <pillar>"
     # Added under Weekly gain and Pillars (they open a list).
     pick:
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to pick a board"
   weekly:
-    crumb: "Weekly gain"
+    crumb: "Weekly Gain"
     points-name: "<c:value>Points gained"
     points-lore:
       - "<c:text>Level points earned this week:"
@@ -383,24 +383,24 @@ top-menu:
     name-3: "<bold><c:top3>#3</c:top3></bold> <c:value><island>"
     name: "<c:muted>#<place></c:muted> <c:value><island>"
     lore-level:
-      - "<c:text>Level: <c:value><level></c:value> <c:muted>(<points> points)"
-      - "<c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level></c:value> <c:muted>(<points> points)"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
     lore-value:
-      - "<c:text>Worth: <c:value><worth>"
-      - "<c:text>Level: <c:value><level>"
-      - "<c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>Worth: <c:value><worth>"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
     lore-weekly-points:
-      - "<c:text>This week: <c:value>+<gain></c:value> <c:text>points"
-      - "<c:text>Level: <c:value><level>"
-      - "<c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>This week: <c:value>+<gain></c:value> <c:text>points"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
     lore-weekly-pillars:
-      - "<c:text>This week: <c:value>+<gain></c:value> <c:text>pillar levels"
-      - "<c:text>Level: <c:value><level>"
-      - "<c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>This week: <c:value>+<gain></c:value> <c:text>pillar levels"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
     lore-pillar:
       - "<pillar><c:text>: <c:value>Lv <pillar-level>"
-      - "<c:text>Level: <c:value><level>"
-      - "<c:text>Leader: <c:value><leader>"
+      - "<c:bar>| </c:bar><c:text>Level: <c:value><level>"
+      - "<c:bar>| </c:bar><c:text>Leader: <c:value><leader>"
     # Owner 2 Nov 2026: the leader's title, under the stats (hidden when they wear none). <title>, <leader>.
     title:
       - "<c:text>Title: <title>"
@@ -529,7 +529,7 @@ tasks:
     header:
       name: "<c:flame><bold>Challenge Book"
       lore:
-        - "<c:text>Tasks done: <c:value><done></c:value><c:muted>/<total>"
+        - "<c:bar>| </c:bar><c:text>Tasks done: <c:value><done></c:value><c:muted>/<total>"
         - "<c:muted>Pick a tier to see its tasks."
       lore-empty:
         - "<c:muted>No tasks yet."
@@ -537,7 +537,7 @@ tasks:
       name: "<c:value>Tier <tier>"
       name-done: "<c:success><sym:check> Tier <tier>"
       lore:
-        - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+        - "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>"
         - "<c:text>Next:"
       lore-done:
         - "<c:success>All <total> tasks done!"
@@ -564,23 +564,23 @@ tasks:
     inventory:
       name: "<c:value>From your inventory"
       lore:
-        - "<c:text>You have: <c:value><have></c:value> <item>"
-        - "<c:text>Still needed: <c:value><room>"
+        - "<c:bar>| </c:bar><c:text>You have: <c:value><have></c:value> <item>"
+        - "<c:bar>| </c:bar><c:text>Still needed: <c:value><room>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
       lore-none:
         - "<c:text>You have no <item>."
-        - "<c:text>Still needed: <c:value><room>"
+        - "<c:bar>| </c:bar><c:text>Still needed: <c:value><room>"
     storage:
       name: "<c:value>From island storage"
       lore:
-        - "<c:text>In storage: <c:value><have></c:value> <item>"
-        - "<c:text>Still needed: <c:value><room>"
+        - "<c:bar>| </c:bar><c:text>In storage: <c:value><have></c:value> <item>"
+        - "<c:bar>| </c:bar><c:text>Still needed: <c:value><room>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to hand in"
       lore-none:
         - "<c:text>No <item> in storage."
-        - "<c:text>Still needed: <c:value><room>"
+        - "<c:bar>| </c:bar><c:text>Still needed: <c:value><room>"
       lore-soon:
         - "<c:muted>Coming soon: hand in"
         - "<c:muted>from the island storage."
@@ -684,11 +684,11 @@ upgrades:
     name: "<c:muted><tab>"
     name-selected: "<c:flame><bold><tab>"
     lore:
-      - "<c:text>Upgrades: <c:value><count>"
+      - "<c:bar>| </c:bar><c:text>Upgrades: <c:value><count>"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to show"
     lore-selected:
-      - "<c:text>Upgrades: <c:value><count>"
+      - "<c:bar>| </c:bar><c:text>Upgrades: <c:value><count>"
       - "<c:muted>Shown now."
     island:
       crumb: "Island"
@@ -785,7 +785,7 @@ upgrades:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy (confirm next)"
   confirm:
-    crumb: "Buy upgrade"
+    crumb: "Buy Upgrade"
     # <upgrade> <level> <cost> <next> effect <bank> island bank after
     details:
       - "<c:text>Buy <c:value><upgrade> <level></c:value>"
@@ -905,7 +905,7 @@ masteries:
       - "<c:text>is maxed, keep growing your"
       - "<c:text>island level with Ascension."
   confirm:
-    crumb: "Buy mastery"
+    crumb: "Buy Mastery"
   buy:
     # <mastery> <rank> <cost> <bank> (island bank after)
     done: "<prefix><c:success><sym:check></c:success> <c:text>Bought <c:value><mastery> <rank></c:value> for <c:success><cost></c:success>. <c:muted>Island bank: <bank>"

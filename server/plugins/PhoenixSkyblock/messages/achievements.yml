@@ -99,8 +99,8 @@ menu:
     lore:
       - "<c:muted>Achievements <sym:dot> <profile>"
       - ""
-      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
-      - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+      - "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:bar>| </c:bar><c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
       - "<bar> <c:value><percent>%"
       - ""
       - "<bold><c:header>| Boost points</c:header></bold>"
@@ -126,7 +126,7 @@ menu:
       none: "Nothing"
   category:
     lore:
-      - "<c:text>Done: <c:value><done></c:value><c:muted>/<total>"
+      - "<c:bar>| </c:bar><c:text>Done: <c:value><done></c:value><c:muted>/<total>"
       - "<bar> <c:value><percent>%"
       - ""
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
@@ -177,7 +177,7 @@ menu:
       lore:
         - "<c:muted>Island achievements"
         - ""
-        - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+        - "<c:bar>| </c:bar><c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
         - "<bar> <c:value><percent>%"
         - ""
         - "<bold><c:header>| Island points</c:header></bold>"
@@ -187,7 +187,7 @@ menu:
       name: "<c:flame>Island achievements"
       lore:
         - "<c:text>Goals all members work on."
-        - "<c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
+        - "<c:bar>| </c:bar><c:text>Tiers: <c:value><tiers></c:value><c:muted>/<all-tiers>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     boost:

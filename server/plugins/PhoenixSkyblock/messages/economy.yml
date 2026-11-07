@@ -135,10 +135,10 @@ eco:
     entry:
       name: "<c:value>#<id> <c:muted><sym:dot></c:muted> <c:text><action> <amount>"
       lore:
-        - "<c:text>Player: <c:value><player>"
-        - "<c:text>Asked by: <c:value><staff>"
-        - "<c:text>Change: <change>"
-        - "<c:text>Reason: <c:value><reason>"
+        - "<c:bar>| </c:bar><c:text>Player: <c:value><player>"
+        - "<c:bar>| </c:bar><c:text>Asked by: <c:value><staff>"
+        - "<c:bar>| </c:bar><c:text>Change: <change>"
+        - "<c:bar>| </c:bar><c:text>Reason: <c:value><reason>"
         - "<c:muted>Ends in <left>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to allow or deny"
@@ -278,7 +278,7 @@ menu:
   summary:
     name: "<c:flame><sym:star></c:flame> <c:value>Your balances"
     lore:
-      - "<c:text>Matching transactions: <c:value><total>"
+      - "<c:bar>| </c:bar><c:text>Matching transactions: <c:value><total>"
       - ""
     line: "<c:muted><sym:bullet></c:muted> <c:text><currency><c:muted>:</c:muted> <amount>"
   any: "<c:value>All"
@@ -322,13 +322,13 @@ menu:
     in:
       name: "<c:success>+</c:success><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
       lore:
-        - "<c:text>From: <c:value><other>"
-        - "<c:text>Balance after: <balance>"
+        - "<c:bar>| </c:bar><c:text>From: <c:value><other>"
+        - "<c:bar>| </c:bar><c:text>Balance after: <balance>"
     out:
       name: "<c:error>-</c:error><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
       lore:
-        - "<c:text>To: <c:value><other>"
-        - "<c:text>Balance after: <balance>"
+        - "<c:bar>| </c:bar><c:text>To: <c:value><other>"
+        - "<c:bar>| </c:bar><c:text>Balance after: <balance>"
     reference:
       - "<c:text>Note: <c:value><reference>"
     footer:
@@ -432,7 +432,7 @@ sell:
       name: "<c:flame><sym:star></c:flame> <c:value>Hot Item: <item>"
       lore:
         - "<c:text>Sells for <c:success><percent>%</c:success> <c:text>today."
-        - "<c:text>Price now: <unit> <c:muted>each"
+        - "<c:bar>| </c:bar><c:text>Price now: <unit> <c:muted>each"
         - ""
         - "<c:muted>A new Hot Item every day at midnight."
     no-hot:
@@ -442,9 +442,9 @@ sell:
     tip:
       name: "<c:value><item>"
       lore:
-        - "<c:text>Price now: <unit> <c:muted>each"
-        - "<c:text>Above base: <c:success><percent>%"
-        - "<c:text>Base: <base>"
+        - "<c:bar>| </c:bar><c:text>Price now: <unit> <c:muted>each"
+        - "<c:bar>| </c:bar><c:text>Above base: <c:success><percent>%"
+        - "<c:bar>| </c:bar><c:text>Base: <base>"
     empty:
       name: "<c:muted>No tips right now"
       lore:
@@ -507,7 +507,7 @@ sell:
     sell:
       name: "<c:success><bold>Sell <items> items for <total>"
       lore:
-        - "<c:text>Sell bonus: <c:value><bonus>%"
+        - "<c:bar>| </c:bar><c:text>Sell bonus: <c:value><bonus>%"
         - "<c:muted>Unsellable items go back to you."
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to sell"
@@ -574,7 +574,7 @@ bank:
     shown:
       name: "<c:value>Withdraw <amount>"
       lore:
-        - "<c:text>You get: <net>"
+        - "<c:bar>| </c:bar><c:text>You get: <net>"
     fee:
       - "<c:text>Take out: <amount>"
       - "<c:text>Fee (<percent>%): <fee>"
@@ -599,43 +599,43 @@ bank:
       personal:
         name: "<c:value><bold>Personal Bank"
         lore:
-          - "<c:text>Balance: <balance>"
+          - "<c:bar>| </c:bar><c:text>Balance: <balance>"
           - "<c:muted>Only you. Safe if you leave."
           - ""
           - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
       island:
         name: "<c:value><bold>Island Bank"
         lore:
-          - "<c:text>Balance: <balance>"
+          - "<c:bar>| </c:bar><c:text>Balance: <balance>"
           - "<c:muted>Shared by <island>."
           - ""
           - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
       wallet:
         name: "<c:value>Your money"
         lore:
-          - "<c:text>In your pocket: <money>"
+          - "<c:bar>| </c:bar><c:text>In your pocket: <money>"
     personal:
       name: "<c:flame><sym:star></c:flame> <c:value>Personal bank"
       lore:
-        - "<c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
-        - "<c:text>Tier: <c:value><tier></c:value><c:muted>/<max>"
-        - "<c:text>Room left: <room>"
+        - "<c:bar>| </c:bar><c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
+        - "<c:bar>| </c:bar><c:text>Tier: <c:value><tier></c:value><c:muted>/<max>"
+        - "<c:bar>| </c:bar><c:text>Room left: <room>"
         - ""
         - "<c:muted>Only this profile can use it."
         - "<c:muted>Safe if you leave your island."
     island:
       name: "<c:flame><sym:star></c:flame> <c:value><island></c:value> <c:muted>bank"
       lore:
-        - "<c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
-        - "<c:text>Room left: <room>"
-        - "<c:text>Your role: <c:value><role>"
+        - "<c:bar>| </c:bar><c:text>Balance: <balance> <c:muted>/ </c:muted><capacity>"
+        - "<c:bar>| </c:bar><c:text>Room left: <room>"
+        - "<c:bar>| </c:bar><c:text>Your role: <c:value><role>"
         - ""
         - "<c:muted>Shared by the island members."
     no-island:
       name: "<c:muted>No island bank"
       lore:
         - "<c:text>Island members share a bank."
-        - "<c:text>Create or join an island: <c:value>/is"
+        - "<c:bar>| </c:bar><c:text>Create or join an island: <c:value>/is"
     deposit:
       name: "<c:value>Deposit"
       about:
@@ -717,7 +717,7 @@ bank:
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to open"
     history-island:
-      crumb: "Island history"
+      crumb: "Island History"
       name: "<c:value>Island bank history"
       about:
         - "<c:text>Who put in and took out what."
@@ -743,8 +743,8 @@ bank:
       limited:
         name: "<c:value>Your daily limit"
         lore:
-          - "<c:text>Left today: <left>"
-          - "<c:text>Limit: <c:value><percent>%</c:value> <c:text>of the bank's"
+          - "<c:bar>| </c:bar><c:text>Left today: <left>"
+          - "<c:bar>| </c:bar><c:text>Limit: <c:value><percent>%</c:value> <c:text>of the bank's"
           - "<c:text>capacity per day."
           - "<c:muted>Resets at midnight."
     fee:
@@ -787,9 +787,9 @@ bank:
     name-next: "<c:flame><sym:star></c:flame> <c:value>Tier <tier>"
     name-locked: "<c:muted>Tier <tier>"
     lore:
-      - "<c:text>Holds: <capacity>"
-      - "<c:text>Most interest per payout: <cap>"
-      - "<c:text>Price: <cost>"
+      - "<c:bar>| </c:bar><c:text>Holds: <capacity>"
+      - "<c:bar>| </c:bar><c:text>Most interest per payout: <cap>"
+      - "<c:bar>| </c:bar><c:text>Price: <cost>"
     perks-title:
       - "<c:text>Perks:"
     no-perks:
@@ -800,7 +800,7 @@ bank:
       - "<bold><c:action>» CLICK</c:action></bold> <c:text>to unlock for <cost>"
     locked:
       - "<c:muted>Unlock the tier before first."
-    confirm-crumb: "Bank tier <tier>"
+    confirm-crumb: "Bank Tier <tier>"
     confirm:
       - "<c:text>Unlock tier <tier> for <cost>."
       - "<c:text>Your bank then holds <capacity>."
@@ -820,16 +820,16 @@ bank:
     in:
       name: "<c:success>+</c:success><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
       lore:
-        - "<c:text>By: <c:value><who>"
-        - "<c:text>Bank after: <balance>"
+        - "<c:bar>| </c:bar><c:text>By: <c:value><who>"
+        - "<c:bar>| </c:bar><c:text>Bank after: <balance>"
         - ""
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<c:muted>#<id>"
     out:
       name: "<c:error>-</c:error><amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
       lore:
-        - "<c:text>By: <c:value><who>"
-        - "<c:text>Bank after: <balance>"
+        - "<c:bar>| </c:bar><c:text>By: <c:value><who>"
+        - "<c:bar>| </c:bar><c:text>Bank after: <balance>"
         - ""
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<c:muted>#<id>"
@@ -929,8 +929,8 @@ watch:
     supply:
       name: "<c:flame><sym:star></c:flame> <c:value>Money supply <c:muted>(<currency><c:muted>)"
       lore:
-        - "<c:text>Held now: <amount>"
-        - "<c:text>Of that in notes: <notes>"
+        - "<c:bar>| </c:bar><c:text>Held now: <amount>"
+        - "<c:bar>| </c:bar><c:text>Of that in notes: <notes>"
         - ""
         - "<c:text>24 hours ago: <day> <c:muted>(<day-change>)"
         - "<c:text>7 days ago: <week> <c:muted>(<week-change>)"
@@ -942,7 +942,7 @@ watch:
       lore:
         - "<c:text>Sink ratio (14 days): <c:value><ratio>"
         - "<c:text>Days below <act>% in a row: <c:value><below>"
-        - "<c:text>Days with data: <c:value><days>"
+        - "<c:bar>| </c:bar><c:text>Days with data: <c:value><days>"
         - ""
         - "<c:muted>Removed / created money. Target:"
         - "<c:muted>80% over the season. Watch below"
@@ -950,19 +950,19 @@ watch:
     period:
       name: "<c:value><range>"
       lore:
-        - "<c:text>Created: <created>"
-        - "<c:text>Removed: <removed>"
-        - "<c:text>Net: <net>"
-        - "<c:text>Sink ratio: <c:value><ratio>"
-        - "<c:text>Moved between players: <moved>"
+        - "<c:bar>| </c:bar><c:text>Created: <created>"
+        - "<c:bar>| </c:bar><c:text>Removed: <removed>"
+        - "<c:bar>| </c:bar><c:text>Net: <net>"
+        - "<c:bar>| </c:bar><c:text>Sink ratio: <c:value><ratio>"
+        - "<c:bar>| </c:bar><c:text>Moved between players: <moved>"
     sell-index:
       name: "<c:value>Sell price index: <c:flame><index>"
       lore:
         - "<c:text>Whole sell table in % of base."
-        - "<c:text>Items below base: <c:value><below></c:value> <c:muted>of <items>"
-        - "<c:text>Items above base: <c:value><above>"
-        - "<c:text>Cheapest now: <c:value><lowest></c:value> <c:muted>(<lowest-percent>)"
-        - "<c:text>Hot item: <c:value><hot>"
+        - "<c:bar>| </c:bar><c:text>Items below base: <c:value><below></c:value> <c:muted>of <items>"
+        - "<c:bar>| </c:bar><c:text>Items above base: <c:value><above>"
+        - "<c:bar>| </c:bar><c:text>Cheapest now: <c:value><lowest></c:value> <c:muted>(<lowest-percent>)"
+        - "<c:bar>| </c:bar><c:text>Hot item: <c:value><hot>"
     sell-index-none:
       name: "<c:value>Sell price index"
       lore:
@@ -970,11 +970,11 @@ watch:
     highlights:
       name: "<c:value>Last 7 days"
       lore:
-        - "<c:text>Velocity: <c:value><velocity></c:value> <c:muted>(supply changed hands)"
-        - "<c:text>Interest paid: <interest>"
-        - "<c:text>Auction volume: <ah-volume>"
-        - "<c:text>Auction fees and tax: <ah-tax>"
-        - "<c:text>Shop spending: <shop>"
+        - "<c:bar>| </c:bar><c:text>Velocity: <c:value><velocity></c:value> <c:muted>(supply changed hands)"
+        - "<c:bar>| </c:bar><c:text>Interest paid: <interest>"
+        - "<c:bar>| </c:bar><c:text>Auction volume: <ah-volume>"
+        - "<c:bar>| </c:bar><c:text>Auction fees and tax: <ah-tax>"
+        - "<c:bar>| </c:bar><c:text>Shop spending: <shop>"
     sources:
       name: "<c:success>Biggest sources <c:muted>(7 days)"
       line: "<c:muted><sym:bullet></c:muted> <c:text><reason><c:muted>:</c:muted> <amount> <c:muted>(<share>)"
@@ -1035,7 +1035,7 @@ watch:
       name: "<c:value>Refresh"
       lore:
         - "<c:text>Read the newest transactions now."
-        - "<c:text>Last update: <c:value><ago></c:value> ago"
+        - "<c:bar>| </c:bar><c:text>Last update: <c:value><ago></c:value> ago"
         - "<c:text>Read up to transaction <c:value>#<cursor>"
         - ""
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>to refresh"
@@ -1050,10 +1050,10 @@ watch:
     entry:
       name: "<c:value><reason>"
       lore:
-        - "<c:text>Created: <created>"
-        - "<c:text>Removed: <removed>"
-        - "<c:text>Moved: <moved>"
-        - "<c:text>Transactions: <c:value><count>"
+        - "<c:bar>| </c:bar><c:text>Created: <created>"
+        - "<c:bar>| </c:bar><c:text>Removed: <removed>"
+        - "<c:bar>| </c:bar><c:text>Moved: <moved>"
+        - "<c:bar>| </c:bar><c:text>Transactions: <c:value><count>"
     transit:
       - "<c:muted>Passed through: in <in><c:muted>, out <out>"
     footer:
@@ -1093,9 +1093,9 @@ watch:
     entry:
       name: "<c:muted>#<rank></c:muted> <c:value><player>"
       lore:
-        - "<c:text>Earned: <earned>"
-        - "<c:text>Spent: <spent>"
-        - "<c:text>Transactions: <c:value><count>"
+        - "<c:bar>| </c:bar><c:text>Earned: <earned>"
+        - "<c:bar>| </c:bar><c:text>Spent: <spent>"
+        - "<c:bar>| </c:bar><c:text>Transactions: <c:value><count>"
         - ""
         - "<c:muted>Profile <profile>"
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the full history"
@@ -1120,8 +1120,8 @@ watch:
     entry:
       name: "<amount> <c:muted><sym:dot></c:muted> <c:text><reason>"
       lore:
-        - "<c:text>From: <c:value><from>"
-        - "<c:text>To: <c:value><to>"
+        - "<c:bar>| </c:bar><c:text>From: <c:value><from>"
+        - "<c:bar>| </c:bar><c:text>To: <c:value><to>"
         - ""
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<c:muted>#<id>"
@@ -1144,7 +1144,7 @@ watch:
       lore:
         - "<details>"
         - ""
-        - "<c:text>State: <c:value><state>"
+        - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
         - "<c:muted><ago> ago <sym:dot> <date>"
         - "<bold><c:action>» CLICK</c:action></bold> <c:text>for the evidence"
     filter:
@@ -1172,8 +1172,8 @@ watch:
       lore:
         - "<details>"
         - ""
-        - "<c:text>State: <c:value><state>"
-        - "<c:text>Reviewed by: <c:value><by>"
+        - "<c:bar>| </c:bar><c:text>State: <c:value><state>"
+        - "<c:bar>| </c:bar><c:text>Reviewed by: <c:value><by>"
         - "<c:muted><ago> ago <sym:dot> <date>"
     history:
       name: "<c:value>Full history"

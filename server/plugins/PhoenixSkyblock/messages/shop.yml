@@ -291,8 +291,8 @@ undo:
     name: "<c:value><bold>Undo last buy"
     lore:
       - "<c:text><amount>x <item>"
-      - "<c:text>Paid: <cur:money><price></cur:money>"
-      - "<c:text>Time left: <c:value><seconds>s"
+      - "<c:bar>| </c:bar><c:text>Paid: <cur:money><price></cur:money>"
+      - "<c:bar>| </c:bar><c:text>Time left: <c:value><seconds>s"
       - "<c:muted>All of it must still be"
       - "<c:muted>in your inventory."
       - ""

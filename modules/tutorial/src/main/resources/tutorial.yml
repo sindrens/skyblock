@@ -327,7 +327,7 @@ chapters:
         type: grind
         target: "farm:CARROTS"
         text: "Reach carrots at /farm"
-        hint: "Harvest 3,000 wheat at /farm to unlock carrots."
+        hint: "Keep harvesting at /farm: it shows how many to go."
         place: farm
         command: farm
         icon: carrot

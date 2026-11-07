@@ -42,6 +42,12 @@ decision page first. Source: PROJECT_STATUS_7NOV.md and the disabled-features au
 - The rest of the menus in the tool style (rows, headers, click hints), Title Case on every title, 5-row menus to 6.
 - FX-05 (Sell Wand / Auto-Sell order), FX-09 (tutorial hint from the config), island visit list via the visibility
   service, ROADMAP / BACKLOG / planned commands brought up to date.
+- **Built (update162):** 239 menu lore rows got the tool-style bar (`| Label: value`) in 21 menus (islands, bank, sell,
+  progression, rewards, crates, boosters, trade, wardrobe, profiles ...); 64 menu titles are Title Case. FX-09: the carrots
+  hint no longer says "3,000" (the number lives in essentials.yml). The visit list already used the visibility service.
+  ROADMAP status and BACKLOG updated. **FX-05 stays open on purpose:** a chest's contents can only be made crash-safe with a
+  world save per sale (too heavy); the risk is a hard crash inside the half second of a Sell Wand sale. 5-row menus stay
+  5 rows (your 2 Nov "smaller GUIs" rule wins).
 
 ## Batch 4 (update163): Island Vault
 - `/is storage`: shared island storage (rows from the Island Vault upgrade), task hand-in from it, the Vault upgrade

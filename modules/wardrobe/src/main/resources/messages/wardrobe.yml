@@ -348,7 +348,7 @@ menu:
       warzone: ["", "<c:warning>Warzone: 1x, only damage", "<c:warning>reduction and conquest work."]
     level:
       name: "<c:value>Set level <level>"
-      lore: ["<c:ember><bar></c:ember> <c:muted><percent>%", "<c:text>Bonus: <c:value><multiplier>x", "<c:muted>Lv <max>: <max_multiplier>x"]
+      lore: ["<c:ember><bar></c:ember> <c:muted><percent>%", "<c:bar>| </c:bar><c:text>Bonus: <c:value><multiplier>x", "<c:muted>Lv <max>: <max_multiplier>x"]
       next: ["<c:text>Lv <next> in <c:value><xp></c:value> XP"]
       maxed: ["<c:success><sym:star> Max level"]
       earns: ["", "<c:text>Earns XP from: <c:value><from>", "<c:muted>Wear 2+ pieces (4 = full XP)."]
@@ -357,13 +357,13 @@ menu:
       warzone: ["<c:warning>Warzone: counts as <multiplier>x"]
     level-off:
       name: "<c:value>Set level"
-      lore: ["<c:text>Set levels are off.", "<c:text>Bonus now: <c:value><multiplier>x"]
+      lore: ["<c:text>Set levels are off.", "<c:bar>| </c:bar><c:text>Bonus now: <c:value><multiplier>x"]
     gone:
       name: "<c:error>Set not found"
       lore: ["<c:text>This set is not in your", "<c:text>wardrobe any more."]
     tome:
       name: "<c:success>Use a Wardrobe Tome"
-      lore: ["<c:text>+<c:value><xp></c:value> set XP from your tome.", "<c:text>Then: <c:value>Lv <level>", "<c:muted>Tomes stop at Lv <cap>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
+      lore: ["<c:text>+<c:value><xp></c:value> set XP from your tome.", "<c:bar>| </c:bar><c:text>Then: <c:value>Lv <level>", "<c:muted>Tomes stop at Lv <cap>.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to use"]
     tome-capped:
       name: "<c:muted>Wardrobe Tome"
       lore: ["<c:text>Tomes only work below", "<c:text>Lv <level>. Play to level up."]
@@ -396,7 +396,7 @@ menu:
       lore: ["<c:text>You carry a token for this", "<c:text>set.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to redeem"]
     buy:
       name: "<c:success>Buy"
-      lore: ["<c:text>Price: <c:value><price>", "<c:text>Goes into your wardrobe.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
+      lore: ["<c:bar>| </c:bar><c:text>Price: <c:value><price>", "<c:text>Goes into your wardrobe.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to buy"]
     claim:
       name: "<c:success>Claim"
       lore: ["<c:text>You own this Sigil: claim", "<c:text>the set here for free.", "", "<bold><c:action>» CLICK</c:action></bold> <c:text>to claim"]
@@ -412,7 +412,7 @@ menu:
     refused: ["<c:error><sym:cross></c:error> <why>"]
     fee: ["<c:text>Fee: <c:value><fee>"]
     click: ["", "<bold><c:action>» CLICK</c:action></bold> <c:text>to choose"]
-    look-title: "Pick a look"
+    look-title: "Pick a Look"
     look-info:
       name: "<c:value>Pick a look"
       lore: ["<c:text>The merged pieces use the", "<c:text>look of the set you click."]
@@ -558,37 +558,37 @@ status:
 
 confirm:
   loadout-save:
-    crumb: "Save loadout"
+    crumb: "Save Loadout"
     details: ["<c:text>Replace <c:value><name></c:value>", "<c:text>with what you wear and", "<c:text>hold now."]
   loadout-delete:
-    crumb: "Delete loadout"
+    crumb: "Delete Loadout"
     details: ["<c:text>Delete <c:value><name></c:value>", "<c:muted>Your sets and tools stay."]
   buy:
-    crumb: "Buy set"
+    crumb: "Buy Set"
     details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Cost: <c:value><price>", "<c:text>No refunds."]
   redeem:
-    crumb: "Redeem token"
+    crumb: "Redeem Token"
     details: ["<c:text>Add <c:value><set></c:value>", "<c:text>Uses up the token", "<c:text>you carry."]
   tome:
-    crumb: "Use tome"
+    crumb: "Use Tome"
     details: ["<c:text>Use a tome on <c:value><set>", "<c:text>+<c:value><xp></c:value> set XP", "<c:text>Then: <c:value>Lv <level>"]
     capped: ["<c:warning>Stops at Lv <cap>: some XP", "<c:warning>of the tome is lost."]
   merge:
-    crumb: "Merge sets"
+    crumb: "Merge Sets"
     details: ["<c:text>Combine <c:value><a></c:value> <c:muted>Lv <level_a>", "<c:text>and <c:value><b></c:value> <c:muted>Lv <level_b>", "<c:text>into one set at <c:value>Lv 0", "<c:text>Look: <c:value><look>", "<c:text>Cost: <c:value><fee>", "<c:error>Can't be undone."]
     enchants: ["<c:text>Enchants: the look's stay;", "<c:text>the other set's come back", "<c:text>as <c:value><books></c:value> book(s) in your chest."]
   set-level:
-    crumb: "Set level"
+    crumb: "Set Level"
     details: ["<c:text>Set <c:value><set>", "<c:text>of <c:value><player>", "<c:text>to <c:value>Lv <level>"]
   give-tome:
-    crumb: "Give tome"
+    crumb: "Give Tome"
     details: ["<c:text>Give a tome (+<xp> XP)", "<c:text>to <c:value><player>"]
   remove:
-    crumb: "Remove set"
+    crumb: "Remove Set"
     details: ["<c:text>Remove <c:value><set></c:value>", "<c:text>from <c:value><player></c:value>"]
   give-set:
-    crumb: "Give set"
+    crumb: "Give Set"
     details: ["<c:text>Give <c:value><set></c:value>", "<c:text>to <c:value><player></c:value>"]
   give-token:
-    crumb: "Give token"
+    crumb: "Give Token"
     details: ["<c:text>Give a <c:value><set></c:value> token", "<c:text>to <c:value><player></c:value>"]

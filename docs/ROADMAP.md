@@ -7,17 +7,17 @@ Target: everything below is in season 1. Launch is in ~3 years. There is time to
 | Phase | Name | Contents | Status |
 |---|---|---|---|
 | 0 | **Foundation** ([plan](phases/PHASE-0-FOUNDATION.md)) | Config, style/messages, database (MariaDB/H2, migrations), player data, commands, menus, items, services/placeholders (+ optional PlaceholderAPI), **audit log** | 🟡 Repo, deploy, worlds, MOTD, `/unban`, **Phase 0 complete** (M0.1–M0.10) |
-| 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ⬜ |
-| 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ⬜ |
-| 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ⬜ |
-| 4 | **Tools and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, starter kit + Forge + living tools + blueprints + skins, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, crystals | ⬜ |
-| 5 | **Progression core** | 5 pillars + island level, `/is upgrade` masteries with tasks, leaderboards (solo/team/weekly) | ⬜ |
-| 6 | **Skills, sets, enchants** | 5 skills, `/sets`, `/enchanter` custom enchants, crystals economy tuning | ⬜ |
-| 7 | **Island production** ([plan](phases/PHASE-7-PRODUCTION.md)) | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | ⬜ |
-| 8 | **PvE** | Custom mobs, world/summon bosses + damage leaderboard, pets, fishing | ⬜ |
-| 9 | **Conquest and events** | KOTH, envoys, PvP zones, duels, automatic event engine | ⬜ |
-| 10 | **Rewards and retention** | Crates + keys, voting, daily rewards, quests, battle pass, achievements, collection log, Black Market, tutorial | ⬜ |
-| 11 | **Store, ranks, Discord** | Tebex credits/gems, 5 ranks + perks, Discord linking/announcements/tickets | ⬜ |
+| 1 | **Core player experience** ([plan](phases/PHASE-1-CORE.md)) | Spawn/join flow, teleports, chat + ranks everywhere (chat/tab/nametags), scoreboard, tab, `/menu`, `/help`, `/settings`, custom punishments, staff mode, **`/logs` viewer**, reports, `/admin` | ✅ built (7 Nov 2026) |
+| 2 | **Islands** ([plan](phases/PHASE-2-ISLANDS.md)) | Grid, creation (placeholder schematic), protection, roles + permission GUI, solo → team, visiting/warps/ratings, island menu, stats tracking, admin tools | ✅ built |
+| 3 | **Economy** ([plan](phases/PHASE-3-ECONOMY.md)) | Balance sheet first, currencies + ledger, `/pay`, `/transactions`, notes, banks + interest, dynamic `/sell`, builder shop, auction house, secure `/trade`, economy dashboard | ✅ built (dynamic prices v2, money x100) |
+| 4 | **Tools and The Depths** ([plan](phases/PHASE-4-DEPTHS.md)) | Placeholder Depths build, starter kit + Forge + living tools + blueprints + skins, per-player blocks, satchel, skill core (XP/levels), tiers + `/dungeon`, forest, combat zones, crystals | ✅ replaced: the Depths are gone; island tools (hoe, pickaxe, rod, sword) and the grind areas /farm, /mine, /fish, /pve |
+| 5 | **Progression core** | 5 pillars + island level, `/is upgrade` masteries with tasks, leaderboards (solo/team/weekly) | ✅ built (island level = island XP, upgrades, masteries, top) |
+| 6 | **Skills, sets, enchants** | 5 skills, `/sets`, `/enchanter` custom enchants, crystals economy tuning | ✅ built (skills, wardrobe sets, grind enchants) |
+| 7 | **Island production** ([plan](phases/PHASE-7-PRODUCTION.md)) | Custom generators, custom crops, spawners + stacking, mob stacking, collectors/auto-sell (T1–5 merge), Island Fuel, outposts + biomes + fusion | 🟡 generators, spawners, stacking, collectors, Auto-Sell done; custom crops, Island Fuel, outposts wait for the owner |
+| 8 | **PvE** | Custom mobs, world/summon bosses + damage leaderboard, pets, fishing | 🟡 /pve rings and bosses, /fish done; pets turned down |
+| 9 | **Conquest and events** | KOTH, envoys, PvP zones, duels, automatic event engine | 🟡 KOTH, meteor, fishing contest, grind events done; envoys, duels, PvP zone after the Warzone build |
+| 10 | **Rewards and retention** | Crates + keys, voting, daily rewards, quests, battle pass, achievements, collection log, Black Market, tutorial | ✅ built (Rewards menu, /weekly, /monthly on 7 Nov) |
+| 11 | **Store, ranks, Discord** | Tebex credits/gems, 5 ranks + perks, Discord linking/announcements/tickets | 🟡 credits backend and 7 ranks decided; rank perks, Tebex packages, credit shop, Discord wait for DECISIONS_RANKS_7NOV |
 | 12 | **Seasons** | Season reset tool, pre-season mode, carry-over (titles, cosmetics, ranks), Final Week | ⬜ |
 | 13 | **Balance and launch prep** | Full balance pass, bot load test to 300+ players, closed beta, bugfix | ⬜ |
 
