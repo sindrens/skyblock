@@ -856,8 +856,12 @@ final class EnchantProcs implements Listener {
         return "<cur:money>" + Format.money(amount) + "</cur:money>";
     }
 
+    /** Owner 7 Nov 2026 ("spammy"): one proc at a time (the newest), and none for the enchants that proc all the time. */
     private void bar(Player p, String key, GrindEnchants.Def def, net.kyori.adventure.text.minimessage.tag.resolver.TagResolver amount) {
-        net.skybornmc.skyblock.common.hud.ActionBars.show(p, "enchant." + def.id(), m.msg().component(p, key, Msg.p("enchant", name(def)), amount),
+        if (m.config().enchantQuiet.contains(def.id())) {
+            return;
+        }
+        net.skybornmc.skyblock.common.hud.ActionBars.show(p, "enchant", m.msg().component(p, key, Msg.p("enchant", name(def)), amount),
                 net.skybornmc.skyblock.common.hud.ActionBars.PAYOUT, 1500);
     }
 }

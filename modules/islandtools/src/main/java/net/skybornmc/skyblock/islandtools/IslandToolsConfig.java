@@ -471,6 +471,14 @@ public final class IslandToolsConfig extends ModuleConfig {
             + "that gave it (gone after 0.5 s, only you see it) instead of an action bar line.")
     public boolean shardPopups = true;
 
+    @Setting(path = "shards.popup-every-ms", desc = "Owner 7 Nov 2026 (\"spammy\"): shard popups are added up and shown at most this often (one number, not one per block).", min = 0, max = 10000)
+    public int shardPopupEveryMillis = 1000;
+
+    @Setting(path = "enchants.quiet", desc = "Owner 7 Nov 2026 (\"spammy\"): enchants that proc often show no action bar line (you see their effect anyway). "
+            + "The others share one line with the combo counter.")
+    public List<String> enchantQuiet = List.of("explode", "blast", "row_reaper", "lightning", "bountiful", "rich_vein", "big_catch",
+            "cash_crop", "cash_vein", "golden_fish", "quick_study", "scholar", "xp_surge", "duplicator", "golden_touch");
+
     @Setting(path = "auto-sell.price-percent", desc = "Auto-Sell sells drops as you break them at this percent of the sell price (the other selling bonuses apply too).", min = 1, max = 100)
     public double autoSellPercent = 90;
 

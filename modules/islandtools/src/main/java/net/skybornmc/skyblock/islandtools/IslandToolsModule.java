@@ -675,6 +675,7 @@ public final class IslandToolsModule implements SkyblockModule {
     void unload(Player p) {
         forgetPerks(profile(p));
         seedTries.remove(profile(p));
+        popupSums.keySet().removeIf(k -> k.startsWith(p.getUniqueId().toString()));
         enchants.unload(p);
         personal.remove(profile(p));
         storage.unload(profile(p));
@@ -969,9 +970,22 @@ public final class IslandToolsModule implements SkyblockModule {
         if (!config.shardPopups || at == null || amount <= 0) {
             return;
         }
+        // Owner 7 Nov 2026 ("spammy"): finds are added up, one popup at most every shards.popup-every-ms.
+        long now = System.currentTimeMillis();
+        long[] sum = popupSums.computeIfAbsent(p.getUniqueId() + ":" + currency.key(), k -> new long[2]);
+        sum[0] += amount;
+        if (now - sum[1] < config.shardPopupEveryMillis) {
+            return;
+        }
+        long total = sum[0];
+        sum[0] = 0;
+        sum[1] = now;
         net.skybornmc.skyblock.common.hud.Popups.show(core.plugin(), p, at,
-                msg.component(p, "shards.popup." + currency.key(), Msg.number("amount", amount)));
+                msg.component(p, "shards.popup." + currency.key(), Msg.number("amount", total)));
     }
+
+    /** Shards found since the last popup and when it was shown, per player and currency (main thread). */
+    private final java.util.Map<String, long[]> popupSums = new java.util.HashMap<>();
 
     private void levelUp(Player p, UUID island, Kind kind, ToolRules.Level after, ToolStore.Prog now) {
         String tool = raw("item.name." + kind.id());
