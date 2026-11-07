@@ -8,51 +8,51 @@
 prefix: "<c:ember>»</c:ember> "
 # System notices to everyone (plan chat look, 4 Nov 2026): <notice><c:text>Items on the ground are cleared in <c:value>60s</c:value>.
 # The gradient word PHOENIX and an arrow; the text after it is gray with white values.
-notice: "<bold><grad:phoenix>PHOENIX</grad></bold> <c:muted>»</c:muted> "
+notice: "<bold><c:brand>PHOENIX</c:brand></bold> <c:muted>»</c:muted> "
 prefixes:
-  islands: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
-  progression: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
-  production: "<c:ember><bold>Island</bold></c:ember> <c:muted>»</c:muted> "
-  guide: "<c:ember><bold>Kindle</bold></c:ember> <c:muted>»</c:muted> "
-  islandtools: "<c:ember><bold>Tools</bold></c:ember> <c:muted>»</c:muted> "
-  economy: "<c:ember><bold>Money</bold></c:ember> <c:muted>»</c:muted> "
-  shop: "<c:ember><bold>Shop</bold></c:ember> <c:muted>»</c:muted> "
-  auction: "<c:ember><bold>Auction</bold></c:ember> <c:muted>»</c:muted> "
-  trade: "<c:ember><bold>Trade</bold></c:ember> <c:muted>»</c:muted> "
-  depths: "<c:ember><bold>Depths</bold></c:ember> <c:muted>»</c:muted> "
-  crates: "<c:ember><bold>Crates</bold></c:ember> <c:muted>»</c:muted> "
-  enchants: "<c:ember><bold>Enchants</bold></c:ember> <c:muted>»</c:muted> "
-  skills: "<c:ember><bold>Skills</bold></c:ember> <c:muted>»</c:muted> "
-  quests: "<c:ember><bold>Contracts</bold></c:ember> <c:muted>»</c:muted> "
-  milestones: "<c:ember><bold>Milestones</bold></c:ember> <c:muted>»</c:muted> "
-  achievements: "<c:ember><bold>Achievements</bold></c:ember> <c:muted>»</c:muted> "
-  collection: "<c:ember><bold>Collection</bold></c:ember> <c:muted>»</c:muted> "
-  blackmarket: "<c:ember><bold>Black Market</bold></c:ember> <c:muted>»</c:muted> "
-  social: "<c:ember><bold>Social</bold></c:ember> <c:muted>»</c:muted> "
-  moderation: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
-  staff: "<c:ember><bold>Staff</bold></c:ember> <c:muted>»</c:muted> "
-  essentials: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
-  profiles: "<c:ember><bold>Profile</bold></c:ember> <c:muted>»</c:muted> "
-  shardblock: "<c:ember><bold>Shards</bold></c:ember> <c:muted>»</c:muted> "
-  cosmetics: "<c:ember><bold>Cosmetics</bold></c:ember> <c:muted>»</c:muted> "
-  wardrobe: "<c:ember><bold>Wardrobe</bold></c:ember> <c:muted>»</c:muted> "
-  rewards: "<c:ember><bold>Rewards</bold></c:ember> <c:muted>»</c:muted> "
-  pass: "<c:ember><bold>Pass</bold></c:ember> <c:muted>»</c:muted> "
-  perks: "<c:ember><bold>Perks</bold></c:ember> <c:muted>»</c:muted> "
-  boosters: "<c:ember><bold>Boosters</bold></c:ember> <c:muted>»</c:muted> "
-  stacking: "<c:ember><bold>Stacker</bold></c:ember> <c:muted>»</c:muted> "
-  afk: "<c:ember><bold>AFK</bold></c:ember> <c:muted>»</c:muted> "
-  box: "<c:ember><bold>Box</bold></c:ember> <c:muted>»</c:muted> "
-  tutorial: "<c:ember><bold>Tutorial</bold></c:ember> <c:muted>»</c:muted> "
-  chat: "<c:ember><bold>Chat</bold></c:ember> <c:muted>»</c:muted> "
-  npcs: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
-  menus: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
-  pack: "<c:ember><bold>Server</bold></c:ember> <c:muted>»</c:muted> "
-  logs: "<c:ember><bold>Staff</bold></c:ember> <c:muted>»</c:muted> "
+  islands: "<c:island><bold>Island</bold></c:island> <c:muted>»</c:muted> "
+  progression: "<c:island><bold>Island</bold></c:island> <c:muted>»</c:muted> "
+  production: "<c:island><bold>Island</bold></c:island> <c:muted>»</c:muted> "
+  guide: "<c:you><bold>Kindle</bold></c:you> <c:muted>»</c:muted> "
+  islandtools: "<c:you><bold>Tools</bold></c:you> <c:muted>»</c:muted> "
+  economy: "<c:money><bold>Money</bold></c:money> <c:muted>»</c:muted> "
+  shop: "<c:money><bold>Shop</bold></c:money> <c:muted>»</c:muted> "
+  auction: "<c:money><bold>Auction</bold></c:money> <c:muted>»</c:muted> "
+  trade: "<c:money><bold>Trade</bold></c:money> <c:muted>»</c:muted> "
+  depths: "<c:mine><bold>Depths</bold></c:mine> <c:muted>»</c:muted> "
+  crates: "<c:reward><bold>Crates</bold></c:reward> <c:muted>»</c:muted> "
+  enchants: "<c:skill><bold>Enchants</bold></c:skill> <c:muted>»</c:muted> "
+  skills: "<c:skill><bold>Skills</bold></c:skill> <c:muted>»</c:muted> "
+  quests: "<c:reward><bold>Contracts</bold></c:reward> <c:muted>»</c:muted> "
+  milestones: "<c:reward><bold>Milestones</bold></c:reward> <c:muted>»</c:muted> "
+  achievements: "<c:reward><bold>Achievements</bold></c:reward> <c:muted>»</c:muted> "
+  collection: "<c:reward><bold>Collection</bold></c:reward> <c:muted>»</c:muted> "
+  blackmarket: "<c:money><bold>Black Market</bold></c:money> <c:muted>»</c:muted> "
+  social: "<c:people><bold>Social</bold></c:people> <c:muted>»</c:muted> "
+  moderation: "<c:server><bold>Server</bold></c:server> <c:muted>»</c:muted> "
+  staff: "<c:brand><bold>Staff</bold></c:brand> <c:muted>»</c:muted> "
+  essentials: "<c:server><bold>Server</bold></c:server> <c:muted>»</c:muted> "
+  profiles: "<c:value><bold>Profile</bold></c:value> <c:muted>»</c:muted> "
+  shardblock: "<c:you><bold>Shards</bold></c:you> <c:muted>»</c:muted> "
+  cosmetics: "<c:skill><bold>Cosmetics</bold></c:skill> <c:muted>»</c:muted> "
+  wardrobe: "<c:skill><bold>Wardrobe</bold></c:skill> <c:muted>»</c:muted> "
+  rewards: "<c:reward><bold>Rewards</bold></c:reward> <c:muted>»</c:muted> "
+  pass: "<c:reward><bold>Pass</bold></c:reward> <c:muted>»</c:muted> "
+  perks: "<c:store><bold>Perks</bold></c:store> <c:muted>»</c:muted> "
+  boosters: "<c:event><bold>Boosters</bold></c:event> <c:muted>»</c:muted> "
+  stacking: "<c:you><bold>Stacker</bold></c:you> <c:muted>»</c:muted> "
+  afk: "<c:server><bold>AFK</bold></c:server> <c:muted>»</c:muted> "
+  box: "<c:server><bold>Box</bold></c:server> <c:muted>»</c:muted> "
+  tutorial: "<c:you><bold>Tutorial</bold></c:you> <c:muted>»</c:muted> "
+  chat: "<c:server><bold>Chat</bold></c:server> <c:muted>»</c:muted> "
+  npcs: "<c:server><bold>Server</bold></c:server> <c:muted>»</c:muted> "
+  menus: "<c:server><bold>Server</bold></c:server> <c:muted>»</c:muted> "
+  pack: "<c:server><bold>Server</bold></c:server> <c:muted>»</c:muted> "
+  logs: "<c:brand><bold>Staff</bold></c:brand> <c:muted>»</c:muted> "
 
 colors:
   # Phoenix Skyblock core (V2 palette, owner approved 2026-10-30)
-  brand: "#FF2D3F red"
+  brand: "#FF5555 red"         # Look v2 (owner 7 Nov 2026): flat red, the PHOENIX of the scoreboard and chat
   frame: "#D1202F dark_red"        # frames and borders (the old dark brand red)
   brand_bright: "#FF5A4D red"
   ember: "#FF8C1A gold"
@@ -71,8 +71,8 @@ colors:
   info: "#3DC8FF aqua"
   enchant: "#D17AFF light_purple"
   # Lore and HUD (V2): "| Header" sections, bar-prefixed lines, price lines, leaderboard places
-  header: "#FF2D3F red"
-  bar: "#D1202F dark_red"
+  header: "#FF5555 red"
+  bar: "#555555 dark_gray"         # Look v2: neutral lore bars (the scoreboard rows use their block colour)
   buy: "#4DFF88 green"
   sell: "#FF5A5A red"
   top1: "#FFD21A yellow"
@@ -85,15 +85,31 @@ colors:
   sky_steel: "#49649E dark_blue"
   sky_cloud: "#FBFCFF white"
   steel: "#5AB4E5 aqua"            # steel sky (I9 section 8)
+  # Look v2 (owner 7 Nov 2026, docs/plans/LOOK_V2.md): one colour per feature, each one of Bedrock's 16 colours.
+  label: "#AAAAAA gray"            # scoreboard and menu labels (small caps)
+  you: "#FFAA00 gold"
+  island: "#55FF55 green"
+  farm: "#FFFF55 yellow"
+  mine: "#55FFFF aqua"
+  fish: "#5555FF blue"
+  pve: "#FF5555 red"
+  event: "#FF55FF light_purple"
+  spawn: "#55FFFF aqua"
+  store: "#55FFFF aqua"
+  server: "#55FFFF aqua"
+  money: "#55FF55 green"
+  reward: "#FFFF55 yellow"
+  skill: "#FF55FF light_purple"
+  people: "#5555FF blue"
 
 currencies:
-  money: "#4DFF88 green"
-  crystals: "#33E0FF aqua"      # island crystals (replaced tokens): aqua crystal look
-  shards: "#FF6B8A red"         # Farming Shards (owner 4 Nov 2026: two shard types)
-  mining_shards: "#8FB8D8 aqua" # Mining Shards: the mine's gray-blue
-  fishing_shards: "#3FA9F5 blue" # Fishing Shards (owner 6 Nov 2026, /fish): sea blue
-  combat_shards: "#E05050 red"  # Combat Shards (owner 6 Nov 2026, /pve): blood red
-  credits: "#FF8C1A gold"       # card C1 (bought + earned; the old <cur:gems> and <cur:credits_earned> fall back to this)
+  money: "#55FF55 green"
+  crystals: "#FF55FF light_purple"  # Look v2: crystals light purple (credits are aqua)
+  shards: "#FFAA00 gold"        # Farming Shards (Look v2: gold)
+  mining_shards: "#55FFFF aqua" # Mining Shards (Look v2: aqua)
+  fishing_shards: "#5555FF blue" # Fishing Shards (Look v2: blue)
+  combat_shards: "#FF5555 red"  # Combat Shards (Look v2: red)
+  credits: "#55FFFF aqua"       # card C1 (Look v2: aqua; the old <cur:gems> and <cur:credits_earned> fall back to this)
 
 # Event tags in chat: one colour each, never clickable (G1-R1-01). Written <tag:crate><bold>[Crate]</bold></tag>
 tag:
@@ -135,11 +151,13 @@ area:
 
 # Gradients: color names from 'colors' or hex values. Bedrock shows the first color only.
 gradients:
-  phoenix: ["#FF2D3F", "#FF6A1A", "#FFC21A"]
-  flame: [ember, flame]
-  skyborn: [sky_frost, sky_ice, sky_blue]
-  legendary: ["#FFB414", "#FFD21A"]
-  mythic: ["#FF4FD8", "#C05CFF"]
+  # Look v2 (owner 7 Nov 2026, "no gradients in text"): every gradient is one flat colour (two equal stops) until the
+  # resource pack draws the logo.
+  phoenix: ["#FF5555", "#FF5555"]
+  flame: ["#FFAA00", "#FFAA00"]
+  skyborn: ["#55FFFF", "#55FFFF"]
+  legendary: ["#FFAA00", "#FFAA00"]
+  mythic: ["#FF55FF", "#FF55FF"]
 
 symbols:
   money: "$"

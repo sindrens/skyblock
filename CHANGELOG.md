@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### 7 Nov (night): batches 1-10
+- **Look v2 (update169):** feature colours everywhere (flat, Bedrock-matching), scoreboard blocks with coloured row bars and small-caps labels, new tab header/footer, flat chat prefixes.
 - **Credit shop (update167):** `/store` with Ranks (pay the difference), server boosters, cosmetics links and extras (pass premium and levels, streak save, profile slots, loadout slot, island rename token); `/credit gift`, `/credit pay`, `/credit history`, gg after purchases, `/is name`, chargebacks remove shop ranks, Eclipse key no longer sold for credits.
 - **Calmer farming (update166):** one proc line, quiet everyday procs, shard popups added up once a second.
 - **Hoe plan part 1 (update165):** milestones instead of breakthroughs (fast-start growth, +10% every 4% of the track), Buy Max, enchant on/off, one action bar line with a combo counter, private drops when full, storage warning, Sweep without prestige, +1,000% shard cap, prestige keys and hoe titles, juicy hits.

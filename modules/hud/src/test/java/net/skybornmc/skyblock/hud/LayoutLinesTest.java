@@ -84,4 +84,13 @@ class LayoutLinesTest {
         assertEquals(" footer", tight.getLast().text(), "the lowest gap goes first, the footer stays");
         assertEquals(5, layout.visible(k -> true, new LayoutLines.Rules(15, 4, 0, false)).size(), "off: no gaps");
     }
+
+    @Test
+    void lookV2HeadersAndRowsAreKnown() {
+        org.junit.jupiter.api.Assertions.assertEquals(LayoutLines.Kind.HEADER, LayoutLines.kindOf(" <bold><c:farm><sc>The Farm</sc></c:farm></bold>"));
+        org.junit.jupiter.api.Assertions.assertEquals(LayoutLines.Kind.ROW, LayoutLines.kindOf(" <c:farm>│</c:farm> <c:label><sc>Crop:</sc></c:label> x"));
+        org.junit.jupiter.api.Assertions.assertEquals(LayoutLines.Kind.OTHER, LayoutLines.kindOf(" <c:server>play.skybornmc.net"));
+        org.junit.jupiter.api.Assertions.assertEquals(LayoutLines.Kind.HEADER, LayoutLines.kindOf(" <bold><c:header>| You</c:header></bold>"));
+        org.junit.jupiter.api.Assertions.assertEquals(LayoutLines.Kind.ROW, LayoutLines.kindOf(" <c:bar>|</c:bar> x"));
+    }
 }

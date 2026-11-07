@@ -261,8 +261,55 @@ public final class Style {
     private volatile Cached fullJava;
     private volatile Cached fullBedrock;
 
+    /** Small capitals for {@code <sc>} (owner 7 Nov 2026, Look v2); letters without one stay as they are. */
+    private static final String SMALL_CAPS = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ";
+
+    /**
+     * Owner 7 Nov 2026 (Look v2, "small caps labels"): {@code <sc>Money:</sc>} becomes {@code ᴍᴏɴᴇʏ:} on Java and
+     * {@code MONEY:} on Bedrock (Bedrock fonts may not have small capitals). Text inside tags ({@code <...>}) is kept, so
+     * a placeholder inside stays a placeholder (its value is not changed). Pure.
+     */
+    public static String smallCaps(String text, boolean bedrock) {
+        if (text.indexOf("<sc>") < 0) {
+            return text;
+        }
+        StringBuilder out = new StringBuilder(text.length());
+        int i = 0;
+        while (i < text.length()) {
+            int open = text.indexOf("<sc>", i);
+            if (open < 0) {
+                out.append(text, i, text.length());
+                break;
+            }
+            out.append(text, i, open);
+            int close = text.indexOf("</sc>", open + 4);
+            int end = close < 0 ? text.length() : close;
+            boolean inTag = false;
+            for (int k = open + 4; k < end; k++) {
+                char c = text.charAt(k);
+                if (c == '<') {
+                    inTag = true;
+                } else if (c == '>') {
+                    inTag = false;
+                    out.append(c);
+                    continue;
+                }
+                if (inTag || !Character.isLetter(c) || c > 'z') {
+                    out.append(c);
+                } else if (bedrock) {
+                    out.append(Character.toUpperCase(c));
+                } else {
+                    out.append(SMALL_CAPS.charAt(Character.toLowerCase(c) - 'a'));
+                }
+            }
+            i = close < 0 ? text.length() : close + 5;
+        }
+        return out.toString();
+    }
+
     /** Expands {@code <grad:name>…</grad>} into a MiniMessage gradient (or the first color's fallback on Bedrock). */
     public String preprocess(String text, boolean bedrock) {
+        text = smallCaps(text, bedrock);
         if (text.indexOf("<grad:") < 0) {
             return text;
         }
@@ -279,6 +326,9 @@ public final class Style {
             } else {
                 StringBuilder g = new StringBuilder("<gradient");
                 stops.forEach(s -> g.append(':').append(s.hex().asHexString()));
+                if (stops.size() == 1) {
+                    g.append(':').append(stops.getFirst().hex().asHexString()); // Look v2: one colour = a flat "gradient"
+                }
                 replacement = g.append('>').toString();
             }
             m.appendReplacement(out, Matcher.quoteReplacement(replacement));

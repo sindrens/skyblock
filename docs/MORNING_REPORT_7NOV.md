@@ -218,6 +218,13 @@ Your "simple, nothing unnecessary" answer:
 - **Island Hoe / Pickaxe / Rod drops go to your inventory first**, then the tool storage; only when both are full does breaking pause. Shards keep coming while there is room.
 - **Enchants**: hoe and pickaxe enchants cost 10x the shards a level (Explode level 1: 20 shards), and go to 500 (everyday ones), 300 (mid) or 100 (rare: Tornado, Meteor, Nuke, Jackpot, Keyfinder). The prestige cap still opens 20 levels per prestige.
 
+## Look v2: feature colours (update169, plan: `docs/plans/LOOK_V2.md`)
+- One colour per thing, flat (no gradients): PHOENIX red + SKYBLOCK white on the scoreboard and tab, money green,
+  credits aqua, crystals light purple, Farm yellow, Mine aqua, Fish blue, PvE red, Island green, Events light purple.
+- Scoreboard in blocks (You, the area, Event) with a coloured bar on each row and small-caps labels (capitals on Bedrock).
+- Chat: `PHOENIX »` and every module prefix flat in its feature colour.
+- Tab: name, season and players online; footer `/help · /store` and the IP.
+
 ## The credit shop (update167, plan: `docs/plans/STORE_FULL_PLAN.md` section 1)
 - **`/store`** (also `/credit shop`, `/creditshop`, `/buy`, and the Store button in `/menu`): tabs **Ranks**, **Boosters**,
   **Cosmetics**, **Extras**; your bought and earned credits on top; a confirm screen for every buy; if a delivery fails,

@@ -26,6 +26,10 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
     static final String SOFT_BLANK = "<soft-blank>";
     static final String HEADER_START = "<bold><c:header>";
     static final String ROW_START = "<c:bar>";
+    /** Look v2 (owner 7 Nov 2026): a header in its block colour, {@code <bold><c:farm><sc>The Farm</sc>...}. */
+    static final java.util.regex.Pattern HEADER_V2 = java.util.regex.Pattern.compile("<bold><c:[a-z_]+>");
+    /** Look v2: a row starting with the block colour's bar, {@code <c:farm>│</c:farm> ...}. */
+    static final java.util.regex.Pattern ROW_V2 = java.util.regex.Pattern.compile("<c:[a-z_]+>[|│]");
     /** The built-in condition key that is true while the player has a running timer ({@code BoardTimers}). */
     static final String TIMER_KEY = "board_timer";
 
@@ -75,10 +79,10 @@ record LayoutLines(String source, List<Line> lines, boolean usesTimer) {
             return Kind.SOFT_BLANK;
         }
         String t = text.stripLeading();
-        if (t.startsWith(HEADER_START)) {
+        if (t.startsWith(HEADER_START) || HEADER_V2.matcher(t).lookingAt()) {
             return Kind.HEADER;
         }
-        if (t.startsWith(ROW_START)) {
+        if (t.startsWith(ROW_START) || ROW_V2.matcher(t).lookingAt()) {
             return Kind.ROW;
         }
         return Kind.OTHER;

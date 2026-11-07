@@ -40,3 +40,17 @@ right after the credit shop). Inspiration: docs/planning/INSPIRATION_7NOV.md.
    price, `» Click to …` in the feature colour.
 6. Later with the resource pack: a pixel font with small caps, the logo as scoreboard title and tab header, rank
    plates.
+
+## Built (update169)
+- `style.yml`: the feature colours (`<c:you>`, `<c:island>`, `<c:farm>`, `<c:mine>`, `<c:fish>`, `<c:pve>`, `<c:event>`,
+  `<c:spawn>`, `<c:store>`, `<c:server>`, `<c:label>` …), money green, credits aqua, crystals light purple, shards gold /
+  aqua / blue / red, every gradient flat, the PHOENIX notice and every module prefix flat in its feature colour, neutral
+  grey lore bars.
+- `<sc>…</sc>`: small caps on Java, capitals on Bedrock (Bedrock fonts may not have small capitals; the build blocks
+  unsafe symbols in message files).
+- Scoreboard: every layout titled PHOENIX (red) SKYBLOCK (white), blocks You / the area / Event with a coloured `│` on
+  each row, small-caps grey labels, white values; at /farm, /mine, /fish and /pve the visit's earnings sit under You and
+  the event and your next goal under Event.
+- Tab: PHOENIX SKYBLOCK, the season and players online; footer `/help · /store` and the IP.
+- Not yet: rank groups with counts in the tab list (needs fake list entries; comes with the pack's rank plates), every
+  menu's title in its feature colour (menus keep their meaning colours from I9 for now).

@@ -75,27 +75,27 @@ class StyleTest {
 
     /** STYLE2: the bundled and the tracked server style.yml are identical, load cleanly and carry the approved V2 palette. */
     @Test
-    void bundledStyleIsTheV2Palette() throws Exception {
+    void bundledStyleIsTheLookV2Palette() throws Exception {
         Path bundled = Path.of("../plugin/src/main/resources/style.yml");
         Path server = Path.of("../server/plugins/PhoenixSkyblock/style.yml");
         assertEquals(Files.readString(bundled), Files.readString(server), "server/plugins/PhoenixSkyblock/style.yml must match the bundled copy");
         Style style = new Style();
         assertEquals(List.of(), style.load(bundled.toFile()));
         java.util.Map<String, String> expected = java.util.Map.ofEntries(
-                java.util.Map.entry("c.brand", "#ff2d3f red"), java.util.Map.entry("c.frame", "#d1202f dark_red"),
+                java.util.Map.entry("c.brand", "#ff5555 red"), java.util.Map.entry("c.frame", "#d1202f dark_red"),
                 java.util.Map.entry("c.brand_bright", "#ff5a4d red"), java.util.Map.entry("c.ember", "#ff8c1a gold"),
                 java.util.Map.entry("c.flame", "#ffd21a yellow"), java.util.Map.entry("c.text", "#e0e0e0 gray"),
                 java.util.Map.entry("c.muted", "#a0a0a0 dark_gray"), java.util.Map.entry("c.locked", "#5e5e66 dark_gray"),
                 java.util.Map.entry("c.value", "#ffffff white"), java.util.Map.entry("c.action", "#ffe135 yellow"),
                 java.util.Map.entry("c.success", "#4dff6a green"), java.util.Map.entry("c.error", "#ff3b3b red"),
                 java.util.Map.entry("c.warning", "#ffb020 gold"), java.util.Map.entry("c.info", "#3dc8ff aqua"),
-                java.util.Map.entry("c.enchant", "#d17aff light_purple"), java.util.Map.entry("c.header", "#ff2d3f red"),
-                java.util.Map.entry("c.bar", "#d1202f dark_red"), java.util.Map.entry("c.buy", "#4dff88 green"),
+                java.util.Map.entry("c.enchant", "#d17aff light_purple"), java.util.Map.entry("c.header", "#ff5555 red"),
+                java.util.Map.entry("c.bar", "#555555 dark_gray"), java.util.Map.entry("c.buy", "#4dff88 green"),
                 java.util.Map.entry("c.sell", "#ff5a5a red"), java.util.Map.entry("c.top1", "#ffd21a yellow"),
                 java.util.Map.entry("c.top2", "#e6e6e6 white"), java.util.Map.entry("c.top3", "#ff9a3d gold"),
-                java.util.Map.entry("cur.money", "#4dff88 green"), java.util.Map.entry("cur.crystals", "#33e0ff aqua"),
-                java.util.Map.entry("cur.shards", "#ff6b8a red"),
-                java.util.Map.entry("cur.credits", "#ff8c1a gold"),
+                java.util.Map.entry("cur.money", "#55ff55 green"), java.util.Map.entry("cur.crystals", "#ff55ff light_purple"),
+                java.util.Map.entry("cur.shards", "#ffaa00 gold"),
+                java.util.Map.entry("cur.credits", "#55ffff aqua"), java.util.Map.entry("c.label", "#aaaaaa gray"), java.util.Map.entry("c.farm", "#ffff55 yellow"),
                 java.util.Map.entry("rarity.common", "#f2f2f2 white"), java.util.Map.entry("rarity.uncommon", "#4dff6a green"),
                 java.util.Map.entry("rarity.rare", "#3da5ff blue"), java.util.Map.entry("rarity.epic", "#c05cff dark_purple"),
                 java.util.Map.entry("rarity.legendary", "#ffb414 gold"), java.util.Map.entry("rarity.mythic", "#ff4fd8 light_purple"),
@@ -109,7 +109,7 @@ class StyleTest {
             assertTrue(c != null, key + " missing");
             assertEquals(value, (c.hex().asHexString() + " " + c.legacy()).toLowerCase(java.util.Locale.ROOT), key);
         });
-        assertEquals("<gradient:#ff2d3f:#ff6a1a:#ffc21a>p</gradient>", style.preprocess("<grad:phoenix>P</grad>", false).toLowerCase(java.util.Locale.ROOT));
+        assertEquals("<gradient:#ff5555:#ff5555>p</gradient>", style.preprocess("<grad:phoenix>P</grad>", false).toLowerCase(java.util.Locale.ROOT)); // Look v2: flat
         assertEquals("<color:red>P</color>", style.preprocess("<grad:phoenix>P</grad>", true));
     }
 

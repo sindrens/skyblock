@@ -20,7 +20,8 @@
 # A line starting with "if:<placeholder>|" only shows while that placeholder has a value (not empty, not "-");
 #   "if:a,b|" shows it while any of them has a value. The built-in key "board_timer" has a value while a timer runs.
 # Board rules (automatic, hud.yml scoreboard.*):
-#   - a header is a line starting with <bold><c:header>, a row a line starting with <c:bar>; a header takes at most
+#   - a header is a line starting with <bold><c:...> (Look v2: the block colour, <bold><c:farm><sc>The Farm</sc>), a row a
+#     line starting with <c:...>│ (the block colour's bar); <sc> = small caps on Java, capitals on Bedrock; a header takes at most
 #     scoreboard.section-rows rows (4): rows further down a full section are dropped, the first ones win
 #   - a header with no row under it disappears (no "if:" needed on headers)
 #   - "<soft-blank>" is a blank line that only shows while the other lines are at most
@@ -31,226 +32,230 @@
 scoreboard:
   # Everywhere else: like your own island.
   default:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Rank:</sc></c:label> <rank>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
       # Owner 4 Nov 2026: Farming Shards (red) and Mining Shards (gray-blue) on one row.
-      - " <c:bar>|</c:bar> <c:text>Shards:</c:text> <cur:shards><sym:shards> <ph:shards_formatted></cur:shards> <c:muted>·</c:muted> <cur:mining_shards><sym:mining_shards> <ph:mining_shards_formatted>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
-      - " <bold><c:header>| Island</c:header></bold>"
-      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - "if:island_level| <c:bar>|</c:bar> <progress:island_level_progress>"
-      - "if:board_timer| <c:bar>|</c:bar> <timer>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <c:you>│</c:you> <c:label><sc>Shards:</sc></c:label> <cur:shards><sym:shards> <ph:shards_formatted></cur:shards> <c:muted>·</c:muted> <cur:mining_shards><sym:mining_shards> <ph:mining_shards_formatted>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - "if:credits_owned| <c:you>│</c:you> <c:label><sc>Credits:</sc></c:label> <credits>"
+      - " <bold><c:island><sc>Island</sc></c:island></bold>"
+      - "if:island_level| <c:island>│</c:island> <c:label><sc>Level:</sc></c:label> <island>"
+      - "if:objective| <c:island>│</c:island> <objective>"
+      - "if:island_level| <c:island>│</c:island> <progress:island_level_progress>"
+      - "if:board_timer| <c:island>│</c:island> <timer>"
+      - " <c:server>play.skybornmc.net"
 
   # Your own island: level and place, progress to the next level, then the newest open note or a timer.
   island:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
-      - " <bold><c:header>| Island</c:header></bold>"
-      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - "if:island_level| <c:bar>|</c:bar> <progress:island_level_progress>"
-      - "if:island_next_note| <c:bar>|</c:bar> <c:text>Note:</c:text> <c:value><ph:island_next_note>"
-      - "if:board_timer| <c:bar>|</c:bar> <timer>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Rank:</sc></c:label> <rank>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - "if:credits_owned| <c:you>│</c:you> <c:label><sc>Credits:</sc></c:label> <credits>"
+      - " <bold><c:island><sc>Island</sc></c:island></bold>"
+      - "if:island_level| <c:island>│</c:island> <c:label><sc>Level:</sc></c:label> <island>"
+      - "if:objective| <c:island>│</c:island> <objective>"
+      - "if:island_level| <c:island>│</c:island> <progress:island_level_progress>"
+      - "if:island_next_note| <c:island>│</c:island> <c:label><sc>Note:</sc></c:label> <c:value><ph:island_next_note>"
+      - "if:board_timer| <c:island>│</c:island> <timer>"
+      - " <c:server>play.skybornmc.net"
 
   # Someone else's island: whose island you are on.
   island-visit:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - " <bold><c:header>| Visiting</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Island:</c:text> <island_here>"
-      - "if:island_here_owner| <c:bar>|</c:bar> <c:text>Owner:</c:text> <c:value><ph:island_here_owner>"
-      - "if:board_timer| <c:bar>|</c:bar> <timer>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - " <bold><c:island><sc>Visiting</sc></c:island></bold>"
+      - " <c:island>│</c:island> <c:label><sc>Island:</sc></c:label> <island_here>"
+      - "if:island_here_owner| <c:island>│</c:island> <c:label><sc>Owner:</sc></c:label> <c:value><ph:island_here_owner>"
+      - "if:board_timer| <c:island>│</c:island> <timer>"
+      - " <c:server>play.skybornmc.net"
 
   # Spawn (owner 2 Nov 2026: "add more, make it better"): you, your island at a glance, then the server.
   spawn:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Rank:</c:text> <rank>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - "if:credits_owned| <c:bar>|</c:bar> <c:text>Credits:</c:text> <credits>"
-      - " <bold><c:header>| Island</c:header></bold>"
-      - "if:island_level| <c:bar>|</c:bar> <c:text>Level:</c:text> <island>"
-      - "if:island_level| <c:bar>|</c:bar> <progress:island_level_progress>"
-      - " <bold><c:header>| Spawn</c:header></bold>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - "if:afk_pool| <c:bar>|</c:bar><ph:afk_line>"   # the AFK line (messages/afk.yml scoreboard.line) has its own leading space
-      - "if:board_timer| <c:bar>|</c:bar> <timer>"
-      - " <c:bar>|</c:bar> <c:text>Online:</c:text> <c:value><online>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Rank:</sc></c:label> <rank>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - "if:credits_owned| <c:you>│</c:you> <c:label><sc>Credits:</sc></c:label> <credits>"
+      - " <bold><c:island><sc>Island</sc></c:island></bold>"
+      - "if:island_level| <c:island>│</c:island> <c:label><sc>Level:</sc></c:label> <island>"
+      - "if:island_level| <c:island>│</c:island> <progress:island_level_progress>"
+      - " <bold><c:spawn><sc>Spawn</sc></c:spawn></bold>"
+      - "if:objective| <c:spawn>│</c:spawn> <objective>"
+      - "if:afk_pool| <c:spawn>│</c:spawn><ph:afk_line>"   # the AFK line (messages/afk.yml scoreboard.line) has its own leading space
+      - "if:board_timer| <c:spawn>│</c:spawn> <timer>"
+      - " <c:spawn>│</c:spawn> <c:label><sc>Online:</sc></c:label> <c:value><online>"
+      - " <c:server>play.skybornmc.net"
 
   # /farm and /mine (owner 4 Nov 2026, plan A item 8): your crop or ore, the progress to the next one and this visit's bonus.
   grind-farm:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <bold><c:header>| The Farm</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Crop:</c:text> <c:value><ph:grind_tier>"
-      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
-      - " <c:bar>|</c:bar> <c:text>Bonus:</c:text> <c:value><ph:grind_bonus_visit>"
-      - " <c:bar>|</c:bar> <c:text>Storage:</c:text> <c:value><ph:tool_storage_hoe>"
-      - " <c:bar>|</c:bar> <c:text>Events:</c:text> <c:flame><ph:grind_event>"
-      - " <c:bar>|</c:bar> <c:text>Farming:</c:text> <c:value>Lv <ph:skill_farming_level>"
-      - " <c:bar>|</c:bar> <progress:skill_farming_progress>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - " <c:you>│</c:you> <c:label><sc>Earned:</sc></c:label> <c:value><ph:grind_bonus_visit>"
+      - " <bold><c:farm><sc>The Farm</sc></c:farm></bold>"
+      - " <c:farm>│</c:farm> <c:label><sc>Crop:</sc></c:label> <c:value><ph:grind_tier>"
+      - " <c:farm>│</c:farm> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_progress>"
+      - " <c:farm>│</c:farm> <c:label><sc>Storage:</sc></c:label> <c:value><ph:tool_storage_hoe>"
+      - " <c:farm>│</c:farm> <c:label><sc>Farming:</sc></c:label> <c:value>Lv <ph:skill_farming_level>"
+      - " <c:farm>│</c:farm> <progress:skill_farming_progress>"
+      - " <bold><c:event><sc>Event</sc></c:event></bold>"
+      - " <c:event>│</c:event> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_event>"
+      - "if:objective| <c:event>│</c:event> <objective>"
+      - " <c:server>play.skybornmc.net"
 
   # Owner 6 Nov 2026: /pve. <ph:grind_tier> = your open ring and its mob.
   grind-pve:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <bold><c:header>| The Arena</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Ring:</c:text> <c:value><ph:grind_tier>"
-      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
-      - " <c:bar>|</c:bar> <c:text>Earned:</c:text> <c:value><ph:grind_bonus_visit>"
-      - " <c:bar>|</c:bar> <c:text>Events:</c:text> <c:flame><ph:grind_event>"
-      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level>"
-      - " <c:bar>|</c:bar> <progress:skill_combat_progress>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - " <c:you>│</c:you> <c:label><sc>Earned:</sc></c:label> <c:value><ph:grind_bonus_visit>"
+      - " <bold><c:pve><sc>The Arena</sc></c:pve></bold>"
+      - " <c:pve>│</c:pve> <c:label><sc>Ring:</sc></c:label> <c:value><ph:grind_tier>"
+      - " <c:pve>│</c:pve> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_progress>"
+      - " <c:pve>│</c:pve> <c:label><sc>Combat:</sc></c:label> <c:value>Lv <ph:skill_combat_level>"
+      - " <c:pve>│</c:pve> <progress:skill_combat_progress>"
+      - " <bold><c:event><sc>Event</sc></c:event></bold>"
+      - " <c:event>│</c:event> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_event>"
+      - "if:objective| <c:event>│</c:event> <objective>"
+      - " <c:server>play.skybornmc.net"
 
   # Owner 6 Nov 2026: /fish. <ph:grind_tier> = your water.
   grind-fish:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <bold><c:header>| The Pond</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Water:</c:text> <c:value><ph:grind_tier>"
-      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
-      - " <c:bar>|</c:bar> <c:text>Earned:</c:text> <c:value><ph:grind_bonus_visit>"
-      - " <c:bar>|</c:bar> <c:text>Storage:</c:text> <c:value><ph:tool_storage_rod>"
-      - " <c:bar>|</c:bar> <c:text>Events:</c:text> <c:flame><ph:grind_event>"
-      - " <c:bar>|</c:bar> <c:text>Fishing:</c:text> <c:value>Lv <ph:skill_fishing_level>"
-      - " <c:bar>|</c:bar> <progress:skill_fishing_progress>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - " <c:you>│</c:you> <c:label><sc>Earned:</sc></c:label> <c:value><ph:grind_bonus_visit>"
+      - " <bold><c:fish><sc>The Pond</sc></c:fish></bold>"
+      - " <c:fish>│</c:fish> <c:label><sc>Water:</sc></c:label> <c:value><ph:grind_tier>"
+      - " <c:fish>│</c:fish> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_progress>"
+      - " <c:fish>│</c:fish> <c:label><sc>Storage:</sc></c:label> <c:value><ph:tool_storage_rod>"
+      - " <c:fish>│</c:fish> <c:label><sc>Fishing:</sc></c:label> <c:value>Lv <ph:skill_fishing_level>"
+      - " <c:fish>│</c:fish> <progress:skill_fishing_progress>"
+      - " <bold><c:event><sc>Event</sc></c:event></bold>"
+      - " <c:event>│</c:event> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_event>"
+      - "if:objective| <c:event>│</c:event> <objective>"
+      - " <c:server>play.skybornmc.net"
 
   grind-mine:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <bold><c:header>| The Mine</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Ore:</c:text> <c:value><ph:grind_tier>"
-      - " <c:bar>|</c:bar> <c:text>Next:</c:text> <c:value><ph:grind_progress>"
-      - " <c:bar>|</c:bar> <c:text>Bonus:</c:text> <c:value><ph:grind_bonus_visit>"
-      - " <c:bar>|</c:bar> <c:text>Storage:</c:text> <c:value><ph:tool_storage_pickaxe>"
-      - " <c:bar>|</c:bar> <c:text>Events:</c:text> <c:flame><ph:grind_event>"
-      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level>"
-      - " <c:bar>|</c:bar> <progress:skill_mining_progress>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - " <c:you>│</c:you> <c:label><sc>Earned:</sc></c:label> <c:value><ph:grind_bonus_visit>"
+      - " <bold><c:mine><sc>The Mine</sc></c:mine></bold>"
+      - " <c:mine>│</c:mine> <c:label><sc>Ore:</sc></c:label> <c:value><ph:grind_tier>"
+      - " <c:mine>│</c:mine> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_progress>"
+      - " <c:mine>│</c:mine> <c:label><sc>Storage:</sc></c:label> <c:value><ph:tool_storage_pickaxe>"
+      - " <c:mine>│</c:mine> <c:label><sc>Mining:</sc></c:label> <c:value>Lv <ph:skill_mining_level>"
+      - " <c:mine>│</c:mine> <progress:skill_mining_progress>"
+      - " <bold><c:event><sc>Event</sc></c:event></bold>"
+      - " <c:event>│</c:event> <c:label><sc>Next:</sc></c:label> <c:value><ph:grind_event>"
+      - "if:objective| <c:event>│</c:event> <objective>"
+      - " <c:server>play.skybornmc.net"
 
   # Between the two areas in the grind world.
   grind:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:objective| <c:you>│</c:you> <objective>"
+      - " <c:server>play.skybornmc.net"
 
   # The Depths, Mine wing and causeways: the zone is the section name; tier, Mining level and progress ("Next:" takes the progress row during the tutorial).
   depths:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - " <bold><c:header>| <plain:depths_zone></c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
-      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:bar>|</c:bar> <progress:skill_mining_progress>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - " <bold><c:mine><plain:depths_zone></c:mine></bold>"
+      - " <c:mine>│</c:mine> <c:label><sc>Tier:</sc></c:label> <c:value><ph:depths_tier>"
+      - " <c:mine>│</c:mine> <c:label><sc>Mining:</sc></c:label> <c:value>Lv <ph:skill_mining_level>"
+      - "if:objective| <c:mine>│</c:mine> <objective>"
+      - " <c:mine>│</c:mine> <progress:skill_mining_progress>"
+      - " <c:server>play.skybornmc.net"
 
   # Forest wing: foraging instead of mining.
   depths-forest:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - " <bold><c:header>| <plain:depths_zone></c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
-      - " <c:bar>|</c:bar> <c:text>Foraging:</c:text> <c:value>Lv <ph:skill_foraging_level>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:bar>|</c:bar> <progress:skill_foraging_progress>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - " <bold><c:mine><plain:depths_zone></c:mine></bold>"
+      - " <c:mine>│</c:mine> <c:label><sc>Tier:</sc></c:label> <c:value><ph:depths_tier>"
+      - " <c:mine>│</c:mine> <c:label><sc>Foraging:</sc></c:label> <c:value>Lv <ph:skill_foraging_level>"
+      - "if:objective| <c:mine>│</c:mine> <objective>"
+      - " <c:mine>│</c:mine> <progress:skill_foraging_progress>"
+      - " <c:server>play.skybornmc.net"
 
   # Combat wing: combat instead of mining.
   depths-combat:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - " <bold><c:header>| <plain:depths_zone></c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Tier:</c:text> <c:value><ph:depths_tier>"
-      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level>"
-      - "if:objective| <c:bar>|</c:bar> <objective>"
-      - " <c:bar>|</c:bar> <progress:skill_combat_progress>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - " <bold><c:mine><plain:depths_zone></c:mine></bold>"
+      - " <c:mine>│</c:mine> <c:label><sc>Tier:</sc></c:label> <c:value><ph:depths_tier>"
+      - " <c:mine>│</c:mine> <c:label><sc>Combat:</sc></c:label> <c:value>Lv <ph:skill_combat_level>"
+      - "if:objective| <c:mine>│</c:mine> <objective>"
+      - " <c:mine>│</c:mine> <progress:skill_combat_progress>"
+      - " <c:server>play.skybornmc.net"
 
   # The Gate (Depths hub): the three skills that unlock the wings.
   depths-gate:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - "if:crystals_owned| <c:bar>|</c:bar> <c:text>Crystals:</c:text> <crystals>"
-      - " <bold><c:header>| <plain:depths_zone></c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Mining:</c:text> <c:value>Lv <ph:skill_mining_level>"
-      - " <c:bar>|</c:bar> <c:text>Foraging:</c:text> <c:value>Lv <ph:skill_foraging_level>"
-      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - "if:crystals_owned| <c:you>│</c:you> <c:label><sc>Crystals:</sc></c:label> <crystals>"
+      - " <bold><c:mine><plain:depths_zone></c:mine></bold>"
+      - " <c:mine>│</c:mine> <c:label><sc>Mining:</sc></c:label> <c:value>Lv <ph:skill_mining_level>"
+      - " <c:mine>│</c:mine> <c:label><sc>Foraging:</sc></c:label> <c:value>Lv <ph:skill_foraging_level>"
+      - " <c:mine>│</c:mine> <c:label><sc>Combat:</sc></c:label> <c:value>Lv <ph:skill_combat_level>"
+      - " <c:server>play.skybornmc.net"
 
   # Warzone: placeholder until the warzone is built (kills, bounty and the event timer come with it).
   warzone:
-    title: "<bold><gradient:#FF2D3F:#FF6A1A:#FFC21A>PHOENIX SKYBLOCK</gradient></bold>"
+    title: "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
     lines:
       - "<soft-blank>"   # blank line under the title, only while the board is short (scoreboard.blank-under-title-max-lines)
-      - " <bold><c:header>| You</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Money:</c:text> <money>"
-      - " <bold><c:header>| Warzone</c:header></bold>"
-      - " <c:bar>|</c:bar> <c:text>Combat:</c:text> <c:value>Lv <ph:skill_combat_level>"
-      - " <c:bar>|</c:bar> <progress:skill_combat_progress>"
-      - "if:board_timer| <c:bar>|</c:bar> <timer>"
-      - " <c:sky_ice>play.skybornmc.net"
+      - " <bold><c:you><sc>You</sc></c:you></bold>"
+      - " <c:you>│</c:you> <c:label><sc>Money:</sc></c:label> <money>"
+      - " <bold><c:pve><sc>Warzone</sc></c:pve></bold>"
+      - " <c:pve>│</c:pve> <c:label><sc>Combat:</sc></c:label> <c:value>Lv <ph:skill_combat_level>"
+      - " <c:pve>│</c:pve> <progress:skill_combat_progress>"
+      - "if:board_timer| <c:pve>│</c:pve> <timer>"
+      - " <c:server>play.skybornmc.net"
 
 values:
   dash: "<c:muted>-"   # "—" would need a Bedrock test first (style.yml bedrock-safe-symbols)
@@ -260,11 +265,11 @@ values:
   island: "<c:value>Lv <level></c:value> <c:muted>#<position>"
   island-no-rank: "<c:value>Lv <level>"
   island-here: "<c:value><value>"
-  objective: "<c:text>Next: <c:value><value>"
-  objective-default: "<c:text>Next: <c:value>Explore /menu"
+  objective: "<c:label><sc>Goal:</sc></c:label> <c:value><value>"
+  objective-default: "<c:label><sc>Goal:</sc></c:label> <c:value>Explore /menu"
   # Progress line (<progress:key>): filled dots flame, empty dots the same dot in locked gray (UI_STYLE §4.1).
   progress: "<c:flame><filled></c:flame><c:locked><empty></c:locked> <c:value><percent>%"
   progress-filled: "●"
   progress-empty: "●"
   # Timer line (<timer>): <label> from the module that runs it ("Booster: +50% Sell"), <time> such as 37m or 2h 15m.
-  timer: "<c:text><label></c:text> <c:ember><time></c:ember>"
+  timer: "<c:label><label></c:label> <c:value><time></c:value>"

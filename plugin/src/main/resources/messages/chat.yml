@@ -61,21 +61,18 @@ tab:
   # Owner 2 Nov 2026: a richer header and a personal "you" line. <online>, <max>, <season>.
   header:
     - ""
-    - "<c:sky_frost><st>          </st></c:sky_frost>  <bold><grad:skyborn>SKYBORN</grad><c:sky_blue>MC</c:sky_blue></bold>  <c:sky_blue><st>          </st></c:sky_blue>"
-    - "<c:ember><bold>PHOENIX SKYBLOCK</bold></c:ember>"
-    - "<c:muted>Rise from the ashes</c:muted>"
-    - ""
-    - "<c:success>●</c:success> <c:value><online></c:value><c:muted>/<max> online</c:muted>  <c:muted><sym:dot></c:muted>  <c:ember><season></c:ember>"
+    - "<bold><c:brand>PHOENIX</c:brand> <c:value>SKYBLOCK</c:value></bold>"
+    - "<c:value><season></c:value>  <c:muted><sym:dot></c:muted>  <c:success>●</c:success> <c:value><online></c:value><c:label>/<max> online</c:label>"
     - ""
   footer:
     - ""
-    - "<c:text>Need help? <c:value>/help</c:value>"
-    - "<c:sky_blue>»</c:sky_blue> <grad:skyborn>play.skybornmc.net</grad> <c:sky_blue>«</c:sky_blue>"
+    - "<c:label>Help:</c:label> <c:server>/help</c:server>  <c:muted><sym:dot></c:muted>  <c:label>Ranks and boosters:</c:label> <c:store>/store</c:store>"
+    - "<c:server>play.skybornmc.net"
   # Under the footer, for each viewer: <rank> (badge), <name>, <money>, <crystals>, <level> (island level or -), <ping>.
   # Owner 3 Nov 2026: no name/ping row here (the player list already shows both).
   footer-you:
     - ""
-    - "<cur:money><sym:money><money></cur:money>  <c:muted><sym:dot></c:muted>  <cur:crystals><sym:crystals> <crystals></cur:crystals>  <c:muted><sym:dot></c:muted>  <area:home>Island Lv <level></area:home>"
+    - "<cur:money><sym:money><money></cur:money>  <c:muted><sym:dot></c:muted>  <cur:crystals><sym:crystals> <crystals></cur:crystals>  <c:muted><sym:dot></c:muted>  <c:island>Island Lv <level></c:island>"
     - ""
   # Staff only (skyblock.staff.tab), under the footer. <tps> is one of tab.tps.* below.
   footer-staff: "<c:muted>TPS</c:muted> <tps>  <c:muted><sym:dot></c:muted>  <c:muted>Ping</c:muted> <c:value><ping> ms</c:value>"
